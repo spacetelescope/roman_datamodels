@@ -313,3 +313,172 @@ class WfiConverter(TaggedObjectNodeConverter):
     def from_yaml_tree(self, node, tag, ctx):
         return Wfi(node)
 
+class Program(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/program-1.0.0"
+
+class ProgramConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/program-*"]
+    types = ["roman_datamodels.stnode.Program"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Program(node)
+
+class Observation(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/observation-1.0.0"
+
+class ObservationConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/observation-*"]
+    types = ["roman_datamodels.stnode.Observation"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Observation(node)
+
+class Ephemeris(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/ephemeris-1.0.0"
+
+class EphemerisConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/ephemeris-*"]
+    types = ["roman_datamodels.stnode.Ephemeris"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Ephemeris(node)
+
+class Visit(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/visit-1.0.0"
+
+class VisitConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/visit-*"]
+    types = ["roman_datamodels.stnode.Visit"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Visit(node)
+
+class Photometry(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/photometry-1.0.0"
+
+class PhotometryConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/photometry-*"]
+    types = ["roman_datamodels.stnode.Photometry"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Photometry(node)
+
+class Coordinates(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/coordinates-1.0.0"
+
+class CoordinatesConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/coordinates-*"]
+    types = ["roman_datamodels.stnode.Coordinates"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Coordinates(node)
+
+class Aperture(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/aperture-1.0.0"
+
+class ApertureConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/aperture-*"]
+    types = ["roman_datamodels.stnode.Aperture"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Aperture(node)
+
+class Pointing(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/pointing-1.0.0"
+
+class PointingConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/pointing-*"]
+    types = ["roman_datamodels.stnode.Pointing"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Pointing(node)
+
+class Target(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/target-1.0.0"
+
+class TargetConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/target-*"]
+    types = ["roman_datamodels.stnode.Target"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Target(node)
+
+class VelocityAberration(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/velocity_aberration-1.0.0"
+
+class VelocityAberrationConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/velocity_aberration-*"]
+    types = ["roman_datamodels.stnode.VelocityAberration"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return VelocityAberration(node)
+
+class Wcsinfo(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/wcsinfo-1.0.0"
+
+class WcsinfoConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/wcsinfo-*"]
+    types = ["roman_datamodels.stnode.Wcsinfo"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Wcsinfo(node)
+
+class Guidestar(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/guidestar-1.0.0"
+
+class GuidestarConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/guidestar-*"]
+    types = ["roman_datamodels.stnode.Guidestar"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Guidestar(node)
+
+class Program(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/rprogram-1.0.0"
+
+class ProgramConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/rprogram-*"]
+    types = ["roman_datamodels.stnode.Program"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Xprogram(node)
+

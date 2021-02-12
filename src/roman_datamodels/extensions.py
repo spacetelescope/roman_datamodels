@@ -3,12 +3,38 @@ from .stnode import (
 	ExposureConverter, 
 	WfiScienceRawConverter,
     WfiModeConverter,
+    #ProgramConverter,
+    ProgramConverter,
+    ObservationConverter,
+    EphemerisConverter,
+    VisitConverter,
+    PhotometryConverter,
+    CoordinatesConverter,
+    ApertureConverter,
+    PointingConverter,
+    TargetConverter,
+    VelocityAberrationConverter,
+    WcsinfoConverter,
+    GuidestarConverter,
 )    
 
 DATAMODEL_CONVERTERS = [
     ExposureConverter(),
     WfiModeConverter(),
     WfiScienceRawConverter(),
+    ProgramConverter(),
+    #ProgramConverter(),
+    ObservationConverter(),
+    EphemerisConverter(),
+    VisitConverter(),
+    PhotometryConverter(),
+    CoordinatesConverter(),
+    ApertureConverter(),
+    PointingConverter(),
+    TargetConverter(),
+    VelocityAberrationConverter(),
+    WcsinfoConverter(),
+    GuidestarConverter(),
 ]
 
 DATAMODEL_EXTENSIONS = [
