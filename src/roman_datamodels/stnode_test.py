@@ -216,4 +216,7 @@ def mk_test2():
     meta['guidestar'] = guide
     wfi = stnode.WfiScienceRaw()
     wfi['meta'] = meta
+    wfi['data'] = np.zeros((100,100,10,1), dtype=np.uint16)
+    wfi['zeroframe'] = np.zeros((100,100,1), dtype=np.uint16)
+    wfi['refout'] = np.zeros((100,100,10,1), dtype=np.uint16)
     return wfi 
