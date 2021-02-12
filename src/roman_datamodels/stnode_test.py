@@ -89,7 +89,7 @@ def mk_test2():
     obs['observation_number'] = '2'
     obs['visit_number'] = '1'
     obs['visit_group'] = '1'
-    obs['actvity_id'] = 'scary'
+    obs['activity_id'] = 'scary'
     obs['exposure_number'] = '223'
     obs['template'] = 'sequel'
     obs['observation_label'] = 'Friday the 13th'
@@ -123,7 +123,7 @@ def mk_test2():
     phot['conversion_megajanskys'] = 2 
     phot['conversion_microjanskys'] = 2e12 
     phot['pixelarea_steradians'] = 1e-15
-    phot['pixelarea_arcseqsq'] = 1e-4
+    phot['pixelarea_arcsecsq'] = 1e-4
 
     coord = stnode.Coordinates()
     coord['reference_frame'] = 'ICRS'
@@ -148,6 +148,8 @@ def mk_test2():
     targ['proper_motion_ra'] = 0.001
     targ['proper_motion_dec'] = 0.0005
     targ['proper_motion_epoch'] = '2000'
+    targ['proposer_ra'] = 17.1
+    targ['proposer_dec'] = -89.
     targ['source_type_apt'] = 'EXTENDED'
     targ['source_type'] = 'EXTENDED'
 
