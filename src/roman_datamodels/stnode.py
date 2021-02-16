@@ -460,10 +460,10 @@ class GuidestarConverter(TaggedObjectNodeConverter):
         return Guidestar(node)
 
 class Program(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/rprogram-1.0.0"
+    _tag = "tag:stsci.edu:datamodels/roman/program-1.0.0"
 
 class ProgramConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/rprogram-*"]
+    tags = ["tag:stsci.edu:datamodels/roman/program-*"]
     types = ["roman_datamodels.stnode.Program"]
 
     def to_yaml_tree(self, obj, tags, ctx):
