@@ -56,7 +56,6 @@ def _check_value(value, schema, validator_context):
     temp_schema = {
         '$schema':
         'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema'}
-    print('schema =', schema)
     temp_schema.update(schema)
     validator = asdfschema.get_validator(temp_schema,
                                           validator_context,
@@ -73,7 +72,6 @@ def _validate(attr, instance, schema, ctx):
 
 def _get_schema_for_property(schema, attr):
     subschema = schema.get('properties', {}).get(attr, None)
-    print('XXXX _get_schema_for_property', schema)
     if subschema is not None:
         return subschema
     for combiner in ['allOf', 'anyOf']:
@@ -117,7 +115,6 @@ class DNode(UserDict):
         variable names.
         """
         if key in self._data:
-            print('---------- (getattr) key = ', key)
             value = self._data[key]
             if isinstance(value, dict):
                 return DNode(value, parent=self, name=key)
@@ -134,12 +131,9 @@ class DNode(UserDict):
         """
         if key[0] != '_':
             if key in self._data:
-                print('***** (setattr)', key)
                 if validate:
-                    print('._data', self._data)
                     self._schema()
                     schema = self._x_schema.get('properties').get(key, None)
-                    print('schema from __setattr__:', key, schema)
                     if _validate(key, value, schema, self.ctx):
                         self._data[key] = value
                 self.__dict__['_data'][key] = value
@@ -155,10 +149,8 @@ class DNode(UserDict):
         """
         if self._x_schema is None:
             parent_schema = self._parent._schema()
-            print('parent_schema', parent_schema)
             # Extract the subschema corresponding to this node.
             subschema = _get_schema_for_property(parent_schema, self._name)
-            print(subschema)
             self._x_schema = subschema
     # def __getindex__(self, key):
     #     return self.data[key]
@@ -209,10 +201,8 @@ class TaggedObjectNode(DNode):
         extension_manager = self.ctx.extension_manager
         tag_def = extension_manager.get_tag_definition(self.tag)
         schema_uri = tag_def.schema_uri
-        print(schema_uri)
         schema = asdfschema._load_schema_cached(
             schema_uri, self.ctx, False, False)
-        print('zzzzzzzz', schema)
         return schema
 
 class TaggedListNode(LNode):
@@ -480,5 +470,5 @@ class ProgramConverter(TaggedObjectNodeConverter):
         return obj._data
 
     def from_yaml_tree(self, node, tag, ctx):
-        return Xprogram(node)
+        return Program(node)
 
