@@ -250,6 +250,19 @@ class WfiScienceRawConverter(TaggedObjectNodeConverter):
     def from_yaml_tree(self, node, tag, ctx):
         return WfiScienceRaw(node)
 
+class WfiL2Image(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/wfi_l2_image-1.0.0"
+
+class WfiL2ImageConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/wfi_l2_image-*"]
+    types = ["roman_datamodels.stnode.WfiL2Image"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return WfiL2Image(node)
+
 
 class WfiImage(TaggedObjectNode):
     _tag = "tag:stsci.edu:datamodels/roman/wfi_image-1.0.0"

@@ -2,6 +2,7 @@ from asdf.extension import ManifestExtension
 from .stnode import (
 	ExposureConverter, 
 	WfiScienceRawConverter,
+    WfiL2ImageConverter,
     WfiModeConverter,
     ProgramConverter,
     ObservationConverter,
@@ -20,6 +21,7 @@ from .stnode import (
 DATAMODEL_CONVERTERS = [
     ExposureConverter(),
     WfiModeConverter(),
+    WfiL2ImageConverter(),
     WfiScienceRawConverter(),
     ProgramConverter(),
     ObservationConverter(),
