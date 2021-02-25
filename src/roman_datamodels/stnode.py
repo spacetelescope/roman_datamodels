@@ -114,6 +114,8 @@ class DNode(UserDict):
         Permit accessing dict keys as attributes, assuming they are legal Python
         variable names.
         """
+        if key.startswith('_'):
+            raise AttributeError('No attribute {0}'.format(key))
         if key in self._data:
             value = self._data[key]
             if isinstance(value, dict):
@@ -123,7 +125,7 @@ class DNode(UserDict):
             else:
                 return value
         else:
-            raise KeyError(f"No such key ({key}) found in node")
+            raise AttributeError(f"No such attribute ({key}) found in node")
 
     def __setattr__(self, key, value):
         """
@@ -138,7 +140,7 @@ class DNode(UserDict):
                         self._data[key] = value
                 self.__dict__['_data'][key] = value
             else:
-                raise KeyError(f"No such key ({key}) found in node")
+                raise AttributeError(f"No such attribute ({key}) found in node")
         else:
             self.__dict__[key] = value
 
@@ -471,4 +473,17 @@ class ProgramConverter(TaggedObjectNodeConverter):
 
     def from_yaml_tree(self, node, tag, ctx):
         return Program(node)
+
+class Calstatus(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/calstatus-1.0.0"
+
+class CalstatusConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/calstatus-*"]
+    types = ["roman_datamodels.stnode.Calstatus"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return Calstatus(node)
 

@@ -70,7 +70,7 @@ class STUserDict(_collections_abc.MutableMapping):
         inst = self.__class__.__new__(self.__class__)
         inst.__dict__.update(self.__dict__)
         # Create a copy and avoid triggering descriptors
-        inst.__dict__["data"] = self.__dict__["data"].copy()
+        inst.__dict__["_data"] = self.__dict__["_data"].copy()
         return inst
 
     def copy(self):
