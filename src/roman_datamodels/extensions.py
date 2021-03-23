@@ -17,6 +17,7 @@ from .stnode import (
     WcsinfoConverter,
     GuidestarConverter,
     CalstatusConverter,
+    FlatRefConverter,
 )    
 
 DATAMODEL_CONVERTERS = [
@@ -37,6 +38,7 @@ DATAMODEL_CONVERTERS = [
     WcsinfoConverter(),
     GuidestarConverter(),
     CalstatusConverter(),
+    FlatRefConverter(),
 ]
 
 DATAMODEL_EXTENSIONS = [

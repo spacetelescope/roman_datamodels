@@ -20,12 +20,12 @@ from  . import stnode
 class DataModel:
     '''Base class for all top level datamodels'''
 
+    crds_observatory = 'roman'
     def __init__(self, init=None, **kwargs):
         self._iscopy = False
         self._shape = None
         self._instance = None
         self._asdf = None
-        self.__dict__['crds_observatory'] = 'roman'
         if init is None:
             asdffile = self.open_asdf(init=None, **kwargs)
         elif isinstance(init, (str, bytes, PurePath)):
@@ -235,6 +235,8 @@ class DataModel:
 class ImageModel(DataModel):
     pass
 
+class FlatRefModel(DataModel):
+    pass
 
 def open(init, **kwargs):
     if isinstance(init, str):
@@ -244,7 +246,6 @@ def open(init, **kwargs):
         # Copy the object so it knows not to close here
         return init.copy()
 
-
     modeltype = type(asdffile.tree['roman'])
     if modeltype in model_registry:
          return model_registry[modeltype](asdffile, **kwargs)
@@ -253,4 +254,5 @@ def open(init, **kwargs):
 
 model_registry = {
     stnode.WfiImage: ImageModel,
+    stnode.FlatRef: FlatRefModel,
 }

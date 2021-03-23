@@ -243,3 +243,23 @@ def mk_level2_image(filepath, outfilepath):
     afout = asdf.AsdfFile()
     afout.tree = {'roman': wfi_image}
     afout.write_to(outfilepath)
+
+def mk_flat(outfilepath):
+    oldref = "/Users/perry/crds_cache/references/roman/wfi/roman_wfi_flat_0001.asdf"
+    afoldref = asdf.open(oldref)
+    afot = afoldref.tree
+    meta = {}
+    meta['reftype'] = 'FLAT'
+    meta['pedigree'] = afot['meta']['pedigree']
+    meta['description'] = afot['meta']['description']
+    meta['author'] = afot['meta']['author']
+    meta['useafter'] = afot['meta']['useafter']
+    flatref = stnode.FlatRef()
+    flatref['meta'] = meta
+
+    flatref['data'] = afot['data']
+    flatref['dq'] = afot['dq']
+    flatref['err'] = afot['err']
+    afout = asdf.AsdfFile()
+    afout.tree = {'roman': flatref}
+    afout.write_to(outfilepath)

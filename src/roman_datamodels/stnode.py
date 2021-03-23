@@ -81,6 +81,34 @@ def _get_schema_for_property(schema, attr):
                 return subsubschema
     return {}
 
+# class NodeIterator:
+#     """
+#     An iterator for a node which flattens the hierachical structure
+#     """
+#     def __init__(self, node):
+#         self.key_stack = []
+#         self.iter_stack = [iter(node._data.items())]
+
+#     def __iter__(self):
+#         return self
+
+#     def __next__(self):
+#         while self.iter_stack:
+#             try:
+#                 key, val = next(self.iter_stack[-1])
+#             except StopIteration:
+#                 self.iter_stack.pop()
+#                 if self.iter_stack:
+#                     self.key_stack.pop()
+#                 continue
+
+#             if isinstance(val, dict):
+#                 self.key_stack.append(key)
+#                 self.iter_stack.append(iter(val.items()))
+#             else:
+#                 return '.'.join(self.key_stack + [key])
+
+#         raise StopIteration
 
 class DNode(UserDict):
 
@@ -101,6 +129,9 @@ class DNode(UserDict):
         self._name = name
         # else:
         #     self.data = node.data
+
+    # def __iter__(self):
+    #     return NodeIterator(self)
 
     @property
     def ctx(self):
@@ -143,6 +174,30 @@ class DNode(UserDict):
                 raise AttributeError(f"No such attribute ({key}) found in node")
         else:
             self.__dict__[key] = value
+
+    def to_flat_dict(self, include_arrays=True):
+        """
+        Returns a dictionary of all of the schema items as a flat dictionary.
+
+        Each dictionary key is a dot-separated name.  For example, the
+        schema element `meta.observation.date` will end up in the
+        dictionary as::
+
+            { "meta.observation.date": "2012-04-22T03:22:05.432" }
+
+        """
+        def convert_val(val):
+            if isinstance(val, datetime.datetime):
+                return val.isoformat()
+            elif isinstance(val, Time):
+                return str(val)
+            return val
+
+        if include_arrays:
+            return dict((key, convert_val(val)) for (key, val) in self.items())
+        else:
+            return dict((key, convert_val(val)) for (key, val) in self.items()
+                        if not isinstance(val, (np.ndarray, NDArrayType)))
 
     def _schema(self):
         """
@@ -233,6 +288,42 @@ class TaggedObjectNodeConverter(Converter):
     def from_yaml_tree(self, node, tag, ctx):
         return (node)
 
+# class TopTaggedObjectNodeConverter(TaggedObjectNodeConverter):
+#     """
+#     This class is inteded to be used for all top level tags,
+#     e.g., those associated with data products handled by 
+#     pipeline steps.
+
+#     It is implicitly assumed that all instances will have a meta.filename
+#     attribute
+#     """
+
+#     def crds_observatory(self):
+#         """
+#         Get CRDS observatory code for this model.
+
+#         Returns
+#         -------
+#         str
+#         """
+#         return "roman"
+
+#     def get_crds_parameters(self):
+#         """
+#         Get parameters used by CRDS to select references for this model.
+
+#         Returns
+#         -------
+#         dict
+#         """
+#         return {
+#             key: val for key, val in self.to_flat_dict(include_arrays=False).items()
+#             if isinstance(val, (str, int, float, complex, bool))
+#         }
+
+#     def save(self, path, dir_path=None, *args, **kwargs):
+#         pass
+
 ###################################
 #
 # Roman section
@@ -261,10 +352,13 @@ class WfiImageConverter(TaggedObjectNodeConverter):
     types = ["roman_datamodels.stnode.WfiImage"]
 
     def to_yaml_tree(self, obj, tags, ctx):
+        del obj._data['meta']['cal_step']
         return obj._data
 
     def from_yaml_tree(self, node, tag, ctx):
-        return WfiImage(node)
+        objnode = WfiImage(node)
+        objnode.meta['cal_step'] = objnode.meta.calstatus
+        return objnode
 
 class WfiMode(TaggedObjectNode):
     _tag = "tag:stsci.edu:datamodels/roman/wfi_mode-1.0.0"
@@ -487,3 +581,15 @@ class CalstatusConverter(TaggedObjectNodeConverter):
     def from_yaml_tree(self, node, tag, ctx):
         return Calstatus(node)
 
+class FlatRef(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/reference_files/flat-1.0.0"
+
+class FlatRefConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/reference_files/flat-*"]
+    types = ["roman_datamodels.stnode.FlatRef"]
+
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return FlatRef(node)
