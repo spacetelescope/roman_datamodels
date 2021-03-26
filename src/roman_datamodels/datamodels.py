@@ -15,7 +15,8 @@ import os.path
 import copy
 import numpy as np
 from astropy.time import Time
-from  . import stnode
+from . import stnode
+from . import validate
 
 class DataModel:
     '''Base class for all top level datamodels'''
@@ -122,7 +123,9 @@ class DataModel:
 
     def to_asdf(self, init, *args, **kwargs):
         # self.on_save(init)
-        asdffile = self.open_asdf(self._instance, **kwargs)
+
+        asdffile = self.open_asdf(**kwargs)
+        asdffile.tree = {'roman': self._instance}
         asdffile.write_to(init, *args, **kwargs)
 
     def get_primary_array_name(self):
@@ -223,6 +226,12 @@ class DataModel:
             if isinstance(val, (str, int, float, complex, bool))
         }
 
+    def validate(self):
+        """
+        Re-validate the model instance against the tags
+        """
+        validate.value_change(self._instance, pass_invalid_values=False,
+                              strict_validation=True)
 
     # def __getitem__(self, key):
     #   assert isinstance(key, str)

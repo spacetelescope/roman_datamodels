@@ -166,7 +166,25 @@ class DNode(UserDict):
             if key in self._data:
                 if validate:
                     self._schema()
-                    schema = self._x_schema.get('properties').get(key, None)
+                    schema = self._x_schema.get('properties')
+                    if schema is None:
+                        # See if the key is in one of the combiners. 
+                        # This implementation is not completely general
+                        # A more robust one would potentially handle nested
+                        # references, though that is probably unlikely
+                        # in practical cases.
+                        for combiner in ['allOf', 'anyOf']:
+                            for subschema in self._x_schema.get(combiner, []):
+                                ref_uri = subschema.get('$ref', None)
+                                if ref_uri is not None:
+                                    subschema = asdfschema._load_schema_cached(
+                                                    ref_uri, self.ctx, False, False)
+                                subsubschema = _get_schema_for_property(subschema, key)
+                                if subsubschema != {}:
+                                    schema = subsubschema
+                                    break
+                    else:
+                        schema = schema.get(key, None)
                     if _validate(key, value, schema, self.ctx):
                         self._data[key] = value
                 self.__dict__['_data'][key] = value
