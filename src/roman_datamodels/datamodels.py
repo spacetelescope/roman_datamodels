@@ -180,9 +180,9 @@ class DataModel:
             return val
 
         if include_arrays:
-            return dict((key, convert_val(val)) for (key, val) in self.items())
+            return dict(('roman.' + key, convert_val(val)) for (key, val) in self.items())
         else:
-            return dict((key, convert_val(val)) for (key, val) in self.items()
+            return dict(('roman.' + key, convert_val(val)) for (key, val) in self.items()
                         if not isinstance(val, np.ndarray))
 
     def items(self):
