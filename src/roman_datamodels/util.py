@@ -58,114 +58,114 @@ def bytes2human(n):
 class NoTypeWarning(Warning):
     pass
 
-def open(init=None, memmap=False, **kwargs):
-    """
-    Creates a DataModel from a number of different types
+# def open(init=None, memmap=False, **kwargs):
+#     """
+#     Creates a DataModel from a number of different types
 
-    Parameters
-    ----------
-    init : shape tuple, file path, file object, astropy.io.fits.HDUList,
-           numpy array, dict, None
+#     Parameters
+#     ----------
+#     init : shape tuple, file path, file object, astropy.io.fits.HDUList,
+#            numpy array, dict, None
 
-        - None: A default data model with no shape
+#         - None: A default data model with no shape
 
-        - shape tuple: Initialize with empty data of the given shape
+#         - shape tuple: Initialize with empty data of the given shape
 
-        - file path: Initialize from the given file (FITS , JSON or ASDF)
+#         - file path: Initialize from the given file (FITS , JSON or ASDF)
 
-        - readable file object: Initialize from the given file object
+#         - readable file object: Initialize from the given file object
 
-        - astropy.io.fits.HDUList: Initialize from the given
-          `~astropy.io.fits.HDUList`
+#         - astropy.io.fits.HDUList: Initialize from the given
+#           `~astropy.io.fits.HDUList`
 
-        - A numpy array: A new model with the data array initialized
-          to what was passed in.
+#         - A numpy array: A new model with the data array initialized
+#           to what was passed in.
 
-        - dict: The object model tree for the data model
+#         - dict: The object model tree for the data model
 
-    memmap : bool
-        Turn memmap of FITS file on or off.  (default: False).  Ignored for
-        ASDF files.
+#     memmap : bool
+#         Turn memmap of FITS file on or off.  (default: False).  Ignored for
+#         ASDF files.
 
-    kwargs : dict
-        Additional keyword arguments passed to lower level functions. These arguments
-        are generally file format-specific. Arguments of note are:
+#     kwargs : dict
+#         Additional keyword arguments passed to lower level functions. These arguments
+#         are generally file format-specific. Arguments of note are:
 
-        - FITS
+#         - FITS
 
-           skip_fits_update - bool or None
-              `True` to skip updating the ASDF tree from the FITS headers, if possible.
-              If `None`, value will be taken from the environmental SKIP_FITS_UPDATE.
-              Otherwise, the default value is `True`.
+#            skip_fits_update - bool or None
+#               `True` to skip updating the ASDF tree from the FITS headers, if possible.
+#               If `None`, value will be taken from the environmental SKIP_FITS_UPDATE.
+#               Otherwise, the default value is `True`.
 
-    Returns
-    -------
-    model : DataModel instance
-    """
+#     Returns
+#     -------
+#     model : DataModel instance
+#     """
 
-    from . import datamodels as dm
-    from . import filetype
+#     from . import datamodels as dm
+#     from . import filetype
 
-    # Initialize variables used to select model class
+#     # Initialize variables used to select model class
 
-    shape = ()
-    file_name = None
-    file_to_close = None
+#     shape = ()
+#     file_name = None
+#     file_to_close = None
 
-    # Get special cases for opening a model out of the way
-    # all special cases return a model if they match
+#     # Get special cases for opening a model out of the way
+#     # all special cases return a model if they match
 
-    if init is None:
-        return dm.DataModel(None)
+#     if init is None:
+#         return dm.DataModel(None)
 
-    elif isinstance(init, dm.DataModel):
-        # Copy the object so it knows not to close here
-        return init.__class__(init)
+#     elif isinstance(init, dm.DataModel):
+#         # Copy the object so it knows not to close here
+#         return init.__class__(init)
 
-    elif isinstance(init, (str, bytes)) or hasattr(init, "read"):
-        # If given a string, presume its a file path.
-        # if it has a read method, assume a file descriptor
+#     elif isinstance(init, (str, bytes)) or hasattr(init, "read"):
+#         # If given a string, presume its a file path.
+#         # if it has a read method, assume a file descriptor
 
-        if isinstance(init, bytes):
-            init = init.decode(sys.getfilesystemencoding())
+#         if isinstance(init, bytes):
+#             init = init.decode(sys.getfilesystemencoding())
 
-        file_name = basename(init)
-        file_type = filetype.check(init)
+#         file_name = basename(init)
+#         file_type = filetype.check(init)
 
-        elif file_type == "asn":
-            raise NotImplementedError("roman_datamodels does not yet support associations")
-            # Read the file as an association / model container
-            # from . import container
-            # return container.ModelContainer(init, **kwargs)
+#         elif file_type == "asn":
+#             raise NotImplementedError("roman_datamodels does not yet support associations")
+#             # Read the file as an association / model container
+#             # from . import container
+#             # return container.ModelContainer(init, **kwargs)
 
-        elif file_type == "asdf":
-            # Read the file as asdf, no need for a special class
-            return dm.DataModel(init, **kwargs)
+#         elif file_type == "asdf":
+#             # Read the file as asdf, no need for a special class
+#             return dm.DataModel(init, **kwargs)
 
-    elif isinstance(init, tuple):
-        for item in init:
-            if not isinstance(item, int):
-                raise ValueError("shape must be a tuple of ints")
-        shape = init
+#     elif isinstance(init, tuple):
+#         for item in init:
+#             if not isinstance(item, int):
+#                 raise ValueError("shape must be a tuple of ints")
+#         shape = init
 
-    elif isinstance(init, np.ndarray):
-        shape = init.shape
+#     elif isinstance(init, np.ndarray):
+#         shape = init.shape
 
-    elif is_association(init) or isinstance(init, list):
-        raise NotImplementedError("stdatamodels does not yet support associations")
-        # from . import container
-        # return container.ModelContainer(init, **kwargs)
+#     elif is_association(init) or isinstance(init, list):
+#         raise NotImplementedError("stdatamodels does not yet support associations")
+#         # from . import container
+#         # return container.ModelContainer(init, **kwargs)
 
-    # Log a message about how the model was opened
-    if file_name:
-        log.debug(f'Opening {file_name} as {new_class}')
-    else:
-        log.debug(f'Opening as {new_class}')
+#     # Log a message about how the model was opened
+#     if file_name:
+#         log.debug(f'Opening {file_name} as {new_class}')
+#     else:
+#         log.debug(f'Opening as {new_class}')
 
-    # Actually open the model
-    model = new_class(init, **kwargs)
+#     # Actually open the model
+#     model = new_class(init, **kwargs)
 
-    return model
+#     return model
 
 
 def _class_from_model_type(hdulist):
