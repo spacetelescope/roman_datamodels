@@ -16,6 +16,7 @@ import copy
 import numpy as np
 from astropy.time import Time
 from . import stnode
+from . import rconverters
 from . import validate
 
 class DataModel:
@@ -262,6 +263,6 @@ def open(init, **kwargs):
         return DataModel(asdffile, **kwargs)
 
 model_registry = {
-    stnode.WfiImage: ImageModel,
-    stnode.FlatRef: FlatRefModel,
+    rconverters.WfiImage: ImageModel,
+    rconverters.FlatRef: FlatRefModel,
 }

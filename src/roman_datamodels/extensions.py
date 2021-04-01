@@ -1,5 +1,5 @@
 from asdf.extension import ManifestExtension
-from .stnode import (
+from .rconverters import (
 	ExposureConverter, 
 	WfiScienceRawConverter,
     WfiImageConverter,
