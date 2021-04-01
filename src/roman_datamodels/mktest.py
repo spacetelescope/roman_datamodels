@@ -248,7 +248,13 @@ def mk_flat(outfilepath):
     oldref = "/Users/perry/crds_cache/references/roman/wfi/roman_wfi_flat_0001.asdf"
     afoldref = asdf.open(oldref)
     afot = afoldref.tree
+    wfimode =stnode.WfiMode()
+    wfimode['name'] = 'WFI'
+    wfimode['detector'] = 'WFI01'
+    wfimode['optical_element'] = 'F158'
     meta = {}
+    meta['telescope'] = 'ROMAN'
+    meta['instrument'] = wfimode
     meta['reftype'] = 'FLAT'
     meta['pedigree'] = afot['meta']['pedigree']
     meta['description'] = afot['meta']['description']
