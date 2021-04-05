@@ -245,6 +245,7 @@ class DataModel:
 class ImageModel(DataModel):
     pass
 
+
 class FlatRefModel(DataModel):
     pass
 

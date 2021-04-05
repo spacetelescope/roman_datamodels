@@ -18,7 +18,6 @@ class WfiScienceRawConverter(TaggedObjectNodeConverter):
     def from_yaml_tree(self, node, tag, ctx):
         return WfiScienceRaw(node)
 
-
 class WfiImage(TaggedObjectNode):
     _tag = "tag:stsci.edu:datamodels/roman/wfi_image-1.0.0"
 
@@ -27,13 +26,10 @@ class WfiImageConverter(TaggedObjectNodeConverter):
     types = ["roman_datamodels.rconverters.WfiImage"]
 
     def to_yaml_tree(self, obj, tags, ctx):
-        del obj._data['meta']['cal_step']
         return obj._data
 
     def from_yaml_tree(self, node, tag, ctx):
-        objnode = WfiImage(node)
-        objnode.meta['cal_step'] = objnode.meta.calstatus
-        return objnode
+        return WfiImage(node)
 
 class WfiMode(TaggedObjectNode):
     _tag = "tag:stsci.edu:datamodels/roman/wfi_mode-1.0.0"
@@ -243,18 +239,18 @@ class ProgramConverter(TaggedObjectNodeConverter):
     def from_yaml_tree(self, node, tag, ctx):
         return Program(node)
 
-class Calstatus(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/calstatus-1.0.0"
+class CalStep(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/cal_step-1.0.0"
 
-class CalstatusConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/calstatus-*"]
-    types = ["roman_datamodels.rconverters.Calstatus"]
+class CalStepConverter(TaggedObjectNodeConverter):
+    tags = ["tag:stsci.edu:datamodels/roman/cal_step-*"]
+    types = ["roman_datamodels.rconverters.CalStep"]
 
     def to_yaml_tree(self, obj, tags, ctx):
         return obj._data
 
     def from_yaml_tree(self, node, tag, ctx):
-        return Calstatus(node)
+        return CalStep(node)
 
 class FlatRef(TaggedObjectNode):
     _tag = "tag:stsci.edu:datamodels/roman/reference_files/flat-1.0.0"

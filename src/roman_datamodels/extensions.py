@@ -16,7 +16,7 @@ from .rconverters import (
     VelocityAberrationConverter,
     WcsinfoConverter,
     GuidestarConverter,
-    CalstatusConverter,
+    CalStepConverter,
     FlatRefConverter,
 )    
 
@@ -37,7 +37,7 @@ DATAMODEL_CONVERTERS = [
     VelocityAberrationConverter(),
     WcsinfoConverter(),
     GuidestarConverter(),
-    CalstatusConverter(),
+    CalStepConverter(),
     FlatRefConverter(),
 ]
 
