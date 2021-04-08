@@ -13,7 +13,7 @@ import traceback
 import numpy as np
 
 #from . import s3_utils
-from .basic_utils import bytes2human
+#from .basic_utils import bytes2human
 
 import logging
 log = logging.getLogger(__name__)

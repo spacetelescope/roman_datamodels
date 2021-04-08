@@ -44,8 +44,13 @@ class DataModel:
             asdffile = init
             self._asdf = asdffile
             self._instance = asdffile.tree['roman']
+        elif isinstance(init, stnode.TaggedObjectNode):
+            self._instance = init
+            asdffile = asdf.AsdfFile()
+            asdffile.tree = {'roman': init}
         else:
-            raise IOError("File does not appear to be an ASDF file.")
+            raise IOError("Argument does not appear to be an ASDF file"
+                          " or TaggedObjectNode.")
         self._asdf = asdffile
 
 
@@ -141,6 +146,14 @@ class DataModel:
         else:
             primary_array_name = ''
         return primary_array_name
+
+    @property
+    def override_handle(self):
+        """override_handle identifies in-memory models where a filepath
+        would normally be used.
+        """
+        # Arbitrary choice to look something like crds://
+        return "override://" + self.__class__.__name__
    
     @property
     def shape(self):
@@ -243,20 +256,31 @@ class DataModel:
 
 
 class ImageModel(DataModel):
-    pass
+    
+    def __init__(self, init, **kwargs):
+        super().__init__(init, **kwargs)
 
 
 class FlatRefModel(DataModel):
-    pass
 
-def open(init, **kwargs):
-    if isinstance(init, str):
-         asdffile = asdf.open(init)
-   
+    def __init__(self, init, **kwargs):
+        super().__init__(init, **kwargs)
+
+
+def open(init, memmap=False, **kwargs):
+    if isinstance(init, asdf.AsdfFile):
+        asdffile = init
     elif isinstance(init, DataModel):
         # Copy the object so it knows not to close here
         return init.copy()
-
+    else:
+        try:
+            kwargs['copy_arrays'] = not memmap
+            asdffile = asdf.open(init, **kwargs)
+        except ValueError:
+            raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
+        if isinstance(asdffile, asdf.fits_embed.AsdfInFits):
+            raise TypeError("Roman datamodels does not accept FITS files or objects")
     modeltype = type(asdffile.tree['roman'])
     if modeltype in model_registry:
          return model_registry[modeltype](asdffile, **kwargs)

@@ -264,3 +264,4 @@ class FlatRefConverter(TaggedObjectNodeConverter):
 
     def from_yaml_tree(self, node, tag, ctx):
         return FlatRef(node)
+
