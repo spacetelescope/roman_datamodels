@@ -102,6 +102,9 @@ class DNode(UserDict):
         # else:
         #     self.data = node.data
 
+    # def __iter__(self):
+    #     return NodeIterator(self)
+
     @property
     def ctx(self):
         if self._ctx is None:
@@ -114,6 +117,8 @@ class DNode(UserDict):
         Permit accessing dict keys as attributes, assuming they are legal Python
         variable names.
         """
+        if key.startswith('_'):
+            raise AttributeError('No attribute {0}'.format(key))
         if key in self._data:
             value = self._data[key]
             if isinstance(value, dict):
@@ -123,7 +128,7 @@ class DNode(UserDict):
             else:
                 return value
         else:
-            raise KeyError(f"No such key ({key}) found in node")
+            raise AttributeError(f"No such attribute ({key}) found in node")
 
     def __setattr__(self, key, value):
         """
@@ -133,14 +138,56 @@ class DNode(UserDict):
             if key in self._data:
                 if validate:
                     self._schema()
-                    schema = self._x_schema.get('properties').get(key, None)
+                    schema = self._x_schema.get('properties')
+                    if schema is None:
+                        # See if the key is in one of the combiners. 
+                        # This implementation is not completely general
+                        # A more robust one would potentially handle nested
+                        # references, though that is probably unlikely
+                        # in practical cases.
+                        for combiner in ['allOf', 'anyOf']:
+                            for subschema in self._x_schema.get(combiner, []):
+                                ref_uri = subschema.get('$ref', None)
+                                if ref_uri is not None:
+                                    subschema = asdfschema._load_schema_cached(
+                                                    ref_uri, self.ctx, False, False)
+                                subsubschema = _get_schema_for_property(subschema, key)
+                                if subsubschema != {}:
+                                    schema = subsubschema
+                                    break
+                    else:
+                        schema = schema.get(key, None)
                     if _validate(key, value, schema, self.ctx):
                         self._data[key] = value
                 self.__dict__['_data'][key] = value
             else:
-                raise KeyError(f"No such key ({key}) found in node")
+                raise AttributeError(f"No such attribute ({key}) found in node")
         else:
             self.__dict__[key] = value
+
+    def to_flat_dict(self, include_arrays=True):
+        """
+        Returns a dictionary of all of the schema items as a flat dictionary.
+
+        Each dictionary key is a dot-separated name.  For example, the
+        schema element `meta.observation.date` will end up in the
+        dictionary as::
+
+            { "meta.observation.date": "2012-04-22T03:22:05.432" }
+
+        """
+        def convert_val(val):
+            if isinstance(val, datetime.datetime):
+                return val.isoformat()
+            elif isinstance(val, Time):
+                return str(val)
+            return val
+
+        if include_arrays:
+            return dict((key, convert_val(val)) for (key, val) in self.items())
+        else:
+            return dict((key, convert_val(val)) for (key, val) in self.items()
+                        if not isinstance(val, (np.ndarray, NDArrayType)))
 
     def _schema(self):
         """
@@ -230,258 +277,4 @@ class TaggedObjectNodeConverter(Converter):
 
     def from_yaml_tree(self, node, tag, ctx):
         return (node)
-
-###################################
-#
-# Roman section
-#
-###################################
-
-class WfiScienceRaw(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/wfi_science_raw-1.0.0"
-
-class WfiScienceRawConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/wfi_science_raw-*"]
-    types = ["roman_datamodels.stnode.WfiScienceRaw"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return WfiScienceRaw(node)
-
-class WfiL2Image(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/wfi_l2_image-1.0.0"
-
-class WfiL2ImageConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/wfi_l2_image-*"]
-    types = ["roman_datamodels.stnode.WfiL2Image"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return WfiL2Image(node)
-
-
-class WfiImage(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/wfi_image-1.0.0"
-
-class WfiImageConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/wfi_image-*"]
-    types = ["roman_datamodels.stnode.WfiImage"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return WfiImage(node)
-
-class WfiMode(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/wfi_mode-1.0.0"
-
-class WfiModeConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/wfi_mode-*"]
-    types = ["roman_datamodels.stnode.WfiMode"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return WfiMode(node)
-
-class Exposure(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/exposure-1.0.0"
-
-class ExposureConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/exposure-*"]
-    types = ["roman_datamodels.stnode.Exposure"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Exposure(node)
-
-class Wfi(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/wfi-1.0.0"
-
-class WfiConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/wfi-*"]
-    types = ["roman_datamodels.stnode.Wfi"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Wfi(node)
-
-class Program(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/program-1.0.0"
-
-class ProgramConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/program-*"]
-    types = ["roman_datamodels.stnode.Program"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Program(node)
-
-class Observation(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/observation-1.0.0"
-
-class ObservationConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/observation-*"]
-    types = ["roman_datamodels.stnode.Observation"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Observation(node)
-
-class Ephemeris(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/ephemeris-1.0.0"
-
-class EphemerisConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/ephemeris-*"]
-    types = ["roman_datamodels.stnode.Ephemeris"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Ephemeris(node)
-
-class Visit(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/visit-1.0.0"
-
-class VisitConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/visit-*"]
-    types = ["roman_datamodels.stnode.Visit"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Visit(node)
-
-class Photometry(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/photometry-1.0.0"
-
-class PhotometryConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/photometry-*"]
-    types = ["roman_datamodels.stnode.Photometry"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Photometry(node)
-
-class Coordinates(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/coordinates-1.0.0"
-
-class CoordinatesConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/coordinates-*"]
-    types = ["roman_datamodels.stnode.Coordinates"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Coordinates(node)
-
-class Aperture(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/aperture-1.0.0"
-
-class ApertureConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/aperture-*"]
-    types = ["roman_datamodels.stnode.Aperture"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Aperture(node)
-
-class Pointing(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/pointing-1.0.0"
-
-class PointingConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/pointing-*"]
-    types = ["roman_datamodels.stnode.Pointing"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Pointing(node)
-
-class Target(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/target-1.0.0"
-
-class TargetConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/target-*"]
-    types = ["roman_datamodels.stnode.Target"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Target(node)
-
-class VelocityAberration(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/velocity_aberration-1.0.0"
-
-class VelocityAberrationConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/velocity_aberration-*"]
-    types = ["roman_datamodels.stnode.VelocityAberration"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return VelocityAberration(node)
-
-class Wcsinfo(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/wcsinfo-1.0.0"
-
-class WcsinfoConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/wcsinfo-*"]
-    types = ["roman_datamodels.stnode.Wcsinfo"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Wcsinfo(node)
-
-class Guidestar(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/guidestar-1.0.0"
-
-class GuidestarConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/guidestar-*"]
-    types = ["roman_datamodels.stnode.Guidestar"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Guidestar(node)
-
-class Program(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/program-1.0.0"
-
-class ProgramConverter(TaggedObjectNodeConverter):
-    tags = ["tag:stsci.edu:datamodels/roman/program-*"]
-    types = ["roman_datamodels.stnode.Program"]
-
-    def to_yaml_tree(self, obj, tags, ctx):
-        return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return Program(node)
 

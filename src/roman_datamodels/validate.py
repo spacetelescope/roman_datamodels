@@ -14,14 +14,14 @@ class ValidationWarning(Warning):
     pass
 
 
-def value_change(path, value, schema, pass_invalid_values,
+def value_change(value, pass_invalid_values,
                  strict_validation):
     """
     Validate a change in value against a schema.
     Trap error and return a flag.
     """
     try:
-        _check_value(value, schema)
+        _check_value(value)
         update = True
 
     except jsonschema.ValidationError as error:
@@ -52,31 +52,26 @@ validator_callbacks = HashableDict(asdf_schema.YAML_VALIDATORS)
 validator_callbacks.update({'type': _check_type})
 
 
-def _check_value(value, schema):
+def _check_value(value):
     """
     Perform the actual validation.
     """
-    if value is None:
-        if schema.get('fits_required'):
-            name = schema.get("fits_keyword") or schema.get("fits_hdu")
-            raise jsonschema.ValidationError("%s is a required value"
-                                              % name)
-    else:
-        validator_context = AsdfFile()
-        validator_resolver = validator_context.resolver
 
-        temp_schema = {
-            '$schema':
-            'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema'}
-        temp_schema.update(schema)
-        validator = asdf_schema.get_validator(temp_schema,
-                                              validator_context,
-                                              validator_callbacks,
-                                              validator_resolver)
 
-        value = yamlutil.custom_tree_to_tagged_tree(value, validator_context)
-        validator.validate(value, _schema=temp_schema)
-        validator_context.close()
+    validator_context = AsdfFile()
+    validator_resolver = validator_context.resolver
+
+    temp_schema = {
+        '$schema':
+        'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema'}
+    validator = asdf_schema.get_validator(temp_schema,
+                                          validator_context,
+                                          validator_callbacks,
+                                          validator_resolver)
+
+    value = yamlutil.custom_tree_to_tagged_tree(value, validator_context)
+    validator.validate(value, _schema=temp_schema)
+    validator_context.close()
 
 
 def _error_message(path, error):

@@ -1,8 +1,8 @@
 from asdf.extension import ManifestExtension
-from .stnode import (
+from .rconverters import (
 	ExposureConverter, 
 	WfiScienceRawConverter,
-    WfiL2ImageConverter,
+    WfiImageConverter,
     WfiModeConverter,
     ProgramConverter,
     ObservationConverter,
@@ -16,13 +16,16 @@ from .stnode import (
     VelocityAberrationConverter,
     WcsinfoConverter,
     GuidestarConverter,
+    CalStepConverter,
+    FlatRefConverter,
 )    
 
 DATAMODEL_CONVERTERS = [
     ExposureConverter(),
     WfiModeConverter(),
-    WfiL2ImageConverter(),
+    WfiImageConverter(),
     WfiScienceRawConverter(),
+    WfiImageConverter(),
     ProgramConverter(),
     ObservationConverter(),
     EphemerisConverter(),
@@ -35,6 +38,8 @@ DATAMODEL_CONVERTERS = [
     VelocityAberrationConverter(),
     WcsinfoConverter(),
     GuidestarConverter(),
+    CalStepConverter(),
+    FlatRefConverter(),
 ]
 
 DATAMODEL_EXTENSIONS = [
