@@ -23,6 +23,7 @@ from .rconverters import (
 DATAMODEL_CONVERTERS = [
     ExposureConverter(),
     WfiModeConverter(),
+    WfiImageConverter(),
     WfiScienceRawConverter(),
     WfiImageConverter(),
     ProgramConverter(),

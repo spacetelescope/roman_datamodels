@@ -278,4 +278,3 @@ class TaggedObjectNodeConverter(Converter):
     def from_yaml_tree(self, node, tag, ctx):
         return (node)
 
-
