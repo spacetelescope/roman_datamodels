@@ -9,11 +9,13 @@ from os.path import basename
 from platform import system as platform_system
 import psutil
 import traceback
+from pydoc import locate
 
 import numpy as np
 
 #from . import s3_utils
 #from .basic_utils import bytes2human
+from .extensions import DATAMODEL_CONVERTERS, DATAMODEL_EXTENSIONS
 
 import logging
 log = logging.getLogger(__name__)
@@ -57,6 +59,18 @@ def bytes2human(n):
 
 class NoTypeWarning(Warning):
     pass
+
+def get_schema_uri_from_converter(converter_class):
+    """
+    Given a converter class, return the schema_uri corresponding to the tag.
+    """
+    # Obtain one of the possible objects the converter returns
+    classname = converter_class.types[0]
+    # Presume these are from the same directory tree
+    rclass = locate(classname)
+    tag = rclass._tag
+    schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags if t._tag_uri==tag)._schema_uri
+    return schema_uri
 
 # def open(init=None, memmap=False, **kwargs):
 #     """

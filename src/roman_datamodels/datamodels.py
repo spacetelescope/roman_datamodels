@@ -18,6 +18,7 @@ from astropy.time import Time
 from . import stnode
 from . import rconverters
 from . import validate
+from . extensions import DATAMODEL_EXTENSIONS
 
 class DataModel:
     '''Base class for all top level datamodels'''
@@ -60,6 +61,13 @@ class DataModel:
         '''
         return True
 
+    @property
+    def schema_uri(self):
+        # Determine the schema corresonding to this model's tag
+        schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags 
+                          if t.tag_uri == self._instance._tag).schema_uri
+        return schema_uri
+
     def close(self):
         if not self._iscopy:
             if self._asdf is not None:
@@ -97,6 +105,8 @@ class DataModel:
         target._files_to_close = []
         target._shape = source._shape
         target._ctx = target
+
+
 
 
     def save(self, path, dir_path=None, *args, **kwargs):
@@ -141,7 +151,7 @@ class DataModel:
         This is intended to be overridden in the subclasses if the
         primary array's name is not "data".
         """
-        if  self.hasattr('data'):
+        if  hasattr(self, 'data'):
             primary_array_name = 'data'
         else:
             primary_array_name = ''
@@ -159,7 +169,7 @@ class DataModel:
     def shape(self):
         if self._shape is None:
             primary_array_name = self.get_primary_array_name()
-            if primary_array_name and self.hasattr(primary_array_name):
+            if primary_array_name and hasattr(self, primary_array_name):
                 primary_array = getattr(self, primary_array_name)
                 self._shape = primary_array.shape
         return self._shape
