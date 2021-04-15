@@ -110,8 +110,8 @@ class DNode(UserDict):
         if self._ctx is None:
             DNode._ctx = asdf.AsdfFile()
         return self._ctx
-    
-   
+
+
     def __getattr__(self, key):
         """
         Permit accessing dict keys as attributes, assuming they are legal Python
@@ -140,7 +140,7 @@ class DNode(UserDict):
                     self._schema()
                     schema = self._x_schema.get('properties')
                     if schema is None:
-                        # See if the key is in one of the combiners. 
+                        # See if the key is in one of the combiners.
                         # This implementation is not completely general
                         # A more robust one would potentially handle nested
                         # references, though that is probably unlikely
@@ -191,7 +191,7 @@ class DNode(UserDict):
 
     def _schema(self):
         """
-        If not overridden by a subclass, it will search for a schema from 
+        If not overridden by a subclass, it will search for a schema from
         the parent class, recursing if necessary until one is found.
         """
         if self._x_schema is None:
@@ -227,6 +227,7 @@ class LNode(UserList):
         else:
             return value
 
+
 class TaggedObjectNode(DNode):
     """
     Expects subclass to define a class instance of _tag
@@ -252,6 +253,7 @@ class TaggedObjectNode(DNode):
             schema_uri, self.ctx, False, False)
         return schema
 
+
 class TaggedListNode(LNode):
 
     @property
@@ -259,23 +261,63 @@ class TaggedListNode(LNode):
         return self._tag
 
 
+_OBJECT_NODE_TAGS = [
+    "tag:stsci.edu:datamodels/roman/aperture-1.0.0",
+    "tag:stsci.edu:datamodels/roman/cal_step-1.0.0",
+    "tag:stsci.edu:datamodels/roman/coordinates-1.0.0",
+    "tag:stsci.edu:datamodels/roman/ephemeris-1.0.0",
+    "tag:stsci.edu:datamodels/roman/exposure-1.0.0",
+    "tag:stsci.edu:datamodels/roman/guidestar-1.0.0",
+    "tag:stsci.edu:datamodels/roman/observation-1.0.0",
+    "tag:stsci.edu:datamodels/roman/photometry-1.0.0",
+    "tag:stsci.edu:datamodels/roman/pointing-1.0.0",
+    "tag:stsci.edu:datamodels/roman/program-1.0.0",
+    "tag:stsci.edu:datamodels/roman/program-1.0.0",
+    ("tag:stsci.edu:datamodels/roman/reference_files/flat-1.0.0", "FlatRef"),
+    "tag:stsci.edu:datamodels/roman/target-1.0.0",
+    "tag:stsci.edu:datamodels/roman/velocity_aberration-1.0.0",
+    "tag:stsci.edu:datamodels/roman/visit-1.0.0",
+    "tag:stsci.edu:datamodels/roman/wcsinfo-1.0.0",
+    "tag:stsci.edu:datamodels/roman/wfi-1.0.0",
+    "tag:stsci.edu:datamodels/roman/wfi_image-1.0.0",
+    "tag:stsci.edu:datamodels/roman/wfi_mode-1.0.0",
+    "tag:stsci.edu:datamodels/roman/wfi_science_raw-1.0.0"
+ ]
+
+_OBJECT_NODE_CLASSES = []
+
+for tag in _OBJECT_NODE_TAGS:
+    if isinstance(tag, str):
+        tag_name = tag.split("/")[-1].split("-")[0]
+        class_name = "".join([p.capitalize() for p in tag_name.split("_")])
+    else:
+        class_name = tag[-1]
+        tag = tag[0]
+
+    cls = type(class_name, (TaggedObjectNode,), {"_tag": tag, "__module__": "roman_datamodels.stnode"})
+    _OBJECT_NODE_CLASSES.append(cls)
+    globals()[class_name] = cls
+
+_OBJECT_NODE_CLASSES_BY_TAG = {c.tag: c for c in _OBJECT_NODE_CLASSES}
+
+
 class TaggedObjectNodeConverter(Converter):
     """
-    This class is intended to be subclassed for specific tags
+    Converter for all subclasses of TaggedObjectNode.
     """
+    @property
+    def tags(self):
+        return list(_OBJECT_NODE_CLASSES_BY_TAG.keys())
 
-    # tags = [
-    #     "tag:stsci.edu:datamodels/program-*"
-    # ]
-    # types = ["stdatamodels.stnode.Program"]
+    @property
+    def types(self):
+        return _OBJECT_NODE_CLASSES
 
-    tags = []
-    types = []
+    def select_tag(self, obj, tags, ctx):
+        return obj.tag
 
-    def to_yaml_tree(self, obj, tags, ctx): 
-        return obj
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
 
     def from_yaml_tree(self, node, tag, ctx):
-        return (node)
-
-    
+        return _OBJECT_NODE_CLASSES_BY_TAG[tag](node)
