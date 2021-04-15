@@ -276,12 +276,17 @@ _OBJECT_NODE_CLASS_NAME_OVERRIDES = {
 }
 _OBJECT_NODE_CLASSES = []
 
-for tag in _DATAMODELS_MANIFEST["tags"]:
-    if tag["tag_uri"] in _OBJECT_NODE_CLASS_NAME_OVERRIDES:
-        class_name = _OBJECT_NODE_CLASS_NAME_OVERRIDES[tag["tag_uri"]]
+
+def _class_name_from_tag_uri(tag_uri):
+    if tag_uri in _OBJECT_NODE_CLASS_NAME_OVERRIDES:
+        return _OBJECT_NODE_CLASS_NAME_OVERRIDES[tag_uri]
     else:
-        tag_name = tag["tag_uri"].split("/")[-1].split("-")[0]
-        class_name = "".join([p.capitalize() for p in tag_name.split("_")])
+        tag_name = tag_uri.split("/")[-1].split("-")[0]
+        return "".join([p.capitalize() for p in tag_name.split("_")])
+
+
+for tag in _DATAMODELS_MANIFEST["tags"]:
+    class_name = _class_name_from_tag_uri(tag["tag_uri"])
 
     docstring = ""
     if "description" in tag:
@@ -291,12 +296,12 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
     cls = type(
         class_name,
         (TaggedObjectNode,),
-        {"_tag": tag, "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+        {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring},
     )
     _OBJECT_NODE_CLASSES.append(cls)
     globals()[class_name] = cls
 
-_OBJECT_NODE_CLASSES_BY_TAG = {c.tag: c for c in _OBJECT_NODE_CLASSES}
+_OBJECT_NODE_CLASSES_BY_TAG = {c._tag: c for c in _OBJECT_NODE_CLASSES}
 
 
 class TaggedObjectNodeConverter(Converter):
