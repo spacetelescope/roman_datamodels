@@ -12,6 +12,14 @@ import asdf.yamlutil as yamlutil
 from asdf.util import HashableDict
 #from .properties import _get_schema_for_property
 from .validate import _check_type, _error_message
+import yaml
+import rad.resources
+import sys
+
+if sys.version_info < (3, 9):
+    import importlib_resources
+else:
+    import importlib.resources as importlib_resources
 
 validate = True
 strict_validation = True
@@ -261,40 +269,30 @@ class TaggedListNode(LNode):
         return self._tag
 
 
-_OBJECT_NODE_TAGS = [
-    "tag:stsci.edu:datamodels/roman/aperture-1.0.0",
-    "tag:stsci.edu:datamodels/roman/cal_step-1.0.0",
-    "tag:stsci.edu:datamodels/roman/coordinates-1.0.0",
-    "tag:stsci.edu:datamodels/roman/ephemeris-1.0.0",
-    "tag:stsci.edu:datamodels/roman/exposure-1.0.0",
-    "tag:stsci.edu:datamodels/roman/guidestar-1.0.0",
-    "tag:stsci.edu:datamodels/roman/observation-1.0.0",
-    "tag:stsci.edu:datamodels/roman/photometry-1.0.0",
-    "tag:stsci.edu:datamodels/roman/pointing-1.0.0",
-    "tag:stsci.edu:datamodels/roman/program-1.0.0",
-    "tag:stsci.edu:datamodels/roman/program-1.0.0",
-    ("tag:stsci.edu:datamodels/roman/reference_files/flat-1.0.0", "FlatRef"),
-    "tag:stsci.edu:datamodels/roman/target-1.0.0",
-    "tag:stsci.edu:datamodels/roman/velocity_aberration-1.0.0",
-    "tag:stsci.edu:datamodels/roman/visit-1.0.0",
-    "tag:stsci.edu:datamodels/roman/wcsinfo-1.0.0",
-    "tag:stsci.edu:datamodels/roman/wfi-1.0.0",
-    "tag:stsci.edu:datamodels/roman/wfi_image-1.0.0",
-    "tag:stsci.edu:datamodels/roman/wfi_mode-1.0.0",
-    "tag:stsci.edu:datamodels/roman/wfi_science_raw-1.0.0"
- ]
-
+_DATAMODELS_MANIFEST_PATH = importlib_resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
+_DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
+_OBJECT_NODE_CLASS_NAME_OVERRIDES = {
+    "tag:stsci.edu:datamodels/roman/reference_files/flat-1.0.0": "FlatRef",
+}
 _OBJECT_NODE_CLASSES = []
 
-for tag in _OBJECT_NODE_TAGS:
-    if isinstance(tag, str):
-        tag_name = tag.split("/")[-1].split("-")[0]
-        class_name = "".join([p.capitalize() for p in tag_name.split("_")])
+for tag in _DATAMODELS_MANIFEST["tags"]:
+    if tag["tag_uri"] in _OBJECT_NODE_CLASS_NAME_OVERRIDES:
+        class_name = _OBJECT_NODE_CLASS_NAME_OVERRIDES[tag["tag_uri"]]
     else:
-        class_name = tag[-1]
-        tag = tag[0]
+        tag_name = tag["tag_uri"].split("/")[-1].split("-")[0]
+        class_name = "".join([p.capitalize() for p in tag_name.split("_")])
 
-    cls = type(class_name, (TaggedObjectNode,), {"_tag": tag, "__module__": "roman_datamodels.stnode"})
+    docstring = ""
+    if "description" in tag:
+        docstring = tag["description"] + "\n\n"
+    docstring = docstring + f"Class generated from tag '{tag['tag_uri']}'"
+
+    cls = type(
+        class_name,
+        (TaggedObjectNode,),
+        {"_tag": tag, "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+    )
     _OBJECT_NODE_CLASSES.append(cls)
     globals()[class_name] = cls
 
