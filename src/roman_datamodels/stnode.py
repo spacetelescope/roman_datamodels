@@ -22,6 +22,14 @@ if sys.version_info < (3, 9):
 else:
     import importlib.resources as importlib_resources
 
+
+__all__ = [
+    "set_validate",
+    "WfiMode",
+    "NODE_CLASSES",
+]
+
+
 validate = True
 strict_validation = True
 
@@ -335,6 +343,7 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
             {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring},
         )
         globals()[class_name] = cls
+        __all__.append(class_name)
 
 
 class TaggedObjectNodeConverter(Converter):
@@ -357,3 +366,8 @@ class TaggedObjectNodeConverter(Converter):
 
     def from_yaml_tree(self, node, tag, ctx):
         return _OBJECT_NODE_CLASSES_BY_TAG[tag](node)
+
+
+# List of node classes made available by this library.  This is part
+# of the public API.
+NODE_CLASSES = list(_OBJECT_NODE_CLASSES_BY_TAG.values())
