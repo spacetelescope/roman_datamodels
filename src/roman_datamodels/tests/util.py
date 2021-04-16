@@ -1,4 +1,4 @@
-from .. import rconverters
+from .. import stnode
 import asdf
 import astropy.time as time
 import numpy as np
@@ -7,7 +7,7 @@ NONUM = -999999
 NOSTR = "dummy value"
 
 def mk_exposure():
-    exp = rconverters.Exposure()
+    exp = stnode.Exposure()
     exp['count'] = NONUM
     exp['type'] = 'WFI_IMAGE'
     exp['start_time'] =  NONUM
@@ -42,14 +42,14 @@ def mk_exposure():
     return exp
 
 def mk_wfi_mode():
-    mode = rconverters.WfiMode()
+    mode = stnode.WfiMode()
     mode['name'] = 'WFI'
     mode['detector'] = 'WFI01'
     mode['optical_element'] = 'F062'
     return mode
 
 def mk_program():
-    prog = rconverters.Program()
+    prog = stnode.Program()
     prog['title'] = NOSTR
     prog['pi_name'] = NOSTR
     prog['category'] = NOSTR
@@ -59,7 +59,7 @@ def mk_program():
     return prog
 
 def mk_observation():
-    obs = rconverters.Observation()
+    obs = stnode.Observation()
     obs['date'] = NOSTR
     obs['time'] = NOSTR
     obs['date_beg'] = NOSTR
@@ -82,7 +82,7 @@ def mk_observation():
     return obs
 
 def mk_ephemeris():
-    ephem = rconverters.Ephemeris()
+    ephem = stnode.Ephemeris()
     ephem['earth_angle'] = NONUM
     ephem['moon_angle'] = NONUM
     ephem['sun_angle'] = NONUM
@@ -97,7 +97,7 @@ def mk_ephemeris():
     return ephem
 
 def mk_visit():
-    visit = rconverters.Visit()
+    visit = stnode.Visit()
     visit['engineering_quality'] = 'OK' #qqqq
     visit['pointing_engdb_quality'] = 'CALCULATED' #qqqq
     visit['type'] = NOSTR
@@ -109,33 +109,33 @@ def mk_visit():
     return visit
 
 def mk_photometry():
-    phot = rconverters.Photometry()
+    phot = stnode.Photometry()
     phot['conversion_megajanskys'] = NONUM
-    phot['conversion_microjanskys'] = NONUM 
+    phot['conversion_microjanskys'] = NONUM
     phot['pixelarea_steradians'] = NONUM
     phot['pixelarea_arcsecsq'] = NONUM
-    return phot    
+    return phot
 
 def mk_coordinates():
-    coord = rconverters.Coordinates()
+    coord = stnode.Coordinates()
     coord['reference_frame'] = 'ICRS'
     return coord
 
 def mk_aperture():
-    aper = rconverters.Aperture()
+    aper = stnode.Aperture()
     aper['name'] = NOSTR
     aper['position_angle'] = NONUM
     return aper
 
 def mk_pointing():
-    point = rconverters.Pointing()
+    point = stnode.Pointing()
     point['ra_v1'] = NONUM
     point['dec_v1'] = NONUM
     point['pa_v3'] = NONUM
     return point
 
 def mk_target():
-    targ = rconverters.Target()
+    targ = stnode.Target()
     targ['proposer_name'] = NOSTR
     targ['catalog_name'] = NOSTR
     targ['type'] = NOSTR
@@ -153,14 +153,14 @@ def mk_target():
     return targ
 
 def mk_velocity_aberration():
-    vab = rconverters.VelocityAberration()
+    vab = stnode.VelocityAberration()
     vab['ra_offset'] = NONUM
     vab['dec_offset'] = NONUM
     vab['scale_factor'] = NONUM
     return vab
 
 def mk_wcsinfo():
-    wcsi = rconverters.Wcsinfo()
+    wcsi = stnode.Wcsinfo()
     wcsi['v2_ref'] = NONUM
     wcsi['v3_ref'] =  NONUM
     wcsi['vparity'] = NONUM
@@ -171,12 +171,12 @@ def mk_wcsinfo():
     return wcsi
 
 def mk_cal_step():
-    calstep = rconverters.CalStep()
+    calstep = stnode.CalStep()
     calstep['flat_field'] = 'INCOMPLETE'
     return calstep
 
 def mk_guide():
-    guide = rconverters.Guidestar()
+    guide = stnode.Guidestar()
     guide['gs_start_time'] = NOSTR
     guide['gs_stop_time'] = NOSTR
     guide['gs_id'] = NOSTR
@@ -186,7 +186,7 @@ def mk_guide():
     guide['gs_udec'] = NONUM
     guide['gs_mag'] = NONUM
     guide['gs_umag'] = NONUM
-    guide['gs_pcs_mode'] = NOSTR 
+    guide['gs_pcs_mode'] = NOSTR
     guide['gs_function_start_time'] = NOSTR
     guide['gs_function_end_time'] =  NOSTR
     guide['data_start'] = NONUM
@@ -229,7 +229,7 @@ def mk_common_meta():
 
 def mk_level2_image(arrays=True):
     meta = mk_common_meta()
-    wfi_image = rconverters.WfiImage()
+    wfi_image = stnode.WfiImage()
     wfi_image['meta'] = meta
     if not arrays:
         wfi_image['data'] = None
@@ -267,7 +267,7 @@ def mk_flat(outfilepath):
 
     meta = {}
     add_ref_common(meta)
-    flatref = rconverters.FlatRef()
+    flatref = stnode.FlatRef()
     meta['reftype'] = 'FLAT'
     flatref['meta'] = meta
     shape = (20, 20)

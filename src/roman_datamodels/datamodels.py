@@ -16,7 +16,6 @@ import copy
 import numpy as np
 from astropy.time import Time
 from . import stnode
-from . import rconverters
 from . import validate
 from . extensions import DATAMODEL_EXTENSIONS
 
@@ -64,7 +63,7 @@ class DataModel:
     @property
     def schema_uri(self):
         # Determine the schema corresonding to this model's tag
-        schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags 
+        schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags
                           if t.tag_uri == self._instance._tag).schema_uri
         return schema_uri
 
@@ -128,7 +127,7 @@ class DataModel:
         else:
             raise ValueError("unknown filetype {0}".format(ext))
 
-        return output_path        
+        return output_path
 
     def open_asdf(self, init=None, **kwargs):
         if isinstance(init, str):
@@ -164,7 +163,7 @@ class DataModel:
         """
         # Arbitrary choice to look something like crds://
         return "override://" + self.__class__.__name__
-   
+
     @property
     def shape(self):
         if self._shape is None:
@@ -193,7 +192,7 @@ class DataModel:
 
             { "meta.observation.date": "2012-04-22T03:22:05.432" }
 
-        This differs from the JWST data model in that the schema is not 
+        This differs from the JWST data model in that the schema is not
         directly used
         """
         def convert_val(val):
@@ -266,7 +265,7 @@ class DataModel:
 
 
 class ImageModel(DataModel):
-    
+
     def __init__(self, init, **kwargs):
         super().__init__(init, **kwargs)
 
@@ -298,6 +297,6 @@ def open(init, memmap=False, **kwargs):
         return DataModel(asdffile, **kwargs)
 
 model_registry = {
-    rconverters.WfiImage: ImageModel,
-    rconverters.FlatRef: FlatRefModel,
+    stnode.WfiImage: ImageModel,
+    stnode.FlatRef: FlatRefModel,
 }

@@ -8,7 +8,7 @@ from astropy.time import Time
 from roman_datamodels import datamodels
 from roman_datamodels.tests import util
 from roman_datamodels.validate import ValidationWarning
-import roman_datamodels.rconverters as converters
+from roman_datamodels import stnode
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 from roman_datamodels.util import get_schema_uri_from_converter
 from rad.integration import get_resource_mappings
@@ -26,7 +26,7 @@ def iter_subclasses(model_class, include_base_model=True):
 def test_model_schemas():
     dmodels = datamodels.model_registry.keys()
     for model in dmodels:
-        schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags 
+        schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags
             if t._tag_uri==model._tag)._schema_uri
         asdf.schema.load_schema(schema_uri)
 
@@ -46,14 +46,14 @@ def test_core_schema(tmp_path):
             af.write_to(file_path)
         af.tree['roman'].meta.telescope = 'ROMAN'
         af.write_to(file_path)
-    # Now mangle the file 
+    # Now mangle the file
     with open(file_path, 'rb') as fp:
         fcontents = fp.read()
     romanloc = fcontents.find(bytes('ROMAN', 'utf-8'))
     newcontents = fcontents[:romanloc] + bytes('X', 'utf-8') + fcontents[romanloc+1:]
     with open(file_path, 'wb') as fp:
         fp.write(newcontents)
-    with pytest.raises(ValidationError): 
+    with pytest.raises(ValidationError):
         with datamodels.open(file_path) as model:
             pass
     asdf.get_config().validate_on_read = False
@@ -98,7 +98,7 @@ def test_flat_model(tmp_path):
     meta = {}
     util.add_ref_common(meta)
     meta['reftype'] = "FLAT"
-    flatref = converters.FlatRef()
+    flatref = stnode.FlatRef()
     flatref['meta'] = meta
     flatref.meta.instrument['optical_element'] = 'F062'
     shape = (4096, 4096)

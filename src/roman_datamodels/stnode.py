@@ -2,6 +2,7 @@
 Proof of concept of using tags with the data model framework
 """
 
+from abc import ABCMeta
 import jsonschema
 from asdf.extension import Converter
 from collections import UserList
@@ -12,6 +13,14 @@ import asdf.yamlutil as yamlutil
 from asdf.util import HashableDict
 #from .properties import _get_schema_for_property
 from .validate import _check_type, _error_message
+import yaml
+import rad.resources
+import sys
+
+if sys.version_info < (3, 9):
+    import importlib_resources
+else:
+    import importlib.resources as importlib_resources
 
 validate = True
 strict_validation = True
@@ -110,8 +119,8 @@ class DNode(UserDict):
         if self._ctx is None:
             DNode._ctx = asdf.AsdfFile()
         return self._ctx
-    
-   
+
+
     def __getattr__(self, key):
         """
         Permit accessing dict keys as attributes, assuming they are legal Python
@@ -140,7 +149,7 @@ class DNode(UserDict):
                     self._schema()
                     schema = self._x_schema.get('properties')
                     if schema is None:
-                        # See if the key is in one of the combiners. 
+                        # See if the key is in one of the combiners.
                         # This implementation is not completely general
                         # A more robust one would potentially handle nested
                         # references, though that is probably unlikely
@@ -191,7 +200,7 @@ class DNode(UserDict):
 
     def _schema(self):
         """
-        If not overridden by a subclass, it will search for a schema from 
+        If not overridden by a subclass, it will search for a schema from
         the parent class, recursing if necessary until one is found.
         """
         if self._x_schema is None:
@@ -227,7 +236,24 @@ class LNode(UserList):
         else:
             return value
 
-class TaggedObjectNode(DNode):
+
+_OBJECT_NODE_CLASSES_BY_TAG = {}
+
+
+class TaggedObjectNodeMeta(ABCMeta):
+    """
+    Metaclass for TaggedObjectNode that maintains a registry
+    of subclasses.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.__name__ != "TaggedObjectNode":
+            if self._tag in _OBJECT_NODE_CLASSES_BY_TAG:
+                raise RuntimeError(f"TaggedObjectNode class for tag '{self._tag}' has been defined twice")
+            _OBJECT_NODE_CLASSES_BY_TAG[self._tag] = self
+
+
+class TaggedObjectNode(DNode, metaclass=TaggedObjectNodeMeta):
     """
     Expects subclass to define a class instance of _tag
     """
@@ -252,6 +278,7 @@ class TaggedObjectNode(DNode):
             schema_uri, self.ctx, False, False)
         return schema
 
+
 class TaggedListNode(LNode):
 
     @property
@@ -259,23 +286,74 @@ class TaggedListNode(LNode):
         return self._tag
 
 
+class WfiMode(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/wfi_mode-1.0.0"
+
+    _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
+
+    @property
+    def filter(self):
+        if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
+            return None
+        else:
+            return self.optical_element
+
+    @property
+    def grating(self):
+        if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
+            return self.optical_element
+        else:
+            return None
+
+
+_DATAMODELS_MANIFEST_PATH = importlib_resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
+_DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
+
+
+def _class_name_from_tag_uri(tag_uri):
+    tag_name = tag_uri.split("/")[-1].split("-")[0]
+    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
+    if tag_uri.startswith("tag:stsci.edu:datamodels/roman/reference_files/"):
+        class_name += "Ref"
+    return class_name
+
+
+for tag in _DATAMODELS_MANIFEST["tags"]:
+    docstring = ""
+    if "description" in tag:
+        docstring = tag["description"] + "\n\n"
+    docstring = docstring + f"Class generated from tag '{tag['tag_uri']}'"
+
+    if tag["tag_uri"] in _OBJECT_NODE_CLASSES_BY_TAG:
+        _OBJECT_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
+    else:
+        class_name = _class_name_from_tag_uri(tag["tag_uri"])
+
+        cls = type(
+            class_name,
+            (TaggedObjectNode,),
+            {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+        )
+        globals()[class_name] = cls
+
+
 class TaggedObjectNodeConverter(Converter):
     """
-    This class is intended to be subclassed for specific tags
+    Converter for all subclasses of TaggedObjectNode.
     """
+    @property
+    def tags(self):
+        return list(_OBJECT_NODE_CLASSES_BY_TAG.keys())
 
-    # tags = [
-    #     "tag:stsci.edu:datamodels/program-*"
-    # ]
-    # types = ["stdatamodels.stnode.Program"]
+    @property
+    def types(self):
+        return list(_OBJECT_NODE_CLASSES_BY_TAG.values())
 
-    tags = []
-    types = []
+    def select_tag(self, obj, tags, ctx):
+        return obj.tag
 
-    def to_yaml_tree(self, obj, tags, ctx): 
-        return obj
+    def to_yaml_tree(self, obj, tags, ctx):
+        return obj._data
 
     def from_yaml_tree(self, node, tag, ctx):
-        return (node)
-
-    
+        return _OBJECT_NODE_CLASSES_BY_TAG[tag](node)
