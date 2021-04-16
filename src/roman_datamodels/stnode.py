@@ -2,6 +2,7 @@
 Proof of concept of using tags with the data model framework
 """
 
+from abc import ABCMeta
 import jsonschema
 from asdf.extension import Converter
 from collections import UserList
@@ -236,7 +237,23 @@ class LNode(UserList):
             return value
 
 
-class TaggedObjectNode(DNode):
+_OBJECT_NODE_CLASSES_BY_TAG = {}
+
+
+class TaggedObjectNodeMeta(ABCMeta):
+    """
+    Metaclass for TaggedObjectNode that maintains a registry
+    of subclasses.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.__name__ != "TaggedObjectNode":
+            if self._tag in _OBJECT_NODE_CLASSES_BY_TAG:
+                raise RuntimeError(f"TaggedObjectNode class for tag '{self._tag}' has been defined twice")
+            _OBJECT_NODE_CLASSES_BY_TAG[self._tag] = self
+
+
+class TaggedObjectNode(DNode, metaclass=TaggedObjectNodeMeta):
     """
     Expects subclass to define a class instance of _tag
     """
@@ -269,39 +286,55 @@ class TaggedListNode(LNode):
         return self._tag
 
 
+class WfiMode(TaggedObjectNode):
+    _tag = "tag:stsci.edu:datamodels/roman/wfi_mode-1.0.0"
+
+    _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
+
+    @property
+    def filter(self):
+        if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
+            return None
+        else:
+            return self.optical_element
+
+    @property
+    def grating(self):
+        if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
+            return self.optical_element
+        else:
+            return None
+
+
 _DATAMODELS_MANIFEST_PATH = importlib_resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
 _DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
-_OBJECT_NODE_CLASS_NAME_OVERRIDES = {
-    "tag:stsci.edu:datamodels/roman/reference_files/flat-1.0.0": "FlatRef",
-}
-_OBJECT_NODE_CLASSES = []
 
 
 def _class_name_from_tag_uri(tag_uri):
-    if tag_uri in _OBJECT_NODE_CLASS_NAME_OVERRIDES:
-        return _OBJECT_NODE_CLASS_NAME_OVERRIDES[tag_uri]
-    else:
-        tag_name = tag_uri.split("/")[-1].split("-")[0]
-        return "".join([p.capitalize() for p in tag_name.split("_")])
+    tag_name = tag_uri.split("/")[-1].split("-")[0]
+    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
+    if tag_uri.startswith("tag:stsci.edu:datamodels/roman/reference_files/"):
+        class_name += "Ref"
+    return class_name
 
 
 for tag in _DATAMODELS_MANIFEST["tags"]:
-    class_name = _class_name_from_tag_uri(tag["tag_uri"])
-
     docstring = ""
     if "description" in tag:
         docstring = tag["description"] + "\n\n"
     docstring = docstring + f"Class generated from tag '{tag['tag_uri']}'"
 
-    cls = type(
-        class_name,
-        (TaggedObjectNode,),
-        {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring},
-    )
-    _OBJECT_NODE_CLASSES.append(cls)
-    globals()[class_name] = cls
+    if tag["tag_uri"] in _OBJECT_NODE_CLASSES_BY_TAG:
+        _OBJECT_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
+    else:
+        class_name = _class_name_from_tag_uri(tag["tag_uri"])
 
-_OBJECT_NODE_CLASSES_BY_TAG = {c._tag: c for c in _OBJECT_NODE_CLASSES}
+        cls = type(
+            class_name,
+            (TaggedObjectNode,),
+            {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+        )
+        globals()[class_name] = cls
 
 
 class TaggedObjectNodeConverter(Converter):
@@ -314,7 +347,7 @@ class TaggedObjectNodeConverter(Converter):
 
     @property
     def types(self):
-        return _OBJECT_NODE_CLASSES
+        return list(_OBJECT_NODE_CLASSES_BY_TAG.values())
 
     def select_tag(self, obj, tags, ctx):
         return obj.tag

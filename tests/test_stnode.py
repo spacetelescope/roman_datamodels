@@ -17,3 +17,23 @@ def test_generated_node_classes():
         assert tag["tag_uri"] in node_class.__doc__
         assert node_class.__module__ == stnode.__name__
 
+
+def test_wfi_mode():
+    """
+    The WfiMode class includes special properties that map optical_element
+    values to grating or filter.
+    """
+    node = stnode.WfiMode({"optical_element": "GRISM"})
+    assert node.optical_element == "GRISM"
+    assert node.grating == "GRISM"
+    assert node.filter is None
+
+    node = stnode.WfiMode({"optical_element": "PRISM"})
+    assert node.optical_element == "PRISM"
+    assert node.grating == "PRISM"
+    assert node.filter is None
+
+    node = stnode.WfiMode({"optical_element": "F129"})
+    assert node.optical_element == "F129"
+    assert node.grating is None
+    assert node.filter == "F129"
