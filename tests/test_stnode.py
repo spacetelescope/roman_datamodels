@@ -1,14 +1,11 @@
 import asdf
 import pytest
-import yaml
 
 from roman_datamodels import stnode
 from roman_datamodels.testing import assert_node_equal, create_node
 
 
-def test_generated_node_classes():
-    manifest = yaml.safe_load(asdf.get_config().resource_manager["http://stsci.edu/asdf/datamodels/roman/manifests/datamodels-1.0"])
-
+def test_generated_node_classes(manifest):
     for tag in manifest["tags"]:
         class_name = stnode._class_name_from_tag_uri(tag["tag_uri"])
         node_class = getattr(stnode, class_name)
@@ -44,9 +41,6 @@ def test_wfi_mode():
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 def test_serialization(node_class, tmp_path):
-    if node_class.__name__ == "KeywordPixelarea":
-        pytest.xfail("No schema for KeywordPixelarea, see https://github.com/spacetelescope/rad/issues/11")
-
     file_path = tmp_path / "test.asdf"
 
     node = create_node(node_class)

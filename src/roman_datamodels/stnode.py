@@ -295,7 +295,7 @@ class TaggedListNode(LNode):
 
 
 class WfiMode(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/wfi_mode-1.0.0"
+    _tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.0.0"
 
     _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
 
@@ -321,7 +321,7 @@ _DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
 def _class_name_from_tag_uri(tag_uri):
     tag_name = tag_uri.split("/")[-1].split("-")[0]
     class_name = "".join([p.capitalize() for p in tag_name.split("_")])
-    if tag_uri.startswith("tag:stsci.edu:datamodels/roman/reference_files/"):
+    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
         class_name += "Ref"
     return class_name
 
