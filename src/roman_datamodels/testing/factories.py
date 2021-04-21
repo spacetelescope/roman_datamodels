@@ -8,7 +8,6 @@ import random
 import re
 import secrets
 import sys
-import uuid
 
 from astropy.time import Time
 import numpy as np
@@ -44,10 +43,11 @@ __all__ = [
 
 def _random_float(min=None, max=None):
     if min is None:
-        min = sys.float_info.min
+        min = sys.float_info.max * -1.0
     if max is None:
         max = sys.float_info.max
-    return min + (max - min) * random.random()
+    value = random.random()
+    return min + max * value - min * value
 
 
 def _random_positive_float(max=None):
@@ -118,16 +118,29 @@ def _random_bool():
     return _random_choice(*[True, False])
 
 
-def _random_array_float32(size=(4096, 4096)):
-    return np.random.default_rng().random(size=size, dtype=np.float32)
+def _random_array_float32(size=(4096, 4096), min=None, max=None):
+    if min is None:
+        min = np.finfo("float32").min
+    if max is None:
+        max = np.finfo("float32").max
+    array = np.random.default_rng().random(size=size, dtype=np.float32)
+    return min + max * array - min * array
 
 
-def _random_array_uint16(size=(4096, 4096)):
-    return np.random.randint(0, high=2**16, size=size, dtype=np.uint16)
+def _random_array_uint16(size=(4096, 4096), min=None, max=None):
+    if min is None:
+        min = np.iinfo("uint16").min
+    if max is None:
+        max = np.iinfo("uint16").max
+    return np.random.randint(min, high=max, size=size, dtype=np.uint16)
 
 
-def _random_array_uint32(size=(4096, 4096)):
-    return np.random.randint(0, high=2**32, size=size, dtype=np.uint32)
+def _random_array_uint32(size=(4096, 4096), min=None, max=None):
+    if min is None:
+        min = np.iinfo("uint32").min
+    if max is None:
+        max = np.iinfo("uint32").max
+    return np.random.randint(min, high=max, size=size, dtype=np.uint32)
 
 
 def _random_exposure_type():
@@ -375,11 +388,9 @@ def create_flat_ref(**kwargs):
     roman_datamodels.stnode.FlatRef
     """
     raw = {
-        "data": _random_array_float32(),
-        # TODO: Update this to _random_array_uint16() once the schema is fixed.
-        # See https://github.com/spacetelescope/rad/issues/8
+        "data": _random_array_float32(min=0.0),
         "dq": _random_array_uint32(),
-        "err": _random_array_float32(),
+        "err": _random_array_float32(min=0.0),
         "meta": create_ref_meta(reftype="FLAT"),
     }
     raw.update(kwargs)
@@ -494,11 +505,7 @@ def create_observation(**kwargs):
     raw = {
         "end_time": _random_astropy_time(),
         "execution_plan": _random_positive_int(),
-        "start_time": _random_astropy_time(),
         "exposure": _random_positive_int(),
-        # TODO: The schema says this is required but doesn't provide any
-        # information on the datatype.  Update this once
-        # https://github.com/spacetelescope/rad/issues/9 is resolved.
         "ma_table_name": _random_string("MA table "),
         "obs_id": _random_string("Obs ID ", 26),
         "observation": _random_positive_int(),
@@ -667,6 +674,7 @@ def create_velocity_aberration(**kwargs):
     roman_datamodels.stnode.VelocityAberration
     """
     raw = {
+        # TODO: Select reasonable min and max values for these
         "ra_offset": _random_float(),
         "dec_offset": _random_float(),
         "scale_factor": _random_float(),
@@ -751,7 +759,7 @@ def create_wfi_image(**kwargs):
         "area": _random_array_float32(),
         "data": _random_array_float32(),
         "dq": _random_array_uint32(),
-        "err": _random_array_float32(),
+        "err": _random_array_float32(min=0.0),
         "meta": create_meta(),
         "var_flat": _random_array_float32(),
         "var_poisson": _random_array_float32(),
