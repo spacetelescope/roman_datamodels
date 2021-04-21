@@ -566,7 +566,7 @@ def create_pixelarea(**kwargs):
     roman_datamodels.stnode.Pixelarea
     """
     raw = {
-        "area": _random_array_float32(),
+        "area": _random_array_float32(min=0.0),
     }
     raw.update(kwargs)
 
