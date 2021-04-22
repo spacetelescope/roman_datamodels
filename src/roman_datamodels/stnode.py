@@ -22,6 +22,14 @@ if sys.version_info < (3, 9):
 else:
     import importlib.resources as importlib_resources
 
+
+__all__ = [
+    "set_validate",
+    "WfiMode",
+    "NODE_CLASSES",
+]
+
+
 validate = True
 strict_validation = True
 
@@ -287,7 +295,7 @@ class TaggedListNode(LNode):
 
 
 class WfiMode(TaggedObjectNode):
-    _tag = "tag:stsci.edu:datamodels/roman/wfi_mode-1.0.0"
+    _tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.0.0"
 
     _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
 
@@ -313,7 +321,7 @@ _DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
 def _class_name_from_tag_uri(tag_uri):
     tag_name = tag_uri.split("/")[-1].split("-")[0]
     class_name = "".join([p.capitalize() for p in tag_name.split("_")])
-    if tag_uri.startswith("tag:stsci.edu:datamodels/roman/reference_files/"):
+    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
         class_name += "Ref"
     return class_name
 
@@ -335,6 +343,7 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
             {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring},
         )
         globals()[class_name] = cls
+        __all__.append(class_name)
 
 
 class TaggedObjectNodeConverter(Converter):
@@ -357,3 +366,8 @@ class TaggedObjectNodeConverter(Converter):
 
     def from_yaml_tree(self, node, tag, ctx):
         return _OBJECT_NODE_CLASSES_BY_TAG[tag](node)
+
+
+# List of node classes made available by this library.  This is part
+# of the public API.
+NODE_CLASSES = list(_OBJECT_NODE_CLASSES_BY_TAG.values())
