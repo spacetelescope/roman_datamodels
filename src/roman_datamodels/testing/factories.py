@@ -195,6 +195,14 @@ def _random_optical_element():
     )
 
 
+def _random_software_version():
+    return "{}.{}.{}".format(
+        _random_positive_int(100),
+        _random_positive_int(100),
+        _random_positive_int(100),
+    )
+
+
 def create_aperture(**kwargs):
     """
     Create a dummy Aperture instance with valid values for attributes
@@ -212,6 +220,7 @@ def create_aperture(**kwargs):
     raw = {
         "name": _random_string("Aperture name ", 40),
         "position_angle": _random_angle_degrees(),
+        "pss_name": _random_string("PSS ApeName ", 40),
 
     }
     raw.update(kwargs)
@@ -279,6 +288,7 @@ def create_ephemeris(**kwargs):
     """
     raw = {
         "earth_angle": _random_angle_radians(),
+        "ephemeris_reference_frame": _random_string("Frame ", 10),
         "moon_angle": _random_angle_radians(),
         "time": _random_mjd_timestamp(),
         "type": _random_choice("DEFINITIVE", "PREDICTED"),
@@ -332,6 +342,7 @@ def create_exposure(**kwargs):
         "nframes": _random_positive_int(),
         "ngroups": _random_positive_int(),
         "nresets_at_start": _random_positive_int(),
+        "sca_number": _random_positive_int(),
         "start_time": _random_astropy_time(),
         "start_time_mjd": _random_mjd_timestamp(),
         "start_time_tdb": _random_mjd_timestamp(),
@@ -465,10 +476,13 @@ def create_meta(**kwargs):
         "cal_step": create_cal_step(),
         "calibration_software_version": _random_string("Version ", 120),
         "coordinates": create_coordinates(),
+        "crds_context_used": "roman_{:04d}.pmap".format(_random_positive_int(9999)),
+        "crds_software_version": _random_software_version(),
         "file_date": _random_astropy_time(),
         "ephemeris": create_ephemeris(),
         "exposure": create_exposure(),
         "filename": _random_string("Filename ", 120),
+        "guidestar": create_guidestar(),
         "instrument": create_wfi_mode(),
         "model_type": _random_string("Model type ", 50),
         "observation": create_observation(),
@@ -477,6 +491,7 @@ def create_meta(**kwargs):
         "prd_software_version": _random_string("S&OC PRD ", 120),
         "origin": "STSCI",
         "program": create_program(),
+        "sdf_software_version": _random_software_version(),
         "target": create_target(),
         "telescope": "ROMAN",
         "velocity_aberration": create_velocity_aberration(),
@@ -731,6 +746,7 @@ def create_wcsinfo(**kwargs):
         "dec_ref": _random_float(-90.0, 90.0),
         "ra_ref": _random_positive_float(360.0),
         "roll_ref": _random_float(),
+        "s_region": _random_string("Spatial extent "),
         "v2_ref": _random_float(),
         "v3_ref": _random_float(),
         "v3yangle": _random_float(),
