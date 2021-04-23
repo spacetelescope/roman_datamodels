@@ -2,20 +2,15 @@
 Various utility functions and data types
 """
 
-import sys
-import warnings
 import os
-from os.path import basename
 from platform import system as platform_system
 import psutil
 import traceback
 from pydoc import locate
 
-import numpy as np
-
 #from . import s3_utils
 #from .basic_utils import bytes2human
-from .extensions import DATAMODEL_CONVERTERS, DATAMODEL_EXTENSIONS
+from .extensions import DATAMODEL_EXTENSIONS
 
 import logging
 log = logging.getLogger(__name__)
@@ -60,6 +55,7 @@ def bytes2human(n):
 class NoTypeWarning(Warning):
     pass
 
+
 def get_schema_uri_from_converter(converter_class):
     """
     Given a converter class, return the schema_uri corresponding to the tag.
@@ -69,7 +65,8 @@ def get_schema_uri_from_converter(converter_class):
     # Presume these are from the same directory tree
     rclass = locate(classname)
     tag = rclass._tag
-    schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags if t._tag_uri==tag)._schema_uri
+    schema_uri = next(
+        t for t in DATAMODEL_EXTENSIONS[0].tags if t._tag_uri == tag)._schema_uri
     return schema_uri
 
 # def open(init=None, memmap=False, **kwargs):
@@ -186,7 +183,8 @@ def _class_from_model_type(hdulist):
     """
     Get the model type from the primary header, lookup to get class
     """
-    raise NotImplementedError("stdatamodels does not yet support automatic model class selection")
+    raise NotImplementedError(
+        "stdatamodels does not yet support automatic model class selection")
     # from . import _defined_models as defined_models
 
     # if hdulist:
@@ -207,7 +205,8 @@ def _class_from_ramp_type(hdulist, shape):
     """
     Special check to see if file is ramp file
     """
-    raise NotImplementedError("stdatamodels does not yet support automatic model class selection")
+    raise NotImplementedError(
+        "stdatamodels does not yet support automatic model class selection")
     # if not hdulist:
     #     new_class = None
     # else:
@@ -229,7 +228,8 @@ def _class_from_reftype(hdulist, shape):
     """
     Get the class name from the reftype and other header keywords
     """
-    raise NotImplementedError("stdatamodels does not yet support automatic model class selection")
+    raise NotImplementedError(
+        "stdatamodels does not yet support automatic model class selection")
     # if not hdulist:
     #     new_class = None
 
@@ -259,7 +259,8 @@ def _class_from_shape(hdulist, shape):
     """
     Get the class name from the shape
     """
-    raise NotImplementedError("stdatamodels does not yet support automatic model class selection")
+    raise NotImplementedError(
+        "stdatamodels does not yet support automatic model class selection")
     # if len(shape) == 0:
     #     from . import model_base
     #     new_class = model_base.DataModel
@@ -313,82 +314,6 @@ def is_association(asn_data):
             return True
     return False
 
-
-def gentle_asarray(a, dtype):
-    """
-    Performs an asarray that doesn't cause a copy if the byteorder is
-    different.  It also ignores column name differences -- the
-    resulting array will have the column names from the given dtype.
-    """
-    out_dtype = np.dtype(dtype)
-    if isinstance(a, np.ndarray):
-        in_dtype = a.dtype
-        # Non-table array
-        if in_dtype.fields is None and out_dtype.fields is None:
-            if np.can_cast(in_dtype, out_dtype, 'equiv'):
-                return a
-            else:
-                return np.asanyarray(a, dtype=out_dtype)
-        elif in_dtype.fields is not None and out_dtype.fields is not None:
-            # When a FITS file includes a pseudo-unsigned-int column, astropy will return
-            # a FITS_rec with an incorrect table dtype.  The following code rebuilds
-            # in_dtype from the individual fields, which are correctly labeled with an
-            # unsigned int dtype.
-            # We can remove this once the issue is resolved in astropy:
-            # https://github.com/astropy/astropy/issues/8862
-            if isinstance(a, fits.fitsrec.FITS_rec):
-                new_in_dtype = []
-                updated = False
-                for field_name in in_dtype.fields:
-                    table_dtype = in_dtype[field_name]
-                    field_dtype = a.field(field_name).dtype
-                    if np.issubdtype(table_dtype, np.signedinteger) and np.issubdtype(field_dtype, np.unsignedinteger):
-                        new_in_dtype.append((field_name, field_dtype))
-                        updated = True
-                    else:
-                        new_in_dtype.append((field_name, table_dtype))
-                if updated:
-                    in_dtype = np.dtype(new_in_dtype)
-
-            if in_dtype == out_dtype:
-                return a
-            in_names = {n.lower() for n in in_dtype.names}
-            out_names = {n.lower() for n in out_dtype.names}
-            if in_names == out_names:
-                # Change the dtype name to match the fits record names
-                # as the mismatch causes case insensitive access to fail
-                out_dtype.names = in_dtype.names
-            else:
-                raise ValueError(
-                    "Column names don't match schema. "
-                    "Schema has {0}. Data has {1}".format(
-                        str(out_names.difference(in_names)),
-                        str(in_names.difference(out_names))))
-
-            new_dtype = []
-            for i in range(len(out_dtype.fields)):
-                in_type = in_dtype[i]
-                out_type = out_dtype[i]
-                if in_type.subdtype is None:
-                    type_str = in_type.str
-                else:
-                    type_str = in_type.subdtype[0].str
-                if np.can_cast(in_type, out_type, 'equiv'):
-                    new_dtype.append(
-                        (out_dtype.names[i],
-                         type_str,
-                         in_type.shape))
-                else:
-                    return np.asanyarray(a, dtype=out_dtype)
-            return a.view(dtype=np.dtype(new_dtype))
-        else:
-            return np.asanyarray(a, dtype=out_dtype)
-    else:
-        try:
-            a = np.asarray(a, dtype=out_dtype)
-        except Exception:
-            raise ValueError("Can't convert {0!s} to ndarray".format(type(a)))
-        return a
 
 def get_short_doc(schema):
     title = schema.get('title', None)
@@ -477,11 +402,13 @@ def get_envar_as_boolean(name, default=False):
         except ValueError:
             value_lowcase = value.lower()
             if value_lowcase not in truths + falses:
-                raise ValueError(f'Cannot convert value "{value}" to boolean unambiguously.')
+                raise ValueError(
+                    f'Cannot convert value "{value}" to boolean unambiguously.')
             return value_lowcase in truths
         return value
 
-    log.debug(f'Environmental "{name}" cannot be found. Using default value of "{default}".')
+    log.debug(
+        f'Environmental "{name}" cannot be found. Using default value of "{default}".')
     return default
 
 
@@ -535,7 +462,8 @@ def check_memory_allocation(shape, allowed=None, model_type=None, include_swap=T
 
     # Get available memory
     available = get_available_memory(include_swap=include_swap)
-    log.debug(f'Model size {bytes2human(size)} available system memory {bytes2human(available)}')
+    log.debug(
+        f'Model size {bytes2human(size)} available system memory {bytes2human(available)}')
 
     if size > available:
         log.warning(

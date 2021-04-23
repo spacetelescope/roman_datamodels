@@ -23,10 +23,8 @@ def value_change(value, pass_invalid_values,
     try:
         _check_value(value)
         update = True
-
-    except jsonschema.ValidationError as error:
+    except jsonschema.ValidationError as errmsg:
         update = False
-        errmsg = _error_message(path, error)
         if pass_invalid_values:
             update = True
         if strict_validation:
@@ -57,7 +55,6 @@ def _check_value(value):
     Perform the actual validation.
     """
 
-
     validator_context = AsdfFile()
     validator_resolver = validator_context.resolver
 
@@ -72,21 +69,3 @@ def _check_value(value):
     value = yamlutil.custom_tree_to_tagged_tree(value, validator_context)
     validator.validate(value, _schema=temp_schema)
     validator_context.close()
-
-
-def _error_message(path, error):
-    """
-    Add the path to the attribute as context for a validation error
-    """
-    if isinstance(path, list):
-        spath = [str(p) for p in path]
-        name = '.'.join(spath)
-    else:
-        name = str(path)
-
-    error = str(error)
-    if len(error) > 2000:
-        error = error[0:1996] + " ..."
-    errfmt = "While validating {} the following error occurred:\n{}"
-    errmsg = errfmt.format(name, error)
-    return errmsg

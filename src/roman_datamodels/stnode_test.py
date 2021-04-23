@@ -1,6 +1,8 @@
 from . import stnode
-import astropy.time as time
+from astropy.time import Time
 import numpy as np
+
+
 def mk_test_object():
     exp = stnode.Exposure()
     exp['type'] = "WFI_CORON"
@@ -23,18 +25,19 @@ def mk_test_object():
     rd['meta'] = {}
     rd['meta']['filename'] = 'bozo.asdf'
     rd['meta']['telescope'] = 'Roman'
-    #return rd, exp, wfi
+    # return rd, exp, wfi
     rd['meta']['exposure'] = exp
     rd['meta']['instrument'] = wfi
     return rd
-    
+
+
 def mk_test2():
     exp = stnode.Exposure()
     exp['count'] = 10
     exp['type'] = 'WFI_IMAGE'
     exp['start_time'] = 1001.5
-    exp['mid_time'] =   1002.
-    exp['end_time'] =   1002.5
+    exp['mid_time'] = 1002.
+    exp['end_time'] = 1002.5
     exp['start_time_mjd'] = 9999.0
     exp['mid_time_mjd'] = 9999.1
     exp['end_time_mjd'] = 9999.2
@@ -61,7 +64,7 @@ def mk_test2():
     exp['effective_exposure_time'] = 100
     exp['duration'] = 100
     exp['nresets_at_start'] = 0
-    
+
     mode = stnode.WfiMode()
     mode['name'] = 'WFI'
     mode['detector'] = 'WFI07'
@@ -120,8 +123,8 @@ def mk_test2():
     visit['internal_target'] = False
 
     phot = stnode.Photometry()
-    phot['conversion_megajanskys'] = 2 
-    phot['conversion_microjanskys'] = 2e12 
+    phot['conversion_megajanskys'] = 2
+    phot['conversion_microjanskys'] = 2e12
     phot['pixelarea_steradians'] = 1e-15
     phot['pixelarea_arcsecsq'] = 1e-4
 
@@ -129,20 +132,20 @@ def mk_test2():
     coord['reference_frame'] = 'ICRS'
 
     aper = stnode.Aperture()
-    aper['name'] = 'The big one' 
+    aper['name'] = 'The big one'
     aper['position_angle'] = 90.
 
     point = stnode.Pointing()
-    point['ra_v1'] = 10. 
+    point['ra_v1'] = 10.
     point['dec_v1'] = -15.
     point['pa_v3'] = 271.
 
     targ = stnode.Target()
-    targ['proposer_name'] = 'Bozo' 
-    targ['catalog_name'] = 'Clown tricks' 
+    targ['proposer_name'] = 'Bozo'
+    targ['catalog_name'] = 'Clown tricks'
     targ['type'] = 'circus'
     targ['ra'] = 12.3
-    targ['dec'] =  -10
+    targ['dec'] = -10
     targ['ra_uncertainty'] = 0.1
     targ['dec_uncertainty'] = 0.1
     targ['proper_motion_ra'] = 0.001
@@ -154,13 +157,13 @@ def mk_test2():
     targ['source_type'] = 'EXTENDED'
 
     vab = stnode.VelocityAberration()
-    vab['ra_offset'] = 0.0001 
+    vab['ra_offset'] = 0.0001
     vab['dec_offset'] = 0.0001
     vab['scale_factor'] = 1.000001
 
     wcsi = stnode.Wcsinfo()
-    wcsi['v2_ref'] = 250. 
-    wcsi['v3_ref'] =  300.
+    wcsi['v2_ref'] = 250.
+    wcsi['v3_ref'] = 300.
     wcsi['vparity'] = 1
     wcsi['v3yangle'] = 25.
     wcsi['ra_ref'] = 10.3
@@ -177,7 +180,7 @@ def mk_test2():
     # guide['gs_udec'] = .01
     # guide['gs_mag'] = -19
     # guide['gs_umag'] = 0.5
-    # guide['gs_pcs_mode'] = 'wild guessing' 
+    # guide['gs_pcs_mode'] = 'wild guessing'
     # guide['gs_function_start_time'] = 'yesterday'
     # guide['gs_function_end_time'] =  'today'
     # guide['data_start'] = 99
@@ -196,10 +199,10 @@ def mk_test2():
     # guide['gs_window_xsize'] = 50
     # guide['gs_window_ysize'] = 50
 
-
     meta = {}
     meta['filename'] = 'bozo.asdf'
-    meta['date'] = time.Time('1999-01-01T00:00:00.123456789', format='isot', scale='utc')
+    meta['date'] = Time(
+        '1999-01-01T00:00:00.123456789', format='isot', scale='utc')
     meta['exposure'] = exp
     meta['instrument'] = mode
     meta['observation'] = obs
@@ -216,7 +219,7 @@ def mk_test2():
     # meta['guidestar'] = guide
     wfi = stnode.WfiScienceRaw()
     wfi['meta'] = meta
-    wfi['data'] = np.zeros((100,100,10,1), dtype=np.uint16)
-    wfi['zeroframe'] = np.zeros((100,100,1), dtype=np.uint16)
-    wfi['refout'] = np.zeros((100,100,10,1), dtype=np.uint16)
-    return wfi 
+    wfi['data'] = np.zeros((100, 100, 10, 1), dtype=np.uint16)
+    wfi['zeroframe'] = np.zeros((100, 100, 1), dtype=np.uint16)
+    wfi['refout'] = np.zeros((100, 100, 10, 1), dtype=np.uint16)
+    return wfi

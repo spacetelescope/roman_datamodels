@@ -2,20 +2,24 @@
 Proof of concept of using tags with the data model framework
 """
 
+import sys
+import warnings
+import datetime
 from abc import ABCMeta
-import jsonschema
 from asdf.extension import Converter
 from collections import UserList
-from .stuserdict import STUserDict as UserDict
+import yaml
+import jsonschema
+import numpy as np
+
+from astropy.time import Time
 import asdf
 import asdf.schema as asdfschema
 import asdf.yamlutil as yamlutil
 from asdf.util import HashableDict
-#from .properties import _get_schema_for_property
-from .validate import _check_type, _error_message
-import yaml
+from .validate import _check_type, _error_message, ValidationWarning
 import rad.resources
-import sys
+from .stuserdict import STUserDict as UserDict
 
 if sys.version_info < (3, 9):
     import importlib_resources
@@ -33,6 +37,7 @@ __all__ = [
 validate = True
 strict_validation = True
 
+
 def set_validate(value):
     global validate
     validate = bool(value)
@@ -43,7 +48,7 @@ validator_callbacks.update({'type': _check_type})
 
 
 def _value_change(path, value, schema, pass_invalid_values,
-                 strict_validation, ctx):
+                  strict_validation, ctx):
     """
     Validate a change in value against a schema.
     Trap error and return a flag.
@@ -63,6 +68,7 @@ def _value_change(path, value, schema, pass_invalid_values,
             warnings.warn(errmsg, ValidationWarning)
     return update
 
+
 def _check_value(value, schema, validator_context):
     """
     Perform the actual validation.
@@ -75,17 +81,19 @@ def _check_value(value, schema, validator_context):
         'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema'}
     temp_schema.update(schema)
     validator = asdfschema.get_validator(temp_schema,
-                                          validator_context,
-                                          validator_callbacks,
-                                          validator_resolver)
+                                         validator_context,
+                                         validator_callbacks,
+                                         validator_resolver)
 
     #value = yamlutil.custom_tree_to_tagged_tree(value, validator_context)
     validator.validate(value, _schema=temp_schema)
     validator_context.close()
 
+
 def _validate(attr, instance, schema, ctx):
     tagged_tree = yamlutil.custom_tree_to_tagged_tree(instance, ctx)
     return _value_change(attr, tagged_tree, schema, False, strict_validation, ctx)
+
 
 def _get_schema_for_property(schema, attr):
     subschema = schema.get('properties', {}).get(attr, None)
@@ -107,7 +115,7 @@ class DNode(UserDict):
     def __init__(self, node=None, parent=None, name=None):
 
         if node is None:
-            self.__dict__['_data']= {}
+            self.__dict__['_data'] = {}
         elif isinstance(node, dict):
             self.__dict__['_data'] = node
         else:
@@ -127,7 +135,6 @@ class DNode(UserDict):
         if self._ctx is None:
             DNode._ctx = asdf.AsdfFile()
         return self._ctx
-
 
     def __getattr__(self, key):
         """
@@ -167,8 +174,9 @@ class DNode(UserDict):
                                 ref_uri = subschema.get('$ref', None)
                                 if ref_uri is not None:
                                     subschema = asdfschema._load_schema_cached(
-                                                    ref_uri, self.ctx, False, False)
-                                subsubschema = _get_schema_for_property(subschema, key)
+                                        ref_uri, self.ctx, False, False)
+                                subsubschema = _get_schema_for_property(
+                                    subschema, key)
                                 if subsubschema != {}:
                                     schema = subsubschema
                                     break
@@ -178,7 +186,8 @@ class DNode(UserDict):
                         self._data[key] = value
                 self.__dict__['_data'][key] = value
             else:
-                raise AttributeError(f"No such attribute ({key}) found in node")
+                raise AttributeError(
+                    f"No such attribute ({key}) found in node")
         else:
             self.__dict__[key] = value
 
@@ -204,7 +213,7 @@ class DNode(UserDict):
             return dict((key, convert_val(val)) for (key, val) in self.items())
         else:
             return dict((key, convert_val(val)) for (key, val) in self.items()
-                        if not isinstance(val, (np.ndarray, NDArrayType)))
+                        if not isinstance(val, np.ndarray))
 
     def _schema(self):
         """
@@ -225,6 +234,7 @@ class DNode(UserDict):
 class LNode(UserList):
 
     _tag = None
+
     def __init__(self, node=None):
         if node is None:
             self.data = []
@@ -253,11 +263,13 @@ class TaggedObjectNodeMeta(ABCMeta):
     Metaclass for TaggedObjectNode that maintains a registry
     of subclasses.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.__name__ != "TaggedObjectNode":
             if self._tag in _OBJECT_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(f"TaggedObjectNode class for tag '{self._tag}' has been defined twice")
+                raise RuntimeError(
+                    f"TaggedObjectNode class for tag '{self._tag}' has been defined twice")
             _OBJECT_NODE_CLASSES_BY_TAG[self._tag] = self
 
 
@@ -274,8 +286,6 @@ class TaggedObjectNode(DNode, metaclass=TaggedObjectNodeMeta):
         if self._x_schema is None:
             self._x_schema = self.get_schema()
         return self._x_schema
-
-
 
     def get_schema(self):
         """Retrieve the schema associated with this tag"""
@@ -314,7 +324,8 @@ class WfiMode(TaggedObjectNode):
             return None
 
 
-_DATAMODELS_MANIFEST_PATH = importlib_resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
+_DATAMODELS_MANIFEST_PATH = importlib_resources.files(
+    rad.resources) / "manifests" / "datamodels-1.0.yaml"
 _DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
 
 
@@ -340,7 +351,8 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
         cls = type(
             class_name,
             (TaggedObjectNode,),
-            {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+            {"_tag": tag["tag_uri"],
+                "__module__": "roman_datamodels.stnode", "__doc__": docstring},
         )
         globals()[class_name] = cls
         __all__.append(class_name)
