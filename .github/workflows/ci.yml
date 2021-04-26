@@ -40,7 +40,6 @@ jobs:
             python-version: 3.8
             toxenv: coverage
 
-          TODO: flake8 checks do not pass yet
           - name: Code style checks
             runs-on: ubuntu-latest
             python-version: 3.8
