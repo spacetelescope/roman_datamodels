@@ -1,11 +1,11 @@
 from . import stnode
 import asdf
 import astropy.time as time
-import numpy as np
 import os.path
 
 NONUM = -999999
 NOSTR = "dummy value"
+
 
 def mk_level2_image(filepath, outfilepath):
     '''
@@ -17,13 +17,13 @@ def mk_level2_image(filepath, outfilepath):
     exp = stnode.Exposure()
     exp['count'] = NONUM
     exp['type'] = NONUM
-    exp['start_time'] =  NONUM
-    exp['mid_time'] =   NONUM
-    exp['end_time'] =   NONUM
+    exp['start_time'] = NONUM
+    exp['mid_time'] = NONUM
+    exp['end_time'] = NONUM
     exp['start_time_mjd'] = NONUM
     exp['mid_time_mjd'] = NONUM
     exp['end_time_mjd'] = NONUM
-    exp['start_time_tdb'] =  NONUM
+    exp['start_time_tdb'] = NONUM
     exp['mid_time_tdb'] = NONUM
     exp['end_time_tdb'] = NONUM
     exp['start_time_eng'] = NOSTR
@@ -55,7 +55,7 @@ def mk_level2_image(filepath, outfilepath):
     mode['detector'] = NOSTR
     mode['optical_element'] = NOSTR
     for key in imeta['instrument'].keys():
-    	mode[key] = imeta['instrument'][key]
+        mode[key] = imeta['instrument'][key]
 
     prog = stnode.Program()
     prog['title'] = NOSTR
@@ -65,7 +65,7 @@ def mk_level2_image(filepath, outfilepath):
     prog['science_category'] = NOSTR
     prog['continuation_id'] = NONUM
     for key in imeta['program'].keys():
-    	prog[key] = imeta['program'][key]
+        prog[key] = imeta['program'][key]
 
     obs = stnode.Observation()
     obs['date'] = NOSTR
@@ -88,7 +88,7 @@ def mk_level2_image(filepath, outfilepath):
     obs['observation_folder'] = NOSTR
     obs['ma_table_name'] = NOSTR
     for key in imeta['observation'].keys():
-    	obs[key] = imeta['observation'][key]
+        obs[key] = imeta['observation'][key]
 
     ephem = stnode.Ephemeris()
     ephem['earth_angle'] = NONUM
@@ -103,11 +103,11 @@ def mk_level2_image(filepath, outfilepath):
     ephem['velocity_y'] = NONUM
     ephem['velocity_z'] = NONUM
     for key in imeta['ephemeris'].keys():
-    	ephem[key] = imeta['ephemeris'][key]
+        ephem[key] = imeta['ephemeris'][key]
 
     visit = stnode.Visit()
-    visit['engineering_quality'] = 'OK' #qqqq
-    visit['pointing_engdb_quality'] = 'CALCULATED' #qqqq
+    visit['engineering_quality'] = 'OK'  # qqqq
+    visit['pointing_engdb_quality'] = 'CALCULATED'  # qqqq
     visit['type'] = NOSTR
     visit['start_time'] = NOSTR
     visit['end_time'] = NOSTR
@@ -115,7 +115,7 @@ def mk_level2_image(filepath, outfilepath):
     visit['total_exposures'] = NONUM
     visit['internal_target'] = False
     for key in imeta['visit'].keys():
-    	visit[key] = imeta['visit'][key]
+        visit[key] = imeta['visit'][key]
 
     phot = stnode.Photometry()
     phot['conversion_megajanskys'] = NONUM
@@ -123,33 +123,33 @@ def mk_level2_image(filepath, outfilepath):
     phot['pixelarea_steradians'] = NONUM
     phot['pixelarea_arcsecsq'] = NONUM
     for key in imeta['photometry'].keys():
-    	phot[key] = imeta['photometry'][key]
+        phot[key] = imeta['photometry'][key]
 
     coord = stnode.Coordinates()
     coord['reference_frame'] = NOSTR
     for key in imeta['coordinates'].keys():
-    	coord[key] = imeta['coordinates'][key]
+        coord[key] = imeta['coordinates'][key]
 
     aper = stnode.Aperture()
     aperlist = []
     aper['name'] = NOSTR
     aper['position_angle'] = NONUM
     for key in aperlist:
-    	aper[key] = imeta['aperture'][key]
+        aper[key] = imeta['aperture'][key]
 
     point = stnode.Pointing()
     point['ra_v1'] = NONUM
     point['dec_v1'] = NONUM
     point['pa_v3'] = NONUM
     for key in imeta['pointing'].keys():
-    	point[key] = imeta['pointing'][key]
+        point[key] = imeta['pointing'][key]
 
     targ = stnode.Target()
     targ['proposer_name'] = NOSTR
     targ['catalog_name'] = NOSTR
     targ['type'] = NOSTR
     targ['ra'] = NONUM
-    targ['dec'] =  NONUM
+    targ['dec'] = NONUM
     targ['ra_uncertainty'] = NONUM
     targ['dec_uncertainty'] = NONUM
     targ['proper_motion_ra'] = NONUM
@@ -157,27 +157,26 @@ def mk_level2_image(filepath, outfilepath):
     targ['proper_motion_epoch'] = NOSTR
     targ['proposer_ra'] = NONUM
     targ['proposer_dec'] = NONUM
-    targ['source_type_apt'] = 'POINT' #qqqq
-    targ['source_type'] = 'POINT' #qqqq
+    targ['source_type_apt'] = 'POINT'  # qqqq
+    targ['source_type'] = 'POINT'  # qqqq
     for key in imeta['target'].keys():
-    	targ[key] = imeta['target'][key]
+        targ[key] = imeta['target'][key]
 
     vab = stnode.VelocityAberration()
     vab['ra_offset'] = NONUM
     vab['dec_offset'] = NONUM
     vab['scale_factor'] = NONUM
     for key in imeta['velocity_aberration'].keys():
-    	vab[key] = imeta['velocity_aberration'][key]
+        vab[key] = imeta['velocity_aberration'][key]
 
     wcsi = stnode.Wcsinfo()
     wcsi['v2_ref'] = NONUM
-    wcsi['v3_ref'] =  NONUM
+    wcsi['v3_ref'] = NONUM
     wcsi['vparity'] = NONUM
     wcsi['v3yangle'] = NONUM
     wcsi['ra_ref'] = NONUM
     wcsi['dec_ref'] = NONUM
     wcsi['roll_ref'] = NONUM
-
 
     # guide = stnode.Guidestar()
     # guide['gs_start_time'] = NOSTR
@@ -208,7 +207,7 @@ def mk_level2_image(filepath, outfilepath):
     # guide['gs_window_xsize'] = NONUM
     # guide['gs_window_ysize'] = NONUM
     # for key in imeta['guidestar'].keys():
-    # 	guide[key] = imeta['guidestar'][key]
+    #   guide[key] = imeta['guidestar'][key]
 
     cstep = stnode.CalStep()
     cstep['flat_field'] = 'INCOMPLETE'
@@ -244,11 +243,12 @@ def mk_level2_image(filepath, outfilepath):
     afout.tree = {'roman': wfi_image}
     afout.write_to(outfilepath)
 
+
 def mk_flat(outfilepath):
     oldref = "/Users/perry/crds_cache/references/roman/wfi/roman_wfi_flat_0001.asdf"
     afoldref = asdf.open(oldref)
     afot = afoldref.tree
-    wfimode =stnode.WfiMode()
+    wfimode = stnode.WfiMode()
     wfimode['name'] = 'WFI'
     wfimode['detector'] = 'WFI01'
     wfimode['optical_element'] = 'F158'

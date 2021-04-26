@@ -19,10 +19,12 @@ from . import stnode
 from . import validate
 from . extensions import DATAMODEL_EXTENSIONS
 
+
 class DataModel:
     '''Base class for all top level datamodels'''
 
     crds_observatory = 'roman'
+
     def __init__(self, init=None, **kwargs):
         self._iscopy = False
         self._shape = None
@@ -52,7 +54,6 @@ class DataModel:
             raise IOError("Argument does not appear to be an ASDF file"
                           " or TaggedObjectNode.")
         self._asdf = asdffile
-
 
     def check_type(self, asdffile_instance):
         '''
@@ -105,9 +106,6 @@ class DataModel:
         target._shape = source._shape
         target._ctx = target
 
-
-
-
     def save(self, path, dir_path=None, *args, **kwargs):
         if callable(path):
             path_head, path_tail = os.path.split(path(self.meta.filename))
@@ -122,7 +120,7 @@ class DataModel:
         output_path = os.path.join(path_head, path_tail)
 
         # TODO: Support gzip-compressed fits
-        if  ext == '.asdf':
+        if ext == '.asdf':
             self.to_asdf(output_path, *args, **kwargs)
         else:
             raise ValueError("unknown filetype {0}".format(ext))
@@ -150,7 +148,7 @@ class DataModel:
         This is intended to be overridden in the subclasses if the
         primary array's name is not "data".
         """
-        if  hasattr(self, 'data'):
+        if hasattr(self, 'data'):
             primary_array_name = 'data'
         else:
             primary_array_name = ''
@@ -259,7 +257,6 @@ class DataModel:
     # def __getitem__(self, key):
     #   assert isinstance(key, str)
 
-
     # def __setitem__(self, key, value):
     #   pass
 
@@ -287,14 +284,17 @@ def open(init, memmap=False, **kwargs):
             kwargs['copy_arrays'] = not memmap
             asdffile = asdf.open(init, **kwargs)
         except ValueError:
-            raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
+            raise TypeError(
+                "Open requires a filepath, file-like object, or Roman datamodel")
         if isinstance(asdffile, asdf.fits_embed.AsdfInFits):
-            raise TypeError("Roman datamodels does not accept FITS files or objects")
+            raise TypeError(
+                "Roman datamodels does not accept FITS files or objects")
     modeltype = type(asdffile.tree['roman'])
     if modeltype in model_registry:
-         return model_registry[modeltype](asdffile, **kwargs)
+        return model_registry[modeltype](asdffile, **kwargs)
     else:
         return DataModel(asdffile, **kwargs)
+
 
 model_registry = {
     stnode.WfiImage: ImageModel,

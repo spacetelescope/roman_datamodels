@@ -23,10 +23,8 @@ def value_change(value, pass_invalid_values,
     try:
         _check_value(value)
         update = True
-
-    except jsonschema.ValidationError as error:
+    except jsonschema.ValidationError as errmsg:
         update = False
-        errmsg = _error_message(path, error)
         if pass_invalid_values:
             update = True
         if strict_validation:
@@ -56,7 +54,6 @@ def _check_value(value):
     """
     Perform the actual validation.
     """
-
 
     validator_context = AsdfFile()
     validator_resolver = validator_context.resolver
