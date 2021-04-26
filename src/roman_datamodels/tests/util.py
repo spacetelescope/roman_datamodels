@@ -1,4 +1,4 @@
-import stnode
+from roman_datamodels import stnode
 import asdf
 import astropy.time as time
 import numpy as np
@@ -27,6 +27,7 @@ def mk_exposure():
     exp['ngroups'] = NONUM
     exp['nframes'] = NONUM
     exp['data_problem'] = False
+    exp['sca_number'] = NONUM
     exp['gain_factor'] = NONUM
     exp['integration_time'] = NONUM
     exp['elapsed_exposure_time'] = NONUM
@@ -95,6 +96,7 @@ def mk_ephemeris():
     ephem = stnode.Ephemeris()
     ephem['earth_angle'] = NONUM
     ephem['moon_angle'] = NONUM
+    ephem['ephemeris_reference_frame'] = NOSTR
     ephem['sun_angle'] = NONUM
     ephem['type'] = 'DEFINITIVE'
     ephem['time'] = NONUM
@@ -140,7 +142,8 @@ def mk_coordinates():
 def mk_aperture():
     aper = stnode.Aperture()
     aper['name'] = NOSTR
-    aper['position_angle'] = NONUM
+    aper['pss_name'] = NOSTR
+    aper['position_angle'] = 30.
     return aper
 
 
@@ -188,6 +191,7 @@ def mk_wcsinfo():
     wcsi['ra_ref'] = NONUM
     wcsi['dec_ref'] = NONUM
     wcsi['roll_ref'] = NONUM
+    wcsi['s_region'] = NOSTR
     return wcsi
 
 
@@ -199,25 +203,25 @@ def mk_cal_step():
 
 def mk_guide():
     guide = stnode.Guidestar()
-    guide['gs_start_time'] = time.Time(
+    guide['gw_start_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
-    guide['gs_stop_time'] = time.Time(
+    guide['gw_stop_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
-    guide['gs_id'] = NOSTR
+    guide['gw_id'] = NOSTR
     guide['gs_ra'] = NONUM
     guide['gs_dec'] = NONUM
     guide['gs_ura'] = NONUM
     guide['gs_udec'] = NONUM
     guide['gs_mag'] = NONUM
     guide['gs_umag'] = NONUM
-    guide['gs_pcs_mode'] = NOSTR
-    guide['gs_function_start_time'] = time.Time(
+    guide['gw_pcs_mode'] = NOSTR
+    guide['gw_function_start_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
-    guide['gs_function_end_time'] = time.Time(
+    guide['gw_function_end_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guide['data_start'] = NONUM
     guide['data_end'] = NONUM
-    guide['gs_acq_exec_stat'] = NOSTR
+    guide['gw_acq_exec_stat'] = NOSTR
     guide['gs_ctd_x'] = NONUM
     guide['gs_ctd_y'] = NONUM
     guide['gs_ctd_ux'] = NONUM
@@ -226,16 +230,19 @@ def mk_guide():
     guide['gs_mura'] = NONUM
     guide['gs_mudec'] = NONUM
     guide['gs_para'] = NONUM
-    guide['gs_window_xstart'] = NONUM
-    guide['gs_window_ystart'] = NONUM
-    guide['gs_window_xsize'] = NONUM
-    guide['gs_window_ysize'] = NONUM
+    guide['gw_window_xstart'] = NONUM
+    guide['gw_window_ystart'] = NONUM
+    guide['gw_window_xsize'] = NONUM
+    guide['gw_window_ysize'] = NONUM
     return guide
 
 
 def mk_common_meta():
     meta = {}
     meta['calibration_software_version'] = '9.9.9'
+    meta['crds_software_version'] = '8.8.8'
+    meta['crds_context_used'] = '222'
+    meta['sdf_software_version'] = '7.7.7'
     meta['filename'] = NOSTR
     meta['file_date'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
@@ -248,6 +255,7 @@ def mk_common_meta():
     meta['coordinates'] = mk_coordinates()
     meta['ephemeris'] = mk_ephemeris()
     meta['exposure'] = mk_exposure()
+    meta['guidestar'] = mk_guide()
     meta['instrument'] = mk_wfi_mode()
     meta['observation'] = mk_observation()
     meta['photometry'] = mk_photometry()

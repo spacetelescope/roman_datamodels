@@ -18,7 +18,7 @@ import asdf.schema as asdfschema
 import asdf.yamlutil as yamlutil
 from asdf.util import HashableDict
 from asdf.tags.core import ndarray
-from .validate import _check_type, ValidationWarning
+from .validate import _check_type, ValidationWarning, _error_message
 import rad.resources
 from .stuserdict import STUserDict as UserDict
 
@@ -175,7 +175,7 @@ class DNode(UserDict):
                                 ref_uri = subschema.get('$ref', None)
                                 if ref_uri is not None:
                                     subschema = asdfschema._load_schema_cached(
-                                        ref_uri, self.ctx, False, False)
+                                        ref_uri, self.ctx.resolver, False, False)
                                 subsubschema = _get_schema_for_property(
                                     subschema, key)
                                 if subsubschema != {}:
