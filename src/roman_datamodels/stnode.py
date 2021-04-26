@@ -17,7 +17,8 @@ import asdf
 import asdf.schema as asdfschema
 import asdf.yamlutil as yamlutil
 from asdf.util import HashableDict
-from .validate import _check_type, _error_message, ValidationWarning
+from asdf.tags.core import ndarray
+from .validate import _check_type, ValidationWarning
 import rad.resources
 from .stuserdict import STUserDict as UserDict
 
@@ -213,7 +214,7 @@ class DNode(UserDict):
             return dict((key, convert_val(val)) for (key, val) in self.items())
         else:
             return dict((key, convert_val(val)) for (key, val) in self.items()
-                        if not isinstance(val, np.ndarray))
+                        if not isinstance(val, (np.ndarray, ndarray.NDArrayType)))
 
     def _schema(self):
         """
