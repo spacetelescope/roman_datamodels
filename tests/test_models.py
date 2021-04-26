@@ -5,12 +5,14 @@ import asdf
 import numpy as np
 
 from roman_datamodels import datamodels
-from roman_datamodels.tests import util
 from roman_datamodels import stnode
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 
+import util
+
+
 EXPECTED_COMMON_REFERENCE = \
-    {'$ref': 'http://stsci.edu/schemas/datamodels/roman/reference_files/ref_common-1.0.0'}
+    {'$ref': 'ref_common-1.0.0'}
 
 # Helper class to iterate over model subclasses
 

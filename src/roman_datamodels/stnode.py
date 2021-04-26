@@ -172,10 +172,6 @@ class DNode(UserDict):
                         # in practical cases.
                         for combiner in ['allOf', 'anyOf']:
                             for subschema in self._x_schema.get(combiner, []):
-                                ref_uri = subschema.get('$ref', None)
-                                if ref_uri is not None:
-                                    subschema = asdfschema._load_schema_cached(
-                                        ref_uri, self.ctx.resolver, False, False)
                                 subsubschema = _get_schema_for_property(
                                     subschema, key)
                                 if subsubschema != {}:
@@ -293,8 +289,7 @@ class TaggedObjectNode(DNode, metaclass=TaggedObjectNodeMeta):
         extension_manager = self.ctx.extension_manager
         tag_def = extension_manager.get_tag_definition(self.tag)
         schema_uri = tag_def.schema_uri
-        schema = asdfschema._load_schema_cached(
-            schema_uri, self.ctx, False, False)
+        schema = asdfschema.load_schema(schema_uri, resolve_references=True)
         return schema
 
 

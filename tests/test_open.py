@@ -6,7 +6,9 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
-from roman_datamodels.tests import util
+
+import util
+
 
 def test_asdf_file_input():
     tree = util.mk_level2_image()
