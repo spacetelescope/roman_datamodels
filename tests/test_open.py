@@ -7,7 +7,7 @@ from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
 
-import util
+from roman_datamodels import test_utils as util
 
 
 def test_asdf_file_input():
@@ -19,8 +19,9 @@ def test_asdf_file_input():
         model.close()
         # should the asdf file be closed by model.close()?
 
+
 def test_path_input(tmp_path):
-    file_path = tmp_path/"test.asdf"
+    file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
         tree = util.mk_level2_image()
         af.tree = {'roman': tree}
@@ -44,12 +45,12 @@ def test_path_input(tmp_path):
 
     # Appropriate error when file is missing:
     with pytest.raises(FileNotFoundError):
-        with datamodels.open(tmp_path/"missing.asdf"):
+        with datamodels.open(tmp_path / "missing.asdf"):
             pass
 
 
 def test_model_input(tmp_path):
-    file_path = tmp_path/"test.asdf"
+    file_path = tmp_path / "test.asdf"
     data = np.random.uniform(size=(1024, 1024)).astype(np.float32)
     with asdf.AsdfFile() as af:
         af.tree = {'roman': util.mk_level2_image()}
@@ -76,7 +77,7 @@ def test_invalid_input():
 
 
 def test_memmap(tmp_path):
-    file_path = tmp_path/"test.asdf"
+    file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
         af.tree = {'roman': util.mk_level2_image()}
         af.tree['roman'].data = np.zeros((400, 400,), dtype=np.float32)
