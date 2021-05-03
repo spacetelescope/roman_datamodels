@@ -7,7 +7,7 @@ from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
 
-from roman_datamodels import test_utils as util
+from roman_datamodels.testing import utils as util
 
 
 def test_asdf_file_input():

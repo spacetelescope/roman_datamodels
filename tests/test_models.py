@@ -8,7 +8,7 @@ from roman_datamodels import datamodels
 from roman_datamodels import stnode
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 
-from roman_datamodels import test_utils as util
+from roman_datamodels.testing import utils as util
 
 
 EXPECTED_COMMON_REFERENCE = \
