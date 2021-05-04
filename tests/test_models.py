@@ -8,7 +8,7 @@ from roman_datamodels import datamodels
 from roman_datamodels import stnode
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 
-from roman_datamodels.testing import utils as util
+from roman_datamodels.testing import utils
 
 
 EXPECTED_COMMON_REFERENCE = \
@@ -38,7 +38,7 @@ def test_core_schema(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
 
-    wfi_image = util.mk_level2_image(arrays=(10, 10))
+    wfi_image = utils.mk_level2_image(arrays=(10, 10))
     with asdf.AsdfFile() as af:
         af.tree = {'roman': wfi_image}
         with pytest.raises(ValidationError):
@@ -86,7 +86,7 @@ def test_reference_file_model_base(tmp_path):
 def test_opening_flat_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / 'testflat.asdf'
-    util.mk_flat(file_path)
+    utils.mk_flat(file_path)
     flat = datamodels.open(file_path)
     assert flat.meta.instrument.optical_element == 'F158'
     assert isinstance(flat, datamodels.FlatRefModel)
@@ -98,7 +98,7 @@ def test_flat_model(tmp_path):
     file_path = tmp_path / "test.asdf"
 
     meta = {}
-    util.add_ref_common(meta)
+    utils.add_ref_common(meta)
     meta['reftype'] = "FLAT"
     flatref = stnode.FlatRef()
     flatref['meta'] = meta

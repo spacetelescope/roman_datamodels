@@ -248,8 +248,8 @@ class DataModel:
         }
         # We need to add two distinct time and date entries derived from the start time
         # since that is what CRDS expects.
-        time = crds_header['roman.meta.observation.start_time']
-        date, time = str(time).split('T')
+        time = self.meta.observation.start_time
+        date, time = time.isot.split('T')
         crds_header['roman.meta.observation.date'] = date
         crds_header['roman.meta.observation.time'] = time
         return crds_header

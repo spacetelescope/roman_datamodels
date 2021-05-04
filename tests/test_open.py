@@ -7,11 +7,11 @@ from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
 
-from roman_datamodels.testing import utils as util
+from roman_datamodels.testing import utils
 
 
 def test_asdf_file_input():
-    tree = util.mk_level2_image()
+    tree = utils.mk_level2_image()
     with asdf.AsdfFile() as af:
         af.tree = {'roman': tree}
         model = datamodels.open(af)
@@ -23,7 +23,7 @@ def test_asdf_file_input():
 def test_path_input(tmp_path):
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        tree = util.mk_level2_image()
+        tree = utils.mk_level2_image()
         af.tree = {'roman': tree}
         af.write_to(file_path)
 
@@ -53,7 +53,7 @@ def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
     data = np.random.uniform(size=(1024, 1024)).astype(np.float32)
     with asdf.AsdfFile() as af:
-        af.tree = {'roman': util.mk_level2_image()}
+        af.tree = {'roman': utils.mk_level2_image()}
         af.tree['roman'].meta['bozo'] = 'clown'
         af.tree['roman'].data = data
         af.write_to(file_path)
@@ -79,7 +79,7 @@ def test_invalid_input():
 def test_memmap(tmp_path):
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {'roman': util.mk_level2_image()}
+        af.tree = {'roman': utils.mk_level2_image()}
         af.tree['roman'].data = np.zeros((400, 400,), dtype=np.float32)
         af.write_to(file_path)
 
