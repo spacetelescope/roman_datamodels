@@ -242,10 +242,17 @@ class DataModel:
         -------
         dict
         """
-        return {
+        crds_header = {
             key: val for key, val in self.to_flat_dict(include_arrays=False).items()
             if isinstance(val, (str, int, float, complex, bool))
         }
+        # We need to add two distinct time and date entries derived from the start time
+        # since that is what CRDS expects.
+        time = self.meta.observation.start_time
+        date, time = time.isot.split('T')
+        crds_header['roman.meta.observation.date'] = date
+        crds_header['roman.meta.observation.time'] = time
+        return crds_header
 
     def validate(self):
         """
