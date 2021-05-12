@@ -68,6 +68,11 @@ jobs:
           pip install tox
       - name: Run tox
         run: tox -e ${{ matrix.toxenv }}
+      - name: Upload coverage to codecov
+        if: ${{ contains(matrix.toxenv,'coverage') }}
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.xml
 
   # Kept in a separate job because it needs extra system dependencies
   # that can't be installed by tox.
