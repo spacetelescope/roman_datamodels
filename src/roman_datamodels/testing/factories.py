@@ -145,7 +145,7 @@ def _random_array_uint32(size=(4096, 4096), min=None, max=None):
 
 
 def _random_dq_def(size=10, dq_size=32):
-    table = np.zeros((size,), dtype=tables.DQ_DEF_DTYPE)
+    dq_def = np.zeros((size,), dtype=tables.DQ_DEF_DTYPE)
 
     positions = list(range(dq_size))
     random.shuffle(positions)
@@ -153,12 +153,12 @@ def _random_dq_def(size=10, dq_size=32):
     for i in range(size):
         position = positions.pop()
 
-        table[i]["NAME"] = f"MNEMONIC_{i}"
-        table[i]["DESCRIPTION"] = f"Description of MNEMONIC_{i} with bit position {position}"
-        table[i]["BIT"] = position
-        table[i]["VALUE"] == 2 ** position
+        dq_def[i]["NAME"] = f"MNEMONIC_{i}"
+        dq_def[i]["DESCRIPTION"] = f"Description of MNEMONIC_{i} with bit position {position}"
+        dq_def[i]["BIT"] = position
+        dq_def[i]["VALUE"] == 2 ** position
 
-    return table
+    return dq_def
 
 
 def _random_exposure_type():
