@@ -1,7 +1,9 @@
-from roman_datamodels import stnode
 import asdf
 import astropy.time as time
 import numpy as np
+
+from .. import stnode, table_definitions
+
 
 NONUM = -999999
 NOSTR = "dummy value"
@@ -89,6 +91,7 @@ def mk_observation():
     obs['template'] = NOSTR
     obs['observation_label'] = NOSTR
     obs['ma_table_name'] = NOSTR
+    obs['survey'] = 'N/A'
     return obs
 
 
@@ -121,6 +124,7 @@ def mk_visit():
     visit['status'] = NOSTR
     visit['total_exposures'] = NONUM
     visit['internal_target'] = False
+    visit['target_of_opportunity'] = False
     return visit
 
 
@@ -237,7 +241,7 @@ def mk_guide():
     return guide
 
 
-def mk_common_meta():
+def mk_basic_meta():
     meta = {}
     meta['calibration_software_version'] = '9.9.9'
     meta['crds_software_version'] = '8.8.8'
@@ -250,6 +254,11 @@ def mk_common_meta():
     meta['origin'] = 'STSCI'
     meta['prd_software_version'] = '8.8.8'
     meta['telescope'] = 'ROMAN'
+    return meta
+
+
+def mk_common_meta():
+    meta = mk_basic_meta()
     meta['aperture'] = mk_aperture()
     meta['cal_step'] = mk_cal_step()
     meta['coordinates'] = mk_coordinates()
@@ -296,6 +305,7 @@ def mk_level2_image(arrays=True):
 
 
 def add_ref_common(meta):
+    meta.update(mk_basic_meta())
     instrument = {'name': 'WFI', 'detector': 'WFI01',
                   'optical_element': 'F158'}
     meta['telescope'] = 'ROMAN'
@@ -316,7 +326,8 @@ def mk_flat(outfilepath):
     flatref['meta'] = meta
     shape = (20, 20)
     flatref['data'] = np.zeros(shape, dtype=np.float32)
-    flatref['dq'] = np.zeros(shape, dtype=np.uint32)
+    flatref['dq'] = np.zeros(shape, dtype=np.uint16)
+    flatref['dq_def'] = np.zeros(10, dtype=table_definitions.DQ_DEF_DTYPE)
     flatref['err'] = np.zeros(shape, dtype=np.float32)
     af = asdf.AsdfFile()
     af.tree = {'roman': flatref}

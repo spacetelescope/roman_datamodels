@@ -13,6 +13,7 @@ from astropy.time import Time
 import numpy as np
 
 from .. import stnode
+from .. import table_definitions
 
 
 __all__ = [
@@ -143,6 +144,23 @@ def _random_array_uint32(size=(4096, 4096), min=None, max=None):
     return np.random.randint(min, high=max, size=size, dtype=np.uint32)
 
 
+def _random_dq_def(size=10, dq_size=32):
+    dq_def = np.zeros((size,), dtype=table_definitions.DQ_DEF_DTYPE)
+
+    positions = list(range(dq_size))
+    random.shuffle(positions)
+
+    for i in range(size):
+        position = positions.pop()
+
+        dq_def[i]["NAME"] = f"MNEMONIC_{i}"
+        dq_def[i]["DESCRIPTION"] = f"Description of MNEMONIC_{i} with bit position {position}"
+        dq_def[i]["BIT"] = position
+        dq_def[i]["VALUE"] == 2 ** position
+
+    return dq_def
+
+
 def _random_exposure_type():
     return _random_choice(
         "WFI_DARK",
@@ -220,7 +238,6 @@ def create_aperture(**kwargs):
     raw = {
         "name": _random_string("Aperture name ", 40),
         "position_angle": _random_angle_degrees(),
-        "pss_name": _random_string("PSS ApeName ", 40),
 
     }
     raw.update(kwargs)
@@ -320,7 +337,6 @@ def create_exposure(**kwargs):
     roman_datamodels.stnode.Exposure
     """
     raw = {
-        "datamode": _random_positive_int(),
         "data_problem": _random_bool(),
         "duration": _random_positive_float(),
         "effective_exposure_time": _random_positive_float(),
@@ -341,7 +357,6 @@ def create_exposure(**kwargs):
         "mid_time_tdb": _random_mjd_timestamp(),
         "nframes": _random_positive_int(),
         "ngroups": _random_positive_int(),
-        "nresets_at_start": _random_positive_int(),
         "sca_number": _random_positive_int(),
         "start_time": _random_astropy_time(),
         "start_time_mjd": _random_mjd_timestamp(),
@@ -368,7 +383,6 @@ def create_ref_meta(**kwargs):
     dict
     """
     raw = {
-        "telescope": "ROMAN",
         "instrument": {
             "name": "WFI",
             "detector": _random_detector(),
@@ -379,6 +393,7 @@ def create_ref_meta(**kwargs):
         "author": _random_string("Reference author "),
         "useafter": _random_astropy_time(),
     }
+    raw.update(_create_basic_meta())
     raw.update(kwargs)
 
     return raw
@@ -400,13 +415,110 @@ def create_flat_ref(**kwargs):
     """
     raw = {
         "data": _random_array_float32(min=0.0),
-        "dq": _random_array_uint32(),
+        "dq": _random_array_uint16(),
+        "dq_def": _random_dq_def(dq_size=16),
         "err": _random_array_float32(min=0.0),
         "meta": create_ref_meta(reftype="FLAT"),
     }
     raw.update(kwargs)
 
     return stnode.FlatRef(raw)
+
+
+def create_dark_ref(**kwargs):
+    """
+    Create a dummy DarkRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.DarkRef
+    """
+    raw = {
+        "data": _random_array_float32((4096, 4096, 1)),
+        "dq": _random_array_uint16(),
+        "dq_def": _random_dq_def(dq_size=16),
+        "err": _random_array_float32((4096, 4096, 1)),
+        "meta": create_ref_meta(reftype="DARK"),
+    }
+    raw.update(kwargs)
+
+    return stnode.DarkRef(raw)
+
+
+def create_gain_ref(**kwargs):
+    """
+    Create a dummy GainRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.GainRef
+    """
+    raw = {
+        "data": _random_array_float32((4096, 4096)),
+        "meta": create_ref_meta(reftype="GAIN"),
+    }
+    raw.update(kwargs)
+
+    return stnode.GainRef(raw)
+
+
+def create_mask_ref(**kwargs):
+    """
+    Create a dummy MaskRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.MaskRef
+    """
+    raw = {
+        "meta": create_ref_meta(reftype="MASK"),
+        "dq": _random_array_uint16(),
+        "dq_def": _random_dq_def(dq_size=16),
+    }
+    raw.update(kwargs)
+
+    return stnode.MaskRef(raw)
+
+
+def create_readnoise_ref(**kwargs):
+    """
+    Create a dummy ReadnoiseRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.ReadnoiseRef
+    """
+    raw = {
+        "data": _random_array_float32((4096, 4096)),
+        "meta": create_ref_meta(reftype="READNOISE"),
+    }
+    raw.update(kwargs)
+
+    return stnode.ReadnoiseRef(raw)
 
 
 def create_guidestar(**kwargs):
@@ -457,6 +569,30 @@ def create_guidestar(**kwargs):
     return stnode.Guidestar(raw)
 
 
+def _create_basic_meta():
+    """
+    Create the metadata from the basic-1.0.0 schema, which is shared
+    between references and datasets.
+
+    Returns
+    -------
+    dict
+    """
+
+    return {
+        "calibration_software_version": _random_string("Version ", 120),
+        "crds_context_used": "roman_{:04d}.pmap".format(_random_positive_int(9999)),
+        "crds_software_version": _random_software_version(),
+        "filename": _random_string("Filename ", 120),
+        "file_date": _random_astropy_time(),
+        "model_type": _random_string("Model type ", 50),
+        "origin": "STSCI",
+        "prd_software_version": _random_string("S&OC PRD ", 120),
+        "sdf_software_version": _random_software_version(),
+        "telescope": "ROMAN",
+    }
+
+
 def create_meta(**kwargs):
     """
     Create a dummy metadata dictionary with valid values for attributes
@@ -474,30 +610,21 @@ def create_meta(**kwargs):
     raw = {
         "aperture": create_aperture(),
         "cal_step": create_cal_step(),
-        "calibration_software_version": _random_string("Version ", 120),
         "coordinates": create_coordinates(),
-        "crds_context_used": "roman_{:04d}.pmap".format(_random_positive_int(9999)),
-        "crds_software_version": _random_software_version(),
-        "file_date": _random_astropy_time(),
         "ephemeris": create_ephemeris(),
         "exposure": create_exposure(),
-        "filename": _random_string("Filename ", 120),
         "guidestar": create_guidestar(),
         "instrument": create_wfi_mode(),
-        "model_type": _random_string("Model type ", 50),
         "observation": create_observation(),
         "photometry": create_photometry(),
         "pointing": create_pointing(),
-        "prd_software_version": _random_string("S&OC PRD ", 120),
-        "origin": "STSCI",
         "program": create_program(),
-        "sdf_software_version": _random_software_version(),
         "target": create_target(),
-        "telescope": "ROMAN",
         "velocity_aberration": create_velocity_aberration(),
         "visit": create_visit(),
         "wcsinfo": create_wcsinfo(),
     }
+    raw.update(_create_basic_meta())
     raw.update(kwargs)
 
     return raw
@@ -529,6 +656,7 @@ def create_observation(**kwargs):
         "program": _random_positive_int(),
         "segment": _random_positive_int(),
         "start_time": _random_astropy_time(),
+        "survey": _random_choice("HLS", "EMS", "SN", "N/A"),
         "template": _random_string("Template ", 50),
         "visit": _random_positive_int(),
         "visit_file_activity": _random_string(max_length=2),
@@ -722,6 +850,7 @@ def create_visit(**kwargs):
         "status": _random_string("Status ", 15),
         "total_exposures": _random_positive_int(),
         "internal_target": _random_bool(),
+        "target_of_opportunity": _random_bool(),
     }
     raw.update(kwargs)
 
