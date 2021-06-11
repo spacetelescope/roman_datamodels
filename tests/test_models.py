@@ -6,7 +6,7 @@ import numpy as np
 
 from roman_datamodels import datamodels
 from roman_datamodels import stnode
-from roman_datamodels import tables
+from roman_datamodels import table_definitions
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 
 from roman_datamodels.testing import utils
@@ -107,7 +107,7 @@ def test_flat_model(tmp_path):
     shape = (4096, 4096)
     flatref['data'] = np.zeros(shape, dtype=np.float32)
     flatref['dq'] = np.zeros(shape, dtype=np.uint16)
-    flatref['dq_def'] = np.zeros(10, dtype=tables.DQ_DEF_DTYPE)
+    flatref['dq_def'] = np.zeros(10, dtype=table_definitions.DQ_DEF_DTYPE)
     flatref['err'] = np.zeros(shape, dtype=np.float32)
 
     # Testing flat file asdf file

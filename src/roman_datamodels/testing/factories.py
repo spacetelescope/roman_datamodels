@@ -13,7 +13,7 @@ from astropy.time import Time
 import numpy as np
 
 from .. import stnode
-from .. import tables
+from .. import table_definitions
 
 
 __all__ = [
@@ -145,7 +145,7 @@ def _random_array_uint32(size=(4096, 4096), min=None, max=None):
 
 
 def _random_dq_def(size=10, dq_size=32):
-    dq_def = np.zeros((size,), dtype=tables.DQ_DEF_DTYPE)
+    dq_def = np.zeros((size,), dtype=table_definitions.DQ_DEF_DTYPE)
 
     positions = list(range(dq_size))
     random.shuffle(positions)

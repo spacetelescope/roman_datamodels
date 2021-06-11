@@ -2,7 +2,7 @@ import asdf
 import astropy.time as time
 import numpy as np
 
-from .. import stnode, tables
+from .. import stnode, table_definitions
 
 
 NONUM = -999999
@@ -327,7 +327,7 @@ def mk_flat(outfilepath):
     shape = (20, 20)
     flatref['data'] = np.zeros(shape, dtype=np.float32)
     flatref['dq'] = np.zeros(shape, dtype=np.uint16)
-    flatref['dq_def'] = np.zeros(10, dtype=tables.DQ_DEF_DTYPE)
+    flatref['dq_def'] = np.zeros(10, dtype=table_definitions.DQ_DEF_DTYPE)
     flatref['err'] = np.zeros(shape, dtype=np.float32)
     af = asdf.AsdfFile()
     af.tree = {'roman': flatref}
