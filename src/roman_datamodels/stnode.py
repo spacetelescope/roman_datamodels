@@ -369,7 +369,7 @@ class TaggedObjectNodeConverter(Converter):
     def select_tag(self, obj, tags, ctx):
         return obj.tag
 
-    def to_yaml_tree(self, obj, tags, ctx):
+    def to_yaml_tree(self, obj, tag, ctx):
         return obj._data
 
     def from_yaml_tree(self, node, tag, ctx):
