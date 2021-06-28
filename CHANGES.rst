@@ -1,4 +1,4 @@
-0.2.0 (unreleased)
+0.2.0 (2021-06-28)
 ==================
 
 - Added support for ramp, ramp_fit_output, wfi_img_photom models. [#15]
