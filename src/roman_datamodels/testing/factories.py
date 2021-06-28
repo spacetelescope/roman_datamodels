@@ -543,12 +543,14 @@ def create_wfi_img_photom_ref(**kwargs):
     raw_dict = {
         "W146":
              {"photmjsr":(10 * np.random.random()),
-              "uncertainty":np.random.random()}
-
+              "uncertainty":np.random.random()},
+        "F184":
+            {"photmjsr": (10 * np.random.random()),
+             "uncertainty": np.random.random()}
     }
 
     raw = {
-        "phot_table": [raw_dict],
+        "phot_table": raw_dict,
         "meta": create_ref_meta(reftype="PHOTOM"),
     }
     raw.update(kwargs)
