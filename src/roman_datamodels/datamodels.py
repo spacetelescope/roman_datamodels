@@ -271,24 +271,28 @@ class DataModel:
 class ImageModel(DataModel):
     pass
 
+class RampModel(DataModel):
+    pass
+
+class RampFitOutputModel(DataModel):
+    pass
 
 class FlatRefModel(DataModel):
     pass
 
-
 class DarkRefModel(DataModel):
     pass
-
 
 class GainRefModel(DataModel):
     pass
 
-
 class MaskRefModel(DataModel):
     pass
 
-
 class ReadnoiseRefModel(DataModel):
+    pass
+
+class WfiImgPhotomRefModel(DataModel):
     pass
 
 
@@ -317,9 +321,12 @@ def open(init, memmap=False, **kwargs):
 
 model_registry = {
     stnode.WfiImage: ImageModel,
+    stnode.Ramp: RampModel,
+    stnode.RampFitOutput: RampFitOutputModel,
     stnode.FlatRef: FlatRefModel,
     stnode.DarkRef: DarkRefModel,
     stnode.GainRef: GainRefModel,
     stnode.MaskRef: MaskRefModel,
     stnode.ReadnoiseRef: ReadnoiseRefModel,
+    stnode.WfiImgPhotomRef: WfiImgPhotomRefModel,
 }

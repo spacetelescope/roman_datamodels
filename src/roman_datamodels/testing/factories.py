@@ -127,6 +127,12 @@ def _random_array_float32(size=(4096, 4096), min=None, max=None):
     array = np.random.default_rng().random(size=size, dtype=np.float32)
     return min + max * array - min * array
 
+def _random_array_uint8(size=(4096, 4096), min=None, max=None):
+    if min is None:
+        min = np.iinfo("uint8").min
+    if max is None:
+        max = np.iinfo("uint8").max
+    return np.random.randint(min, high=max, size=size, dtype=np.uint8)
 
 def _random_array_uint16(size=(4096, 4096), min=None, max=None):
     if min is None:
@@ -520,6 +526,37 @@ def create_readnoise_ref(**kwargs):
 
     return stnode.ReadnoiseRef(raw)
 
+def create_wfi_img_photom_ref(**kwargs):
+    """
+    Create a dummy WfiImgPhotomRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.WfiImgPhotomRef
+    """
+    raw_dict = {
+        "W146":
+             {"photmjsr":(10 * np.random.random()),
+              "uncertainty":np.random.random()},
+        "F184":
+            {"photmjsr": (10 * np.random.random()),
+             "uncertainty": np.random.random()}
+    }
+
+    raw = {
+        "phot_table": raw_dict,
+        "meta": create_ref_meta(reftype="PHOTOM"),
+    }
+    raw.update(kwargs)
+
+    return stnode.WfiImgPhotomRef(raw)
+
 
 def create_guidestar(**kwargs):
     """
@@ -765,6 +802,67 @@ def create_program(**kwargs):
     raw.update(kwargs)
 
     return stnode.Program(raw)
+
+
+def create_ramp(**kwargs):
+    """
+    Create a dummy Ramp instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Ramp
+    """
+
+    raw = {
+        "meta": create_meta(),
+        "data": _random_array_float32((4096, 4096, 8)),
+        "pixeldq": _random_array_uint32(),
+        "groupdq": _random_array_uint8((4096, 4096, 8)),
+        "err": _random_array_float32(min=0.0),
+        "refout": _random_array_float32((1024, 4096, 8)),
+    }
+    raw.update(kwargs)
+
+    return stnode.Ramp(raw)
+
+def create_ramp_fit_output(**kwargs):
+    """
+    Create a dummy RampFitOutput instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.RampFitOutput
+    """
+
+    seg_shape = (4, 4096, 4096)
+
+    raw = {
+        "meta": create_meta(),
+        "slope": _random_array_float32(seg_shape),
+        "sigslope": _random_array_float32(seg_shape),
+        "yint": _random_array_float32(seg_shape),
+        "sigyint": _random_array_float32(seg_shape),
+        "pedestal": _random_array_float32(seg_shape),
+        "weights": _random_array_float32(seg_shape),
+        "crmag": _random_array_float32(seg_shape),
+        "var_poisson": _random_array_float32(seg_shape),
+        "var_rnoise": _random_array_float32(seg_shape),
+    }
+    raw.update(kwargs)
+
+    return stnode.RampFitOutput(raw)
 
 
 def create_target(**kwargs):
