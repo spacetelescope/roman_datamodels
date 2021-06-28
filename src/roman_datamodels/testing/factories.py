@@ -862,8 +862,6 @@ def create_ramp_fit_output(**kwargs):
     }
     raw.update(kwargs)
 
-    print("In create_rampfitoutput ")
-
     return stnode.RampFitOutput(raw)
 
 
