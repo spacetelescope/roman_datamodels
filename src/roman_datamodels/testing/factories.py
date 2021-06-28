@@ -829,7 +829,7 @@ def create_ramp(**kwargs):
 
     return stnode.Ramp(raw)
 
-def create_rampfitoutput(**kwargs):
+def create_ramp_fit_output(**kwargs):
     """
     Create a dummy RampFitOutput instance with valid values for attributes
     required by the schema.
@@ -862,7 +862,7 @@ def create_rampfitoutput(**kwargs):
 
     print("In create_rampfitoutput ")
 
-    return stnode.Rampfitoutput(raw)
+    return stnode.RampFitOutput(raw)
 
 
 def create_target(**kwargs):

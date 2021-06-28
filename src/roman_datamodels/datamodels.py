@@ -322,7 +322,7 @@ def open(init, memmap=False, **kwargs):
 model_registry = {
     stnode.WfiImage: ImageModel,
     stnode.Ramp: RampModel,
-    stnode.Rampfitoutput: RampFitOutputModel,
+    stnode.RampFitOutput: RampFitOutputModel,
     stnode.FlatRef: FlatRefModel,
     stnode.DarkRef: DarkRefModel,
     stnode.GainRef: GainRefModel,
