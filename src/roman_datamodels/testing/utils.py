@@ -4,7 +4,6 @@ import numpy as np
 
 from .. import stnode, table_definitions
 
-
 NONUM = -999999
 NOSTR = "dummy value"
 
@@ -202,6 +201,7 @@ def mk_wcsinfo():
 def mk_cal_step():
     calstep = stnode.CalStep()
     calstep['flat_field'] = 'INCOMPLETE'
+    calstep['dq_init'] = 'INCOMPLETE'
     return calstep
 
 
@@ -317,8 +317,7 @@ def add_ref_common(meta):
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
     meta['reftype'] = ''
 
-def mk_flat(outfilepath):
-
+def mk_flat_file(outfilepath):
     meta = {}
     add_ref_common(meta)
     flatref = stnode.FlatRef()
@@ -326,9 +325,55 @@ def mk_flat(outfilepath):
     flatref['meta'] = meta
     shape = (20, 20)
     flatref['data'] = np.zeros(shape, dtype=np.float32)
-    flatref['dq'] = np.zeros(shape, dtype=np.uint16)
+    flatref['dq'] = np.zeros(shape, dtype=np.uint32)
     flatref['dq_def'] = np.zeros(10, dtype=table_definitions.DQ_DEF_DTYPE)
     flatref['err'] = np.zeros(shape, dtype=np.float32)
     af = asdf.AsdfFile()
     af.tree = {'roman': flatref}
     af.write_to(outfilepath)
+
+def mk_mask(arrays=True, dqsize=True):
+    meta = {}
+    add_ref_common(meta)
+    maskref = stnode.MaskRef()
+    meta['reftype'] = 'MASK'
+    maskref['meta'] = meta
+
+    if not (arrays or dqsize):
+        maskref['dq'] = None
+        maskref['dq_def'] = None
+    else:
+        if arrays is True:
+            shape = (4096, 4096)
+        else:
+            shape = arrays
+        maskref['dq'] = np.zeros(shape, dtype=np.uint32)
+
+        if dqsize is True:
+            size = 16
+        else:
+            size = dqsize
+        maskref['dq_def'] = np.zeros(size, dtype=table_definitions.DQ_DEF_DTYPE)
+
+    return maskref
+
+
+def mk_ramp(arrays=True):
+    meta = mk_common_meta()
+    ramp = stnode.Ramp()
+    ramp['meta'] = meta
+    if not arrays:
+        ramp['data'] = None
+        ramp['pixeldq'] = None
+        ramp['groupdq'] = None
+        ramp['err'] = None
+    else:
+        if arrays is True:
+            shape = (4096, 4096, 8)
+        else:
+            shape = arrays
+        ramp['data'] = np.full(shape, 1.0, dtype=np.float32)
+        ramp['pixeldq'] = np.zeros(shape[1:], dtype=np.uint32)
+        ramp['groupdq'] = np.zeros(shape, dtype=np.uint8)
+        ramp['err'] = np.zeros(shape[1:], dtype=np.float32)
+    return ramp

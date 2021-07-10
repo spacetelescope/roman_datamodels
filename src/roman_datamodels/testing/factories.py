@@ -421,7 +421,7 @@ def create_flat_ref(**kwargs):
     """
     raw = {
         "data": _random_array_float32(min=0.0),
-        "dq": _random_array_uint16(),
+        "dq": _random_array_uint32(),
         "dq_def": _random_dq_def(dq_size=16),
         "err": _random_array_float32(min=0.0),
         "meta": create_ref_meta(reftype="FLAT"),
@@ -447,7 +447,7 @@ def create_dark_ref(**kwargs):
     """
     raw = {
         "data": _random_array_float32((4096, 4096, 1)),
-        "dq": _random_array_uint16(),
+        "dq": _random_array_uint32(),
         "dq_def": _random_dq_def(dq_size=16),
         "err": _random_array_float32((4096, 4096, 1)),
         "meta": create_ref_meta(reftype="DARK"),
@@ -496,7 +496,7 @@ def create_mask_ref(**kwargs):
     """
     raw = {
         "meta": create_ref_meta(reftype="MASK"),
-        "dq": _random_array_uint16(),
+        "dq": _random_array_uint32(),
         "dq_def": _random_dq_def(dq_size=16),
     }
     raw.update(kwargs)
@@ -825,7 +825,6 @@ def create_ramp(**kwargs):
         "pixeldq": _random_array_uint32(),
         "groupdq": _random_array_uint8((4096, 4096, 8)),
         "err": _random_array_float32(min=0.0),
-        "refout": _random_array_float32((1024, 4096, 8)),
     }
     raw.update(kwargs)
 
@@ -1055,10 +1054,6 @@ def create_wfi_science_raw(**kwargs):
         # TODO: What should this shape be?
         "data": _random_array_uint16((1, 4096, 4096, 2)),
         "meta": create_meta(),
-        # TODO: What should this shape be?
-        "refout": _random_array_uint16((1, 4096, 4096, 2)),
-        # TODO: What should this shape be?
-        "zeroframe": _random_array_uint16((1, 4096, 4096)),
     }
     raw.update(kwargs)
 

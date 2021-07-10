@@ -18,7 +18,8 @@ from astropy.time import Time
 from . import stnode
 from . import validate
 from . extensions import DATAMODEL_EXTENSIONS
-
+from .dynamicdq import dynamic_mask
+from .dqflags import pixel
 
 class DataModel:
     '''Base class for all top level datamodels'''
@@ -287,7 +288,37 @@ class GainRefModel(DataModel):
     pass
 
 class MaskRefModel(DataModel):
-    pass
+    """
+    A data model for 2D masks.
+
+    Parameters
+    __________
+    dq : numpy uint32 array
+         The mask
+
+    dq_def : numpy table
+         DQ flag definitions
+    """
+    def __init__(self, init=None, **kwargs):
+        super(MaskRefModel, self).__init__(init=init, **kwargs)
+
+        if self._instance is not None:
+            if self._instance['dq'] is not None or self._instance['dq_def'] is not None:
+                self.dq = dynamic_mask(self, pixel)
+
+            # Implicitly create arrays
+            #self.dq = self.dq
+
+
+    def get_primary_array_name(self):
+        """
+        Returns the name "primary" array for this model, which
+        controls the size of other arrays that are implicitly created.
+        This is intended to be overridden in the subclasses if the
+        primary array's name is not "data".
+        """
+        return 'dq'
+
 
 class ReadnoiseRefModel(DataModel):
     pass
