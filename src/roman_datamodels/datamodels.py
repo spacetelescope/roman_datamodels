@@ -306,10 +306,6 @@ class MaskRefModel(DataModel):
             if self._instance['dq'] is not None or self._instance['dq_def'] is not None:
                 self.dq = dynamic_mask(self, pixel)
 
-            # Implicitly create arrays
-            #self.dq = self.dq
-
-
     def get_primary_array_name(self):
         """
         Returns the name "primary" array for this model, which
