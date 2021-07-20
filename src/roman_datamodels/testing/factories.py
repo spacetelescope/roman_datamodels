@@ -150,23 +150,6 @@ def _random_array_uint32(size=(4096, 4096), min=None, max=None):
     return np.random.randint(min, high=max, size=size, dtype=np.uint32)
 
 
-def _random_dq_def(size=10, dq_size=32):
-    dq_def = np.zeros((size,), dtype=table_definitions.DQ_DEF_DTYPE)
-
-    positions = list(range(dq_size))
-    random.shuffle(positions)
-
-    for i in range(size):
-        position = positions.pop()
-
-        dq_def[i]["NAME"] = f"MNEMONIC_{i}"
-        dq_def[i]["DESCRIPTION"] = f"Description of MNEMONIC_{i} with bit position {position}"
-        dq_def[i]["BIT"] = position
-        dq_def[i]["VALUE"] == 2 ** position
-
-    return dq_def
-
-
 def _random_exposure_type():
     return _random_choice(
         "WFI_DARK",
@@ -422,7 +405,6 @@ def create_flat_ref(**kwargs):
     raw = {
         "data": _random_array_float32(min=0.0),
         "dq": _random_array_uint32(),
-        "dq_def": _random_dq_def(dq_size=16),
         "err": _random_array_float32(min=0.0),
         "meta": create_ref_meta(reftype="FLAT"),
     }
@@ -448,7 +430,6 @@ def create_dark_ref(**kwargs):
     raw = {
         "data": _random_array_float32((4096, 4096, 1)),
         "dq": _random_array_uint32(),
-        "dq_def": _random_dq_def(dq_size=16),
         "err": _random_array_float32((4096, 4096, 1)),
         "meta": create_ref_meta(reftype="DARK"),
     }
@@ -497,7 +478,6 @@ def create_mask_ref(**kwargs):
     raw = {
         "meta": create_ref_meta(reftype="MASK"),
         "dq": _random_array_uint32(),
-        "dq_def": _random_dq_def(dq_size=16),
     }
     raw.update(kwargs)
 

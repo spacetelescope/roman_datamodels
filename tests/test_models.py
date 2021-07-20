@@ -107,7 +107,6 @@ def test_flat_model(tmp_path):
     shape = (4096, 4096)
     flatref['data'] = np.zeros(shape, dtype=np.float32)
     flatref['dq'] = np.zeros(shape, dtype=np.uint32)
-    flatref['dq_def'] = np.zeros(10, dtype=table_definitions.DQ_DEF_DTYPE)
     flatref['err'] = np.zeros(shape, dtype=np.float32)
 
     # Testing flat file asdf file

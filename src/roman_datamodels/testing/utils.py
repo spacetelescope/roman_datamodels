@@ -326,34 +326,22 @@ def mk_flat_file(outfilepath):
     shape = (20, 20)
     flatref['data'] = np.zeros(shape, dtype=np.float32)
     flatref['dq'] = np.zeros(shape, dtype=np.uint32)
-    flatref['dq_def'] = np.zeros(10, dtype=table_definitions.DQ_DEF_DTYPE)
     flatref['err'] = np.zeros(shape, dtype=np.float32)
     af = asdf.AsdfFile()
     af.tree = {'roman': flatref}
     af.write_to(outfilepath)
 
-def mk_mask(arrays=True, dqsize=True):
+def mk_mask(shape=True):
     meta = {}
     add_ref_common(meta)
     maskref = stnode.MaskRef()
     meta['reftype'] = 'MASK'
     maskref['meta'] = meta
 
-    if not (arrays or dqsize):
-        maskref['dq'] = None
-        maskref['dq_def'] = None
-    else:
-        if arrays is True:
-            shape = (4096, 4096)
-        else:
-            shape = arrays
+    if shape:
         maskref['dq'] = np.zeros(shape, dtype=np.uint32)
-
-        if dqsize is True:
-            size = 16
-        else:
-            size = dqsize
-        maskref['dq_def'] = np.zeros(size, dtype=table_definitions.DQ_DEF_DTYPE)
+    else:
+        maskref['dq'] = np.zeros((4096, 4096), dtype=np.uint32)
 
     return maskref
 
