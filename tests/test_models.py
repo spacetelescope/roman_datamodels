@@ -6,7 +6,7 @@ import numpy as np
 
 from roman_datamodels import datamodels
 from roman_datamodels import stnode
-from roman_datamodels import table_definitions
+# from roman_datamodels import table_definitions
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 
 from roman_datamodels.testing import utils

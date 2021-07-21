@@ -2,7 +2,8 @@ import asdf
 import astropy.time as time
 import numpy as np
 
-from .. import stnode, table_definitions
+from .. import stnode
+# from .. import table_definitions
 
 NONUM = -999999
 NOSTR = "dummy value"

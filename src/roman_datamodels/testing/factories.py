@@ -13,7 +13,7 @@ from astropy.time import Time
 import numpy as np
 
 from .. import stnode
-from .. import table_definitions
+# from .. import table_definitions
 
 
 __all__ = [
