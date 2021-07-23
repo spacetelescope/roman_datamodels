@@ -372,17 +372,18 @@ def create_ref_meta(**kwargs):
     dict
     """
     raw = {
+        "author": _random_string("Reference author "),
+        "description": _random_string("Reference description "),
         "instrument": {
             "name": "WFI",
             "detector": _random_detector(),
             "optical_element": _random_optical_element(),
         },
+        "origin": "STScI",
         "pedigree": "DUMMY",
-        "description": _random_string("Reference description "),
-        "author": _random_string("Reference author "),
+        "telescope": "ROMAN",
         "useafter": _random_astropy_time(),
     }
-    raw.update(_create_basic_meta())
     raw.update(kwargs)
 
     return raw
