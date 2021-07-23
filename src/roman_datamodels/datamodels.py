@@ -19,7 +19,6 @@ from . import stnode
 from . import validate
 from . extensions import DATAMODEL_EXTENSIONS
 
-
 class DataModel:
     '''Base class for all top level datamodels'''
 

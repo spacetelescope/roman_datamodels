@@ -6,7 +6,7 @@ import numpy as np
 
 from roman_datamodels import datamodels
 from roman_datamodels import stnode
-from roman_datamodels import table_definitions
+# from roman_datamodels import table_definitions
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 
 from roman_datamodels.testing import utils
@@ -87,7 +87,7 @@ def test_reference_file_model_base(tmp_path):
 def test_opening_flat_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / 'testflat.asdf'
-    utils.mk_flat(file_path)
+    utils.mk_flat_file(file_path)
     flat = datamodels.open(file_path)
     assert flat.meta.instrument.optical_element == 'F158'
     assert isinstance(flat, datamodels.FlatRefModel)
@@ -106,8 +106,7 @@ def test_flat_model(tmp_path):
     flatref.meta.instrument['optical_element'] = 'F062'
     shape = (4096, 4096)
     flatref['data'] = np.zeros(shape, dtype=np.float32)
-    flatref['dq'] = np.zeros(shape, dtype=np.uint16)
-    flatref['dq_def'] = np.zeros(10, dtype=table_definitions.DQ_DEF_DTYPE)
+    flatref['dq'] = np.zeros(shape, dtype=np.uint32)
     flatref['err'] = np.zeros(shape, dtype=np.float32)
 
     # Testing flat file asdf file

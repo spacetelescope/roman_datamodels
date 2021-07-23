@@ -13,7 +13,7 @@ from astropy.time import Time
 import numpy as np
 
 from .. import stnode
-from .. import table_definitions
+# from .. import table_definitions
 
 
 __all__ = [
@@ -148,23 +148,6 @@ def _random_array_uint32(size=(4096, 4096), min=None, max=None):
     if max is None:
         max = np.iinfo("uint32").max
     return np.random.randint(min, high=max, size=size, dtype=np.uint32)
-
-
-def _random_dq_def(size=10, dq_size=32):
-    dq_def = np.zeros((size,), dtype=table_definitions.DQ_DEF_DTYPE)
-
-    positions = list(range(dq_size))
-    random.shuffle(positions)
-
-    for i in range(size):
-        position = positions.pop()
-
-        dq_def[i]["NAME"] = f"MNEMONIC_{i}"
-        dq_def[i]["DESCRIPTION"] = f"Description of MNEMONIC_{i} with bit position {position}"
-        dq_def[i]["BIT"] = position
-        dq_def[i]["VALUE"] == 2 ** position
-
-    return dq_def
 
 
 def _random_exposure_type():
@@ -389,17 +372,18 @@ def create_ref_meta(**kwargs):
     dict
     """
     raw = {
+        "author": _random_string("Reference author "),
+        "description": _random_string("Reference description "),
         "instrument": {
             "name": "WFI",
             "detector": _random_detector(),
             "optical_element": _random_optical_element(),
         },
+        "origin": "STScI",
         "pedigree": "DUMMY",
-        "description": _random_string("Reference description "),
-        "author": _random_string("Reference author "),
+        "telescope": "ROMAN",
         "useafter": _random_astropy_time(),
     }
-    raw.update(_create_basic_meta())
     raw.update(kwargs)
 
     return raw
@@ -421,8 +405,7 @@ def create_flat_ref(**kwargs):
     """
     raw = {
         "data": _random_array_float32(min=0.0),
-        "dq": _random_array_uint16(),
-        "dq_def": _random_dq_def(dq_size=16),
+        "dq": _random_array_uint32(),
         "err": _random_array_float32(min=0.0),
         "meta": create_ref_meta(reftype="FLAT"),
     }
@@ -447,8 +430,7 @@ def create_dark_ref(**kwargs):
     """
     raw = {
         "data": _random_array_float32((4096, 4096, 1)),
-        "dq": _random_array_uint16(),
-        "dq_def": _random_dq_def(dq_size=16),
+        "dq": _random_array_uint32(),
         "err": _random_array_float32((4096, 4096, 1)),
         "meta": create_ref_meta(reftype="DARK"),
     }
@@ -496,8 +478,7 @@ def create_mask_ref(**kwargs):
     """
     raw = {
         "meta": create_ref_meta(reftype="MASK"),
-        "dq": _random_array_uint16(),
-        "dq_def": _random_dq_def(dq_size=16),
+        "dq": _random_array_uint32(),
     }
     raw.update(kwargs)
 
@@ -825,7 +806,6 @@ def create_ramp(**kwargs):
         "pixeldq": _random_array_uint32(),
         "groupdq": _random_array_uint8((4096, 4096, 8)),
         "err": _random_array_float32(min=0.0),
-        "refout": _random_array_float32((1024, 4096, 8)),
     }
     raw.update(kwargs)
 
@@ -1055,10 +1035,6 @@ def create_wfi_science_raw(**kwargs):
         # TODO: What should this shape be?
         "data": _random_array_uint16((1, 4096, 4096, 2)),
         "meta": create_meta(),
-        # TODO: What should this shape be?
-        "refout": _random_array_uint16((1, 4096, 4096, 2)),
-        # TODO: What should this shape be?
-        "zeroframe": _random_array_uint16((1, 4096, 4096)),
     }
     raw.update(kwargs)
 
