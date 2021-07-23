@@ -1,4 +1,4 @@
-0.3.0 (unreleased)
+0.3.0 (2021-07-23)
 ==================
 
 - Added code for DQ support. Added ramp and mask helper functions. Removed refout and zeroframe. [#17]
