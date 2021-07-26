@@ -250,6 +250,7 @@ def create_cal_step(**kwargs):
     """
     raw = {
         "flat_field": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "dq_init": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
     }
     raw.update(kwargs)
 
