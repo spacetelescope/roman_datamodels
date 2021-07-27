@@ -357,7 +357,7 @@ def mk_ramp(arrays=True):
         ramp['err'] = None
     else:
         if arrays is True:
-            shape = (4096, 4096, 8)
+            shape = (8, 4096, 4096)
         else:
             shape = arrays
         ramp['data'] = np.full(shape, 1.0, dtype=np.float32)
