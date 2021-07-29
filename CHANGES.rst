@@ -1,6 +1,8 @@
 0.4.0 (unreleased)
 ==================
 
+- Added support for dq_init step in cal_step. [#18]
+
 0.3.0 (2021-07-23)
 ==================
 

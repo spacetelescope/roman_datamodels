@@ -318,13 +318,12 @@ def add_ref_common(meta):
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
     meta['reftype'] = ''
 
-def mk_flat_file(outfilepath):
+def mk_flat_file(outfilepath, shape=(20, 20)):
     meta = {}
     add_ref_common(meta)
     flatref = stnode.FlatRef()
     meta['reftype'] = 'FLAT'
     flatref['meta'] = meta
-    shape = (20, 20)
     flatref['data'] = np.zeros(shape, dtype=np.float32)
     flatref['dq'] = np.zeros(shape, dtype=np.uint32)
     flatref['err'] = np.zeros(shape, dtype=np.float32)
@@ -358,7 +357,7 @@ def mk_ramp(arrays=True):
         ramp['err'] = None
     else:
         if arrays is True:
-            shape = (4096, 4096, 8)
+            shape = (8, 4096, 4096)
         else:
             shape = arrays
         ramp['data'] = np.full(shape, 1.0, dtype=np.float32)
