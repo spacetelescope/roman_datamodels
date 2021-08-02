@@ -1034,7 +1034,7 @@ def create_wfi_science_raw(**kwargs):
     """
     raw = {
         # TODO: What should this shape be?
-        "data": _random_array_uint16((1, 4096, 4096, 2)),
+        "data": _random_array_uint16((8, 4096, 4096)),
         "meta": create_meta(),
     }
     raw.update(kwargs)

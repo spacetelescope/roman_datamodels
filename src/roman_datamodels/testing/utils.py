@@ -277,6 +277,20 @@ def mk_common_meta():
     meta['wcsinfo'] = mk_wcsinfo()
     return meta
 
+def mk_level1_science_raw(arrays=True):
+    meta = mk_common_meta()
+    wfi_science_raw = stnode.WfiScienceRaw()
+    wfi_science_raw['meta'] = meta
+    if not arrays:
+        wfi_science_raw['data'] = None
+    else:
+        if arrays is True:
+            shape = (8, 4096, 4096)
+        else:
+            shape = arrays
+        wfi_science_raw['data'] = np.zeros(shape, dtype=np.uint16)
+    return wfi_science_raw
+
 
 def mk_level2_image(arrays=True):
     meta = mk_common_meta()
