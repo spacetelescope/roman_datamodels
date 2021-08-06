@@ -320,11 +320,11 @@ def mk_level2_image(arrays=True):
 
 
 def add_ref_common(meta):
-    meta.update(mk_basic_meta())
     instrument = {'name': 'WFI', 'detector': 'WFI01',
                   'optical_element': 'F158'}
     meta['telescope'] = 'ROMAN'
     meta['instrument'] = instrument
+    meta['origin'] = 'STSCI'
     meta['pedigree'] = 'test pedigree'
     meta['author'] = 'test system'
     meta['description'] = 'blah blah blah'

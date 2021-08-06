@@ -1,7 +1,7 @@
 0.4.0 (unreleased)
 ==================
 
-- Added support for ScienceRawModel. [#20]
+- Added support for ScienceRawModel. Removed basic from ref_common in testing/utils. [#20]
 
 - Added support for dq_init step in cal_step. [#18]
 
