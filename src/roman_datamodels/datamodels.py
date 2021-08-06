@@ -270,6 +270,9 @@ class DataModel:
 class ImageModel(DataModel):
     pass
 
+class ScienceRawModel(DataModel):
+    pass
+
 class RampModel(DataModel):
     pass
 
@@ -320,6 +323,7 @@ def open(init, memmap=False, **kwargs):
 
 model_registry = {
     stnode.WfiImage: ImageModel,
+    stnode.WfiScienceRaw: ScienceRawModel,
     stnode.Ramp: RampModel,
     stnode.RampFitOutput: RampFitOutputModel,
     stnode.FlatRef: FlatRefModel,
