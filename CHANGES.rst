@@ -1,4 +1,4 @@
-0.4.0 (unreleased)
+0.4.0 (2021-08-06)
 ==================
 
 - Added support for ScienceRawModel. Removed basic from ref_common in testing/utils. [#20]
