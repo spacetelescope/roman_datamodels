@@ -1,6 +1,8 @@
 0.6.0 (unreleased)
 ==================
 
+- Added tests for mask maker utility. [#25]
+
 0.5.0 (2021-08-07)
 ==================
 
