@@ -345,7 +345,7 @@ def mk_flat_file(outfilepath, shape=(20, 20)):
     af.tree = {'roman': flatref}
     af.write_to(outfilepath)
 
-def mk_mask(shape=True):
+def mk_mask(shape=None, filepath=None):
     meta = {}
     add_ref_common(meta)
     maskref = stnode.MaskRef()
@@ -357,7 +357,12 @@ def mk_mask(shape=True):
     else:
         maskref['dq'] = np.zeros((4096, 4096), dtype=np.uint32)
 
-    return maskref
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': maskref}
+        af.write_to(filepath)
+    else:
+        return maskref
 
 
 def mk_ramp(arrays=True):
