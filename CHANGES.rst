@@ -1,6 +1,8 @@
 0.6.0 (unreleased)
 ==================
 
+- Added ReadNoise maker utility and tests. [#24]
+
 0.5.0 (2021-08-07)
 ==================
 
