@@ -379,6 +379,27 @@ def mk_mask(shape=True):
 
     return maskref
 
+
+def mk_readnoise(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    readnoiseref = stnode.ReadnoiseRef()
+    meta['reftype'] = 'READNOISE'
+    readnoiseref['meta'] = meta
+
+    if shape:
+        readnoiseref['data'] = np.zeros(shape, dtype=np.float32)
+    else:
+        readnoiseref['data'] = np.zeros((4096, 4224), dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': readnoiseref}
+        af.write_to(filepath)
+    else:
+        return readnoiseref
+
+
 def mk_ramp(arrays=True):
     meta = mk_common_meta()
     ramp = stnode.Ramp()
