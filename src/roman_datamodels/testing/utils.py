@@ -345,6 +345,26 @@ def mk_flat_file(outfilepath, shape=(20, 20)):
     af.tree = {'roman': flatref}
     af.write_to(outfilepath)
 
+def mk_gain(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    gainref = stnode.GainRef()
+    meta['reftype'] = 'GAIN'
+    gainref['meta'] = meta
+
+    if shape:
+        gainref['data'] = np.zeros(shape, dtype=np.float32)
+    else:
+        gainref['data'] = np.zeros((4096, 4224), dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': gainref}
+        af.write_to(filepath)
+    else:
+        return gainref
+
+
 def mk_mask(shape=True):
     meta = {}
     add_ref_common(meta)
@@ -358,6 +378,7 @@ def mk_mask(shape=True):
         maskref['dq'] = np.zeros((4096, 4096), dtype=np.uint32)
 
     return maskref
+
 
 def mk_readnoise(shape=None, filepath=None):
     meta = {}
@@ -377,6 +398,7 @@ def mk_readnoise(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return readnoiseref
+
 
 def mk_ramp(arrays=True):
     meta = mk_common_meta()
