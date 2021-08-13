@@ -345,6 +345,30 @@ def mk_flat_file(outfilepath, shape=(20, 20)):
     af.tree = {'roman': flatref}
     af.write_to(outfilepath)
 
+def mk_dark(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    darkref = stnode.DarkRef()
+    meta['reftype'] = 'DARK'
+    darkref['meta'] = meta
+
+    if shape:
+        darkref['data'] = np.zeros(shape, dtype=np.float32)
+        darkref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
+        darkref['err'] = np.zeros(shape, dtype=np.float32)
+    else:
+        darkref['data'] = np.zeros((7, 4096, 4224), dtype=np.float32)
+        darkref['dq'] = np.zeros((4096, 4224), dtype=np.uint32)
+        darkref['err'] = np.zeros((7, 4096, 4224), dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': darkref}
+        af.write_to(filepath)
+    else:
+        return darkref
+
+
 def mk_mask(shape=True):
     meta = {}
     add_ref_common(meta)
