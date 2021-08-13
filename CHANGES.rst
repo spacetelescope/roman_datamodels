@@ -1,6 +1,8 @@
 0.6.0 (unreleased)
 ==================
 
+- Added dark current model maker and tests. [#26]
+
 0.5.0 (2021-08-07)
 ==================
 
