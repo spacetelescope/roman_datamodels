@@ -138,3 +138,21 @@ def test_flat_model(tmp_path):
 
 #     model = datamodels.RomanDataModel()
 #     assert abs((Time.now() - model.meta.date).value) < 1.0
+
+# Read Noise tests
+def test_make_gain():
+    gain = utils.mk_gain(shape=(20,20))
+    assert gain.meta.reftype == 'GAIN'
+    assert gain.data.dtype == np.float32
+
+    # Test validation
+    gain_model = datamodels.RampModel(gain)
+    assert gain_model.validate() is None
+
+def test_opening_gain_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testgain.asdf'
+    utils.mk_gain(filepath=file_path)
+    gain = datamodels.open(file_path)
+    assert gain.meta.instrument.optical_element == 'F158'
+    assert isinstance(gain, datamodels.GainRefModel)
