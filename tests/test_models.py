@@ -139,6 +139,45 @@ def test_flat_model(tmp_path):
 #     model = datamodels.RomanDataModel()
 #     assert abs((Time.now() - model.meta.date).value) < 1.0
 
+# Dark Current tests
+def test_make_dark():
+    dark = utils.mk_dark(shape=(3, 20,20))
+    assert dark.meta.reftype == 'DARK'
+    assert dark.data.dtype == np.float32
+    assert dark.dq.dtype == np.uint32
+    assert dark.dq.shape == (20,20)
+    assert dark.err.dtype == np.float32
+
+    # Test validation
+    dark_model = datamodels.DarkRefModel(dark)
+    assert dark_model.validate() is None
+
+def test_opening_dark_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testdark.asdf'
+    utils.mk_dark(filepath=file_path)
+    dark = datamodels.open(file_path)
+    assert dark.meta.instrument.optical_element == 'F158'
+    assert isinstance(dark, datamodels.DarkRefModel)
+
+# Gain tests
+def test_make_gain():
+    gain = utils.mk_gain(shape=(20,20))
+    assert gain.meta.reftype == 'GAIN'
+    assert gain.data.dtype == np.float32
+
+    # Test validation
+    gain_model = datamodels.RampModel(gain)
+    assert gain_model.validate() is None
+
+def test_opening_gain_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testgain.asdf'
+    utils.mk_gain(filepath=file_path)
+    gain = datamodels.open(file_path)
+    assert gain.meta.instrument.optical_element == 'F158'
+    assert isinstance(gain, datamodels.GainRefModel)
+
 # Read Noise tests
 def test_make_readnoise():
     readnoise = utils.mk_readnoise(shape=(20,20))
@@ -156,20 +195,3 @@ def test_opening_readnoise_ref(tmp_path):
     readnoise = datamodels.open(file_path)
     assert readnoise.meta.instrument.optical_element == 'F158'
     assert isinstance(readnoise, datamodels.ReadnoiseRefModel)
-
-def test_make_gain():
-    gain = utils.mk_gain(shape=(20,20))
-    assert gain.meta.reftype == 'GAIN'
-    assert gain.data.dtype == np.float32
-
-    # Test validation
-    gain_model = datamodels.RampModel(gain)
-    assert gain_model.validate() is None
-
-def test_opening_gain_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / 'testgain.asdf'
-    utils.mk_gain(filepath=file_path)
-    gain = datamodels.open(file_path)
-    assert gain.meta.instrument.optical_element == 'F158'
-    assert isinstance(gain, datamodels.GainRefModel)

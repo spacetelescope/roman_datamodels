@@ -1,9 +1,12 @@
 0.6.0 (unreleased)
 ==================
 
-- Added readnoise maker utility and tests. [#23]
+- Added Dark Current model maker and tests. [#26]
 
-- Added ReadNoise maker utility and tests. [#24]
+- Added Readnoise maker utility and tests. [#23]
+
+- Added Gain maker utility and tests. [#24]
+
 
 0.5.0 (2021-08-07)
 ==================
