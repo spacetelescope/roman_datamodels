@@ -139,6 +139,7 @@ def test_flat_model(tmp_path):
 #     model = datamodels.RomanDataModel()
 #     assert abs((Time.now() - model.meta.date).value) < 1.0
 
+
 # Dark Current tests
 def test_make_dark():
     dark = utils.mk_dark(shape=(3, 20,20))
@@ -177,6 +178,26 @@ def test_opening_gain_ref(tmp_path):
     gain = datamodels.open(file_path)
     assert gain.meta.instrument.optical_element == 'F158'
     assert isinstance(gain, datamodels.GainRefModel)
+
+
+# Mask tests
+def test_make_mask():
+    mask = utils.mk_mask(shape=(20,20))
+    assert mask.meta.reftype == 'MASK'
+    assert mask.dq.dtype == np.uint32
+
+    # Test validation
+    mask_model = datamodels.RampModel(mask)
+    assert mask_model.validate() is None
+
+def test_opening_mask_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testmask.asdf'
+    utils.mk_mask(filepath=file_path)
+    mask = datamodels.open(file_path)
+    assert mask.meta.instrument.optical_element == 'F158'
+    assert isinstance(mask, datamodels.MaskRefModel)
+
 
 # Read Noise tests
 def test_make_readnoise():

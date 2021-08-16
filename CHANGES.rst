@@ -1,12 +1,15 @@
 0.6.0 (unreleased)
 ==================
 
+- Added tests for mask maker utility. [#25]
+
 - Added Dark Current model maker and tests. [#26]
 
 - Added Readnoise maker utility and tests. [#23]
 
 - Added Gain maker utility and tests. [#24]
 
+>>>>>>> 7b22bd94c43866c02f3d4662f2ce5679ca94d4fd
 
 0.5.0 (2021-08-07)
 ==================
