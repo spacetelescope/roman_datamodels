@@ -345,6 +345,50 @@ def mk_flat_file(outfilepath, shape=(20, 20)):
     af.tree = {'roman': flatref}
     af.write_to(outfilepath)
 
+def mk_dark(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    darkref = stnode.DarkRef()
+    meta['reftype'] = 'DARK'
+    darkref['meta'] = meta
+
+    if shape:
+        darkref['data'] = np.zeros(shape, dtype=np.float32)
+        darkref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
+        darkref['err'] = np.zeros(shape, dtype=np.float32)
+    else:
+        darkref['data'] = np.zeros((7, 4096, 4224), dtype=np.float32)
+        darkref['dq'] = np.zeros((4096, 4224), dtype=np.uint32)
+        darkref['err'] = np.zeros((7, 4096, 4224), dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': darkref}
+        af.write_to(filepath)
+    else:
+        return darkref
+
+
+def mk_gain(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    gainref = stnode.GainRef()
+    meta['reftype'] = 'GAIN'
+    gainref['meta'] = meta
+
+    if shape:
+        gainref['data'] = np.zeros(shape, dtype=np.float32)
+    else:
+        gainref['data'] = np.zeros((4096, 4224), dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': gainref}
+        af.write_to(filepath)
+    else:
+        return gainref
+
+
 def mk_mask(shape=None, filepath=None):
     meta = {}
     add_ref_common(meta)
@@ -363,6 +407,26 @@ def mk_mask(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return maskref
+
+
+def mk_readnoise(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    readnoiseref = stnode.ReadnoiseRef()
+    meta['reftype'] = 'READNOISE'
+    readnoiseref['meta'] = meta
+
+    if shape:
+        readnoiseref['data'] = np.zeros(shape, dtype=np.float32)
+    else:
+        readnoiseref['data'] = np.zeros((4096, 4224), dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': readnoiseref}
+        af.write_to(filepath)
+    else:
+        return readnoiseref
 
 
 def mk_ramp(arrays=True):
