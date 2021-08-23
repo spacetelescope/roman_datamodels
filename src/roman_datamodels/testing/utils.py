@@ -325,7 +325,7 @@ def add_ref_common(meta):
     meta['telescope'] = 'ROMAN'
     meta['instrument'] = instrument
     meta['origin'] = 'STSCI'
-    meta['pedigree'] = 'test pedigree'
+    meta['pedigree'] = 'GROUND'
     meta['author'] = 'test system'
     meta['description'] = 'blah blah blah'
     meta['useafter'] = time.Time(
