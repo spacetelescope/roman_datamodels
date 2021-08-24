@@ -185,8 +185,6 @@ def _random_detector():
 
 
 def _random_optical_element():
-    # TODO: Replace ENGINEERING with F213 once
-    # https://github.com/spacetelescope/rad/issues/6 is resolved.
     return _random_choice(
         "F062",
         "F087",
@@ -195,10 +193,10 @@ def _random_optical_element():
         "W146",
         "F158",
         "F184",
+        "F213",
         "GRISM",
         "PRISM",
         "DARK",
-        "ENGINEERING",
     )
 
 
