@@ -1,4 +1,4 @@
-0.5.2 (unreleased)
+0.5.2 (2021-08-26)
 ==================
 
 - Updated ENGINEERING value to F213 in optical_element. [#29]
