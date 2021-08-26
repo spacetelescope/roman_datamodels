@@ -1,7 +1,9 @@
-0.6.0 (Unreleased)
+0.5.2 (unreleased)
 ==================
 
-- Updated ENGINEERIGN value to F213 in optical_element. [#29]
+- Updated ENGINEERING value to F213 in optical_element. [#29]
+
+- Workaround for setuptools_scm issues with recent versions of pip. [#31]
 
 0.5.1 (2021-08-24)
 ==================
