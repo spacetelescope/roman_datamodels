@@ -1,6 +1,8 @@
 0.6.0 (unreleased)
 ==================
 
+- Added ability to add attributes to datamodels [#33]
+
 0.5.2 (2021-08-26)
 ==================
 
