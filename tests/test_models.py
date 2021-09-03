@@ -142,16 +142,17 @@ def test_flat_model(tmp_path):
 
 # Dark Current tests
 def test_make_dark():
-    dark = utils.mk_dark(shape=(3, 20,20))
+    dark = utils.mk_dark(shape=(3, 20, 20))
     assert dark.meta.reftype == 'DARK'
     assert dark.data.dtype == np.float32
     assert dark.dq.dtype == np.uint32
-    assert dark.dq.shape == (20,20)
+    assert dark.dq.shape == (20, 20)
     assert dark.err.dtype == np.float32
 
     # Test validation
     dark_model = datamodels.DarkRefModel(dark)
     assert dark_model.validate() is None
+
 
 def test_opening_dark_ref(tmp_path):
     # First make test reference file
@@ -162,14 +163,17 @@ def test_opening_dark_ref(tmp_path):
     assert isinstance(dark, datamodels.DarkRefModel)
 
 # Gain tests
+
+
 def test_make_gain():
-    gain = utils.mk_gain(shape=(20,20))
+    gain = utils.mk_gain(shape=(20, 20))
     assert gain.meta.reftype == 'GAIN'
     assert gain.data.dtype == np.float32
 
     # Test validation
     gain_model = datamodels.RampModel(gain)
     assert gain_model.validate() is None
+
 
 def test_opening_gain_ref(tmp_path):
     # First make test reference file
@@ -182,13 +186,14 @@ def test_opening_gain_ref(tmp_path):
 
 # Mask tests
 def test_make_mask():
-    mask = utils.mk_mask(shape=(20,20))
+    mask = utils.mk_mask(shape=(20, 20))
     assert mask.meta.reftype == 'MASK'
     assert mask.dq.dtype == np.uint32
 
     # Test validation
     mask_model = datamodels.RampModel(mask)
     assert mask_model.validate() is None
+
 
 def test_opening_mask_ref(tmp_path):
     # First make test reference file
@@ -201,13 +206,14 @@ def test_opening_mask_ref(tmp_path):
 
 # Read Noise tests
 def test_make_readnoise():
-    readnoise = utils.mk_readnoise(shape=(20,20))
+    readnoise = utils.mk_readnoise(shape=(20, 20))
     assert readnoise.meta.reftype == 'READNOISE'
     assert readnoise.data.dtype == np.float32
 
     # Test validation
     readnoise_model = datamodels.RampModel(readnoise)
     assert readnoise_model.validate() is None
+
 
 def test_opening_readnoise_ref(tmp_path):
     # First make test reference file
@@ -217,10 +223,13 @@ def test_opening_readnoise_ref(tmp_path):
     assert readnoise.meta.instrument.optical_element == 'F158'
     assert isinstance(readnoise, datamodels.ReadnoiseRefModel)
 
-def test_add_model_attribute(tmp_path):    
+
+def test_add_model_attribute(tmp_path):
     # First make test reference file
     file_path = tmp_path / 'testreadnoise.asdf'
     utils.mk_readnoise(filepath=file_path)
     readnoise = datamodels.open(file_path)
     readnoise['new_attribute'] = 77
     assert readnoise.new_attribute == 77
+    with pytest.raises(ValueError):
+        readnoise['_underscore'] = 'bad'

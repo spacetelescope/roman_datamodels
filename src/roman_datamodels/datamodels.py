@@ -181,6 +181,9 @@ class DataModel:
         return getattr(self._instance, attr)
 
     def __setitem__(self, key, value):
+        if key.startswith('_'):
+            raise ValueError(
+                'May not specify attributes/keys that start with _')
         self._instance._data[key] = value
 
     def to_flat_dict(self, include_arrays=True):
