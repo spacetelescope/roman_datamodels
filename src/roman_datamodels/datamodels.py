@@ -19,6 +19,7 @@ from . import stnode
 from . import validate
 from . extensions import DATAMODEL_EXTENSIONS
 
+
 class DataModel:
     '''Base class for all top level datamodels'''
 
@@ -179,6 +180,9 @@ class DataModel:
     def __getattr__(self, attr):
         return getattr(self._instance, attr)
 
+    def __setitem__(self, key, value):
+        self._instance._data[key] = value
+
     def to_flat_dict(self, include_arrays=True):
         """
         Returns a dictionary of all of the model items as a flat dictionary.
@@ -270,29 +274,38 @@ class DataModel:
 class ImageModel(DataModel):
     pass
 
+
 class ScienceRawModel(DataModel):
     pass
+
 
 class RampModel(DataModel):
     pass
 
+
 class RampFitOutputModel(DataModel):
     pass
+
 
 class FlatRefModel(DataModel):
     pass
 
+
 class DarkRefModel(DataModel):
     pass
+
 
 class GainRefModel(DataModel):
     pass
 
+
 class MaskRefModel(DataModel):
     pass
 
+
 class ReadnoiseRefModel(DataModel):
     pass
+
 
 class WfiImgPhotomRefModel(DataModel):
     pass

@@ -216,3 +216,11 @@ def test_opening_readnoise_ref(tmp_path):
     readnoise = datamodels.open(file_path)
     assert readnoise.meta.instrument.optical_element == 'F158'
     assert isinstance(readnoise, datamodels.ReadnoiseRefModel)
+
+def test_add_model_attribute(tmp_path):    
+    # First make test reference file
+    file_path = tmp_path / 'testreadnoise.asdf'
+    utils.mk_readnoise(filepath=file_path)
+    readnoise = datamodels.open(file_path)
+    readnoise['new_attribute'] = 77
+    assert readnoise.new_attribute == 77
