@@ -184,7 +184,11 @@ class DataModel:
         if key.startswith('_'):
             raise ValueError(
                 'May not specify attributes/keys that start with _')
-        self._instance._data[key] = value
+        if hasattr(self._instance, key):
+            print('XXXXXX')
+            setattr(self._instance, key, value)
+        else:
+            self._instance._data[key] = value
 
     def to_flat_dict(self, include_arrays=True):
         """
