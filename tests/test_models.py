@@ -271,7 +271,7 @@ def test_add_model_attribute(tmp_path):
     readnoise['new_attribute'] = 77
     assert readnoise.new_attribute == 77
     with pytest.raises(ValueError):
-        readnoise['_underscore'] = 'bad'
+         readnoise['_underscore'] = 'bad'
     file_path2 = tmp_path / 'testreadnoise2.asdf'
     readnoise.save(file_path2)
     readnoise2 = datamodels.open(file_path2)
@@ -344,3 +344,14 @@ def test_opening_wfi_img_photom_ref(tmp_path):
 
     assert wfi_img_photom.meta.instrument.optical_element == 'F158'
     assert isinstance(wfi_img_photom, datamodels.WfiImgPhotomRefModel)
+
+
+def test_open_with_model_class(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testreadnoise.asdf'
+    utils.mk_readnoise(filepath=file_path)
+    rnmod = datamodels.ReadnoiseRefModel(file_path)
+    assert rnmod.meta.reftype == "READNOISE"
+    assert rnmod.data.shape == (4096, 4224)
+    with pytest.raises(ValueError):
+        wrongmod = datamodels.RampModel(file_path)

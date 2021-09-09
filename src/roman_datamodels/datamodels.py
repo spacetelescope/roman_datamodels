@@ -40,7 +40,7 @@ class DataModel:
             asdffile = self.open_asdf(init, **kwargs)
             if not self.check_type(asdffile):
                 raise ValueError(
-                    f'ASDF file is not of the type expected. Expected {self.__class__.___name__}')
+                    f'ASDF file is not of the type expected. Expected {self.__class__.__name__}')
             self._instance = asdffile.tree['roman']
         elif isinstance(init, asdf.AsdfFile):
             asdffile = init
@@ -59,6 +59,18 @@ class DataModel:
         '''
         Subclass is expected to check for proper type of node
         '''
+        if 'roman' not in asdffile_instance.tree:
+            raise ValueError(
+                'ASDF file does not have expected "roman" attribute')
+        topnode = asdffile_instance.tree['roman']
+        if model_registry[topnode.__class__] != self.__class__:
+            # First check to see if there is a casting function
+            if topnode.__class__ not in casting_registry:
+                return False
+            casting_functions = casting_registry[topnode.__class__]
+            if self.__class__ not in casting_functions:
+                return False
+            casting_functions[self.__class__](self)
         return True
 
     @property
@@ -381,4 +393,13 @@ model_registry = {
     stnode.SaturationRef: SaturationRefModel,
     stnode.SuperbiasRef: SuperbiasRefModel,
     stnode.WfiImgPhotomRef: WfiImgPhotomRefModel,
+}
+
+
+def scienceraw_to_ramp(scienceraw_instance):
+    pass
+
+
+casting_registry = {
+    stnode.WfiScienceRaw: {RampModel: scienceraw_to_ramp}
 }
