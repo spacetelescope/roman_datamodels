@@ -233,6 +233,14 @@ def test_add_model_attribute(tmp_path):
     assert readnoise.new_attribute == 77
     with pytest.raises(ValueError):
         readnoise['_underscore'] = 'bad'
+    file_path2 = tmp_path / 'testreadnoise2.asdf'
+    readnoise.save(file_path2)
+    readnoise2 = datamodels.open(file_path2)
+    assert readnoise2.new_attribute == 77
+    readnoise2.new_attribute = 88
+    assert readnoise2.new_attribute == 88
+    with pytest.raises(ValidationError):
+        readnoise['data'] = 'bad_data_value'
 
 
 def test_open_with_model_class(tmp_path):
@@ -243,4 +251,4 @@ def test_open_with_model_class(tmp_path):
     assert rnmod.meta.reftype == "READNOISE"
     assert rnmod.data.shape == (4096, 4224)
     with pytest.raises(ValueError):
-        wrongmod = datamodels.RampModel(file_path)
+        datamodels.RampModel(file_path)

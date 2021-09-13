@@ -179,7 +179,7 @@ class DNode(UserDict):
                                     break
                     else:
                         schema = schema.get(key, None)
-                    if _validate(key, value, schema, self.ctx):
+                    if schema is None or _validate(key, value, schema, self.ctx):
                         self._data[key] = value
                 self.__dict__['_data'][key] = value
             else:
