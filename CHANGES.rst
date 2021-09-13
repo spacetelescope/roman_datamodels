@@ -3,6 +3,9 @@
 
 - Added ability to add attributes to datamodels [#33]
 
+- Added check to ensure opening a Roman file with datamodel class
+  that doesn't match the class implied by the tag raises an exception.
+
 0.5.2 (2021-08-26)
 ==================
 
