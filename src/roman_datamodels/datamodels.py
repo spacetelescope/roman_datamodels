@@ -185,7 +185,6 @@ class DataModel:
             raise ValueError(
                 'May not specify attributes/keys that start with _')
         if hasattr(self._instance, key):
-            print('XXXXXX')
             setattr(self._instance, key, value)
         else:
             self._instance._data[key] = value
