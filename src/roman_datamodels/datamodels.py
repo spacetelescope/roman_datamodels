@@ -64,13 +64,7 @@ class DataModel:
                 'ASDF file does not have expected "roman" attribute')
         topnode = asdffile_instance.tree['roman']
         if model_registry[topnode.__class__] != self.__class__:
-            # First check to see if there is a casting function
-            if topnode.__class__ not in casting_registry:
-                return False
-            casting_functions = casting_registry[topnode.__class__]
-            if self.__class__ not in casting_functions:
-                return False
-            casting_functions[self.__class__](self)
+            return False
         return True
 
     @property
@@ -393,13 +387,4 @@ model_registry = {
     stnode.SaturationRef: SaturationRefModel,
     stnode.SuperbiasRef: SuperbiasRefModel,
     stnode.WfiImgPhotomRef: WfiImgPhotomRefModel,
-}
-
-
-def scienceraw_to_ramp(scienceraw_instance):
-    pass
-
-
-casting_registry = {
-    stnode.WfiScienceRaw: {RampModel: scienceraw_to_ramp}
 }
