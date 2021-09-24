@@ -203,6 +203,13 @@ def mk_cal_step():
     calstep = stnode.CalStep()
     calstep['flat_field'] = 'INCOMPLETE'
     calstep['dq_init'] = 'INCOMPLETE'
+    calstep['assign_wcs'] = 'INCOMPLETE'
+    calstep['dark'] = 'INCOMPLETE'
+    calstep['jump'] = 'INCOMPLETE'
+    calstep['linearity'] = 'INCOMPLETE'
+    calstep['ramp_fit'] = 'INCOMPLETE'
+    calstep['saturation'] = 'INCOMPLETE'
+
     return calstep
 
 
