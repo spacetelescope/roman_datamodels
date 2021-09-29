@@ -223,7 +223,6 @@ def test_opening_readnoise_ref(tmp_path):
     assert readnoise.meta.instrument.optical_element == 'F158'
     assert isinstance(readnoise, datamodels.ReadnoiseRefModel)
 
-
 def test_add_model_attribute(tmp_path):
     # First make test reference file
     file_path = tmp_path / 'testreadnoise.asdf'
@@ -241,3 +240,22 @@ def test_add_model_attribute(tmp_path):
     assert readnoise2.new_attribute == 88
     with pytest.raises(ValidationError):
         readnoise['data'] = 'bad_data_value'
+
+# Saturation tests
+def test_make_saturation():
+    saturation = utils.mk_saturation(shape=(20, 20))
+    assert saturation.meta.reftype == 'SATURATION'
+    assert saturation.dq.dtype == np.uint32
+
+    # Test validation
+    saturation_model = datamodels.SaturationRefModel(saturation)
+    assert saturation_model.validate() is None
+
+
+def test_opening_saturation_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testsaturation.asdf'
+    utils.mk_saturation(filepath=file_path)
+    saturation = datamodels.open(file_path)
+    assert saturation.meta.instrument.optical_element == 'F158'
+    assert isinstance(saturation, datamodels.SaturationRefModel)

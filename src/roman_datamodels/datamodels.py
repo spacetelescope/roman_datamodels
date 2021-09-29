@@ -312,6 +312,8 @@ class MaskRefModel(DataModel):
 class ReadnoiseRefModel(DataModel):
     pass
 
+class SaturationRefModel(DataModel):
+    pass
 
 class WfiImgPhotomRefModel(DataModel):
     pass
@@ -350,5 +352,6 @@ model_registry = {
     stnode.GainRef: GainRefModel,
     stnode.MaskRef: MaskRefModel,
     stnode.ReadnoiseRef: ReadnoiseRefModel,
+    stnode.SaturationRef: SaturationRefModel,
     stnode.WfiImgPhotomRef: WfiImgPhotomRefModel,
 }
