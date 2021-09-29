@@ -856,7 +856,7 @@ def create_ramp_fit_output(**kwargs):
         "sigslope": _random_array_float32(seg_shape),
         "yint": _random_array_float32(seg_shape),
         "sigyint": _random_array_float32(seg_shape),
-        "pedestal": _random_array_float32(seg_shape),
+        "pedestal": _random_array_float32(seg_shape[1:]),
         "weights": _random_array_float32(seg_shape),
         "crmag": _random_array_float32(seg_shape),
         "var_poisson": _random_array_float32(seg_shape),

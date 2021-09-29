@@ -171,7 +171,7 @@ def test_make_gain():
     assert gain.data.dtype == np.float32
 
     # Test validation
-    gain_model = datamodels.RampModel(gain)
+    gain_model = datamodels.GainRefModel(gain)
     assert gain_model.validate() is None
 
 
@@ -191,7 +191,7 @@ def test_make_mask():
     assert mask.dq.dtype == np.uint32
 
     # Test validation
-    mask_model = datamodels.RampModel(mask)
+    mask_model = datamodels.MaskRefModel(mask)
     assert mask_model.validate() is None
 
 
@@ -211,7 +211,7 @@ def test_make_readnoise():
     assert readnoise.data.dtype == np.float32
 
     # Test validation
-    readnoise_model = datamodels.RampModel(readnoise)
+    readnoise_model = datamodels.ReadnoiseRefModel(readnoise)
     assert readnoise_model.validate() is None
 
 
