@@ -506,6 +506,29 @@ def create_readnoise_ref(**kwargs):
 
     return stnode.ReadnoiseRef(raw)
 
+def create_saturation_ref(**kwargs):
+    """
+    Create a dummy SaturationRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SaturationRef
+    """
+    raw = {
+        "data": _random_array_float32((4096, 4096)),
+        "dq": _random_array_uint32((4096, 4096)),
+        "meta": create_ref_meta(reftype="SATURATION"),
+    }
+    raw.update(kwargs)
+
+    return stnode.SaturationRef(raw)
+
 def create_wfi_img_photom_ref(**kwargs):
     """
     Create a dummy WfiImgPhotomRef instance with valid values for attributes

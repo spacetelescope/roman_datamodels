@@ -455,3 +455,24 @@ def mk_ramp(arrays=True):
         ramp['groupdq'] = np.zeros(shape, dtype=np.uint8)
         ramp['err'] = np.zeros(shape[1:], dtype=np.float32)
     return ramp
+
+def mk_saturation(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    saturationref = stnode.SaturationRef()
+    meta['reftype'] = 'SATURATION'
+    saturationref['meta'] = meta
+
+    if shape:
+        saturationref['data'] = np.zeros(shape, dtype=np.float32)
+        saturationref['dq'] = np.zeros(shape, dtype=np.uint32)
+    else:
+        saturationref['data'] = np.zeros((4096, 4224), dtype=np.float32)
+        saturationref['dq'] = np.zeros((4096, 4224), dtype=np.uint32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': saturationref}
+        af.write_to(filepath)
+    else:
+        return saturationref
