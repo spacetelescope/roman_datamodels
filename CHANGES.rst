@@ -7,6 +7,9 @@
 
 - Update Ramp Pedestal Array to 2D. Fixed reference model casting in test_models. [#38]
 
+- Implemented support and tests for linearity reference model. Corrected dimension order in factories. Added primary array definition to MaskRefModel. [#39]
+
+  
 0.5.2 (2021-08-26)
 ==================
 
