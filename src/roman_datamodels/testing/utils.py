@@ -395,6 +395,27 @@ def mk_gain(shape=None, filepath=None):
     else:
         return gainref
 
+def mk_linearity(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    linearityref = stnode.LinearityRef()
+    meta['reftype'] = 'LINEARITY'
+    linearityref['meta'] = meta
+
+    if shape:
+        linearityref['coeffs'] = np.zeros(shape, dtype=np.float32)
+        linearityref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
+    else:
+        linearityref['coeffs'] = np.zeros((2, 4096, 4224), dtype=np.float32)
+        linearityref['dq'] = np.zeros((4096, 4096), dtype=np.uint32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': linearityref}
+        af.write_to(filepath)
+    else:
+        return linearityref
+
 
 def mk_mask(shape=None, filepath=None):
     meta = {}
