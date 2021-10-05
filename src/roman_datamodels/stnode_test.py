@@ -7,8 +7,8 @@ def mk_test_object():
     exp = stnode.Exposure()
     exp['type'] = "WFI_CORON"
     exp['readpatt'] = "RAPID"
-    exp['start_time'] = Time('2020-11-11T11:11:11.11')
-    exp['end_time'] = Time('2020-11-11T11:21:11.11')
+    exp['start_time'] = '2020-11-11T11:11:11.11'
+    exp['end_time'] = '2020-11-11T11:21:11.11'
     exp['nints'] = 5
     exp['ngroups'] = 2
     exp['nframes'] = 99
@@ -35,9 +35,9 @@ def mk_test2():
     exp = stnode.Exposure()
     exp['count'] = 10
     exp['type'] = 'WFI_IMAGE'
-    exp['start_time'] = 1001.5
-    exp['mid_time'] = 1002.
-    exp['end_time'] = 1002.5
+    exp['start_time'] = '2020-11-11T11:11:11.11'
+    exp['mid_time'] = '2020-11-11T11:11:11.11'
+    exp['end_time'] = '2020-11-11T11:11:11.11'
     exp['start_time_mjd'] = 9999.0
     exp['mid_time_mjd'] = 9999.1
     exp['end_time_mjd'] = 9999.2

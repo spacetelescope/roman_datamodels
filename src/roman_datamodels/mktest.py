@@ -17,9 +17,9 @@ def mk_level2_image(filepath, outfilepath):
     exp = stnode.Exposure()
     exp['count'] = NONUM
     exp['type'] = NONUM
-    exp['start_time'] = NONUM
-    exp['mid_time'] = NONUM
-    exp['end_time'] = NONUM
+    exp['start_time'] = NOSTR
+    exp['mid_time'] = NOSTR
+    exp['end_time'] = NOSTR
     exp['start_time_mjd'] = NONUM
     exp['mid_time_mjd'] = NONUM
     exp['end_time_mjd'] = NONUM
