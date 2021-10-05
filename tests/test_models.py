@@ -163,8 +163,6 @@ def test_opening_dark_ref(tmp_path):
     assert isinstance(dark, datamodels.DarkRefModel)
 
 # Gain tests
-
-
 def test_make_gain():
     gain = utils.mk_gain(shape=(20, 20))
     assert gain.meta.reftype == 'GAIN'
@@ -182,6 +180,28 @@ def test_opening_gain_ref(tmp_path):
     gain = datamodels.open(file_path)
     assert gain.meta.instrument.optical_element == 'F158'
     assert isinstance(gain, datamodels.GainRefModel)
+
+
+# Linearity tests
+def test_make_linearity():
+    linearity = utils.mk_linearity(shape=(2, 20, 20))
+    assert linearity.meta.reftype == 'LINEARITY'
+    assert linearity.coeffs.dtype == np.float32
+    assert linearity.dq.dtype == np.uint32
+
+    # Test validation
+    linearity_model = datamodels.LinearityRefModel(linearity)
+    assert linearity_model.validate() is None
+
+
+def test_opening_linearity_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testlinearity.asdf'
+    utils.mk_linearity(filepath=file_path)
+    linearity = datamodels.open(file_path)
+    assert linearity.meta.instrument.optical_element == 'F158'
+    assert isinstance(linearity, datamodels.LinearityRefModel)
+
 
 
 # Mask tests

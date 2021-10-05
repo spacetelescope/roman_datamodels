@@ -304,9 +304,25 @@ class DarkRefModel(DataModel):
 class GainRefModel(DataModel):
     pass
 
+class LinearityRefModel(DataModel):
+    def get_primary_array_name(self):
+        """
+        Returns the name "primary" array for this model, which
+        controls the size of other arrays that are implicitly created.
+        This is intended to be overridden in the subclasses if the
+        primary array's name is not "data".
+        """
+        return 'coeffs'
 
 class MaskRefModel(DataModel):
-    pass
+    def get_primary_array_name(self):
+        """
+        Returns the name "primary" array for this model, which
+        controls the size of other arrays that are implicitly created.
+        This is intended to be overridden in the subclasses if the
+        primary array's name is not "data".
+        """
+        return 'dq'
 
 
 class ReadnoiseRefModel(DataModel):
@@ -350,6 +366,7 @@ model_registry = {
     stnode.FlatRef: FlatRefModel,
     stnode.DarkRef: DarkRefModel,
     stnode.GainRef: GainRefModel,
+    stnode.LinearityRef: LinearityRefModel,
     stnode.MaskRef: MaskRefModel,
     stnode.ReadnoiseRef: ReadnoiseRefModel,
     stnode.SaturationRef: SaturationRefModel,
