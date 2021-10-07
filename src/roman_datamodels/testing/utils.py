@@ -358,6 +358,12 @@ def mk_dark(shape=None, filepath=None):
     darkref = stnode.DarkRef()
     meta['reftype'] = 'DARK'
     darkref['meta'] = meta
+    observation = {}
+    observation['ma_table_name']="ma_table.name"
+    darkref['meta']['observation'] = observation
+    exposure = {}
+    exposure['type'] = 'WFI_IMAGE'
+    darkref['meta']['exposure'] = exposure
 
     if shape:
         darkref['data'] = np.zeros(shape, dtype=np.float32)
@@ -443,6 +449,9 @@ def mk_readnoise(shape=None, filepath=None):
     readnoiseref = stnode.ReadnoiseRef()
     meta['reftype'] = 'READNOISE'
     readnoiseref['meta'] = meta
+    exposure = {}
+    exposure['type'] = 'WFI_IMAGE'
+    readnoiseref['meta']['exposure'] = exposure
 
     if shape:
         readnoiseref['data'] = np.zeros(shape, dtype=np.float32)
