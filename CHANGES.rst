@@ -9,6 +9,7 @@
 
 - Implemented support and tests for linearity reference model. Corrected dimension order in factories. Added primary array definition to MaskRefModel. [#39]
 
+- Updated tests and makers for exposure and optical_element requirements in reference files. [#42]
   
 0.5.2 (2021-08-26)
 ==================
