@@ -9,6 +9,8 @@
 
 - Implemented support and tests for linearity reference model. Corrected dimension order in factories. Added primary array definition to MaskRefModel. [#39]
 
+- Changed exposure ``start_time``, ``mid_time``, and ``end_time`` to string to match RAD update. [#40]
+
   
 0.5.2 (2021-08-26)
 ==================
