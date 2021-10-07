@@ -373,10 +373,16 @@ def create_ref_meta(**kwargs):
     raw = {
         "author": _random_string("Reference author "),
         "description": _random_string("Reference description "),
+        "exposure": {
+            "type" : "WFI_IMAGE",
+        },
         "instrument": {
             "name": "WFI",
             "detector": _random_detector(),
             "optical_element": _random_optical_element(),
+        },
+        "observation": {
+            "ma_table_name": "ma_table.name",
         },
         "origin": "STScI",
         "pedigree": "DUMMY",
