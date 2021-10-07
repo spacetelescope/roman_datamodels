@@ -13,12 +13,9 @@ def mk_exposure():
     exp = stnode.Exposure()
     exp['id'] = NONUM
     exp['type'] = 'WFI_IMAGE'
-    exp['start_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
-    exp['mid_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
-    exp['end_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
+    exp['start_time'] = '2020-01-01T00:00:00.0'
+    exp['mid_time'] = '2020-01-01T00:00:00.0'
+    exp['end_time'] = '2020-01-01T00:00:00.0'
     exp['start_time_mjd'] = NONUM
     exp['mid_time_mjd'] = NONUM
     exp['end_time_mjd'] = NONUM
