@@ -462,6 +462,32 @@ def mk_pixelarea(shape=None, filepath=None):
     else:
         return pixelarearef
 
+def mk_wfi_img_photom(filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    wfi_img_photomref = stnode.WfiImgPhotomRef()
+    meta['reftype'] = 'PHOTOM'
+    wfi_img_photomref['meta'] = meta
+
+    wfi_img_photo_dict = {
+        "W146":
+            {"photmjsr": (10 * np.random.random()),
+             "uncertainty": np.random.random()},
+        "F184":
+            {"photmjsr": (10 * np.random.random()),
+             "uncertainty": np.random.random()}
+    }
+
+    wfi_img_photomref['phot_table'] = wfi_img_photo_dict
+
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': wfi_img_photomref}
+        af.write_to(filepath)
+    else:
+        return wfi_img_photomref
+
 def mk_readnoise(shape=None, filepath=None):
     meta = {}
     add_ref_common(meta)
