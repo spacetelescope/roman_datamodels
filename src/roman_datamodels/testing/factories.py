@@ -558,6 +558,30 @@ def create_saturation_ref(**kwargs):
 
     return stnode.SaturationRef(raw)
 
+def create_superbias_ref(**kwargs):
+    """
+    Create a dummy SuperbiasRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SuperbiasRef
+    """
+    raw = {
+        "data": _random_array_float32((4096, 4096)),
+        "dq": _random_array_uint32((4096, 4096)),
+        "err": _random_array_float32((4096, 4096)),
+        "meta": create_ref_meta(reftype="BIAS"),
+    }
+    raw.update(kwargs)
+
+    return stnode.SuperbiasRef(raw)
+
 def create_wfi_img_photom_ref(**kwargs):
     """
     Create a dummy WfiImgPhotomRef instance with valid values for attributes

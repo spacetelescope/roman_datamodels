@@ -328,6 +328,9 @@ class MaskRefModel(DataModel):
 class ReadnoiseRefModel(DataModel):
     pass
 
+class SuperbiasRefModel(DataModel):
+    pass
+
 class SaturationRefModel(DataModel):
     pass
 
@@ -370,5 +373,6 @@ model_registry = {
     stnode.MaskRef: MaskRefModel,
     stnode.ReadnoiseRef: ReadnoiseRefModel,
     stnode.SaturationRef: SaturationRefModel,
+    stnode.SuperbiasRef: SuperbiasRefModel,
     stnode.WfiImgPhotomRef: WfiImgPhotomRefModel,
 }

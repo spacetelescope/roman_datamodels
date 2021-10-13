@@ -503,3 +503,26 @@ def mk_saturation(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return saturationref
+
+def mk_superbias(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    superbiasref = stnode.SuperbiasRef()
+    meta['reftype'] = 'BIAS'
+    superbiasref['meta'] = meta
+
+    if shape:
+        superbiasref['data'] = np.zeros(shape, dtype=np.float32)
+        superbiasref['dq'] = np.zeros(shape, dtype=np.uint32)
+        superbiasref['err'] = np.zeros(shape, dtype=np.float32)
+    else:
+        superbiasref['data'] = np.zeros((4096, 4224), dtype=np.float32)
+        superbiasref['dq'] = np.zeros((4096, 4224), dtype=np.uint32)
+        superbiasref['err'] = np.zeros((4096, 4224), dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': superbiasref}
+        af.write_to(filepath)
+    else:
+        return superbiasref

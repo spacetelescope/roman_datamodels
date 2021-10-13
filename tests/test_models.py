@@ -279,3 +279,24 @@ def test_opening_saturation_ref(tmp_path):
     saturation = datamodels.open(file_path)
     assert saturation.meta.instrument.optical_element == 'F158'
     assert isinstance(saturation, datamodels.SaturationRefModel)
+
+# Saturation tests
+def test_make_superbias():
+    superbias = utils.mk_superbias(shape=(20, 20))
+    assert superbias.meta.reftype == 'BIAS'
+    assert superbias.data.dtype == np.float32
+    assert superbias.err.dtype == np.float32
+    assert superbias.dq.dtype == np.uint32
+    assert superbias.dq.shape == (20, 20)
+
+    # Test validation
+    superbias_model = datamodels.SuperbiasRefModel(superbias)
+    assert superbias_model.validate() is None
+
+def test_opening_superbias_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testsuperbias.asdf'
+    utils.mk_superbias(filepath=file_path)
+    superbias = datamodels.open(file_path)
+    assert superbias.meta.instrument.optical_element == 'F158'
+    assert isinstance(superbias, datamodels.SuperbiasRefModel)
