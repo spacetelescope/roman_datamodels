@@ -279,3 +279,27 @@ def test_opening_saturation_ref(tmp_path):
     saturation = datamodels.open(file_path)
     assert saturation.meta.instrument.optical_element == 'F158'
     assert isinstance(saturation, datamodels.SaturationRefModel)
+
+# WHI Photom tests
+def test_make_wfi_img_photom():
+    wfi_img_photom = utils.mk_wfi_img_photom()
+
+    assert wfi_img_photom.meta.reftype == 'PHOTOM'
+    assert type(wfi_img_photom.phot_table.W146.photmjsr) == float
+    assert type(wfi_img_photom.phot_table.F184.photmjsr) == float
+    assert type(wfi_img_photom.phot_table.W146.uncertainty) == float
+    assert type(wfi_img_photom.phot_table.F184.uncertainty) == float
+
+    # Test validation
+    wfi_img_photom_model = datamodels.WfiImgPhotomRefModel(wfi_img_photom)
+    assert wfi_img_photom_model.validate() is None
+
+
+def test_opening_wfi_img_photom_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testwfi_img_photom.asdf'
+    utils.mk_wfi_img_photom(filepath=file_path)
+    wfi_img_photom = datamodels.open(file_path)
+
+    assert wfi_img_photom.meta.instrument.optical_element == 'F158'
+    assert isinstance(wfi_img_photom, datamodels.WfiImgPhotomRefModel)
