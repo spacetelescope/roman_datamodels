@@ -13,6 +13,8 @@
 
 - Changed exposure ``start_time``, ``mid_time``, and ``end_time`` to string to match RAD update. [#40]
 
+- Created maker utility and tests for wfi photom reference files. [#43]
+
   
 0.5.2 (2021-08-26)
 ==================
