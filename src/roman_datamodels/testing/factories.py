@@ -512,6 +512,31 @@ def create_mask_ref(**kwargs):
 
     return stnode.MaskRef(raw)
 
+def create_pixelarea_ref(**kwargs):
+    """
+    Create a dummy PixelareaRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.PixelareaRef
+    """
+    raw = {
+        "data": _random_array_float32((4096, 4096)),
+        "meta": create_ref_meta(reftype="AREA"),
+    }
+    raw['meta']['photometry'] = {
+        'pixelarea_steradians': _random_positive_float(),
+        'pixelarea_arcsecsq': _random_positive_float(),
+    }
+    raw.update(kwargs)
+
+    return stnode.PixelareaRef(raw)
 
 def create_readnoise_ref(**kwargs):
     """
