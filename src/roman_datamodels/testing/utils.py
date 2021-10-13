@@ -439,6 +439,28 @@ def mk_mask(shape=None, filepath=None):
     else:
         return maskref
 
+def mk_pixelarea(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    pixelarearef = stnode.PixelareaRef()
+    meta['reftype'] = 'AREA'
+    meta['photometry'] = {
+        'pixelarea_steradians': float(NONUM),
+        'pixelarea_arcsecsq': float(NONUM),
+    }
+    pixelarearef['meta'] = meta
+
+    if shape:
+        pixelarearef['data'] = np.zeros(shape, dtype=np.float32)
+    else:
+        pixelarearef['data'] = np.zeros((4096, 4096), dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': pixelarearef}
+        af.write_to(filepath)
+    else:
+        return pixelarearef
 
 def mk_wfi_img_photom(filepath=None):
     meta = {}

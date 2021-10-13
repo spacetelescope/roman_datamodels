@@ -15,6 +15,8 @@
 
 - Created maker utility and tests for wfi photom reference files. [#43]
 
+- Added support, tests, and maker utility for Pixel Area reference files. [#44]
+  
   
 0.5.2 (2021-08-26)
 ==================
