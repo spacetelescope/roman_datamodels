@@ -13,6 +13,8 @@
 
 - Changed exposure ``start_time``, ``mid_time``, and ``end_time`` to string to match RAD update. [#40]
 
+- Implemented support, tests, and maker utility for Super Bias reference files. [#45]  
+
 - Created maker utility and tests for wfi photom reference files. [#43]
 
 - Added support, tests, and maker utility for Pixel Area reference files. [#44]

@@ -330,6 +330,9 @@ class PixelareaRefModel(DataModel):
 class ReadnoiseRefModel(DataModel):
     pass
 
+class SuperbiasRefModel(DataModel):
+    pass
+
 class SaturationRefModel(DataModel):
     pass
 
@@ -373,5 +376,6 @@ model_registry = {
     stnode.PixelareaRef: PixelareaRefModel,
     stnode.ReadnoiseRef: ReadnoiseRefModel,
     stnode.SaturationRef: SaturationRefModel,
+    stnode.SuperbiasRef: SuperbiasRefModel,
     stnode.WfiImgPhotomRef: WfiImgPhotomRefModel,
 }
