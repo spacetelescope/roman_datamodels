@@ -14,6 +14,9 @@
 - Changed exposure ``start_time``, ``mid_time``, and ``end_time`` to string to match RAD update. [#40]
 
 - Implemented support, tests, and maker utility for Super Bias reference files. [#45]  
+
+- Added support, tests, and maker utility for Pixel Area reference files. [#44]
+  
   
 0.5.2 (2021-08-26)
 ==================

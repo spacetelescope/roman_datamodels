@@ -223,6 +223,26 @@ def test_opening_mask_ref(tmp_path):
     assert mask.meta.instrument.optical_element == 'F158'
     assert isinstance(mask, datamodels.MaskRefModel)
 
+# Pixel Area tests
+def test_make_pixelarea():
+    pixearea = utils.mk_pixelarea(shape=(20, 20))
+    assert pixearea.meta.reftype == 'AREA'
+    assert type(pixearea.meta.photometry.pixelarea_steradians) == float
+    assert type(pixearea.meta.photometry.pixelarea_arcsecsq) == float
+    assert pixearea.data.dtype == np.float32
+
+    # Test validation
+    pixearea_model = datamodels.PixelareaRefModel(pixearea)
+    assert pixearea_model.validate() is None
+
+
+def test_opening_pixelarea_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testpixelarea.asdf'
+    utils.mk_pixelarea(filepath=file_path)
+    pixelarea = datamodels.open(file_path)
+    assert pixelarea.meta.instrument.optical_element == 'F158'
+    assert isinstance(pixelarea, datamodels.PixelareaRefModel)
 
 # Read Noise tests
 def test_make_readnoise():

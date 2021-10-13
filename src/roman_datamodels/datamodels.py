@@ -324,6 +324,8 @@ class MaskRefModel(DataModel):
         """
         return 'dq'
 
+class PixelareaRefModel(DataModel):
+    pass
 
 class ReadnoiseRefModel(DataModel):
     pass
@@ -371,6 +373,7 @@ model_registry = {
     stnode.GainRef: GainRefModel,
     stnode.LinearityRef: LinearityRefModel,
     stnode.MaskRef: MaskRefModel,
+    stnode.PixelareaRef: PixelareaRefModel,
     stnode.ReadnoiseRef: ReadnoiseRefModel,
     stnode.SaturationRef: SaturationRefModel,
     stnode.SuperbiasRef: SuperbiasRefModel,
