@@ -304,43 +304,25 @@ class DarkRefModel(DataModel):
 class GainRefModel(DataModel):
     pass
 
-class LinearityRefModel(DataModel):
-    def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
-        return 'coeffs'
 
 class MaskRefModel(DataModel):
-    def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
-        return 'dq'
-
-class PixelareaRefModel(DataModel):
     pass
+
 
 class ReadnoiseRefModel(DataModel):
     pass
 
-class SuperbiasRefModel(DataModel):
-    pass
-
-class SaturationRefModel(DataModel):
-    pass
 
 class WfiImgPhotomRefModel(DataModel):
     pass
 
 
 def open(init, memmap=False, **kwargs):
+
+    # Temp fix to catch JWST args defore being passed to asdf open
+    if "asn_n_members" in kwargs:
+        del kwargs["asn_n_members"]
+
     if isinstance(init, asdf.AsdfFile):
         asdffile = init
     elif isinstance(init, DataModel):
@@ -371,11 +353,7 @@ model_registry = {
     stnode.FlatRef: FlatRefModel,
     stnode.DarkRef: DarkRefModel,
     stnode.GainRef: GainRefModel,
-    stnode.LinearityRef: LinearityRefModel,
     stnode.MaskRef: MaskRefModel,
-    stnode.PixelareaRef: PixelareaRefModel,
     stnode.ReadnoiseRef: ReadnoiseRefModel,
-    stnode.SaturationRef: SaturationRefModel,
-    stnode.SuperbiasRef: SuperbiasRefModel,
     stnode.WfiImgPhotomRef: WfiImgPhotomRefModel,
 }
