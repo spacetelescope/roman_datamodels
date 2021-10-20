@@ -341,6 +341,9 @@ class WfiImgPhotomRefModel(DataModel):
 
 
 def open(init, memmap=False, **kwargs):
+    # Temp fix to catch JWST args defore being passed to asdf open
+    if "asn_n_members" in kwargs:
+        del kwargs["asn_n_members"]
     if isinstance(init, asdf.AsdfFile):
         asdffile = init
     elif isinstance(init, DataModel):
