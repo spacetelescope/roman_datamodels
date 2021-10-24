@@ -354,4 +354,4 @@ def test_open_with_model_class(tmp_path):
     assert rnmod.meta.reftype == "READNOISE"
     assert rnmod.data.shape == (4096, 4224)
     with pytest.raises(ValueError):
-        wrongmod = datamodels.RampModel(file_path)
+        datamodels.RampModel(file_path)
