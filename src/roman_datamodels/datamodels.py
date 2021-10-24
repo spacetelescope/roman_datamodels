@@ -40,7 +40,7 @@ class DataModel:
             asdffile = self.open_asdf(init, **kwargs)
             if not self.check_type(asdffile):
                 raise ValueError(
-                    f'ASDF file is not of the type expected. Expected {self.__class__.___name__}')
+                    f'ASDF file is not of the type expected. Expected {self.__class__.__name__}')
             self._instance = asdffile.tree['roman']
         elif isinstance(init, asdf.AsdfFile):
             asdffile = init
@@ -59,6 +59,12 @@ class DataModel:
         '''
         Subclass is expected to check for proper type of node
         '''
+        if 'roman' not in asdffile_instance.tree:
+            raise ValueError(
+                'ASDF file does not have expected "roman" attribute')
+        topnode = asdffile_instance.tree['roman']
+        if model_registry[topnode.__class__] != self.__class__:
+            return False
         return True
 
     @property

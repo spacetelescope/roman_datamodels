@@ -344,3 +344,14 @@ def test_opening_wfi_img_photom_ref(tmp_path):
 
     assert wfi_img_photom.meta.instrument.optical_element == 'F158'
     assert isinstance(wfi_img_photom, datamodels.WfiImgPhotomRefModel)
+
+
+def test_open_with_model_class(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testreadnoise.asdf'
+    utils.mk_readnoise(filepath=file_path)
+    rnmod = datamodels.ReadnoiseRefModel(file_path)
+    assert rnmod.meta.reftype == "READNOISE"
+    assert rnmod.data.shape == (4096, 4224)
+    with pytest.raises(ValueError):
+        datamodels.RampModel(file_path)
