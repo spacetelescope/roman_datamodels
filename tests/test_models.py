@@ -271,7 +271,7 @@ def test_add_model_attribute(tmp_path):
     readnoise['new_attribute'] = 77
     assert readnoise.new_attribute == 77
     with pytest.raises(ValueError):
-         readnoise['_underscore'] = 'bad'
+        readnoise['_underscore'] = 'bad'
     file_path2 = tmp_path / 'testreadnoise2.asdf'
     readnoise.save(file_path2)
     readnoise2 = datamodels.open(file_path2)
