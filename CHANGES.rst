@@ -1,6 +1,8 @@
 0.6.0 (unreleased)
 ==================
 
+- Reverted Exposure time types from string back to astropy Time. [#49]
+
 - Added ability to add attributes to datamodels [#33]
 
 - Added support for Saturation reference files. [#37]
