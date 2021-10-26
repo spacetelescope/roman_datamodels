@@ -16,8 +16,6 @@ EXPECTED_COMMON_REFERENCE = \
     {'$ref': 'ref_common-1.0.0'}
 
 # Helper class to iterate over model subclasses
-
-
 def iter_subclasses(model_class, include_base_model=True):
     if include_base_model:
         yield model_class
@@ -33,8 +31,6 @@ def test_model_schemas():
         asdf.schema.load_schema(schema_uri)
 
 # Testing core schema
-
-
 def test_core_schema(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
