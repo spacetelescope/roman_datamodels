@@ -1,11 +1,13 @@
 0.6.0 (unreleased)
 ==================
 
+- Reverted Exposure time types from string back to astropy Time. [#49]
+
 - Added ability to add attributes to datamodels [#33]
 
 - Added support for Saturation reference files. [#37]
 
-- Update Ramp Pedestal Array to 2D. Fixed reference model casting in test_models. [#38]
+- Updated Ramp Pedestal Array to 2D. Fixed reference model casting in test_models. [#38]
 
 - Implemented support and tests for linearity reference model. Corrected dimension order in factories. Added primary array definition to MaskRefModel. [#39]
 
@@ -18,7 +20,6 @@
 - Created maker utility and tests for wfi photom reference files. [#43]
 
 - Added support, tests, and maker utility for Pixel Area reference files. [#44]
-
 
 - Added check to ensure opening a Roman file with datamodel class
   that doesn't match the class implied by the tag raises an exception. [#35]
