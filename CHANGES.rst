@@ -21,7 +21,6 @@
 
 - Added support, tests, and maker utility for Pixel Area reference files. [#44]
 
-
 - Added check to ensure opening a Roman file with datamodel class
   that doesn't match the class implied by the tag raises an exception. [#35]
 
