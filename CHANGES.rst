@@ -7,7 +7,7 @@
 
 - Added support for Saturation reference files. [#37]
 
-- Update Ramp Pedestal Array to 2D. Fixed reference model casting in test_models. [#38]
+- Updated Ramp Pedestal Array to 2D. Fixed reference model casting in test_models. [#38]
 
 - Implemented support and tests for linearity reference model. Corrected dimension order in factories. Added primary array definition to MaskRefModel. [#39]
 
