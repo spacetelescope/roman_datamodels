@@ -534,7 +534,7 @@ def mk_ramp(arrays=True):
         ramp['err'] = np.zeros(shape[1:], dtype=np.float32)
     return ramp
 
-def mk_rampfitoutput(arrays=True):
+def mk_rampfitoutput(arrays=True, filepath=None):
     meta = mk_common_meta()
     rampfitoutput = stnode.RampFitOutput()
     rampfitoutput['meta'] = meta
@@ -554,7 +554,13 @@ def mk_rampfitoutput(arrays=True):
     rampfitoutput['var_poisson'] = np.zeros(shape, dtype=np.float32)
     rampfitoutput['var_rnoise'] = np.zeros(shape, dtype=np.float32)
 
-    return rampfitoutput
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': rampfitoutput}
+        af.write_to(filepath)
+    else:
+        return rampfitoutput
+
 
 def mk_saturation(shape=None, filepath=None):
     meta = {}

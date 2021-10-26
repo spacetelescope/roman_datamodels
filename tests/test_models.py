@@ -61,6 +61,36 @@ def test_core_schema(tmp_path):
         assert model.meta.telescope == 'XOMAN'
     asdf.get_config().validate_on_read = True
 
+# RampFitOutput tests
+def test_make_rampfitoutput():
+    rampfitoutput = utils.mk_rampfitoutput(arrays=(2, 20, 20))
+
+    assert rampfitoutput.meta.exposure.type == 'WFI_IMAGE'
+    assert rampfitoutput.slope.dtype == np.float32
+    assert rampfitoutput.sigslope.dtype == np.float32
+    assert rampfitoutput.yint.dtype == np.float32
+    assert rampfitoutput.sigyint.dtype == np.float32
+    assert rampfitoutput.pedestal.dtype == np.float32
+    assert rampfitoutput.weights.dtype == np.float32
+    assert rampfitoutput.crmag.dtype == np.float32
+    assert rampfitoutput.var_poisson.dtype == np.float32
+    assert rampfitoutput.var_rnoise.dtype == np.float32
+    assert rampfitoutput.var_poisson.shape == (2, 20, 20)
+    assert rampfitoutput.pedestal.shape == (20, 20)
+
+    # Test validation
+    rampfitoutput_model = datamodels.RampFitOutputModel(rampfitoutput)
+    assert rampfitoutput_model.validate() is None
+
+def test_opening_rampfitoutput_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testrampfitoutput.asdf'
+    utils.mk_rampfitoutput(filepath=file_path)
+    rampfitoutput = datamodels.open(file_path)
+    assert rampfitoutput.meta.instrument.optical_element == 'F062'
+    assert isinstance(rampfitoutput, datamodels.RampFitOutputModel)
+
+
 
 # Testing all reference file schemas
 def test_reference_file_model_base(tmp_path):
