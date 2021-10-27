@@ -1,7 +1,7 @@
 0.7.0 (unreleased)
 ==================
 
-- Created maker utility and tests for ramp_fit_output reference files. [#50]
+- Created maker utility and tests for ramp_fit_output files. [#50]
 
 0.6.0 (2021-10-26)
 ==================
