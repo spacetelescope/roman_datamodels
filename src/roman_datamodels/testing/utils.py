@@ -534,6 +534,34 @@ def mk_ramp(arrays=True):
         ramp['err'] = np.zeros(shape[1:], dtype=np.float32)
     return ramp
 
+def mk_rampfitoutput(arrays=True, filepath=None):
+    meta = mk_common_meta()
+    rampfitoutput = stnode.RampFitOutput()
+    rampfitoutput['meta'] = meta
+
+    if arrays is True:
+        shape = (8, 4096, 4096)
+    else:
+        shape = arrays
+
+    rampfitoutput['slope'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['sigslope'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['yint'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['sigyint'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['pedestal'] = np.zeros(shape[1:], dtype=np.float32)
+    rampfitoutput['weights'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['crmag'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['var_poisson'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['var_rnoise'] = np.zeros(shape, dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': rampfitoutput}
+        af.write_to(filepath)
+    else:
+        return rampfitoutput
+
+
 def mk_saturation(shape=None, filepath=None):
     meta = {}
     add_ref_common(meta)

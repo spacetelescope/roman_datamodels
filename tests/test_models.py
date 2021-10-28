@@ -16,8 +16,6 @@ EXPECTED_COMMON_REFERENCE = \
     {'$ref': 'ref_common-1.0.0'}
 
 # Helper class to iterate over model subclasses
-
-
 def iter_subclasses(model_class, include_base_model=True):
     if include_base_model:
         yield model_class
@@ -33,8 +31,6 @@ def test_model_schemas():
         asdf.schema.load_schema(schema_uri)
 
 # Testing core schema
-
-
 def test_core_schema(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
@@ -64,6 +60,36 @@ def test_core_schema(tmp_path):
     with datamodels.open(file_path) as model:
         assert model.meta.telescope == 'XOMAN'
     asdf.get_config().validate_on_read = True
+
+# RampFitOutput tests
+def test_make_rampfitoutput():
+    rampfitoutput = utils.mk_rampfitoutput(arrays=(2, 20, 20))
+
+    assert rampfitoutput.meta.exposure.type == 'WFI_IMAGE'
+    assert rampfitoutput.slope.dtype == np.float32
+    assert rampfitoutput.sigslope.dtype == np.float32
+    assert rampfitoutput.yint.dtype == np.float32
+    assert rampfitoutput.sigyint.dtype == np.float32
+    assert rampfitoutput.pedestal.dtype == np.float32
+    assert rampfitoutput.weights.dtype == np.float32
+    assert rampfitoutput.crmag.dtype == np.float32
+    assert rampfitoutput.var_poisson.dtype == np.float32
+    assert rampfitoutput.var_rnoise.dtype == np.float32
+    assert rampfitoutput.var_poisson.shape == (2, 20, 20)
+    assert rampfitoutput.pedestal.shape == (20, 20)
+
+    # Test validation
+    rampfitoutput_model = datamodels.RampFitOutputModel(rampfitoutput)
+    assert rampfitoutput_model.validate() is None
+
+def test_opening_rampfitoutput_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testrampfitoutput.asdf'
+    utils.mk_rampfitoutput(filepath=file_path)
+    rampfitoutput = datamodels.open(file_path)
+    assert rampfitoutput.meta.instrument.optical_element == 'F062'
+    assert isinstance(rampfitoutput, datamodels.RampFitOutputModel)
+
 
 
 # Testing all reference file schemas
