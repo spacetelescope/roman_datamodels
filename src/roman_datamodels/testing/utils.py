@@ -203,6 +203,13 @@ def mk_cal_step():
     calstep = stnode.CalStep()
     calstep['flat_field'] = 'INCOMPLETE'
     calstep['dq_init'] = 'INCOMPLETE'
+    calstep['assign_wcs'] = 'INCOMPLETE'
+    calstep['dark'] = 'INCOMPLETE'
+    calstep['jump'] = 'INCOMPLETE'
+    calstep['linearity'] = 'INCOMPLETE'
+    calstep['ramp_fit'] = 'INCOMPLETE'
+    calstep['saturation'] = 'INCOMPLETE'
+
     return calstep
 
 
@@ -351,6 +358,12 @@ def mk_dark(shape=None, filepath=None):
     darkref = stnode.DarkRef()
     meta['reftype'] = 'DARK'
     darkref['meta'] = meta
+    observation = {}
+    observation['ma_table_name']="ma_table.name"
+    darkref['meta']['observation'] = observation
+    exposure = {}
+    exposure['type'] = 'WFI_IMAGE'
+    darkref['meta']['exposure'] = exposure
 
     if shape:
         darkref['data'] = np.zeros(shape, dtype=np.float32)
@@ -388,6 +401,27 @@ def mk_gain(shape=None, filepath=None):
     else:
         return gainref
 
+def mk_linearity(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    linearityref = stnode.LinearityRef()
+    meta['reftype'] = 'LINEARITY'
+    linearityref['meta'] = meta
+
+    if shape:
+        linearityref['coeffs'] = np.zeros(shape, dtype=np.float32)
+        linearityref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
+    else:
+        linearityref['coeffs'] = np.zeros((2, 4096, 4224), dtype=np.float32)
+        linearityref['dq'] = np.zeros((4096, 4096), dtype=np.uint32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': linearityref}
+        af.write_to(filepath)
+    else:
+        return linearityref
+
 
 def mk_mask(shape=None, filepath=None):
     meta = {}
@@ -408,6 +442,54 @@ def mk_mask(shape=None, filepath=None):
     else:
         return maskref
 
+def mk_pixelarea(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    pixelarearef = stnode.PixelareaRef()
+    meta['reftype'] = 'AREA'
+    meta['photometry'] = {
+        'pixelarea_steradians': float(NONUM),
+        'pixelarea_arcsecsq': float(NONUM),
+    }
+    pixelarearef['meta'] = meta
+
+    if shape:
+        pixelarearef['data'] = np.zeros(shape, dtype=np.float32)
+    else:
+        pixelarearef['data'] = np.zeros((4096, 4096), dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': pixelarearef}
+        af.write_to(filepath)
+    else:
+        return pixelarearef
+
+def mk_wfi_img_photom(filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    wfi_img_photomref = stnode.WfiImgPhotomRef()
+    meta['reftype'] = 'PHOTOM'
+    wfi_img_photomref['meta'] = meta
+
+    wfi_img_photo_dict = {
+        "W146":
+            {"photmjsr": (10 * np.random.random()),
+             "uncertainty": np.random.random()},
+        "F184":
+            {"photmjsr": (10 * np.random.random()),
+             "uncertainty": np.random.random()}
+    }
+
+    wfi_img_photomref['phot_table'] = wfi_img_photo_dict
+
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': wfi_img_photomref}
+        af.write_to(filepath)
+    else:
+        return wfi_img_photomref
 
 def mk_readnoise(shape=None, filepath=None):
     meta = {}
@@ -415,6 +497,9 @@ def mk_readnoise(shape=None, filepath=None):
     readnoiseref = stnode.ReadnoiseRef()
     meta['reftype'] = 'READNOISE'
     readnoiseref['meta'] = meta
+    exposure = {}
+    exposure['type'] = 'WFI_IMAGE'
+    readnoiseref['meta']['exposure'] = exposure
 
     if shape:
         readnoiseref['data'] = np.zeros(shape, dtype=np.float32)
@@ -448,3 +533,75 @@ def mk_ramp(arrays=True):
         ramp['groupdq'] = np.zeros(shape, dtype=np.uint8)
         ramp['err'] = np.zeros(shape[1:], dtype=np.float32)
     return ramp
+
+def mk_rampfitoutput(arrays=True, filepath=None):
+    meta = mk_common_meta()
+    rampfitoutput = stnode.RampFitOutput()
+    rampfitoutput['meta'] = meta
+
+    if arrays is True:
+        shape = (8, 4096, 4096)
+    else:
+        shape = arrays
+
+    rampfitoutput['slope'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['sigslope'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['yint'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['sigyint'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['pedestal'] = np.zeros(shape[1:], dtype=np.float32)
+    rampfitoutput['weights'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['crmag'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['var_poisson'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['var_rnoise'] = np.zeros(shape, dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': rampfitoutput}
+        af.write_to(filepath)
+    else:
+        return rampfitoutput
+
+
+def mk_saturation(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    saturationref = stnode.SaturationRef()
+    meta['reftype'] = 'SATURATION'
+    saturationref['meta'] = meta
+
+    if shape:
+        saturationref['data'] = np.zeros(shape, dtype=np.float32)
+        saturationref['dq'] = np.zeros(shape, dtype=np.uint32)
+    else:
+        saturationref['data'] = np.zeros((4096, 4224), dtype=np.float32)
+        saturationref['dq'] = np.zeros((4096, 4224), dtype=np.uint32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': saturationref}
+        af.write_to(filepath)
+    else:
+        return saturationref
+
+def mk_superbias(shape=None, filepath=None):
+    meta = {}
+    add_ref_common(meta)
+    superbiasref = stnode.SuperbiasRef()
+    meta['reftype'] = 'BIAS'
+    superbiasref['meta'] = meta
+
+    if shape:
+        superbiasref['data'] = np.zeros(shape, dtype=np.float32)
+        superbiasref['dq'] = np.zeros(shape, dtype=np.uint32)
+        superbiasref['err'] = np.zeros(shape, dtype=np.float32)
+    else:
+        superbiasref['data'] = np.zeros((4096, 4224), dtype=np.float32)
+        superbiasref['dq'] = np.zeros((4096, 4224), dtype=np.uint32)
+        superbiasref['err'] = np.zeros((4096, 4224), dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': superbiasref}
+        af.write_to(filepath)
+    else:
+        return superbiasref

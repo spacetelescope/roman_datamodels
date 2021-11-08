@@ -373,10 +373,16 @@ def create_ref_meta(**kwargs):
     raw = {
         "author": _random_string("Reference author "),
         "description": _random_string("Reference description "),
+        "exposure": {
+            "type" : "WFI_IMAGE",
+        },
         "instrument": {
             "name": "WFI",
             "detector": _random_detector(),
             "optical_element": _random_optical_element(),
+        },
+        "observation": {
+            "ma_table_name": "ma_table.name",
         },
         "origin": "STScI",
         "pedigree": "DUMMY",
@@ -428,9 +434,9 @@ def create_dark_ref(**kwargs):
     roman_datamodels.stnode.DarkRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096, 1)),
+        "data": _random_array_float32((2, 4096, 4096)),
         "dq": _random_array_uint32(),
-        "err": _random_array_float32((4096, 4096, 1)),
+        "err": _random_array_float32((2, 4096, 4096)),
         "meta": create_ref_meta(reftype="DARK"),
     }
     raw.update(kwargs)
@@ -460,6 +466,29 @@ def create_gain_ref(**kwargs):
 
     return stnode.GainRef(raw)
 
+def create_linearity_ref(**kwargs):
+    """
+    Create a dummy LinearityRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.LinearityRef
+    """
+    raw = {
+        "coeffs": _random_array_float32((2, 4096, 4096)),
+        "dq": _random_array_uint32((4096, 4096)),
+        "meta": create_ref_meta(reftype="LINEARITY"),
+    }
+    raw.update(kwargs)
+
+    return stnode.LinearityRef(raw)
+
 
 def create_mask_ref(**kwargs):
     """
@@ -483,6 +512,31 @@ def create_mask_ref(**kwargs):
 
     return stnode.MaskRef(raw)
 
+def create_pixelarea_ref(**kwargs):
+    """
+    Create a dummy PixelareaRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.PixelareaRef
+    """
+    raw = {
+        "data": _random_array_float32((4096, 4096)),
+        "meta": create_ref_meta(reftype="AREA"),
+    }
+    raw['meta']['photometry'] = {
+        'pixelarea_steradians': _random_positive_float(),
+        'pixelarea_arcsecsq': _random_positive_float(),
+    }
+    raw.update(kwargs)
+
+    return stnode.PixelareaRef(raw)
 
 def create_readnoise_ref(**kwargs):
     """
@@ -505,6 +559,53 @@ def create_readnoise_ref(**kwargs):
     raw.update(kwargs)
 
     return stnode.ReadnoiseRef(raw)
+
+def create_saturation_ref(**kwargs):
+    """
+    Create a dummy SaturationRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SaturationRef
+    """
+    raw = {
+        "data": _random_array_float32((4096, 4096)),
+        "dq": _random_array_uint32((4096, 4096)),
+        "meta": create_ref_meta(reftype="SATURATION"),
+    }
+    raw.update(kwargs)
+
+    return stnode.SaturationRef(raw)
+
+def create_superbias_ref(**kwargs):
+    """
+    Create a dummy SuperbiasRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SuperbiasRef
+    """
+    raw = {
+        "data": _random_array_float32((4096, 4096)),
+        "dq": _random_array_uint32((4096, 4096)),
+        "err": _random_array_float32((4096, 4096)),
+        "meta": create_ref_meta(reftype="BIAS"),
+    }
+    raw.update(kwargs)
+
+    return stnode.SuperbiasRef(raw)
 
 def create_wfi_img_photom_ref(**kwargs):
     """
@@ -801,9 +902,9 @@ def create_ramp(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "data": _random_array_float32((4096, 4096, 8)),
+        "data": _random_array_float32((2, 4096, 4096)),
         "pixeldq": _random_array_uint32(),
-        "groupdq": _random_array_uint8((4096, 4096, 8)),
+        "groupdq": _random_array_uint8((2, 4096, 4096)),
         "err": _random_array_float32(min=0.0),
     }
     raw.update(kwargs)
@@ -825,7 +926,7 @@ def create_ramp_fit_output(**kwargs):
     roman_datamodels.stnode.RampFitOutput
     """
 
-    seg_shape = (4, 4096, 4096)
+    seg_shape = (2, 4096, 4096)
 
     raw = {
         "meta": create_meta(),
@@ -833,7 +934,7 @@ def create_ramp_fit_output(**kwargs):
         "sigslope": _random_array_float32(seg_shape),
         "yint": _random_array_float32(seg_shape),
         "sigyint": _random_array_float32(seg_shape),
-        "pedestal": _random_array_float32(seg_shape),
+        "pedestal": _random_array_float32(seg_shape[1:]),
         "weights": _random_array_float32(seg_shape),
         "crmag": _random_array_float32(seg_shape),
         "var_poisson": _random_array_float32(seg_shape),
@@ -1032,7 +1133,7 @@ def create_wfi_science_raw(**kwargs):
     """
     raw = {
         # TODO: What should this shape be?
-        "data": _random_array_uint16((8, 4096, 4096)),
+        "data": _random_array_uint16((2, 4096, 4096)),
         "meta": create_meta(),
     }
     raw.update(kwargs)

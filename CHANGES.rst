@@ -1,10 +1,33 @@
-0.6.0 (unreleased)
+0.7.0 (unreleased)
 ==================
+
+- Created maker utility and tests for ramp_fit_output files. [#50]
+
+0.6.0 (2021-10-26)
+==================
+
+- Reverted Exposure time types from string back to astropy Time. [#49]
 
 - Added ability to add attributes to datamodels [#33]
 
+- Added support for Saturation reference files. [#37]
+
+- Updated Ramp Pedestal Array to 2D. Fixed reference model casting in test_models. [#38]
+
+- Implemented support and tests for linearity reference model. Corrected dimension order in factories. Added primary array definition to MaskRefModel. [#39]
+
+- Updated tests and makers for exposure and optical_element requirements in reference files. [#42]
+
+- Changed exposure ``start_time``, ``mid_time``, and ``end_time`` to string to match RAD update. [#40]
+
+- Implemented support, tests, and maker utility for Super Bias reference files. [#45]
+
+- Created maker utility and tests for wfi photom reference files. [#43]
+
+- Added support, tests, and maker utility for Pixel Area reference files. [#44]
+
 - Added check to ensure opening a Roman file with datamodel class
-  that doesn't match the class implied by the tag raises an exception.
+  that doesn't match the class implied by the tag raises an exception. [#35]
 
 0.5.2 (2021-08-26)
 ==================

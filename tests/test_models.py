@@ -65,6 +65,38 @@ def test_core_schema(tmp_path):
         assert model.meta.telescope == 'XOMAN'
     asdf.get_config().validate_on_read = True
 
+# RampFitOutput tests
+
+
+def test_make_rampfitoutput():
+    rampfitoutput = utils.mk_rampfitoutput(arrays=(2, 20, 20))
+
+    assert rampfitoutput.meta.exposure.type == 'WFI_IMAGE'
+    assert rampfitoutput.slope.dtype == np.float32
+    assert rampfitoutput.sigslope.dtype == np.float32
+    assert rampfitoutput.yint.dtype == np.float32
+    assert rampfitoutput.sigyint.dtype == np.float32
+    assert rampfitoutput.pedestal.dtype == np.float32
+    assert rampfitoutput.weights.dtype == np.float32
+    assert rampfitoutput.crmag.dtype == np.float32
+    assert rampfitoutput.var_poisson.dtype == np.float32
+    assert rampfitoutput.var_rnoise.dtype == np.float32
+    assert rampfitoutput.var_poisson.shape == (2, 20, 20)
+    assert rampfitoutput.pedestal.shape == (20, 20)
+
+    # Test validation
+    rampfitoutput_model = datamodels.RampFitOutputModel(rampfitoutput)
+    assert rampfitoutput_model.validate() is None
+
+
+def test_opening_rampfitoutput_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testrampfitoutput.asdf'
+    utils.mk_rampfitoutput(filepath=file_path)
+    rampfitoutput = datamodels.open(file_path)
+    assert rampfitoutput.meta.instrument.optical_element == 'F062'
+    assert isinstance(rampfitoutput, datamodels.RampFitOutputModel)
+
 
 # Testing all reference file schemas
 def test_reference_file_model_base(tmp_path):
@@ -171,7 +203,7 @@ def test_make_gain():
     assert gain.data.dtype == np.float32
 
     # Test validation
-    gain_model = datamodels.RampModel(gain)
+    gain_model = datamodels.GainRefModel(gain)
     assert gain_model.validate() is None
 
 
@@ -184,6 +216,27 @@ def test_opening_gain_ref(tmp_path):
     assert isinstance(gain, datamodels.GainRefModel)
 
 
+# Linearity tests
+def test_make_linearity():
+    linearity = utils.mk_linearity(shape=(2, 20, 20))
+    assert linearity.meta.reftype == 'LINEARITY'
+    assert linearity.coeffs.dtype == np.float32
+    assert linearity.dq.dtype == np.uint32
+
+    # Test validation
+    linearity_model = datamodels.LinearityRefModel(linearity)
+    assert linearity_model.validate() is None
+
+
+def test_opening_linearity_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testlinearity.asdf'
+    utils.mk_linearity(filepath=file_path)
+    linearity = datamodels.open(file_path)
+    assert linearity.meta.instrument.optical_element == 'F158'
+    assert isinstance(linearity, datamodels.LinearityRefModel)
+
+
 # Mask tests
 def test_make_mask():
     mask = utils.mk_mask(shape=(20, 20))
@@ -191,7 +244,7 @@ def test_make_mask():
     assert mask.dq.dtype == np.uint32
 
     # Test validation
-    mask_model = datamodels.RampModel(mask)
+    mask_model = datamodels.MaskRefModel(mask)
     assert mask_model.validate() is None
 
 
@@ -203,15 +256,39 @@ def test_opening_mask_ref(tmp_path):
     assert mask.meta.instrument.optical_element == 'F158'
     assert isinstance(mask, datamodels.MaskRefModel)
 
+# Pixel Area tests
+
+
+def test_make_pixelarea():
+    pixearea = utils.mk_pixelarea(shape=(20, 20))
+    assert pixearea.meta.reftype == 'AREA'
+    assert type(pixearea.meta.photometry.pixelarea_steradians) == float
+    assert type(pixearea.meta.photometry.pixelarea_arcsecsq) == float
+    assert pixearea.data.dtype == np.float32
+
+    # Test validation
+    pixearea_model = datamodels.PixelareaRefModel(pixearea)
+    assert pixearea_model.validate() is None
+
+
+def test_opening_pixelarea_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testpixelarea.asdf'
+    utils.mk_pixelarea(filepath=file_path)
+    pixelarea = datamodels.open(file_path)
+    assert pixelarea.meta.instrument.optical_element == 'F158'
+    assert isinstance(pixelarea, datamodels.PixelareaRefModel)
 
 # Read Noise tests
+
+
 def test_make_readnoise():
     readnoise = utils.mk_readnoise(shape=(20, 20))
     assert readnoise.meta.reftype == 'READNOISE'
     assert readnoise.data.dtype == np.float32
 
     # Test validation
-    readnoise_model = datamodels.RampModel(readnoise)
+    readnoise_model = datamodels.ReadnoiseRefModel(readnoise)
     assert readnoise_model.validate() is None
 
 
@@ -241,6 +318,76 @@ def test_add_model_attribute(tmp_path):
     assert readnoise2.new_attribute == 88
     with pytest.raises(ValidationError):
         readnoise['data'] = 'bad_data_value'
+
+
+# Saturation tests
+def test_make_saturation():
+    saturation = utils.mk_saturation(shape=(20, 20))
+    assert saturation.meta.reftype == 'SATURATION'
+    assert saturation.dq.dtype == np.uint32
+
+    # Test validation
+    saturation_model = datamodels.SaturationRefModel(saturation)
+    assert saturation_model.validate() is None
+
+
+def test_opening_saturation_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testsaturation.asdf'
+    utils.mk_saturation(filepath=file_path)
+    saturation = datamodels.open(file_path)
+    assert saturation.meta.instrument.optical_element == 'F158'
+    assert isinstance(saturation, datamodels.SaturationRefModel)
+
+# Super Bias tests
+
+
+def test_make_superbias():
+    superbias = utils.mk_superbias(shape=(20, 20))
+    assert superbias.meta.reftype == 'BIAS'
+    assert superbias.data.dtype == np.float32
+    assert superbias.err.dtype == np.float32
+    assert superbias.dq.dtype == np.uint32
+    assert superbias.dq.shape == (20, 20)
+
+    # Test validation
+    superbias_model = datamodels.SuperbiasRefModel(superbias)
+    assert superbias_model.validate() is None
+
+
+def test_opening_superbias_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testsuperbias.asdf'
+    utils.mk_superbias(filepath=file_path)
+    superbias = datamodels.open(file_path)
+    assert superbias.meta.instrument.optical_element == 'F158'
+    assert isinstance(superbias, datamodels.SuperbiasRefModel)
+
+# WHI Photom tests
+
+
+def test_make_wfi_img_photom():
+    wfi_img_photom = utils.mk_wfi_img_photom()
+
+    assert wfi_img_photom.meta.reftype == 'PHOTOM'
+    assert type(wfi_img_photom.phot_table.W146.photmjsr) == float
+    assert type(wfi_img_photom.phot_table.F184.photmjsr) == float
+    assert type(wfi_img_photom.phot_table.W146.uncertainty) == float
+    assert type(wfi_img_photom.phot_table.F184.uncertainty) == float
+
+    # Test validation
+    wfi_img_photom_model = datamodels.WfiImgPhotomRefModel(wfi_img_photom)
+    assert wfi_img_photom_model.validate() is None
+
+
+def test_opening_wfi_img_photom_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testwfi_img_photom.asdf'
+    utils.mk_wfi_img_photom(filepath=file_path)
+    wfi_img_photom = datamodels.open(file_path)
+
+    assert wfi_img_photom.meta.instrument.optical_element == 'F158'
+    assert isinstance(wfi_img_photom, datamodels.WfiImgPhotomRefModel)
 
 
 def test_open_with_model_class(tmp_path):
