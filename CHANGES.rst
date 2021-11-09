@@ -3,7 +3,7 @@
 
 - Modified open function to handle accepting model instances that are checked
   against a target datamodel class, whether supplied directly as a model instance,
-  or obtained by the referenced ASDF file. [xxx]
+  or obtained by the referenced ASDF file. [#52]
 
 - Created maker utility and tests for ramp_fit_output files. [#50]
 
