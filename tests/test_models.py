@@ -410,9 +410,9 @@ def test_open_with_target(tmp_path):
     rnmod3 = datamodels.open(rnmod)
     assert rnmod3 is not rnmod
     with pytest.raises(ValueError):
-        rnmod4 = datamodels.open(rnmod, target=datamodels.WfiImgPhotomRefModel)
+        datamodels.open(rnmod, target=datamodels.WfiImgPhotomRefModel)
     with pytest.raises(ValueError):
-        rnmod5 = datamodels.open(
+        datamodels.open(
             file_path, target=datamodels.WfiImgPhotomRefModel)
     with pytest.raises((ValueError, TypeError)):
-        rnmod6 = datamodels.open(file_path, target='bullseye')
+        datamodels.open(file_path, target='bullseye')

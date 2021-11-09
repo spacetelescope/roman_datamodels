@@ -364,7 +364,7 @@ def open(init, memmap=False, target=None, **kwargs):
             - AsdfFile instance
             - string indicating the path to an ASDF file
             - Roman data model instance
-    memmap : bool 
+    memmap : bool
         Open ASDF file binary data using memmap (default: False)
     target : DataModel class
         If not None value, the DataModel implied by the init argument
