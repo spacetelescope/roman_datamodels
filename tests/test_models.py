@@ -399,3 +399,20 @@ def test_open_with_model_class(tmp_path):
     assert rnmod.data.shape == (4096, 4224)
     with pytest.raises(ValueError):
         datamodels.RampModel(file_path)
+
+
+def test_open_with_target(tmp_path):
+    file_path = tmp_path / 'testreadnoise.asdf'
+    utils.mk_readnoise(filepath=file_path)
+    rnmod = datamodels.ReadnoiseRefModel(file_path)
+    rnmod2 = datamodels.open(rnmod, target=datamodels.ReadnoiseRefModel)
+    assert rnmod is rnmod2
+    rnmod3 = datamodels.open(rnmod)
+    assert rnmod3 is not rnmod
+    with pytest.raises(ValueError):
+        rnmod4 = datamodels.open(rnmod, target=datamodels.WfiImgPhotomRefModel)
+    with pytest.raises(ValueError):
+        rnmod5 = datamodels.open(
+            file_path, target=datamodels.WfiImgPhotomRefModel)
+    with pytest.raises((ValueError, TypeError)):
+        rnmod6 = datamodels.open(file_path, target='bullseye')
