@@ -16,6 +16,8 @@ EXPECTED_COMMON_REFERENCE = \
     {'$ref': 'ref_common-1.0.0'}
 
 # Helper class to iterate over model subclasses
+
+
 def iter_subclasses(model_class, include_base_model=True):
     if include_base_model:
         yield model_class
@@ -31,6 +33,8 @@ def test_model_schemas():
         asdf.schema.load_schema(schema_uri)
 
 # Testing core schema
+
+
 def test_core_schema(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
@@ -62,6 +66,8 @@ def test_core_schema(tmp_path):
     asdf.get_config().validate_on_read = True
 
 # RampFitOutput tests
+
+
 def test_make_rampfitoutput():
     rampfitoutput = utils.mk_rampfitoutput(arrays=(2, 20, 20))
 
@@ -82,6 +88,7 @@ def test_make_rampfitoutput():
     rampfitoutput_model = datamodels.RampFitOutputModel(rampfitoutput)
     assert rampfitoutput_model.validate() is None
 
+
 def test_opening_rampfitoutput_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / 'testrampfitoutput.asdf'
@@ -89,7 +96,6 @@ def test_opening_rampfitoutput_ref(tmp_path):
     rampfitoutput = datamodels.open(file_path)
     assert rampfitoutput.meta.instrument.optical_element == 'F062'
     assert isinstance(rampfitoutput, datamodels.RampFitOutputModel)
-
 
 
 # Testing all reference file schemas
@@ -189,6 +195,8 @@ def test_opening_dark_ref(tmp_path):
     assert isinstance(dark, datamodels.DarkRefModel)
 
 # Gain tests
+
+
 def test_make_gain():
     gain = utils.mk_gain(shape=(20, 20))
     assert gain.meta.reftype == 'GAIN'
@@ -229,7 +237,6 @@ def test_opening_linearity_ref(tmp_path):
     assert isinstance(linearity, datamodels.LinearityRefModel)
 
 
-
 # Mask tests
 def test_make_mask():
     mask = utils.mk_mask(shape=(20, 20))
@@ -250,6 +257,8 @@ def test_opening_mask_ref(tmp_path):
     assert isinstance(mask, datamodels.MaskRefModel)
 
 # Pixel Area tests
+
+
 def test_make_pixelarea():
     pixearea = utils.mk_pixelarea(shape=(20, 20))
     assert pixearea.meta.reftype == 'AREA'
@@ -271,6 +280,8 @@ def test_opening_pixelarea_ref(tmp_path):
     assert isinstance(pixelarea, datamodels.PixelareaRefModel)
 
 # Read Noise tests
+
+
 def test_make_readnoise():
     readnoise = utils.mk_readnoise(shape=(20, 20))
     assert readnoise.meta.reftype == 'READNOISE'
@@ -289,6 +300,7 @@ def test_opening_readnoise_ref(tmp_path):
     assert readnoise.meta.instrument.optical_element == 'F158'
     assert isinstance(readnoise, datamodels.ReadnoiseRefModel)
 
+
 def test_add_model_attribute(tmp_path):
     # First make test reference file
     file_path = tmp_path / 'testreadnoise.asdf'
@@ -306,6 +318,7 @@ def test_add_model_attribute(tmp_path):
     assert readnoise2.new_attribute == 88
     with pytest.raises(ValidationError):
         readnoise['data'] = 'bad_data_value'
+
 
 # Saturation tests
 def test_make_saturation():
@@ -327,6 +340,8 @@ def test_opening_saturation_ref(tmp_path):
     assert isinstance(saturation, datamodels.SaturationRefModel)
 
 # Super Bias tests
+
+
 def test_make_superbias():
     superbias = utils.mk_superbias(shape=(20, 20))
     assert superbias.meta.reftype == 'BIAS'
@@ -339,6 +354,7 @@ def test_make_superbias():
     superbias_model = datamodels.SuperbiasRefModel(superbias)
     assert superbias_model.validate() is None
 
+
 def test_opening_superbias_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / 'testsuperbias.asdf'
@@ -348,6 +364,8 @@ def test_opening_superbias_ref(tmp_path):
     assert isinstance(superbias, datamodels.SuperbiasRefModel)
 
 # WHI Photom tests
+
+
 def test_make_wfi_img_photom():
     wfi_img_photom = utils.mk_wfi_img_photom()
 
@@ -381,3 +399,20 @@ def test_open_with_model_class(tmp_path):
     assert rnmod.data.shape == (4096, 4224)
     with pytest.raises(ValueError):
         datamodels.RampModel(file_path)
+
+
+def test_open_with_target(tmp_path):
+    file_path = tmp_path / 'testreadnoise.asdf'
+    utils.mk_readnoise(filepath=file_path)
+    rnmod = datamodels.ReadnoiseRefModel(file_path)
+    rnmod2 = datamodels.open(rnmod, target=datamodels.ReadnoiseRefModel)
+    assert rnmod is rnmod2
+    rnmod3 = datamodels.open(rnmod)
+    assert rnmod3 is not rnmod
+    with pytest.raises(ValueError):
+        datamodels.open(rnmod, target=datamodels.WfiImgPhotomRefModel)
+    with pytest.raises(ValueError):
+        datamodels.open(
+            file_path, target=datamodels.WfiImgPhotomRefModel)
+    with pytest.raises((ValueError, TypeError)):
+        datamodels.open(file_path, target='bullseye')

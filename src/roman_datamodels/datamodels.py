@@ -310,6 +310,7 @@ class DarkRefModel(DataModel):
 class GainRefModel(DataModel):
     pass
 
+
 class LinearityRefModel(DataModel):
     def get_primary_array_name(self):
         """
@@ -319,6 +320,7 @@ class LinearityRefModel(DataModel):
         primary array's name is not "data".
         """
         return 'coeffs'
+
 
 class MaskRefModel(DataModel):
     def get_primary_array_name(self):
@@ -330,29 +332,66 @@ class MaskRefModel(DataModel):
         """
         return 'dq'
 
+
 class PixelareaRefModel(DataModel):
     pass
+
 
 class ReadnoiseRefModel(DataModel):
     pass
 
+
 class SuperbiasRefModel(DataModel):
     pass
 
+
 class SaturationRefModel(DataModel):
     pass
+
 
 class WfiImgPhotomRefModel(DataModel):
     pass
 
 
-def open(init, memmap=False, **kwargs):
+def open(init, memmap=False, target=None, **kwargs):
+    """
+    Data model factory function
+
+    Parameters
+    ----------
+    init :
+        May be any one of the following types:
+            - AsdfFile instance
+            - string indicating the path to an ASDF file
+            - Roman data model instance
+    memmap : bool
+        Open ASDF file binary data using memmap (default: False)
+    target : DataModel class
+        If not None value, the DataModel implied by the init argument
+        must be an instance of the target class. If the init value
+        is already a data model, and matches the target, the init
+        value is returned, not copied, as opposed to the case where
+        the init value is a data model, and target is not supplied,
+        and the returned value is a copy of the init value.
+
+    Returns
+    -------
+    Roman DataModel instance
+    """
+    if target is not None:
+        if not issubclass(target, DataModel):
+            raise ValueError("Target must be a subclass of DataModel")
     # Temp fix to catch JWST args defore being passed to asdf open
     if "asn_n_members" in kwargs:
         del kwargs["asn_n_members"]
     if isinstance(init, asdf.AsdfFile):
         asdffile = init
     elif isinstance(init, DataModel):
+        if target is not None:
+            if not isinstance(init, target):
+                raise ValueError("First argument is not an instance of target")
+            else:
+                return init
         # Copy the object so it knows not to close here
         return init.copy()
     else:
@@ -367,7 +406,13 @@ def open(init, memmap=False, **kwargs):
                 "Roman datamodels does not accept FITS files or objects")
     modeltype = type(asdffile.tree['roman'])
     if modeltype in model_registry:
-        return model_registry[modeltype](asdffile, **kwargs)
+        rmodel = model_registry[modeltype](asdffile, **kwargs)
+        if target is not None:
+            if not issubclass(rmodel.__class__, target):
+                raise ValueError(
+                    "Referenced ASDF file model type is not subclass of target")
+        else:
+            return rmodel
     else:
         return DataModel(asdffile, **kwargs)
 
