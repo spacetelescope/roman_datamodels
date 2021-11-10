@@ -1,4 +1,4 @@
-0.7.0 (unreleased)
+0.7.0 (2021-11-10)
 ==================
 
 - Modified open function to handle accepting model instances that are checked
