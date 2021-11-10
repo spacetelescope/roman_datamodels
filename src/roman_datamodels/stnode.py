@@ -31,6 +31,7 @@ else:
 __all__ = [
     "set_validate",
     "WfiMode",
+    "LogMessage",
     "NODE_CLASSES",
 ]
 
@@ -318,6 +319,30 @@ class WfiMode(TaggedObjectNode):
             return self.optical_element
         else:
             return None
+
+
+class LogMessage(TaggedObjectNode):
+    _tag = "asdf://stsci.edu/datamodels/roman/tags/log_message-1.0.0"
+
+    @classmethod
+    def from_log_record(cls, log_record):
+        """
+        Create an instance of this class from a log record.
+
+        Parameters
+        ----------
+        log_record : logging.LogRecord
+
+        Returns
+        -------
+        LogMessage
+        """
+        return cls({
+            "time": Time(log_record.created, format="unix", scale="utc"),
+            "name": log_record.name,
+            "level": log_record.levelname,
+            "message": log_record.getMessage(),
+        })
 
 
 _DATAMODELS_MANIFEST_PATH = importlib_resources.files(

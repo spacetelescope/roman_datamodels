@@ -323,6 +323,7 @@ def mk_level2_image(arrays=True):
         wfi_image['var_rnoise'] = np.zeros(shape, dtype=np.float32)
         wfi_image['var_flat'] = np.zeros(shape, dtype=np.float32)
         wfi_image['area'] = np.zeros(shape, dtype=np.float32)
+        wfi_image['cal_logs'] = []
     return wfi_image
 
 

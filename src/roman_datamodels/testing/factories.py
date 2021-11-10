@@ -232,6 +232,31 @@ def create_aperture(**kwargs):
     return stnode.Aperture(raw)
 
 
+def create_log_message(**kwargs):
+    """
+    Create a dummy LogMessage instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.LogMessage
+    """
+    raw = {
+        "time": _random_astropy_time(),
+        "name": "dummy.logger",
+        "level": _random_choice("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"),
+        "message": "Greetings from the merry land of logging!",
+    }
+    raw.update(kwargs)
+
+    return stnode.LogMessage(raw)
+
+
 def create_cal_step(**kwargs):
     """
     Create a dummy CalStep instance with valid values for attributes
@@ -1087,6 +1112,7 @@ def create_wfi_image(**kwargs):
         "var_flat": _random_array_float32(),
         "var_poisson": _random_array_float32(),
         "var_rnoise": _random_array_float32(),
+        "cal_logs": [create_log_message(), create_log_message()]
     }
     raw.update(kwargs)
 
