@@ -31,8 +31,8 @@ else:
 __all__ = [
     "set_validate",
     "WfiMode",
-    "LogMessage",
     "NODE_CLASSES",
+    "CalLogs",
 ]
 
 
@@ -294,7 +294,25 @@ class TaggedObjectNode(DNode, metaclass=TaggedObjectNodeMeta):
         return schema
 
 
-class TaggedListNode(LNode):
+_LIST_NODE_CLASSES_BY_TAG = {}
+
+
+class TaggedListNodeMeta(ABCMeta):
+    """
+    Metaclass for TaggedListNode that maintains a registry
+    of subclasses.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.__name__ != "TaggedListNode":
+            if self._tag in _LIST_NODE_CLASSES_BY_TAG:
+                raise RuntimeError(
+                    f"TaggedListNode class for tag '{self._tag}' has been defined twice")
+            _LIST_NODE_CLASSES_BY_TAG[self._tag] = self
+
+
+class TaggedListNode(LNode, metaclass=TaggedListNodeMeta):
 
     @property
     def tag(self):
@@ -321,28 +339,8 @@ class WfiMode(TaggedObjectNode):
             return None
 
 
-class LogMessage(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/log_message-1.0.0"
-
-    @classmethod
-    def from_log_record(cls, log_record):
-        """
-        Create an instance of this class from a log record.
-
-        Parameters
-        ----------
-        log_record : logging.LogRecord
-
-        Returns
-        -------
-        LogMessage
-        """
-        return cls({
-            "time": Time(log_record.created, format="unix", scale="utc"),
-            "name": log_record.name,
-            "level": log_record.levelname,
-            "message": log_record.getMessage(),
-        })
+class CalLogs(TaggedListNode):
+    _tag = "asdf://stsci.edu/datamodels/roman/tags/cal_logs-1.0.0"
 
 
 _DATAMODELS_MANIFEST_PATH = importlib_resources.files(
@@ -366,6 +364,8 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
 
     if tag["tag_uri"] in _OBJECT_NODE_CLASSES_BY_TAG:
         _OBJECT_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
+    elif tag["tag_uri"] in _LIST_NODE_CLASSES_BY_TAG:
+        _LIST_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
     else:
         class_name = _class_name_from_tag_uri(tag["tag_uri"])
 
@@ -401,6 +401,28 @@ class TaggedObjectNodeConverter(Converter):
         return _OBJECT_NODE_CLASSES_BY_TAG[tag](node)
 
 
+class TaggedListNodeConverter(Converter):
+    """
+    Converter for all subclasses of TaggedListNode.
+    """
+    @property
+    def tags(self):
+        return list(_LIST_NODE_CLASSES_BY_TAG.keys())
+
+    @property
+    def types(self):
+        return list(_LIST_NODE_CLASSES_BY_TAG.values())
+
+    def select_tag(self, obj, tags, ctx):
+        return obj.tag
+
+    def to_yaml_tree(self, obj, tag, ctx):
+        return list(obj)
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return _LIST_NODE_CLASSES_BY_TAG[tag](node)
+
+
 # List of node classes made available by this library.  This is part
 # of the public API.
-NODE_CLASSES = list(_OBJECT_NODE_CLASSES_BY_TAG.values())
+NODE_CLASSES = list(_OBJECT_NODE_CLASSES_BY_TAG.values()) + list(_LIST_NODE_CLASSES_BY_TAG.values())

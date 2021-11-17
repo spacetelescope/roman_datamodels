@@ -1,9 +1,10 @@
 from asdf.extension import ManifestExtension
-from .stnode import TaggedObjectNodeConverter
+from .stnode import TaggedListNodeConverter, TaggedObjectNodeConverter
 
 
 DATAMODEL_CONVERTERS = [
     TaggedObjectNodeConverter(),
+    TaggedListNodeConverter(),
 ]
 
 DATAMODEL_EXTENSIONS = [

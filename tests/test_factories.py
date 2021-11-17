@@ -26,7 +26,7 @@ def test_instance_valid(node_class):
         af.validate()
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.parametrize("node_class", [c for c in stnode.NODE_CLASSES if isinstance(c, stnode.TaggedObjectNode)])
 def test_no_extra_fields(node_class, manifest):
     instance = create_node(node_class)
     instance_keys = set(instance.keys())

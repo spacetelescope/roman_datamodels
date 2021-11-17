@@ -1,8 +1,5 @@
-import logging
-
 import asdf
 import pytest
-from astropy.time import Time
 
 from roman_datamodels import stnode
 from roman_datamodels.testing import assert_node_equal, create_node
@@ -13,7 +10,7 @@ def test_generated_node_classes(manifest):
         class_name = stnode._class_name_from_tag_uri(tag["tag_uri"])
         node_class = getattr(stnode, class_name)
 
-        assert issubclass(node_class, stnode.TaggedObjectNode)
+        assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode))
         assert node_class._tag == tag["tag_uri"]
         assert tag["description"] in node_class.__doc__
         assert tag["tag_uri"] in node_class.__doc__
@@ -40,31 +37,6 @@ def test_wfi_mode():
     assert node.optical_element == "F129"
     assert node.grating is None
     assert node.filter == "F129"
-
-
-def test_log_message_from_log_record():
-    """
-    The LogMessage class has a special factory method for constructing
-    instances from logging.LogRecord.
-    """
-    record = logging.LogRecord(
-        "dummy.logger",
-        logging.INFO,
-        "path/to/some/module.py",
-        42,
-        "Oh boy do I have some info for you!",
-        None,
-        None,
-        None,
-        None,
-    )
-
-    message = stnode.LogMessage.from_log_record(record)
-    assert isinstance(message.time, Time)
-    assert message.time.unix == record.created
-    assert message.level == "INFO"
-    assert message.name == "dummy.logger"
-    assert message.message == "Oh boy do I have some info for you!"
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
