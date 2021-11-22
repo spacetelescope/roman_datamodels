@@ -1,6 +1,9 @@
 0.8.0 (unreleased)
 ==================
 
+- Add support for the cal_logs array, which will be used to store calibration
+  log messages. [#53]
+
 0.7.0 (2021-11-10)
 ==================
 

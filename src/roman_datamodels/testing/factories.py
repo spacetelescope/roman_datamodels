@@ -1064,6 +1064,23 @@ def create_wcsinfo(**kwargs):
     return stnode.Wcsinfo(raw)
 
 
+def create_cal_logs():
+    """
+    Create a dummy CalLogs instance with valid values for attributes
+    required by the schema.
+
+    Returns
+    -------
+    roman_datamodels.stnode.CalLogs
+    """
+    return stnode.CalLogs(
+        [
+            "2021-11-15T09:15:07.12Z :: FlatFieldStep :: INFO :: Completed",
+            "2021-11-15T10:22.55.55Z :: RampFittingStep :: WARNING :: Wow, lots of Cosmic Rays detected",
+        ]
+    )
+
+
 def create_wfi_image(**kwargs):
     """
     Create a dummy WfiImage instance with valid values for attributes
@@ -1087,6 +1104,7 @@ def create_wfi_image(**kwargs):
         "var_flat": _random_array_float32(),
         "var_poisson": _random_array_float32(),
         "var_rnoise": _random_array_float32(),
+        "cal_logs": create_cal_logs(),
     }
     raw.update(kwargs)
 

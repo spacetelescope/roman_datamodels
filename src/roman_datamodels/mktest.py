@@ -239,6 +239,7 @@ def mk_level2_image(filepath, outfilepath):
     wfi_image['var_rnoise'] = afin.tree['var_rnoise']
     wfi_image['var_flat'] = afin.tree['var_rnoise'] * 0
     wfi_image['area'] = afin.tree['area']
+    wfi_image['cal_logs'] = stnode.CalLogs()
     afout = asdf.AsdfFile()
     afout.tree = {'roman': wfi_image}
     afout.write_to(outfilepath)
