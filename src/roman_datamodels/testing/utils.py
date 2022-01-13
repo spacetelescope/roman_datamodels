@@ -118,7 +118,6 @@ def mk_observation():
     obs['visit_file_sequence'] = NONUM
     obs['visit_file_activity'] = NOSTR
     obs['exposure'] = NONUM
-    obs['activity_id'] = NOSTR
     obs['template'] = NOSTR
     obs['observation_label'] = NOSTR
     obs['ma_table_name'] = NOSTR
@@ -217,7 +216,6 @@ def mk_aperture():
     """
     aper = stnode.Aperture()
     aper['name'] = NOSTR
-    aper['pss_name'] = NOSTR
     aper['position_angle'] = 30.
     return aper
 
@@ -530,7 +528,7 @@ def mk_flat(shape=None, filepath=None):
     flatref['meta'] = meta
 
     if not shape:
-        shape = (4096, 4224)
+        shape = (4096, 4096)
 
     flatref['data'] = np.zeros(shape, dtype=np.float32)
     flatref['dq'] = np.zeros(shape, dtype=np.uint32)
@@ -573,7 +571,7 @@ def mk_dark(shape=None, filepath=None):
     darkref['meta']['exposure'] = exposure
 
     if not shape:
-        shape = (2, 4096, 4224)
+        shape = (2, 4096, 4096)
 
     darkref['data'] = np.zeros(shape, dtype=np.float32)
     darkref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
@@ -611,7 +609,7 @@ def mk_gain(shape=None, filepath=None):
     gainref['meta'] = meta
 
     if not shape:
-        shape = (4096, 4224)
+        shape = (4096, 4096)
 
     gainref['data'] = np.zeros(shape, dtype=np.float32)
 
@@ -646,7 +644,7 @@ def mk_linearity(shape=None, filepath=None):
     linearityref['meta'] = meta
 
     if not shape:
-        shape = (2, 4096, 4224)
+        shape = (2, 4096, 4096)
 
     linearityref['coeffs'] = np.zeros(shape, dtype=np.float32)
     linearityref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
@@ -799,7 +797,7 @@ def mk_readnoise(shape=None, filepath=None):
     readnoiseref['meta']['exposure'] = exposure
 
     if not shape:
-        shape = (4096, 4224)
+        shape = (4096, 4096)
 
     readnoiseref['data'] = np.zeros(shape, dtype=np.float32)
 
@@ -913,7 +911,7 @@ def mk_saturation(shape=None, filepath=None):
     saturationref['meta'] = meta
 
     if not shape:
-        shape = (4096, 4224)
+        shape = (4096, 4096)
 
     saturationref['data'] = np.zeros(shape, dtype=np.float32)
     saturationref['dq'] = np.zeros(shape, dtype=np.uint32)
@@ -949,7 +947,7 @@ def mk_superbias(shape=None, filepath=None):
     superbiasref['meta'] = meta
 
     if not shape:
-        shape = (4096, 4224)
+        shape = (4096, 4096)
 
     superbiasref['data'] = np.zeros(shape, dtype=np.float32)
     superbiasref['dq'] = np.zeros(shape, dtype=np.uint32)
