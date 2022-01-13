@@ -249,6 +249,12 @@ def create_cal_step(**kwargs):
     raw = {
         "flat_field": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "dq_init": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "assign_wcs" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "dark" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "jump" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "linearity" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "ramp_fit" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "saturation" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
     }
     raw.update(kwargs)
 
