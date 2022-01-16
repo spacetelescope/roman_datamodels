@@ -3,13 +3,20 @@ import astropy.time as time
 import numpy as np
 
 from .. import stnode
-# from .. import table_definitions
 
 NONUM = -999999
 NOSTR = "dummy value"
 
 
 def mk_exposure():
+    """
+    Create a dummy Exposure instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Exposure
+    """
     exp = stnode.Exposure()
     exp['id'] = NONUM
     exp['type'] = 'WFI_IMAGE'
@@ -51,6 +58,14 @@ def mk_exposure():
 
 
 def mk_wfi_mode():
+    """
+    Create a dummy WFI mode instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.WfiMode
+    """
     mode = stnode.WfiMode()
     mode['name'] = 'WFI'
     mode['detector'] = 'WFI01'
@@ -59,6 +74,14 @@ def mk_wfi_mode():
 
 
 def mk_program():
+    """
+    Create a dummy Program instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Program
+    """
     prog = stnode.Program()
     prog['title'] = NOSTR
     prog['pi_name'] = NOSTR
@@ -70,6 +93,14 @@ def mk_program():
 
 
 def mk_observation():
+    """
+    Create a dummy Observation instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Observation
+    """
     obs = stnode.Observation()
     obs['start_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
@@ -87,7 +118,6 @@ def mk_observation():
     obs['visit_file_sequence'] = NONUM
     obs['visit_file_activity'] = NOSTR
     obs['exposure'] = NONUM
-    obs['activity_id'] = NOSTR
     obs['template'] = NOSTR
     obs['observation_label'] = NOSTR
     obs['ma_table_name'] = NOSTR
@@ -96,6 +126,14 @@ def mk_observation():
 
 
 def mk_ephemeris():
+    """
+    Create a dummy Ephemeris instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Ephemeris
+    """
     ephem = stnode.Ephemeris()
     ephem['earth_angle'] = NONUM
     ephem['moon_angle'] = NONUM
@@ -113,6 +151,14 @@ def mk_ephemeris():
 
 
 def mk_visit():
+    """
+    Create a dummy Visit instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Visit
+    """
     visit = stnode.Visit()
     visit['engineering_quality'] = 'OK'  # qqqq
     visit['pointing_engdb_quality'] = 'CALCULATED'  # qqqq
@@ -129,6 +175,14 @@ def mk_visit():
 
 
 def mk_photometry():
+    """
+    Create a dummy Photometry instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Photometry
+    """
     phot = stnode.Photometry()
     phot['conversion_megajanskys'] = NONUM
     phot['conversion_microjanskys'] = NONUM
@@ -138,20 +192,43 @@ def mk_photometry():
 
 
 def mk_coordinates():
+    """
+    Create a dummy Coordinates instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Coordinates
+    """
     coord = stnode.Coordinates()
     coord['reference_frame'] = 'ICRS'
     return coord
 
 
 def mk_aperture():
+    """
+    Create a dummy Aperture instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Aperture
+    """
     aper = stnode.Aperture()
     aper['name'] = NOSTR
-    aper['pss_name'] = NOSTR
     aper['position_angle'] = 30.
     return aper
 
 
 def mk_pointing():
+    """
+    Create a dummy Pointing instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Pointing
+    """
     point = stnode.Pointing()
     point['ra_v1'] = NONUM
     point['dec_v1'] = NONUM
@@ -160,6 +237,14 @@ def mk_pointing():
 
 
 def mk_target():
+    """
+    Create a dummy Target instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Target
+    """
     targ = stnode.Target()
     targ['proposer_name'] = NOSTR
     targ['catalog_name'] = NOSTR
@@ -179,6 +264,14 @@ def mk_target():
 
 
 def mk_velocity_aberration():
+    """
+    Create a dummy Velocity Aberration instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.VelocityAberration
+    """
     vab = stnode.VelocityAberration()
     vab['ra_offset'] = NONUM
     vab['dec_offset'] = NONUM
@@ -187,6 +280,14 @@ def mk_velocity_aberration():
 
 
 def mk_wcsinfo():
+    """
+    Create a dummy WCS Info instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Wcsinfo
+    """
     wcsi = stnode.Wcsinfo()
     wcsi['v2_ref'] = NONUM
     wcsi['v3_ref'] = NONUM
@@ -200,6 +301,14 @@ def mk_wcsinfo():
 
 
 def mk_cal_step():
+    """
+    Create a dummy Cal Step instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.CalStep
+    """
     calstep = stnode.CalStep()
     calstep['flat_field'] = 'INCOMPLETE'
     calstep['dq_init'] = 'INCOMPLETE'
@@ -212,8 +321,31 @@ def mk_cal_step():
 
     return calstep
 
+def mk_cal_logs():
+    """
+    Create a dummy CalLogs instance with valid values for attributes
+    required by the schema.
+
+    Returns
+    -------
+    roman_datamodels.stnode.CalLogs
+    """
+    return stnode.CalLogs(
+        [
+            "2021-11-15T09:15:07.12Z :: FlatFieldStep :: INFO :: Completed",
+            "2021-11-15T10:22.55.55Z :: RampFittingStep :: WARNING :: Wow, lots of Cosmic Rays detected",
+        ]
+    )
 
 def mk_guide():
+    """
+    Create a dummy Guide Star instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Guidestar
+    """
     guide = stnode.Guidestar()
     guide['gw_start_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
@@ -284,49 +416,6 @@ def mk_common_meta():
     meta['wcsinfo'] = mk_wcsinfo()
     return meta
 
-def mk_level1_science_raw(arrays=True):
-    meta = mk_common_meta()
-    wfi_science_raw = stnode.WfiScienceRaw()
-    wfi_science_raw['meta'] = meta
-    if not arrays:
-        wfi_science_raw['data'] = None
-    else:
-        if arrays is True:
-            shape = (8, 4096, 4096)
-        else:
-            shape = arrays
-        wfi_science_raw['data'] = np.zeros(shape, dtype=np.uint16)
-    return wfi_science_raw
-
-
-def mk_level2_image(arrays=True):
-    meta = mk_common_meta()
-    wfi_image = stnode.WfiImage()
-    wfi_image['meta'] = meta
-    if not arrays:
-        wfi_image['data'] = None
-        wfi_image['dq'] = None
-        wfi_image['err'] = None
-        wfi_image['var_poisson'] = None
-        wfi_image['var_rnoise'] = None
-        wfi_image['var_flat'] = None
-        wfi_image['area'] = None
-    else:
-        if arrays is True:
-            shape = (4096, 4096)
-        else:
-            shape = arrays
-        wfi_image['data'] = np.zeros(shape, dtype=np.float32)
-        wfi_image['dq'] = np.zeros(shape, dtype=np.uint32)
-        wfi_image['err'] = np.zeros(shape, dtype=np.float32)
-        wfi_image['var_poisson'] = np.zeros(shape, dtype=np.float32)
-        wfi_image['var_rnoise'] = np.zeros(shape, dtype=np.float32)
-        wfi_image['var_flat'] = np.zeros(shape, dtype=np.float32)
-        wfi_image['area'] = np.zeros(shape, dtype=np.float32)
-        wfi_image['cal_logs'] = stnode.CalLogs()
-    return wfi_image
-
-
 def add_ref_common(meta):
     instrument = {'name': 'WFI', 'detector': 'WFI01',
                   'optical_element': 'F158'}
@@ -340,20 +429,135 @@ def add_ref_common(meta):
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
     meta['reftype'] = ''
 
-def mk_flat_file(outfilepath, shape=(20, 20)):
+def mk_level1_science_raw(shape=None, filepath=None):
+    """
+    Create a dummy level 1 ScienceRaw instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.WfiScienceRaw
+    """
+    meta = mk_common_meta()
+    wfi_science_raw = stnode.WfiScienceRaw()
+    wfi_science_raw['meta'] = meta
+
+    if not shape:
+        shape = (8, 4096, 4096)
+
+    wfi_science_raw['data'] = np.zeros(shape, dtype=np.uint16)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': wfi_science_raw}
+        af.write_to(filepath)
+    else:
+        return wfi_science_raw
+
+
+def mk_level2_image(shape=None, filepath=None):
+    """
+    Create a dummy level 2 Image instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.WfiImage
+    """
+    meta = mk_common_meta()
+    wfi_image = stnode.WfiImage()
+    wfi_image['meta'] = meta
+
+    if not shape:
+        shape = (4096, 4096)
+
+    wfi_image['data'] = np.zeros(shape, dtype=np.float32)
+    wfi_image['dq'] = np.zeros(shape, dtype=np.uint32)
+    wfi_image['err'] = np.zeros(shape, dtype=np.float32)
+    wfi_image['var_poisson'] = np.zeros(shape, dtype=np.float32)
+    wfi_image['var_rnoise'] = np.zeros(shape, dtype=np.float32)
+    wfi_image['var_flat'] = np.zeros(shape, dtype=np.float32)
+    wfi_image['area'] = np.zeros(shape, dtype=np.float32)
+    wfi_image['cal_logs'] = mk_cal_logs()
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': wfi_image}
+        af.write_to(filepath)
+    else:
+        return wfi_image
+
+
+def mk_flat(shape=None, filepath=None):
+    """
+    Create a dummy Flat instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.FlatRef
+    """
     meta = {}
     add_ref_common(meta)
     flatref = stnode.FlatRef()
     meta['reftype'] = 'FLAT'
     flatref['meta'] = meta
+
+    if not shape:
+        shape = (4096, 4096)
+
     flatref['data'] = np.zeros(shape, dtype=np.float32)
     flatref['dq'] = np.zeros(shape, dtype=np.uint32)
     flatref['err'] = np.zeros(shape, dtype=np.float32)
-    af = asdf.AsdfFile()
-    af.tree = {'roman': flatref}
-    af.write_to(outfilepath)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': flatref}
+        af.write_to(filepath)
+    else:
+        return flatref
 
 def mk_dark(shape=None, filepath=None):
+    """
+    Create a dummy Dark instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.DarkRef
+    """
     meta = {}
     add_ref_common(meta)
     darkref = stnode.DarkRef()
@@ -366,14 +570,12 @@ def mk_dark(shape=None, filepath=None):
     exposure['type'] = 'WFI_IMAGE'
     darkref['meta']['exposure'] = exposure
 
-    if shape:
-        darkref['data'] = np.zeros(shape, dtype=np.float32)
-        darkref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
-        darkref['err'] = np.zeros(shape, dtype=np.float32)
-    else:
-        darkref['data'] = np.zeros((7, 4096, 4224), dtype=np.float32)
-        darkref['dq'] = np.zeros((4096, 4224), dtype=np.uint32)
-        darkref['err'] = np.zeros((7, 4096, 4224), dtype=np.float32)
+    if not shape:
+        shape = (2, 4096, 4096)
+
+    darkref['data'] = np.zeros(shape, dtype=np.float32)
+    darkref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
+    darkref['err'] = np.zeros(shape, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -384,16 +586,32 @@ def mk_dark(shape=None, filepath=None):
 
 
 def mk_gain(shape=None, filepath=None):
+    """
+    Create a dummy Gain instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.GainRef
+    """
     meta = {}
     add_ref_common(meta)
     gainref = stnode.GainRef()
     meta['reftype'] = 'GAIN'
     gainref['meta'] = meta
 
-    if shape:
-        gainref['data'] = np.zeros(shape, dtype=np.float32)
-    else:
-        gainref['data'] = np.zeros((4096, 4224), dtype=np.float32)
+    if not shape:
+        shape = (4096, 4096)
+
+    gainref['data'] = np.zeros(shape, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -403,18 +621,33 @@ def mk_gain(shape=None, filepath=None):
         return gainref
 
 def mk_linearity(shape=None, filepath=None):
+    """
+    Create a dummy Linearity instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.LinearityRef
+    """
     meta = {}
     add_ref_common(meta)
     linearityref = stnode.LinearityRef()
     meta['reftype'] = 'LINEARITY'
     linearityref['meta'] = meta
 
-    if shape:
-        linearityref['coeffs'] = np.zeros(shape, dtype=np.float32)
-        linearityref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
-    else:
-        linearityref['coeffs'] = np.zeros((2, 4096, 4224), dtype=np.float32)
-        linearityref['dq'] = np.zeros((4096, 4096), dtype=np.uint32)
+    if not shape:
+        shape = (2, 4096, 4096)
+
+    linearityref['coeffs'] = np.zeros(shape, dtype=np.float32)
+    linearityref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -425,16 +658,32 @@ def mk_linearity(shape=None, filepath=None):
 
 
 def mk_mask(shape=None, filepath=None):
+    """
+    Create a dummy Mask instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.MaskRef
+    """
     meta = {}
     add_ref_common(meta)
     maskref = stnode.MaskRef()
     meta['reftype'] = 'MASK'
     maskref['meta'] = meta
 
-    if shape:
-        maskref['dq'] = np.zeros(shape, dtype=np.uint32)
-    else:
-        maskref['dq'] = np.zeros((4096, 4096), dtype=np.uint32)
+    if not shape:
+        shape = (4096, 4096)
+
+    maskref['dq'] = np.zeros(shape, dtype=np.uint32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -444,6 +693,22 @@ def mk_mask(shape=None, filepath=None):
         return maskref
 
 def mk_pixelarea(shape=None, filepath=None):
+    """
+    Create a dummy Pixelarea instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.PixelareaRef
+    """
     meta = {}
     add_ref_common(meta)
     pixelarearef = stnode.PixelareaRef()
@@ -454,10 +719,10 @@ def mk_pixelarea(shape=None, filepath=None):
     }
     pixelarearef['meta'] = meta
 
-    if shape:
-        pixelarearef['data'] = np.zeros(shape, dtype=np.float32)
-    else:
-        pixelarearef['data'] = np.zeros((4096, 4096), dtype=np.float32)
+    if not shape:
+        shape = (4096, 4096)
+
+    pixelarearef['data'] = np.zeros(shape, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -467,6 +732,19 @@ def mk_pixelarea(shape=None, filepath=None):
         return pixelarearef
 
 def mk_wfi_img_photom(filepath=None):
+    """
+    Create a dummy WFI Img Photom instance (or file) with dictionary and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.WfiImgPhotomRef
+    """
     meta = {}
     add_ref_common(meta)
     wfi_img_photomref = stnode.WfiImgPhotomRef()
@@ -493,6 +771,22 @@ def mk_wfi_img_photom(filepath=None):
         return wfi_img_photomref
 
 def mk_readnoise(shape=None, filepath=None):
+    """
+    Create a dummy Readnoise instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.ReadnoiseRef
+    """
     meta = {}
     add_ref_common(meta)
     readnoiseref = stnode.ReadnoiseRef()
@@ -502,10 +796,10 @@ def mk_readnoise(shape=None, filepath=None):
     exposure['type'] = 'WFI_IMAGE'
     readnoiseref['meta']['exposure'] = exposure
 
-    if shape:
-        readnoiseref['data'] = np.zeros(shape, dtype=np.float32)
-    else:
-        readnoiseref['data'] = np.zeros((4096, 4224), dtype=np.float32)
+    if not shape:
+        shape = (4096, 4096)
+
+    readnoiseref['data'] = np.zeros(shape, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -515,35 +809,65 @@ def mk_readnoise(shape=None, filepath=None):
         return readnoiseref
 
 
-def mk_ramp(arrays=True):
+def mk_ramp(shape=None, filepath=None):
+    """
+    Create a dummy Ramp instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Ramp
+    """
     meta = mk_common_meta()
     ramp = stnode.Ramp()
     ramp['meta'] = meta
-    if not arrays:
-        ramp['data'] = None
-        ramp['pixeldq'] = None
-        ramp['groupdq'] = None
-        ramp['err'] = None
-    else:
-        if arrays is True:
-            shape = (8, 4096, 4096)
-        else:
-            shape = arrays
-        ramp['data'] = np.full(shape, 1.0, dtype=np.float32)
-        ramp['pixeldq'] = np.zeros(shape[1:], dtype=np.uint32)
-        ramp['groupdq'] = np.zeros(shape, dtype=np.uint8)
-        ramp['err'] = np.zeros(shape[1:], dtype=np.float32)
-    return ramp
 
-def mk_rampfitoutput(arrays=True, filepath=None):
+    if not shape:
+        shape = (8, 4096, 4096)
+
+    ramp['data'] = np.full(shape, 1.0, dtype=np.float32)
+    ramp['pixeldq'] = np.zeros(shape[1:], dtype=np.uint32)
+    ramp['groupdq'] = np.zeros(shape, dtype=np.uint8)
+    ramp['err'] = np.zeros(shape[1:], dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': ramp}
+        af.write_to(filepath)
+    else:
+        return ramp
+
+def mk_rampfitoutput(shape=None, filepath=None):
+    """
+    Create a dummy Rampfit Output instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.RampFitOutput
+    """
     meta = mk_common_meta()
     rampfitoutput = stnode.RampFitOutput()
     rampfitoutput['meta'] = meta
 
-    if arrays is True:
+    if not shape:
         shape = (8, 4096, 4096)
-    else:
-        shape = arrays
 
     rampfitoutput['slope'] = np.zeros(shape, dtype=np.float32)
     rampfitoutput['sigslope'] = np.zeros(shape, dtype=np.float32)
@@ -564,18 +888,33 @@ def mk_rampfitoutput(arrays=True, filepath=None):
 
 
 def mk_saturation(shape=None, filepath=None):
+    """
+    Create a dummy Saturation instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SaturationRef
+    """
     meta = {}
     add_ref_common(meta)
     saturationref = stnode.SaturationRef()
     meta['reftype'] = 'SATURATION'
     saturationref['meta'] = meta
 
-    if shape:
-        saturationref['data'] = np.zeros(shape, dtype=np.float32)
-        saturationref['dq'] = np.zeros(shape, dtype=np.uint32)
-    else:
-        saturationref['data'] = np.zeros((4096, 4224), dtype=np.float32)
-        saturationref['dq'] = np.zeros((4096, 4224), dtype=np.uint32)
+    if not shape:
+        shape = (4096, 4096)
+
+    saturationref['data'] = np.zeros(shape, dtype=np.float32)
+    saturationref['dq'] = np.zeros(shape, dtype=np.uint32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -585,20 +924,34 @@ def mk_saturation(shape=None, filepath=None):
         return saturationref
 
 def mk_superbias(shape=None, filepath=None):
+    """
+    Create a dummy Superbias instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SuperbiasRef
+    """
     meta = {}
     add_ref_common(meta)
     superbiasref = stnode.SuperbiasRef()
     meta['reftype'] = 'BIAS'
     superbiasref['meta'] = meta
 
-    if shape:
-        superbiasref['data'] = np.zeros(shape, dtype=np.float32)
-        superbiasref['dq'] = np.zeros(shape, dtype=np.uint32)
-        superbiasref['err'] = np.zeros(shape, dtype=np.float32)
-    else:
-        superbiasref['data'] = np.zeros((4096, 4224), dtype=np.float32)
-        superbiasref['dq'] = np.zeros((4096, 4224), dtype=np.uint32)
-        superbiasref['err'] = np.zeros((4096, 4224), dtype=np.float32)
+    if not shape:
+        shape = (4096, 4096)
+
+    superbiasref['data'] = np.zeros(shape, dtype=np.float32)
+    superbiasref['dq'] = np.zeros(shape, dtype=np.uint32)
+    superbiasref['err'] = np.zeros(shape, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
