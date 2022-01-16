@@ -1,6 +1,8 @@
 0.9.0 (unreleased)
 ==================
 
+- Updated stnode tests to include all cal steps. [#60]
+
 0.8.0 (2021-11-22)
 ==================
 
