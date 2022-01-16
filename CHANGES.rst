@@ -3,6 +3,9 @@
 
 - Updated rampfit and flat maker utilities to support the same functionality as the other model maker functions. Streamlined and commented all maker utility functions. Added tests to complete coverage of roman_datamodels/testing/utils.py. Cleaned out some deprecated code. [#59]
 
+- Updated stnode tests to include all cal steps. [#60]
+
+
 0.8.0 (2021-11-22)
 ==================
 
