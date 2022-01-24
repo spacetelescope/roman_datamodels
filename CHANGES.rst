@@ -16,7 +16,7 @@
 ==================
 
 - Modified DNode and LNode classes to provide asdf info method introspection
-  into the contents of the class. []
+  into the contents of the class. [#61]
 
 - Modified open function to handle accepting model instances that are checked
   against a target datamodel class, whether supplied directly as a model instance,
