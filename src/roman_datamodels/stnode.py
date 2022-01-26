@@ -224,7 +224,7 @@ class DNode(UserDict):
             self._x_schema = subschema
 
     def __asdf_traverse__(self):
-        return list(self.items())
+        return dict(self)
 
 
 class LNode(UserList):
@@ -251,7 +251,7 @@ class LNode(UserList):
             return value
 
     def __asdf_traverse__(self):
-        return list(enumerate(self))
+        return list(self)
 
 
 _OBJECT_NODE_CLASSES_BY_TAG = {}
