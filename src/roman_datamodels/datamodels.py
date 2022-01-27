@@ -276,11 +276,11 @@ class DataModel:
         validate.value_change(self._instance, pass_invalid_values=False,
                               strict_validation=True)
 
-    # def __getitem__(self, key):
-    #   assert isinstance(key, str)
+    def info(self, *args, **kwargs):
+        return self._asdf.info(*args, **kwargs)
 
-    # def __setitem__(self, key, value):
-    #   pass
+    def search(self, *args, **kwargs):
+        return self._asdf.search(*args, **kwargs)
 
 
 class ImageModel(DataModel):
