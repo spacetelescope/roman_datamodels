@@ -459,4 +459,5 @@ def test_datamodel_info_search(capsys):
     assert "optical_element" in captured.out
     result = dm.search('optical_element')
     assert 'F062' in repr(result)
+    assert result.node == 'F062'
 
