@@ -5,6 +5,7 @@
 
 - Updated stnode tests to include all cal steps. [#60]
 
+- Fix bug with asdf 2.9.x due to change in private variable name. [#63]
 
 0.8.0 (2021-11-22)
 ==================

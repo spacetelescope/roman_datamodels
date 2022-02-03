@@ -66,7 +66,7 @@ def get_schema_uri_from_converter(converter_class):
     rclass = locate(classname)
     tag = rclass._tag
     schema_uri = next(
-        t for t in DATAMODEL_EXTENSIONS[0].tags if t._tag_uri == tag)._schema_uri
+        t for t in DATAMODEL_EXTENSIONS[0].tags if t.tag_uri == tag).schema_uris[0]
     return schema_uri
 
 # def open(init=None, memmap=False, **kwargs):
