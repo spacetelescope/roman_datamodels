@@ -289,7 +289,7 @@ class TaggedObjectNode(DNode, metaclass=TaggedObjectNodeMeta):
         """Retrieve the schema associated with this tag"""
         extension_manager = self.ctx.extension_manager
         tag_def = extension_manager.get_tag_definition(self.tag)
-        schema_uri = tag_def.schema_uri
+        schema_uri = tag_def.schema_uris[0]
         schema = asdfschema.load_schema(schema_uri, resolve_references=True)
         return schema
 

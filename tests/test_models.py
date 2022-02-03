@@ -27,7 +27,7 @@ def test_model_schemas():
     dmodels = datamodels.model_registry.keys()
     for model in dmodels:
         schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags
-                          if t._tag_uri == model._tag)._schema_uri
+                          if t._tag_uri == model._tag).schema_uris[0]
         asdf.schema.load_schema(schema_uri)
 
 # Testing core schema
@@ -125,9 +125,9 @@ def test_reference_file_model_base(tmp_path):
     # Set temporary asdf file
 
     # Get all reference file classes
-    tags = [t for t in DATAMODEL_EXTENSIONS[0].tags if "/reference_files/" in t._tag_uri]
+    tags = [t for t in DATAMODEL_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri]
     for tag in tags:
-        schema = asdf.schema.load_schema(tag._schema_uri)
+        schema = asdf.schema.load_schema(tag.schema_uris[0])
         # Check that schema references common reference schema
         allofs = schema['properties']['meta']['allOf']
         found_common = False
