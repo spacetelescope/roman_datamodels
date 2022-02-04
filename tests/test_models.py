@@ -448,3 +448,15 @@ def test_opening_level2_image(tmp_path):
 
     assert wfi_image.meta.instrument.optical_element == 'F062'
     assert isinstance(wfi_image, datamodels.ImageModel)
+
+def test_datamodel_info_search(capsys):
+    wfi_science_raw = utils.mk_level1_science_raw()
+    af = asdf.AsdfFile()
+    af.tree = {'roman': wfi_science_raw}
+    dm = datamodels.open(af)
+    dm.info(max_rows=200)
+    captured = capsys.readouterr()
+    assert "optical_element" in captured.out
+    result = dm.search('optical_element')
+    assert 'F062' in repr(result)
+    assert result.node == 'F062'

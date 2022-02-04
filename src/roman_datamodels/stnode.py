@@ -87,7 +87,6 @@ def _check_value(value, schema, validator_context):
                                          validator_callbacks,
                                          validator_resolver)
 
-    #value = yamlutil.custom_tree_to_tagged_tree(value, validator_context)
     validator.validate(value, _schema=temp_schema)
     validator_context.close()
 
@@ -223,11 +222,10 @@ class DNode(UserDict):
             # Extract the subschema corresponding to this node.
             subschema = _get_schema_for_property(parent_schema, self._name)
             self._x_schema = subschema
-    # def __getindex__(self, key):
-    #     return self.data[key]
 
-    # def __setindex__(self, key, value):
-    #     self.data[key] = value
+    def __asdf_traverse__(self):
+        return dict(self)
+
 
 class LNode(UserList):
 
@@ -251,6 +249,9 @@ class LNode(UserList):
             return LNode(value)
         else:
             return value
+
+    def __asdf_traverse__(self):
+        return list(self)
 
 
 _OBJECT_NODE_CLASSES_BY_TAG = {}

@@ -16,6 +16,9 @@
 0.7.0 (2021-11-10)
 ==================
 
+- Modified DNode and LNode classes to provide asdf info method introspection
+  into the contents of the class. [#61]
+
 - Modified open function to handle accepting model instances that are checked
   against a target datamodel class, whether supplied directly as a model instance,
   or obtained by the referenced ASDF file. [#52]

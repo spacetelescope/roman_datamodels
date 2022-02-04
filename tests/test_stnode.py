@@ -50,3 +50,15 @@ def test_serialization(node_class, tmp_path):
 
     with asdf.open(file_path) as af:
         assert_node_equal(af["node"], node)
+
+
+def test_info(capsys):
+    node = stnode.WfiMode({"optical_element": "GRISM",
+                           "detector": "WFI18",
+                           "name": "WFI"})
+    tree = dict(wfimode=node)
+    af = asdf.AsdfFile(tree)
+    af.info()
+    captured = capsys.readouterr()
+    assert "optical_element" in captured.out
+    assert "GRISM" in captured.out
