@@ -1,4 +1,4 @@
-0.9.0 (unreleased)
+0.9.0 (2022-02-04)
 ==================
 
 - Updated rampfit and flat maker utilities to support the same functionality as the other model maker functions. Streamlined and commented all maker utility functions. Added tests to complete coverage of roman_datamodels/testing/utils.py. Cleaned out some deprecated code. [#59]
