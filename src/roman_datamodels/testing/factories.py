@@ -912,6 +912,15 @@ def create_ramp(**kwargs):
         "pixeldq": _random_array_uint32(),
         "groupdq": _random_array_uint8((2, 4096, 4096)),
         "err": _random_array_float32(min=0.0),
+        "amp33": _random_array_float32((2, 4096, 128)),
+        "border_ref_pix_right": _random_array_float32((2, 4096, 4)),
+        "border_ref_pix_left": _random_array_float32((2, 4096, 4)),
+        "border_ref_pix_top": _random_array_float32((2, 4, 4096)),
+        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096)),
+        "dq_border_ref_pix_right": _random_array_uint32((2, 4096, 4)),
+        "dq_border_ref_pix_left": _random_array_uint32((2, 4096, 4)),
+        "dq_border_ref_pix_top": _random_array_uint32((2, 4, 4096)),
+        "dq_border_ref_pix_bottom": _random_array_uint32((2, 4, 4096))
     }
     raw.update(kwargs)
 

@@ -436,10 +436,13 @@ def mk_level1_science_raw(shape=None, filepath=None):
 
     Parameters
     ----------
-    shape
-        (optional) Shape of arrays in the model.
+    shape : tuple, int
+        (optional) (z, y, x) Shape of data array. This includes a four-pixel
+        border representing the reference pixels. Default is (8, 4096, 4096)
+        (8 integrations, 4088 x 4088 represent the science pixels, with the
+        additional being the border reference pixels).
 
-    filepath
+    filepath : str
         (optional) File name and path to write model to.
 
     Returns
@@ -452,8 +455,14 @@ def mk_level1_science_raw(shape=None, filepath=None):
 
     if not shape:
         shape = (8, 4096, 4096)
+        n_ints = 8
+    else:
+        n_ints = shape[0]
 
     wfi_science_raw['data'] = np.zeros(shape, dtype=np.uint16)
+
+    # add amp 33 ref pix
+    wfi_science_raw['amp33'] = np.zeros((n_ints, 4096, 128), dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -463,17 +472,28 @@ def mk_level1_science_raw(shape=None, filepath=None):
         return wfi_science_raw
 
 
-def mk_level2_image(shape=None, filepath=None):
+def mk_level2_image(shape=None, n_ints=None, filepath=None):
     """
-    Create a dummy level 2 Image instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy level 2 Image instance (or file) with arrays and valid values
+    for attributes required by the schema.
 
     Parameters
     ----------
-    shape
-        (optional) Shape of arrays in the model.
+    shape : tuple, int
+        (optional) Shape (y, x) of data array in the model (and its
+        corresponding dq/err arrays). This specified size does NOT include the
+        four-pixel border of reference pixels - those are trimmed at level 2.
+        This size, however, is used to construct the additional arrays that
+        contain the original border reference pixels (i.e if shape = (10, 10),
+        the border reference pixel arrays will have (y, x) dimensions (14, 4)
+        and (4, 14)). Default is 4088 x 4088.
 
-    filepath
+    n_ints : int
+        The level 2 file is flattened, but it contains arrays for the original
+        reference pixels which remain 3D. n_ints specifies what the z dimension
+        of these arrays should be. Defaults to 8.
+
+    filepath : str
         (optional) File name and path to write model to.
 
     Returns
@@ -485,7 +505,28 @@ def mk_level2_image(shape=None, filepath=None):
     wfi_image['meta'] = meta
 
     if not shape:
-        shape = (4096, 4096)
+        shape = (4088, 4088)
+    if not n_ints:
+        n_ints = 8
+
+    tb_shape_3d = (n_ints, 4, shape[1] + 8) # for top, bottom ref pix arrays
+    rl_shape_3d = (n_ints, shape[0] + 8, 4) # for right, left ref pix arrays
+
+    # add border reference pixel arrays
+    wfi_image['border_ref_pix_left'] = np.zeros(rl_shape_3d, dtype=np.float32)
+    wfi_image['border_ref_pix_right'] = np.zeros(rl_shape_3d, dtype=np.float32)
+    wfi_image['border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.float32)
+    wfi_image['border_ref_pix_bottom'] = np.zeros(tb_shape_3d, dtype=np.float32)
+
+    # and their dq arrays
+    wfi_image['dq_border_ref_pix_left'] = np.zeros(rl_shape_3d, dtype=np.uint32)
+    wfi_image['dq_border_ref_pix_right'] = np.zeros(rl_shape_3d, dtype=np.uint32)
+    wfi_image['dq_border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.uint32)
+    wfi_image['dq_border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.uint32)
+
+    # add amp 33 ref pixel array
+    amp33_size = (n_ints, 4096, 128)
+    wfi_image['amp33'] = np.zeros(amp33_size, dtype=np.float32)
 
     wfi_image['data'] = np.zeros(shape, dtype=np.float32)
     wfi_image['dq'] = np.zeros(shape, dtype=np.uint32)
@@ -809,17 +850,21 @@ def mk_readnoise(shape=None, filepath=None):
         return readnoiseref
 
 
-def mk_ramp(shape=None, filepath=None):
+def mk_ramp(shape=None, n_ints=None, filepath=None):
     """
     Create a dummy Ramp instance (or file) with arrays and valid values for attributes
     required by the schema.
 
     Parameters
     ----------
-    shape
-        (optional) Shape of arrays in the model.
+    shape : tuple, int
+        (optional) Shape (y, x) of data array in the model (and its
+        corresponding dq/err arrays). This specified size includes the
+        four-pixel border of reference pixels. Default is 4096 x 4096.
 
-    filepath
+    n_ints : int
+
+    filepath : str
         (optional) File name and path to write model to.
 
     Returns
@@ -832,6 +877,25 @@ def mk_ramp(shape=None, filepath=None):
 
     if not shape:
         shape = (8, 4096, 4096)
+
+    tb_shape_3d = (shape[0], 4, shape[2]) # for top, bottom ref pix arrays
+    rl_shape_3d = (shape[0], shape[1], 4) # for right, left ref pix arrays
+
+    # add border reference pixel arrays
+    ramp['border_ref_pix_left'] = np.zeros(rl_shape_3d, dtype=np.float32)
+    ramp['border_ref_pix_right'] = np.zeros(rl_shape_3d, dtype=np.float32)
+    ramp['border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.float32)
+    ramp['border_ref_pix_bottom'] = np.zeros(tb_shape_3d, dtype=np.float32)
+
+    # and their dq arrays
+    ramp['dq_border_ref_pix_left'] = np.zeros(rl_shape_3d, dtype=np.uint32)
+    ramp['dq_border_ref_pix_right'] = np.zeros(rl_shape_3d, dtype=np.uint32)
+    ramp['dq_border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.uint32)
+    ramp['dq_border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.uint32)
+
+    # add amp 33 ref pixel array
+    amp33_size = (shape[0], 4096, 128)
+    ramp['amp33'] = np.zeros(amp33_size, dtype=np.float32)
 
     ramp['data'] = np.full(shape, 1.0, dtype=np.float32)
     ramp['pixeldq'] = np.zeros(shape[1:], dtype=np.uint32)

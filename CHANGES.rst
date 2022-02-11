@@ -1,6 +1,8 @@
 0.10.0 (unreleased)
 ===================
 
+- Updated maker utilities for level 1, level 2, and ramp models to reflect changes in reference pixels. [#65]
+
 0.9.0 (2022-02-04)
 ==================
 
