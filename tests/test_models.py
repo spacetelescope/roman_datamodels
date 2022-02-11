@@ -1,6 +1,7 @@
 import pytest
 
 from jsonschema import ValidationError
+from astropy import units as u
 import asdf
 import numpy as np
 
@@ -276,8 +277,8 @@ def test_opening_mask_ref(tmp_path):
 def test_make_pixelarea():
     pixearea = utils.mk_pixelarea(shape=(20, 20))
     assert pixearea.meta.reftype == 'AREA'
-    assert type(pixearea.meta.photometry.pixelarea_steradians) == float
-    assert type(pixearea.meta.photometry.pixelarea_arcsecsq) == float
+    assert type(pixearea.meta.photometry.pixelarea_steradians) == u.Quantity
+    assert type(pixearea.meta.photometry.pixelarea_arcsecsq) == u.Quantity
     assert pixearea.data.dtype == np.float32
 
     # Test validation
@@ -381,10 +382,15 @@ def test_make_wfi_img_photom():
     wfi_img_photom = utils.mk_wfi_img_photom()
 
     assert wfi_img_photom.meta.reftype == 'PHOTOM'
-    assert type(wfi_img_photom.phot_table.W146.photmjsr) == float
-    assert type(wfi_img_photom.phot_table.F184.photmjsr) == float
-    assert type(wfi_img_photom.phot_table.W146.uncertainty) == float
-    assert type(wfi_img_photom.phot_table.F184.uncertainty) == float
+    assert isinstance(wfi_img_photom.phot_table.W146.photmjsr, u.Quantity)
+    assert isinstance(wfi_img_photom.phot_table.F184.photmjsr, u.Quantity)
+    assert isinstance(wfi_img_photom.phot_table.W146.uncertainty, u.Quantity)
+    assert isinstance(wfi_img_photom.phot_table.F184.uncertainty, u.Quantity)
+    assert isinstance(wfi_img_photom.phot_table.F184.pixelareasr, u.Quantity)
+    assert isinstance(wfi_img_photom.phot_table.W146.pixelareasr, u.Quantity)
+    assert wfi_img_photom.phot_table.PRISM.photmjsr is None
+    assert wfi_img_photom.phot_table.PRISM.uncertainty is None
+    assert wfi_img_photom.phot_table.PRISM.pixelareasr is None
 
     # Test validation
     wfi_img_photom_model = datamodels.WfiImgPhotomRefModel(wfi_img_photom)
@@ -432,7 +438,6 @@ def test_level2_image():
     assert wfi_image.var_poisson.dtype == np.float32
     assert wfi_image.var_rnoise.dtype == np.float32
     assert wfi_image.var_flat.dtype == np.float32
-    assert wfi_image.area.dtype == np.float32
     assert type(wfi_image.cal_logs[0]) == str
 
     # Test validation

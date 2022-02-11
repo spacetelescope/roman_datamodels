@@ -1,6 +1,7 @@
 import asdf
 import astropy.time as time
 import numpy as np
+from astropy import units as u
 
 from .. import stnode
 
@@ -54,6 +55,7 @@ def mk_exposure():
     exp['duration'] = NONUM
     exp['nresets_at_start'] = NONUM
     exp['datamode'] = NONUM
+    exp['level0_compressed'] = True
     return exp
 
 
@@ -184,10 +186,12 @@ def mk_photometry():
     roman_datamodels.stnode.Photometry
     """
     phot = stnode.Photometry()
-    phot['conversion_megajanskys'] = NONUM
-    phot['conversion_microjanskys'] = NONUM
-    phot['pixelarea_steradians'] = NONUM
-    phot['pixelarea_arcsecsq'] = NONUM
+    phot['conversion_microjanskys'] = NONUM * u.uJy / u.sr
+    phot['conversion_megajanskys'] = NONUM * u.MJy / u.sr
+    phot['pixelarea_steradians'] = NONUM * u.sr
+    phot['pixelarea_arcsecsq'] = NONUM * u.arcsec ** 2
+    phot['conversion_microjanskys_uncertainty'] = NONUM * u.uJy / u.sr
+    phot['conversion_megajanskys_uncertainty'] = NONUM * u.MJy / u.sr
     return phot
 
 
@@ -358,7 +362,7 @@ def mk_guide():
     guide['gs_udec'] = NONUM
     guide['gs_mag'] = NONUM
     guide['gs_umag'] = NONUM
-    guide['gw_pcs_mode'] = NOSTR
+    guide['gw_fgs_mode'] = "WSM-ACQ-2"
     guide['gw_function_start_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guide['gw_function_end_time'] = time.Time(
@@ -407,7 +411,6 @@ def mk_common_meta():
     meta['guidestar'] = mk_guide()
     meta['instrument'] = mk_wfi_mode()
     meta['observation'] = mk_observation()
-    meta['photometry'] = mk_photometry()
     meta['pointing'] = mk_pointing()
     meta['program'] = mk_program()
     meta['target'] = mk_target()
@@ -462,7 +465,7 @@ def mk_level1_science_raw(shape=None, filepath=None):
     wfi_science_raw['data'] = np.zeros(shape, dtype=np.uint16)
 
     # add amp 33 ref pix
-    wfi_science_raw['amp33'] = np.zeros((n_ints, 4096, 128), dtype=np.float32)
+    wfi_science_raw['amp33'] = np.zeros((n_ints, 4096, 128), dtype=np.uint16)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -501,16 +504,13 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
     roman_datamodels.stnode.WfiImage
     """
     meta = mk_common_meta()
+    meta['photometry'] = mk_photometry()
     wfi_image = stnode.WfiImage()
     wfi_image['meta'] = meta
-
     if not shape:
         shape = (4088, 4088)
     if not n_ints:
         n_ints = 8
-
-    tb_shape_3d = (n_ints, 4, shape[1] + 8) # for top, bottom ref pix arrays
-    rl_shape_3d = (n_ints, shape[0] + 8, 4) # for right, left ref pix arrays
 
     # add border reference pixel arrays
     wfi_image['border_ref_pix_left'] = np.zeros((n_ints, shape[0] + 8, 4),
@@ -538,7 +538,6 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
     wfi_image['var_poisson'] = np.zeros(shape, dtype=np.float32)
     wfi_image['var_rnoise'] = np.zeros(shape, dtype=np.float32)
     wfi_image['var_flat'] = np.zeros(shape, dtype=np.float32)
-    wfi_image['area'] = np.zeros(shape, dtype=np.float32)
     wfi_image['cal_logs'] = mk_cal_logs()
 
     if filepath:
@@ -613,6 +612,7 @@ def mk_dark(shape=None, filepath=None):
     darkref['meta']['observation'] = observation
     exposure = {}
     exposure['type'] = 'WFI_IMAGE'
+    exposure['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
     darkref['meta']['exposure'] = exposure
 
     if not shape:
@@ -759,8 +759,8 @@ def mk_pixelarea(shape=None, filepath=None):
     pixelarearef = stnode.PixelareaRef()
     meta['reftype'] = 'AREA'
     meta['photometry'] = {
-        'pixelarea_steradians': float(NONUM),
-        'pixelarea_arcsecsq': float(NONUM),
+        'pixelarea_steradians': float(NONUM) * u.sr,
+        'pixelarea_arcsecsq': float(NONUM) * u.arcsec** 2,
     }
     pixelarearef['meta'] = meta
 
@@ -798,11 +798,17 @@ def mk_wfi_img_photom(filepath=None):
 
     wfi_img_photo_dict = {
         "W146":
-            {"photmjsr": (10 * np.random.random()),
-             "uncertainty": np.random.random()},
+            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
+             "uncertainty": np.random.random() * u.MJ / u.sr,
+             "pixelareasr": .2 * u.sr},
         "F184":
-            {"photmjsr": (10 * np.random.random()),
-             "uncertainty": np.random.random()}
+            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
+             "uncertainty": np.random.random() * u.MJ / u.sr,
+             "pixelareasr": .2 * u.sr},
+        "PRISM":
+             {"photmjsr": None,
+              "uncertainty": None,
+              "pixelareasr": None}
     }
 
     wfi_img_photomref['phot_table'] = wfi_img_photo_dict
@@ -839,6 +845,7 @@ def mk_readnoise(shape=None, filepath=None):
     readnoiseref['meta'] = meta
     exposure = {}
     exposure['type'] = 'WFI_IMAGE'
+    exposure['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
     readnoiseref['meta']['exposure'] = exposure
 
     if not shape:
@@ -881,9 +888,6 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
 
     if not shape:
         shape = (8, 4096, 4096)
-
-    tb_shape_3d = (shape[0], 4, shape[2]) # for top, bottom ref pix arrays
-    rl_shape_3d = (shape[0], shape[1], 4) # for right, left ref pix arrays
 
     # add border reference pixel arrays
     ramp['border_ref_pix_left'] = np.zeros((shape[0], shape[1], 4),
