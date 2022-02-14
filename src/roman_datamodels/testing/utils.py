@@ -567,6 +567,9 @@ def mk_dark(shape=None, filepath=None):
     observation['ma_table_name']="ma_table.name"
     darkref['meta']['observation'] = observation
     exposure = {}
+    exposure['ngroups'] = 10
+    exposure['nframes'] = 4
+    exposure['groupgap'] = 7
     exposure['type'] = 'WFI_IMAGE'
     darkref['meta']['exposure'] = exposure
 

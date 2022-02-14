@@ -381,6 +381,9 @@ def create_ref_meta(**kwargs):
         "description": _random_string("Reference description "),
         "exposure": {
             "type" : "WFI_IMAGE",
+            "ngroups" : 10,
+            "nframes" : 4,
+            "groupgap" : 7
         },
         "instrument": {
             "name": "WFI",
