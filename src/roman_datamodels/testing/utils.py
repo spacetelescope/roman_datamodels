@@ -513,20 +513,24 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
     rl_shape_3d = (n_ints, shape[0] + 8, 4) # for right, left ref pix arrays
 
     # add border reference pixel arrays
-    wfi_image['border_ref_pix_left'] = np.zeros(rl_shape_3d, dtype=np.float32)
-    wfi_image['border_ref_pix_right'] = np.zeros(rl_shape_3d, dtype=np.float32)
-    wfi_image['border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.float32)
-    wfi_image['border_ref_pix_bottom'] = np.zeros(tb_shape_3d, dtype=np.float32)
+    wfi_image['border_ref_pix_left'] = np.zeros((n_ints, shape[0] + 8, 4),
+                                                dtype=np.float32)
+    wfi_image['border_ref_pix_right'] = np.zeros((n_ints, shape[0] + 8, 4),
+                                                dtype=np.float32)
+    wfi_image['border_ref_pix_top'] = np.zeros((n_ints, 4, shape[1] + 8),
+                                                dtype=np.float32)
+    wfi_image['border_ref_pix_bottom'] = np.zeros((n_ints, 4, shape[1] + 8),
+                                                  dtype=np.float32)
 
     # and their dq arrays
-    wfi_image['dq_border_ref_pix_left'] = np.zeros(rl_shape_3d, dtype=np.uint32)
-    wfi_image['dq_border_ref_pix_right'] = np.zeros(rl_shape_3d, dtype=np.uint32)
-    wfi_image['dq_border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.uint32)
-    wfi_image['dq_border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.uint32)
+    wfi_image['dq_border_ref_pix_left'] = np.zeros((shape[0] + 8, 4), dtype=np.uint32)
+    wfi_image['dq_border_ref_pix_right'] = np.zeros((shape[0] + 8, 4), dtype=np.uint32)
+    wfi_image['dq_border_ref_pix_top'] = np.zeros((4, shape[1] + 8), dtype=np.uint32)
+    wfi_image['dq_border_ref_pix_bottom'] = np.zeros((4, shape[1] + 8), dtype=np.uint32)
 
     # add amp 33 ref pixel array
     amp33_size = (n_ints, 4096, 128)
-    wfi_image['amp33'] = np.zeros(amp33_size, dtype=np.float32)
+    wfi_image['amp33'] = np.zeros(amp33_size, dtype=np.uint16)
 
     wfi_image['data'] = np.zeros(shape, dtype=np.float32)
     wfi_image['dq'] = np.zeros(shape, dtype=np.uint32)
@@ -882,20 +886,24 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
     rl_shape_3d = (shape[0], shape[1], 4) # for right, left ref pix arrays
 
     # add border reference pixel arrays
-    ramp['border_ref_pix_left'] = np.zeros(rl_shape_3d, dtype=np.float32)
-    ramp['border_ref_pix_right'] = np.zeros(rl_shape_3d, dtype=np.float32)
-    ramp['border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.float32)
-    ramp['border_ref_pix_bottom'] = np.zeros(tb_shape_3d, dtype=np.float32)
+    ramp['border_ref_pix_left'] = np.zeros((shape[0], shape[1], 4),
+                                           dtype=np.float32)
+    ramp['border_ref_pix_right'] = np.zeros((shape[0], shape[1], 4),
+                                            dtype=np.float32)
+    ramp['border_ref_pix_top'] = np.zeros((shape[0], 4, shape[2]),
+                                           dtype=np.float32)
+    ramp['border_ref_pix_bottom'] = np.zeros((shape[0], 4, shape[2]),
+                                              dtype=np.float32)
 
     # and their dq arrays
-    ramp['dq_border_ref_pix_left'] = np.zeros(rl_shape_3d, dtype=np.uint32)
-    ramp['dq_border_ref_pix_right'] = np.zeros(rl_shape_3d, dtype=np.uint32)
-    ramp['dq_border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.uint32)
-    ramp['dq_border_ref_pix_top'] = np.zeros(tb_shape_3d, dtype=np.uint32)
+    ramp['dq_border_ref_pix_left'] = np.zeros((shape[1], 4), dtype=np.uint32)
+    ramp['dq_border_ref_pix_right'] = np.zeros((shape[1], 4), dtype=np.uint32)
+    ramp['dq_border_ref_pix_top'] = np.zeros((4, shape[2]), dtype=np.uint32)
+    ramp['dq_border_ref_pix_bottom'] = np.zeros((4, shape[2]), dtype=np.uint32)
 
     # add amp 33 ref pixel array
     amp33_size = (shape[0], 4096, 128)
-    ramp['amp33'] = np.zeros(amp33_size, dtype=np.float32)
+    ramp['amp33'] = np.zeros(amp33_size, dtype=np.uint16)
 
     ramp['data'] = np.full(shape, 1.0, dtype=np.float32)
     ramp['pixeldq'] = np.zeros(shape[1:], dtype=np.uint32)
