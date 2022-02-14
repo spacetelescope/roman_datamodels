@@ -1,6 +1,7 @@
 import asdf
 import astropy.time as time
 import numpy as np
+from astropy import units as u
 
 from .. import stnode
 
@@ -54,6 +55,7 @@ def mk_exposure():
     exp['duration'] = NONUM
     exp['nresets_at_start'] = NONUM
     exp['datamode'] = NONUM
+    exp['level0_compressed'] = True
     return exp
 
 
@@ -184,10 +186,12 @@ def mk_photometry():
     roman_datamodels.stnode.Photometry
     """
     phot = stnode.Photometry()
-    phot['conversion_megajanskys'] = NONUM
-    phot['conversion_microjanskys'] = NONUM
-    phot['pixelarea_steradians'] = NONUM
-    phot['pixelarea_arcsecsq'] = NONUM
+    phot['conversion_microjanskys'] = NONUM * u.uJy / u.sr
+    phot['conversion_megajanskys'] = NONUM * u.MJy / u.sr
+    phot['pixelarea_steradians'] = NONUM * u.sr
+    phot['pixelarea_arcsecsq'] = NONUM * u.arcsec ** 2
+    phot['conversion_microjanskys_uncertainty'] = NONUM * u.uJy / u.sr
+    phot['conversion_megajanskys_uncertainty'] = NONUM * u.MJy / u.sr
     return phot
 
 
@@ -358,7 +362,7 @@ def mk_guide():
     guide['gs_udec'] = NONUM
     guide['gs_mag'] = NONUM
     guide['gs_umag'] = NONUM
-    guide['gw_pcs_mode'] = NOSTR
+    guide['gw_fgs_mode'] = "WSM-ACQ-2"
     guide['gw_function_start_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guide['gw_function_end_time'] = time.Time(
@@ -407,7 +411,6 @@ def mk_common_meta():
     meta['guidestar'] = mk_guide()
     meta['instrument'] = mk_wfi_mode()
     meta['observation'] = mk_observation()
-    meta['photometry'] = mk_photometry()
     meta['pointing'] = mk_pointing()
     meta['program'] = mk_program()
     meta['target'] = mk_target()
@@ -436,10 +439,13 @@ def mk_level1_science_raw(shape=None, filepath=None):
 
     Parameters
     ----------
-    shape
-        (optional) Shape of arrays in the model.
+    shape : tuple, int
+        (optional) (z, y, x) Shape of data array. This includes a four-pixel
+        border representing the reference pixels. Default is (8, 4096, 4096)
+        (8 integrations, 4088 x 4088 represent the science pixels, with the
+        additional being the border reference pixels).
 
-    filepath
+    filepath : str
         (optional) File name and path to write model to.
 
     Returns
@@ -452,8 +458,14 @@ def mk_level1_science_raw(shape=None, filepath=None):
 
     if not shape:
         shape = (8, 4096, 4096)
+        n_ints = 8
+    else:
+        n_ints = shape[0]
 
     wfi_science_raw['data'] = np.zeros(shape, dtype=np.uint16)
+
+    # add amp 33 ref pix
+    wfi_science_raw['amp33'] = np.zeros((n_ints, 4096, 128), dtype=np.uint16)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -463,17 +475,28 @@ def mk_level1_science_raw(shape=None, filepath=None):
         return wfi_science_raw
 
 
-def mk_level2_image(shape=None, filepath=None):
+def mk_level2_image(shape=None, n_ints=None, filepath=None):
     """
-    Create a dummy level 2 Image instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy level 2 Image instance (or file) with arrays and valid values
+    for attributes required by the schema.
 
     Parameters
     ----------
-    shape
-        (optional) Shape of arrays in the model.
+    shape : tuple, int
+        (optional) Shape (y, x) of data array in the model (and its
+        corresponding dq/err arrays). This specified size does NOT include the
+        four-pixel border of reference pixels - those are trimmed at level 2.
+        This size, however, is used to construct the additional arrays that
+        contain the original border reference pixels (i.e if shape = (10, 10),
+        the border reference pixel arrays will have (y, x) dimensions (14, 4)
+        and (4, 14)). Default is 4088 x 4088.
 
-    filepath
+    n_ints : int
+        The level 2 file is flattened, but it contains arrays for the original
+        reference pixels which remain 3D. n_ints specifies what the z dimension
+        of these arrays should be. Defaults to 8.
+
+    filepath : str
         (optional) File name and path to write model to.
 
     Returns
@@ -481,11 +504,33 @@ def mk_level2_image(shape=None, filepath=None):
     roman_datamodels.stnode.WfiImage
     """
     meta = mk_common_meta()
+    meta['photometry'] = mk_photometry()
     wfi_image = stnode.WfiImage()
     wfi_image['meta'] = meta
-
     if not shape:
-        shape = (4096, 4096)
+        shape = (4088, 4088)
+    if not n_ints:
+        n_ints = 8
+
+    # add border reference pixel arrays
+    wfi_image['border_ref_pix_left'] = np.zeros((n_ints, shape[0] + 8, 4),
+                                                dtype=np.float32)
+    wfi_image['border_ref_pix_right'] = np.zeros((n_ints, shape[0] + 8, 4),
+                                                dtype=np.float32)
+    wfi_image['border_ref_pix_top'] = np.zeros((n_ints, 4, shape[1] + 8),
+                                                dtype=np.float32)
+    wfi_image['border_ref_pix_bottom'] = np.zeros((n_ints, 4, shape[1] + 8),
+                                                  dtype=np.float32)
+
+    # and their dq arrays
+    wfi_image['dq_border_ref_pix_left'] = np.zeros((shape[0] + 8, 4), dtype=np.uint32)
+    wfi_image['dq_border_ref_pix_right'] = np.zeros((shape[0] + 8, 4), dtype=np.uint32)
+    wfi_image['dq_border_ref_pix_top'] = np.zeros((4, shape[1] + 8), dtype=np.uint32)
+    wfi_image['dq_border_ref_pix_bottom'] = np.zeros((4, shape[1] + 8), dtype=np.uint32)
+
+    # add amp 33 ref pixel array
+    amp33_size = (n_ints, 4096, 128)
+    wfi_image['amp33'] = np.zeros(amp33_size, dtype=np.uint16)
 
     wfi_image['data'] = np.zeros(shape, dtype=np.float32)
     wfi_image['dq'] = np.zeros(shape, dtype=np.uint32)
@@ -493,7 +538,6 @@ def mk_level2_image(shape=None, filepath=None):
     wfi_image['var_poisson'] = np.zeros(shape, dtype=np.float32)
     wfi_image['var_rnoise'] = np.zeros(shape, dtype=np.float32)
     wfi_image['var_flat'] = np.zeros(shape, dtype=np.float32)
-    wfi_image['area'] = np.zeros(shape, dtype=np.float32)
     wfi_image['cal_logs'] = mk_cal_logs()
 
     if filepath:
@@ -571,6 +615,7 @@ def mk_dark(shape=None, filepath=None):
     exposure['nframes'] = 4
     exposure['groupgap'] = 7
     exposure['type'] = 'WFI_IMAGE'
+    exposure['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
     darkref['meta']['exposure'] = exposure
 
     if not shape:
@@ -717,8 +762,8 @@ def mk_pixelarea(shape=None, filepath=None):
     pixelarearef = stnode.PixelareaRef()
     meta['reftype'] = 'AREA'
     meta['photometry'] = {
-        'pixelarea_steradians': float(NONUM),
-        'pixelarea_arcsecsq': float(NONUM),
+        'pixelarea_steradians': float(NONUM) * u.sr,
+        'pixelarea_arcsecsq': float(NONUM) * u.arcsec** 2,
     }
     pixelarearef['meta'] = meta
 
@@ -756,11 +801,17 @@ def mk_wfi_img_photom(filepath=None):
 
     wfi_img_photo_dict = {
         "W146":
-            {"photmjsr": (10 * np.random.random()),
-             "uncertainty": np.random.random()},
+            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
+             "uncertainty": np.random.random() * u.MJ / u.sr,
+             "pixelareasr": .2 * u.sr},
         "F184":
-            {"photmjsr": (10 * np.random.random()),
-             "uncertainty": np.random.random()}
+            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
+             "uncertainty": np.random.random() * u.MJ / u.sr,
+             "pixelareasr": .2 * u.sr},
+        "PRISM":
+             {"photmjsr": None,
+              "uncertainty": None,
+              "pixelareasr": None}
     }
 
     wfi_img_photomref['phot_table'] = wfi_img_photo_dict
@@ -797,6 +848,7 @@ def mk_readnoise(shape=None, filepath=None):
     readnoiseref['meta'] = meta
     exposure = {}
     exposure['type'] = 'WFI_IMAGE'
+    exposure['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
     readnoiseref['meta']['exposure'] = exposure
 
     if not shape:
@@ -812,17 +864,21 @@ def mk_readnoise(shape=None, filepath=None):
         return readnoiseref
 
 
-def mk_ramp(shape=None, filepath=None):
+def mk_ramp(shape=None, n_ints=None, filepath=None):
     """
     Create a dummy Ramp instance (or file) with arrays and valid values for attributes
     required by the schema.
 
     Parameters
     ----------
-    shape
-        (optional) Shape of arrays in the model.
+    shape : tuple, int
+        (optional) Shape (y, x) of data array in the model (and its
+        corresponding dq/err arrays). This specified size includes the
+        four-pixel border of reference pixels. Default is 4096 x 4096.
 
-    filepath
+    n_ints : int
+
+    filepath : str
         (optional) File name and path to write model to.
 
     Returns
@@ -835,6 +891,26 @@ def mk_ramp(shape=None, filepath=None):
 
     if not shape:
         shape = (8, 4096, 4096)
+
+    # add border reference pixel arrays
+    ramp['border_ref_pix_left'] = np.zeros((shape[0], shape[1], 4),
+                                           dtype=np.float32)
+    ramp['border_ref_pix_right'] = np.zeros((shape[0], shape[1], 4),
+                                            dtype=np.float32)
+    ramp['border_ref_pix_top'] = np.zeros((shape[0], 4, shape[2]),
+                                           dtype=np.float32)
+    ramp['border_ref_pix_bottom'] = np.zeros((shape[0], 4, shape[2]),
+                                              dtype=np.float32)
+
+    # and their dq arrays
+    ramp['dq_border_ref_pix_left'] = np.zeros((shape[1], 4), dtype=np.uint32)
+    ramp['dq_border_ref_pix_right'] = np.zeros((shape[1], 4), dtype=np.uint32)
+    ramp['dq_border_ref_pix_top'] = np.zeros((4, shape[2]), dtype=np.uint32)
+    ramp['dq_border_ref_pix_bottom'] = np.zeros((4, shape[2]), dtype=np.uint32)
+
+    # add amp 33 ref pixel array
+    amp33_size = (shape[0], 4096, 128)
+    ramp['amp33'] = np.zeros(amp33_size, dtype=np.uint16)
 
     ramp['data'] = np.full(shape, 1.0, dtype=np.float32)
     ramp['pixeldq'] = np.zeros(shape[1:], dtype=np.uint32)

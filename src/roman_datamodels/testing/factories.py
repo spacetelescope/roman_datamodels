@@ -10,6 +10,7 @@ import secrets
 import sys
 
 from astropy.time import Time
+from astropy import units as u
 import numpy as np
 
 from .. import stnode
@@ -356,6 +357,7 @@ def create_exposure(**kwargs):
         "start_time_mjd": _random_mjd_timestamp(),
         "start_time_tdb": _random_mjd_timestamp(),
         "type": _random_exposure_type(),
+        "level0_compressed": True,
     }
     raw.update(kwargs)
 
@@ -446,9 +448,10 @@ def create_dark_ref(**kwargs):
         "data": _random_array_float32((2, 4096, 4096)),
         "dq": _random_array_uint32(),
         "err": _random_array_float32((2, 4096, 4096)),
-        "meta": create_ref_meta(reftype="DARK"),
+        "meta": create_ref_meta(reftype="DARK")
     }
     raw.update(kwargs)
+    raw['meta']['exposure']['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
 
     return stnode.DarkRef(raw)
 
@@ -540,8 +543,8 @@ def create_pixelarea_ref(**kwargs):
         "meta": create_ref_meta(reftype="AREA"),
     }
     raw['meta']['photometry'] = {
-        'pixelarea_steradians': _random_positive_float(),
-        'pixelarea_arcsecsq': _random_positive_float(),
+        'pixelarea_steradians': _random_positive_float() * u.sr,
+        'pixelarea_arcsecsq': _random_positive_float() * u.arcsec ** 2,
     }
     raw.update(kwargs)
 
@@ -566,6 +569,7 @@ def create_readnoise_ref(**kwargs):
         "meta": create_ref_meta(reftype="READNOISE"),
     }
     raw.update(kwargs)
+    raw['meta']['exposure']['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
 
     return stnode.ReadnoiseRef(raw)
 
@@ -632,11 +636,17 @@ def create_wfi_img_photom_ref(**kwargs):
     """
     raw_dict = {
         "W146":
-             {"photmjsr":(10 * np.random.random()),
-              "uncertainty":np.random.random()},
+             {"photmjsr": (10 * np.random.random() * u.MJy / u.sr),
+              "uncertainty": np.random.random() * u.MJy / u.sr,
+              "pixelareasr": .2 * u.sr},
         "F184":
-            {"photmjsr": (10 * np.random.random()),
-             "uncertainty": np.random.random()}
+            {"photmjsr": (10 * np.random.random() * u.MJy / u.sr),
+             "uncertainty": np.random.random() * u.MJy / u.sr,
+             "pixelareasr": .2 * u.sr},
+        "PRISM":
+             {"photmjsr": None,
+              "uncertainty": None,
+              "pixelareasr": None},
     }
 
     raw = {
@@ -683,7 +693,7 @@ def create_guidestar(**kwargs):
         "gw_id": _random_string("ID ", 20),
         "gw_function_end_time": _random_astropy_time(),
         "gw_function_start_time": _random_astropy_time(),
-        "gw_pcs_mode": _random_string("PCS ", 10),
+        "gw_fgs_mode": "WSM-ACQ-2",
         "gw_start_time": _random_astropy_time(),
         "gw_stop_time": _random_astropy_time(),
         "gw_window_xsize": _random_positive_float(),
@@ -743,7 +753,6 @@ def create_meta(**kwargs):
         "guidestar": create_guidestar(),
         "instrument": create_wfi_mode(),
         "observation": create_observation(),
-        "photometry": create_photometry(),
         "pointing": create_pointing(),
         "program": create_program(),
         "target": create_target(),
@@ -811,10 +820,12 @@ def create_photometry(**kwargs):
     roman_datamodels.stnode.Photometry
     """
     raw = {
-        "conversion_megajanskys": _random_positive_float(),
-        "conversion_microjanskys": _random_positive_float(),
-        "pixelarea_arcsecsq": _random_positive_float(),
-        "pixelarea_steradians": _random_positive_float(),
+        "conversion_megajanskys": _random_positive_float() * u.MJy / u.sr,
+        "conversion_microjanskys": _random_positive_float() * u.uJy / u.sr,
+        "pixelarea_arcsecsq": _random_positive_float() * u.arcsec ** 2,
+        "pixelarea_steradians": _random_positive_float() * u.sr,
+        "conversion_megajanskys_uncertainty": _random_positive_float() * u.MJy / u.sr,
+        "conversion_microjanskys_uncertainty": _random_positive_float() * u.uJy / u.sr
     }
     raw.update(kwargs)
 
@@ -839,6 +850,9 @@ def create_pixelarea(**kwargs):
         "area": _random_array_float32(min=0.0),
     }
     raw.update(kwargs)
+    raw["meta"] = {}
+    raw["meta"]["photometry"] = {'pixelarea_steradians': .3 * u.sr,
+                                 'pixelarea_arcsecsq': .3 * u.arcsec ** 2}
 
     return stnode.Pixelarea(raw)
 
@@ -912,9 +926,18 @@ def create_ramp(**kwargs):
     raw = {
         "meta": create_meta(),
         "data": _random_array_float32((2, 4096, 4096)),
-        "pixeldq": _random_array_uint32(),
+        "pixeldq": _random_array_uint32((4096, 4096)),
         "groupdq": _random_array_uint8((2, 4096, 4096)),
         "err": _random_array_float32(min=0.0),
+        "amp33": _random_array_uint16((2, 4096, 128)),
+        "border_ref_pix_right": _random_array_float32((2, 4096, 4)),
+        "border_ref_pix_left": _random_array_float32((2, 4096, 4)),
+        "border_ref_pix_top": _random_array_float32((2, 4, 4096)),
+        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096)),
+        "dq_border_ref_pix_right": _random_array_uint32((4096, 4)),
+        "dq_border_ref_pix_left": _random_array_uint32((4096, 4)),
+        "dq_border_ref_pix_top": _random_array_uint32((4, 4096)),
+        "dq_border_ref_pix_bottom": _random_array_uint32((4, 4096))
     }
     raw.update(kwargs)
 
@@ -1104,18 +1127,28 @@ def create_wfi_image(**kwargs):
     -------
     roman_datamodels.stnode.WfiImage
     """
+
     raw = {
-        "area": _random_array_float32(),
-        "data": _random_array_float32(),
-        "dq": _random_array_uint32(),
-        "err": _random_array_float32(min=0.0),
+        "data": _random_array_float32((4088, 4088)),
+        "dq": _random_array_uint32((4088, 4088)),
+        "err": _random_array_float32((4088, 4088), min=0.0),
         "meta": create_meta(),
-        "var_flat": _random_array_float32(),
-        "var_poisson": _random_array_float32(),
-        "var_rnoise": _random_array_float32(),
+        "var_flat": _random_array_float32((4088, 4088)),
+        "var_poisson": _random_array_float32((4088, 4088)),
+        "var_rnoise": _random_array_float32((4088, 4088)),
+        "amp33": _random_array_uint16((2, 4096, 128)),
+        "border_ref_pix_right": _random_array_float32((2, 4096, 4)),
+        "border_ref_pix_left": _random_array_float32((2, 4096, 4)),
+        "border_ref_pix_top": _random_array_float32((2, 4, 4096)),
+        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096)),
+        "dq_border_ref_pix_right": _random_array_uint32((4096, 4)),
+        "dq_border_ref_pix_left": _random_array_uint32((4096, 4)),
+        "dq_border_ref_pix_top": _random_array_uint32((4, 4096)),
+        "dq_border_ref_pix_bottom": _random_array_uint32((4, 4096)),
         "cal_logs": create_cal_logs(),
     }
     raw.update(kwargs)
+    raw["meta"]["photometry"] = create_photometry()
 
     return stnode.WfiImage(raw)
 
@@ -1161,6 +1194,7 @@ def create_wfi_science_raw(**kwargs):
     raw = {
         # TODO: What should this shape be?
         "data": _random_array_uint16((2, 4096, 4096)),
+        "amp33": _random_array_uint16((2, 4096, 128)),
         "meta": create_meta(),
     }
     raw.update(kwargs)
