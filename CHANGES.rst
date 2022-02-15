@@ -1,4 +1,4 @@
-0.10.0 (unreleased)
+0.10.0 (2022-02-15)
 ===================
 
 - Updated maker utility and factory for dark ref model to include group keywords from exposure. [#66]
