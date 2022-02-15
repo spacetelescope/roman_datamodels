@@ -34,8 +34,8 @@ def mk_exposure():
     exp['mid_time_tdb'] = NONUM
     exp['end_time_tdb'] = NONUM
     exp['start_time_eng'] = NOSTR
-    exp['ngroups'] = NONUM
-    exp['nframes'] = NONUM
+    exp['ngroups'] = 6
+    exp['nframes'] = 8
     exp['data_problem'] = False
     exp['sca_number'] = NONUM
     exp['gain_factor'] = NONUM
@@ -45,7 +45,7 @@ def mk_exposure():
     exp['integration_start'] = NONUM
     exp['integration_end'] = NONUM
     exp['frame_divisor'] = NONUM
-    exp['groupgap'] = NONUM
+    exp['groupgap'] = 0
     exp['nsamples'] = NONUM
     exp['sample_time'] = NONUM
     exp['frame_time'] = NONUM
@@ -611,9 +611,9 @@ def mk_dark(shape=None, filepath=None):
     observation['ma_table_name']="ma_table.name"
     darkref['meta']['observation'] = observation
     exposure = {}
-    exposure['ngroups'] = 10
-    exposure['nframes'] = 4
-    exposure['groupgap'] = 7
+    exposure['ngroups'] = 6
+    exposure['nframes'] = 8
+    exposure['groupgap'] = 0
     exposure['type'] = 'WFI_IMAGE'
     exposure['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
     darkref['meta']['exposure'] = exposure

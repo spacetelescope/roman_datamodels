@@ -344,14 +344,14 @@ def create_exposure(**kwargs):
         "frame_time": _random_positive_float(),
         "gain_factor": _random_positive_float(),
         "group_time": _random_positive_float(),
-        "groupgap": _random_positive_int(),
+        "groupgap": 0,
         "id": _random_positive_int(),
         "integration_time": _random_positive_float(),
         "mid_time": _random_astropy_time(),
         "mid_time_mjd": _random_mjd_timestamp(),
         "mid_time_tdb": _random_mjd_timestamp(),
-        "nframes": _random_positive_int(),
-        "ngroups": _random_positive_int(),
+        "nframes": 8,
+        "ngroups": 6,
         "sca_number": _random_positive_int(),
         "start_time": _random_astropy_time(),
         "start_time_mjd": _random_mjd_timestamp(),
@@ -383,9 +383,9 @@ def create_ref_meta(**kwargs):
         "description": _random_string("Reference description "),
         "exposure": {
             "type" : "WFI_IMAGE",
-            "ngroups" : 10,
-            "nframes" : 4,
-            "groupgap" : 7
+            "ngroups" : 6,
+            "nframes" : 8,
+            "groupgap" : 0
         },
         "instrument": {
             "name": "WFI",
