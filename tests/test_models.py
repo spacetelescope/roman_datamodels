@@ -120,6 +120,29 @@ def test_opening_rampfitoutput_ref(tmp_path):
     assert isinstance(rampfitoutput, datamodels.RampFitOutputModel)
 
 
+# Guide Window tests
+def test_make_guidewindow():
+    guidewindow = utils.mk_guidewindow(shape=(2, 20, 20))
+
+    assert guidewindow.meta.exposure.type == 'WFI_IMAGE'
+    assert guidewindow.pedestal_frames.dtype == np.uint16
+    assert guidewindow.signal_frames.dtype == np.uint16
+    assert guidewindow.pedestal_frames.shape == (2, 20, 20)
+    assert guidewindow.signal_frames.shape == (2, 20, 20)
+
+    # Test validation
+    guidewindow_model = datamodels.GuidewindowModel(guidewindow)
+    assert guidewindow_model.validate() is None
+
+
+def test_opening_guidewindow_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testguidewindow.asdf'
+    utils.mk_guidewindow(filepath=file_path)
+    guidewindow = datamodels.open(file_path)
+    assert guidewindow.meta.gw_mode == 'WIM-ACQ'
+    assert isinstance(guidewindow, datamodels.GuidewindowModel)
+
 
 # Testing all reference file schemas
 def test_reference_file_model_base(tmp_path):

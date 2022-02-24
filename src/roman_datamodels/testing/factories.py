@@ -394,6 +394,7 @@ def create_ref_meta(**kwargs):
         },
         "observation": {
             "ma_table_name": "ma_table.name",
+            "ma_table_name": "ma_table.number",
         },
         "origin": "STScI",
         "pedigree": "DUMMY",
@@ -698,8 +699,11 @@ def create_guidestar(**kwargs):
         "gw_stop_time": _random_astropy_time(),
         "gw_window_xsize": _random_positive_float(),
         "gw_window_xstart": _random_positive_float(),
+        "gw_window_xstop": _random_positive_float(),
         "gw_window_ysize": _random_positive_float(),
         "gw_window_ystart": _random_positive_float(),
+        "gw_window_ystop": _random_positive_float(),
+        "gs_pattern_error": _random_positive_float(),
     }
     raw.update(kwargs)
 
@@ -785,6 +789,7 @@ def create_observation(**kwargs):
         "execution_plan": _random_positive_int(),
         "exposure": _random_positive_int(),
         "ma_table_name": _random_string("MA table "),
+        "ma_table_number": _random_positive_int(),
         "obs_id": _random_string("Obs ID ", 26),
         "observation": _random_positive_int(),
         "observation_label": _random_string("Observation label "),
@@ -975,6 +980,42 @@ def create_ramp_fit_output(**kwargs):
     raw.update(kwargs)
 
     return stnode.RampFitOutput(raw)
+
+
+def create_guidewindow(**kwargs):
+    """
+    Create a dummy Guide Window instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Guidewindow
+    """
+
+    seg_shape = (2, 4096, 4096)
+
+    raw = {
+        "meta": create_meta(),
+        "pedestal_frames": _random_array_uint16(seg_shape),
+        "signal_frames": _random_array_uint16(seg_shape),
+    }
+    raw.update(kwargs)
+
+    raw["meta"]["file_creation_time"] = _random_astropy_time()
+    raw["meta"]["gw_start_time"] = _random_astropy_time()
+    raw["meta"]["gw_end_time"] = _random_astropy_time()
+    raw['meta']['gw_frame_readout_time'] = _random_float()
+    raw['meta']['pedestal_resultant_exp_time'] = _random_float()
+    raw['meta']['signal_resultant_exp_time'] = _random_float()
+    raw['meta']['gw_acq_number'] = _random_int()
+    raw['meta']['gw_mode'] = 'WIM-ACQ'
+
+    return stnode.Guidewindow(raw)
 
 
 def create_target(**kwargs):

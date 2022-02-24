@@ -123,6 +123,7 @@ def mk_observation():
     obs['template'] = NOSTR
     obs['observation_label'] = NOSTR
     obs['ma_table_name'] = NOSTR
+    obs['ma_table_number'] = NONUM
     obs['survey'] = 'N/A'
     return obs
 
@@ -380,8 +381,11 @@ def mk_guide():
     guide['gs_para'] = NONUM
     guide['gw_window_xstart'] = NONUM
     guide['gw_window_ystart'] = NONUM
+    guide['gw_window_xstop'] = NONUM
+    guide['gw_window_ystop'] = NONUM
     guide['gw_window_xsize'] = NONUM
     guide['gw_window_ysize'] = NONUM
+    guide['gs_pattern_error'] = NONUM
     return guide
 
 
@@ -609,6 +613,7 @@ def mk_dark(shape=None, filepath=None):
     darkref['meta'] = meta
     observation = {}
     observation['ma_table_name']="ma_table.name"
+    observation['ma_table_number'] = "ma_table.number"
     darkref['meta']['observation'] = observation
     exposure = {}
     exposure['ngroups'] = 6
@@ -964,6 +969,52 @@ def mk_rampfitoutput(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return rampfitoutput
+
+def mk_guidewindow(shape=None, filepath=None):
+    """
+    Create a dummy Guidewindow instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Guidewindow
+    """
+    meta = mk_common_meta()
+    guidewindow = stnode.Guidewindow()
+    guidewindow['meta'] = meta
+
+    guidewindow['meta']['file_creation_time'] = time.Time(
+        '2020-01-01T20:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_start_time'] = time.Time(
+        '2020-01-01T00:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_end_time'] = time.Time(
+        '2020-01-01T10:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_frame_readout_time'] = NONUM
+    guidewindow['meta']['pedestal_resultant_exp_time'] = NONUM
+    guidewindow['meta']['signal_resultant_exp_time'] = NONUM
+    guidewindow['meta']['gw_acq_number'] = NONUM
+    guidewindow['meta']['gw_mode'] = 'WIM-ACQ'
+
+    if not shape:
+        shape = (8, 4096, 4096)
+
+    guidewindow['pedestal_frames'] = np.zeros(shape, dtype=np.uint16)
+    guidewindow['signal_frames'] = np.zeros(shape, dtype=np.uint16)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': guidewindow}
+        af.write_to(filepath)
+    else:
+        return guidewindow
 
 
 def mk_saturation(shape=None, filepath=None):
