@@ -1,6 +1,8 @@
 0.1.0 (unreleased)
 ==================
 
+- Setup the initial infrastructure and basic files for documenting the roman_datamodels package [#67]
+
 - Fix bug with asdf.fits_embed. [#69]
 
 0.10.0 (2022-02-15)
