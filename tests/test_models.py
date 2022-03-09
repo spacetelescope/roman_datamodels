@@ -3,6 +3,7 @@ import pytest
 from jsonschema import ValidationError
 from astropy import units as u
 import asdf
+from astropy.modeling import Model
 import numpy as np
 
 from roman_datamodels import datamodels
@@ -210,6 +211,29 @@ def test_opening_dark_ref(tmp_path):
     dark = datamodels.open(file_path)
     assert dark.meta.instrument.optical_element == 'F158'
     assert isinstance(dark, datamodels.DarkRefModel)
+
+
+
+# Distortion tests
+def test_make_distortion():
+    distortion = utils.mk_distortion()
+    assert distortion.meta.reftype == 'DISTORTION'
+    assert distortion['meta']['input_units'] == u.pixel
+    assert distortion['meta']['output_units'] == u.arcsec
+    assert isinstance(distortion['coordinate_distortion_transform'], Model)
+
+    # Test validation
+    distortion_model = datamodels.DistortionRefModel(distortion)
+    assert distortion_model.validate() is None
+
+
+def test_opening_distortion_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / 'testdistortion.asdf'
+    utils.mk_distortion(filepath=file_path)
+    distortion = datamodels.open(file_path)
+    assert distortion.meta.instrument.optical_element == 'F158'
+    assert isinstance(distortion, datamodels.DistortionRefModel)
 
 
 # Gain tests
