@@ -11,6 +11,7 @@ import sys
 
 from astropy.time import Time
 from astropy import units as u
+from astropy.modeling import models
 import numpy as np
 
 from .. import stnode
@@ -454,6 +455,34 @@ def create_dark_ref(**kwargs):
     raw['meta']['exposure']['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
 
     return stnode.DarkRef(raw)
+
+
+def create_distortion_ref(**kwargs):
+    """
+    Create a dummy DistortionRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.DistortionRef
+    """
+    m = models.Shift(1) & models.Shift(2)
+    raw = {
+        "coordinate_distortion_transform": m,
+        "meta": create_ref_meta(reftype="DISTORTION")
+    }
+    raw.update(kwargs)
+
+    raw['meta']['input_units'] = u.pixel
+    raw['meta']['output_units'] = u.arcsec
+    raw['meta']['exposure']['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
+
+    return stnode.DistortionRef(raw)
 
 
 def create_gain_ref(**kwargs):

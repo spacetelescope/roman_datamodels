@@ -2,6 +2,7 @@ import asdf
 import astropy.time as time
 import numpy as np
 from astropy import units as u
+from astropy.modeling import models
 
 from .. import stnode
 
@@ -587,7 +588,7 @@ def mk_flat(shape=None, filepath=None):
 
 def mk_dark(shape=None, filepath=None):
     """
-    Create a dummy Dark instance (or file) with arrays and valid values for attributes
+    Create a dummy Dark Current instance (or file) with arrays and valid values for attributes
     required by the schema.
 
     Parameters
@@ -631,6 +632,45 @@ def mk_dark(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return darkref
+
+
+def mk_distortion(filepath=None):
+    """
+    Create a dummy Distortion instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.DistortionRef
+    """
+    meta = {}
+    add_ref_common(meta)
+    distortionref = stnode.DistortionRef()
+    meta['reftype'] = 'DISTORTION'
+    distortionref['meta'] = meta
+    exposure = {}
+    exposure['type'] = 'WFI_IMAGE'
+    exposure['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
+    distortionref['meta']['exposure'] = exposure
+
+    distortionref['meta']['input_units'] = u.pixel
+    distortionref['meta']['output_units'] = u.arcsec
+
+    distortionref['coordinate_distortion_transform'] = models.Shift(1) & models.Shift(2)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': distortionref}
+        af.write_to(filepath)
+    else:
+        return distortionref
+
 
 
 def mk_gain(shape=None, filepath=None):

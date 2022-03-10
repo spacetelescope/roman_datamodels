@@ -308,6 +308,10 @@ class DarkRefModel(DataModel):
     pass
 
 
+class DistortionRefModel(DataModel):
+    pass
+
+
 class GainRefModel(DataModel):
     pass
 
@@ -425,6 +429,7 @@ model_registry = {
     stnode.RampFitOutput: RampFitOutputModel,
     stnode.FlatRef: FlatRefModel,
     stnode.DarkRef: DarkRefModel,
+    stnode.DistortionRef: DistortionRefModel,
     stnode.GainRef: GainRefModel,
     stnode.LinearityRef: LinearityRefModel,
     stnode.MaskRef: MaskRefModel,

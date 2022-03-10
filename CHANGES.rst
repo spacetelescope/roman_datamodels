@@ -5,6 +5,8 @@
 
 - Fix bug with asdf.fits_embed. [#69]
 
+- Added distortion data model, utilities, and tests. [#70]
+
 0.10.0 (2022-02-15)
 ===================
 
