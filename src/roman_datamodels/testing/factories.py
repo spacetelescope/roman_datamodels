@@ -480,7 +480,6 @@ def create_distortion_ref(**kwargs):
 
     raw['meta']['input_units'] = u.pixel
     raw['meta']['output_units'] = u.arcsec
-    raw['meta']['exposure']['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
 
     return stnode.DistortionRef(raw)
 
