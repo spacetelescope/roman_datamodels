@@ -7,6 +7,8 @@
 
 - Added distortion data model, utilities, and tests. [#70]
 
+- Removed exptype and p_keyword from Distortion maker utility and factory. [#71]
+
 0.10.0 (2022-02-15)
 ===================
 

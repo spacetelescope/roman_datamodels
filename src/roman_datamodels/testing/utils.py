@@ -654,10 +654,6 @@ def mk_distortion(filepath=None):
     distortionref = stnode.DistortionRef()
     meta['reftype'] = 'DISTORTION'
     distortionref['meta'] = meta
-    exposure = {}
-    exposure['type'] = 'WFI_IMAGE'
-    exposure['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
-    distortionref['meta']['exposure'] = exposure
 
     distortionref['meta']['input_units'] = u.pixel
     distortionref['meta']['output_units'] = u.arcsec
