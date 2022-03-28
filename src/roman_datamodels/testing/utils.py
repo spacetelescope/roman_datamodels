@@ -321,6 +321,7 @@ def mk_cal_step():
     calstep['dark'] = 'INCOMPLETE'
     calstep['jump'] = 'INCOMPLETE'
     calstep['linearity'] = 'INCOMPLETE'
+    calstep['photom'] = 'INCOMPLETE'
     calstep['ramp_fit'] = 'INCOMPLETE'
     calstep['saturation'] = 'INCOMPLETE'
 
@@ -836,7 +837,27 @@ def mk_wfi_img_photom(filepath=None):
     wfi_img_photomref['meta'] = meta
 
     wfi_img_photo_dict = {
+        "F062":
+            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
+             "uncertainty": np.random.random() * u.MJ / u.sr,
+             "pixelareasr": .2 * u.sr},
+        "F087":
+            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
+             "uncertainty": np.random.random() * u.MJ / u.sr,
+             "pixelareasr": .2 * u.sr},
+        "F106":
+            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
+             "uncertainty": np.random.random() * u.MJ / u.sr,
+             "pixelareasr": .2 * u.sr},
+        "F129":
+            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
+             "uncertainty": np.random.random() * u.MJ / u.sr,
+             "pixelareasr": .2 * u.sr},
         "W146":
+            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
+             "uncertainty": np.random.random() * u.MJ / u.sr,
+             "pixelareasr": .2 * u.sr},
+        "F158":
             {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
              "uncertainty": np.random.random() * u.MJ / u.sr,
              "pixelareasr": .2 * u.sr},
@@ -844,12 +865,23 @@ def mk_wfi_img_photom(filepath=None):
             {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
              "uncertainty": np.random.random() * u.MJ / u.sr,
              "pixelareasr": .2 * u.sr},
+        "F213":
+            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
+             "uncertainty": np.random.random() * u.MJ / u.sr,
+             "pixelareasr": .2 * u.sr},
+        "GRISM":
+            {"photmjsr": None,
+             "uncertainty": None,
+             "pixelareasr": .2 * u.sr},
         "PRISM":
-             {"photmjsr": None,
-              "uncertainty": None,
-              "pixelareasr": None}
+            {"photmjsr": None,
+             "uncertainty": None,
+             "pixelareasr": .2 * u.sr},
+        "DARK":
+            {"photmjsr": None,
+             "uncertainty": None,
+             "pixelareasr": .2 * u.sr},
     }
-
     wfi_img_photomref['phot_table'] = wfi_img_photo_dict
 
 
