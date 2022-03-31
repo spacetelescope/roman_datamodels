@@ -414,7 +414,7 @@ def test_make_wfi_img_photom():
     assert isinstance(wfi_img_photom.phot_table.W146.pixelareasr, u.Quantity)
     assert wfi_img_photom.phot_table.PRISM.photmjsr is None
     assert wfi_img_photom.phot_table.PRISM.uncertainty is None
-    assert wfi_img_photom.phot_table.PRISM.pixelareasr is None
+    assert isinstance(wfi_img_photom.phot_table.PRISM.pixelareasr, u.Quantity)
 
     # Test validation
     wfi_img_photom_model = datamodels.WfiImgPhotomRefModel(wfi_img_photom)
