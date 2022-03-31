@@ -838,49 +838,49 @@ def mk_wfi_img_photom(filepath=None):
 
     wfi_img_photo_dict = {
         "F062":
-            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
-             "uncertainty": np.random.random() * u.MJ / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "F087":
-            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
-             "uncertainty": np.random.random() * u.MJ / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "F106":
-            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
-             "uncertainty": np.random.random() * u.MJ / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "F129":
-            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
-             "uncertainty": np.random.random() * u.MJ / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "W146":
-            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
-             "uncertainty": np.random.random() * u.MJ / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "F158":
-            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
-             "uncertainty": np.random.random() * u.MJ / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "F184":
-            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
-             "uncertainty": np.random.random() * u.MJ / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "F213":
-            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
-             "uncertainty": np.random.random() * u.MJ / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "GRISM":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": .2 * u.sr},
+             "pixelareasr": 1.0e-13 * u.sr},
         "PRISM":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": .2 * u.sr},
+             "pixelareasr": 1.0e-13 * u.sr},
         "DARK":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": .2 * u.sr},
+             "pixelareasr": 1.0e-13 * u.sr},
     }
     wfi_img_photomref['phot_table'] = wfi_img_photo_dict
 
