@@ -9,6 +9,8 @@
 
 - Removed exptype and p_keyword from Distortion maker utility and factory. [#71]
 
+- Updated photom maker utilities and tests. [#72]
+
 0.10.0 (2022-02-15)
 ===================
 
