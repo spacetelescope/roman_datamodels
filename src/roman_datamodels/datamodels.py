@@ -8,13 +8,14 @@ It is to be subclassed by the various types of data model variants for products
 '''
 from pathlib import PurePath
 import datetime
-import asdf
 import sys
+import asdf
 import os
 import os.path
 import copy
 import numpy as np
 from astropy.time import Time
+from asdf.fits_embed import AsdfInFits
 from . import stnode
 from . import validate
 from . extensions import DATAMODEL_EXTENSIONS
@@ -311,6 +312,10 @@ class DarkRefModel(DataModel):
     pass
 
 
+class DistortionRefModel(DataModel):
+    pass
+
+
 class GainRefModel(DataModel):
     pass
 
@@ -405,7 +410,7 @@ def open(init, memmap=False, target=None, **kwargs):
         except ValueError:
             raise TypeError(
                 "Open requires a filepath, file-like object, or Roman datamodel")
-        if isinstance(asdffile, asdf.fits_embed.AsdfInFits):
+        if isinstance(asdffile, AsdfInFits):
             raise TypeError(
                 "Roman datamodels does not accept FITS files or objects")
     modeltype = type(asdffile.tree['roman'])
@@ -429,6 +434,7 @@ model_registry = {
     stnode.Guidewindow: GuidewindowModel,
     stnode.FlatRef: FlatRefModel,
     stnode.DarkRef: DarkRefModel,
+    stnode.DistortionRef: DistortionRefModel,
     stnode.GainRef: GainRefModel,
     stnode.LinearityRef: LinearityRefModel,
     stnode.MaskRef: MaskRefModel,

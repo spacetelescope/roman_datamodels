@@ -2,6 +2,7 @@ import asdf
 import astropy.time as time
 import numpy as np
 from astropy import units as u
+from astropy.modeling import models
 
 from .. import stnode
 
@@ -321,6 +322,7 @@ def mk_cal_step():
     calstep['dark'] = 'INCOMPLETE'
     calstep['jump'] = 'INCOMPLETE'
     calstep['linearity'] = 'INCOMPLETE'
+    calstep['photom'] = 'INCOMPLETE'
     calstep['ramp_fit'] = 'INCOMPLETE'
     calstep['saturation'] = 'INCOMPLETE'
 
@@ -591,7 +593,7 @@ def mk_flat(shape=None, filepath=None):
 
 def mk_dark(shape=None, filepath=None):
     """
-    Create a dummy Dark instance (or file) with arrays and valid values for attributes
+    Create a dummy Dark Current instance (or file) with arrays and valid values for attributes
     required by the schema.
 
     Parameters
@@ -636,6 +638,41 @@ def mk_dark(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return darkref
+
+
+def mk_distortion(filepath=None):
+    """
+    Create a dummy Distortion instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.DistortionRef
+    """
+    meta = {}
+    add_ref_common(meta)
+    distortionref = stnode.DistortionRef()
+    meta['reftype'] = 'DISTORTION'
+    distortionref['meta'] = meta
+
+    distortionref['meta']['input_units'] = u.pixel
+    distortionref['meta']['output_units'] = u.arcsec
+
+    distortionref['coordinate_distortion_transform'] = models.Shift(1) & models.Shift(2)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': distortionref}
+        af.write_to(filepath)
+    else:
+        return distortionref
+
 
 
 def mk_gain(shape=None, filepath=None):
@@ -805,20 +842,51 @@ def mk_wfi_img_photom(filepath=None):
     wfi_img_photomref['meta'] = meta
 
     wfi_img_photo_dict = {
+        "F062":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "F087":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "F106":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "F129":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "W146":
-            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
-             "uncertainty": np.random.random() * u.MJ / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "F158":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "F184":
-            {"photmjsr": (10 * np.random.random() * u.MJ / u.sr),
-             "uncertainty": np.random.random() * u.MJ / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "F213":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "GRISM":
+            {"photmjsr": None,
+             "uncertainty": None,
+             "pixelareasr": 1.0e-13 * u.sr},
         "PRISM":
-             {"photmjsr": None,
-              "uncertainty": None,
-              "pixelareasr": None}
+            {"photmjsr": None,
+             "uncertainty": None,
+             "pixelareasr": 1.0e-13 * u.sr},
+        "DARK":
+            {"photmjsr": None,
+             "uncertainty": None,
+             "pixelareasr": 1.0e-13 * u.sr},
     }
-
     wfi_img_photomref['phot_table'] = wfi_img_photo_dict
 
 

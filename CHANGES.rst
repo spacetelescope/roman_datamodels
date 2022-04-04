@@ -1,6 +1,16 @@
 0.1.0 (unreleased)
 ==================
 
+- Setup the initial infrastructure and basic files for documenting the roman_datamodels package [#67]
+
+- Fix bug with asdf.fits_embed. [#69]
+
+- Added distortion data model, utilities, and tests. [#70]
+
+- Removed exptype and p_keyword from Distortion maker utility and factory. [#71]
+
+- Updated photom maker utilities and tests. [#72]
+
 0.10.0 (2022-02-15)
 ===================
 

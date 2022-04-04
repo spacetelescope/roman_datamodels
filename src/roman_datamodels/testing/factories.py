@@ -11,6 +11,7 @@ import sys
 
 from astropy.time import Time
 from astropy import units as u
+from astropy.modeling import models
 import numpy as np
 
 from .. import stnode
@@ -254,6 +255,7 @@ def create_cal_step(**kwargs):
         "dark" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "jump" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "linearity" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "photom": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "ramp_fit" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "saturation" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
     }
@@ -457,6 +459,33 @@ def create_dark_ref(**kwargs):
     return stnode.DarkRef(raw)
 
 
+def create_distortion_ref(**kwargs):
+    """
+    Create a dummy DistortionRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.DistortionRef
+    """
+    m = models.Shift(1) & models.Shift(2)
+    raw = {
+        "coordinate_distortion_transform": m,
+        "meta": create_ref_meta(reftype="DISTORTION")
+    }
+    raw.update(kwargs)
+
+    raw['meta']['input_units'] = u.pixel
+    raw['meta']['output_units'] = u.arcsec
+
+    return stnode.DistortionRef(raw)
+
+
 def create_gain_ref(**kwargs):
     """
     Create a dummy GainRef instance with valid values for attributes
@@ -636,18 +665,50 @@ def create_wfi_img_photom_ref(**kwargs):
     roman_datamodels.stnode.WfiImgPhotomRef
     """
     raw_dict = {
+        "F062":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "F087":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "F106":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "F129":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "W146":
-             {"photmjsr": (10 * np.random.random() * u.MJy / u.sr),
-              "uncertainty": np.random.random() * u.MJy / u.sr,
-              "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "F158":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
         "F184":
-            {"photmjsr": (10 * np.random.random() * u.MJy / u.sr),
-             "uncertainty": np.random.random() * u.MJy / u.sr,
-             "pixelareasr": .2 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "F213":
+            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
+             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
+             "pixelareasr": 1.0e-13 * u.sr},
+        "GRISM":
+            {"photmjsr": None,
+             "uncertainty": None,
+             "pixelareasr": 1.0e-13 * u.sr},
         "PRISM":
-             {"photmjsr": None,
-              "uncertainty": None,
-              "pixelareasr": None},
+            {"photmjsr": None,
+             "uncertainty": None,
+             "pixelareasr": 1.0e-13 * u.sr},
+        "DARK":
+            {"photmjsr": None,
+             "uncertainty": None,
+             "pixelareasr": 1.0e-13 * u.sr},
     }
 
     raw = {
