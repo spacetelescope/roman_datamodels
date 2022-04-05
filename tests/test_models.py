@@ -123,13 +123,15 @@ def test_opening_rampfitoutput_ref(tmp_path):
 
 # Guide Window tests
 def test_make_guidewindow():
-    guidewindow = utils.mk_guidewindow(shape=(2, 20, 20))
+    guidewindow = utils.mk_guidewindow(shape=(2, 8, 16, 32, 32))
 
     assert guidewindow.meta.exposure.type == 'WFI_IMAGE'
     assert guidewindow.pedestal_frames.dtype == np.uint16
     assert guidewindow.signal_frames.dtype == np.uint16
-    assert guidewindow.pedestal_frames.shape == (2, 20, 20)
-    assert guidewindow.signal_frames.shape == (2, 20, 20)
+    assert guidewindow.amp33.dtype == np.uint16
+    assert guidewindow.pedestal_frames.shape == (2, 8, 16, 32, 32)
+    assert guidewindow.signal_frames.shape == (2, 8, 16, 32, 32)
+    assert guidewindow.amp33.shape == (2, 8, 16, 32, 32)
 
     # Test validation
     guidewindow_model = datamodels.GuidewindowModel(guidewindow)

@@ -224,8 +224,9 @@ def create_aperture(**kwargs):
     -------
     roman_datamodels.stnode.Aperture
     """
+    aper_number = _random_positive_int(17) + 1
     raw = {
-        "name": _random_string("Aperture name ", 40),
+        "name": f"WFI_{aper_number:02d}_FULL",
         "position_angle": _random_angle_degrees(),
 
     }
@@ -395,8 +396,8 @@ def create_ref_meta(**kwargs):
             "optical_element": _random_optical_element(),
         },
         "observation": {
-            "ma_table_name": "ma_table.name",
-            "ma_table_name": "ma_table.number",
+            "ma_table_name": _random_string("MA table "),
+            "ma_table_number":  _random_positive_int(),
         },
         "origin": "STScI",
         "pedigree": "DUMMY",
@@ -1058,12 +1059,13 @@ def create_guidewindow(**kwargs):
     roman_datamodels.stnode.Guidewindow
     """
 
-    seg_shape = (2, 4096, 4096)
+    seg_shape = (2, 8, 16, 32, 32)
 
     raw = {
         "meta": create_meta(),
         "pedestal_frames": _random_array_uint16(seg_shape),
         "signal_frames": _random_array_uint16(seg_shape),
+        "amp33": _random_array_uint16(seg_shape),
     }
     raw.update(kwargs)
 
@@ -1075,6 +1077,12 @@ def create_guidewindow(**kwargs):
     raw['meta']['signal_resultant_exp_time'] = _random_float()
     raw['meta']['gw_acq_number'] = _random_int()
     raw['meta']['gw_mode'] = 'WIM-ACQ'
+    raw['meta']['gw_window_xstart'] = _random_float()
+    raw['meta']['gw_window_ystart'] = _random_float()
+    raw['meta']['gw_window_xstop'] = _random_float()
+    raw['meta']['gw_window_ystop'] = _random_float()
+    raw['meta']['gw_window_xsize'] = _random_float()
+    raw['meta']['gw_window_ysize'] = _random_float()
 
     return stnode.Guidewindow(raw)
 

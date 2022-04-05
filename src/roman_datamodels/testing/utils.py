@@ -4,6 +4,7 @@ import numpy as np
 from astropy import units as u
 from astropy.modeling import models
 
+from .factories import _random_positive_int
 from .. import stnode
 
 NONUM = -999999
@@ -221,7 +222,8 @@ def mk_aperture():
     roman_datamodels.stnode.Aperture
     """
     aper = stnode.Aperture()
-    aper['name'] = NOSTR
+    aper_number = _random_positive_int(17) + 1
+    aper['name'] = f"WFI_{aper_number:02d}_FULL"
     aper['position_angle'] = 30.
     return aper
 
@@ -344,7 +346,7 @@ def mk_cal_logs():
         ]
     )
 
-def mk_guide():
+def mk_guidestar():
     """
     Create a dummy Guide Star instance with valid values for attributes
     required by the schema. Utilized by the model maker utilities below.
@@ -381,12 +383,6 @@ def mk_guide():
     guide['gs_mura'] = NONUM
     guide['gs_mudec'] = NONUM
     guide['gs_para'] = NONUM
-    guide['gw_window_xstart'] = NONUM
-    guide['gw_window_ystart'] = NONUM
-    guide['gw_window_xstop'] = NONUM
-    guide['gw_window_ystop'] = NONUM
-    guide['gw_window_xsize'] = NONUM
-    guide['gw_window_ysize'] = NONUM
     guide['gs_pattern_error'] = NONUM
     return guide
 
@@ -414,7 +410,7 @@ def mk_common_meta():
     meta['coordinates'] = mk_coordinates()
     meta['ephemeris'] = mk_ephemeris()
     meta['exposure'] = mk_exposure()
-    meta['guidestar'] = mk_guide()
+    meta['guidestar'] = mk_guidestar()
     meta['instrument'] = mk_wfi_mode()
     meta['observation'] = mk_observation()
     meta['pointing'] = mk_pointing()
@@ -614,8 +610,8 @@ def mk_dark(shape=None, filepath=None):
     meta['reftype'] = 'DARK'
     darkref['meta'] = meta
     observation = {}
-    observation['ma_table_name']="ma_table.name"
-    observation['ma_table_number'] = "ma_table.number"
+    observation['ma_table_name']= NOSTR
+    observation['ma_table_number'] = NONUM
     darkref['meta']['observation'] = observation
     exposure = {}
     exposure['ngroups'] = 6
@@ -1070,12 +1066,19 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow['meta']['signal_resultant_exp_time'] = NONUM
     guidewindow['meta']['gw_acq_number'] = NONUM
     guidewindow['meta']['gw_mode'] = 'WIM-ACQ'
+    guidewindow['meta']['gw_window_xstart'] = NONUM
+    guidewindow['meta']['gw_window_ystart'] = NONUM
+    guidewindow['meta']['gw_window_xstop'] = NONUM
+    guidewindow['meta']['gw_window_ystop'] = NONUM
+    guidewindow['meta']['gw_window_xsize'] = NONUM
+    guidewindow['meta']['gw_window_ysize'] = NONUM
 
     if not shape:
-        shape = (8, 4096, 4096)
+        shape = (2, 8, 16, 32, 32)
 
     guidewindow['pedestal_frames'] = np.zeros(shape, dtype=np.uint16)
     guidewindow['signal_frames'] = np.zeros(shape, dtype=np.uint16)
+    guidewindow['amp33'] = np.zeros(shape, dtype=np.uint16)
 
     if filepath:
         af = asdf.AsdfFile()
