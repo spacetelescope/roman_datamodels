@@ -11,6 +11,8 @@
 
 - Updated photom maker utilities and tests. [#72]
 
+- Corrected photom units to megajanskies. [#73]
+
 0.10.0 (2022-02-15)
 ===================
 
