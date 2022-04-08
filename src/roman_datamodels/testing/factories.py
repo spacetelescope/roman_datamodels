@@ -397,7 +397,7 @@ def create_ref_meta(**kwargs):
         },
         "observation": {
             "ma_table_name": _random_string("MA table "),
-            "ma_table_number":  _random_positive_int(),
+            "ma_table_number":  _random_positive_int(max=998) + 1,
         },
         "origin": "STScI",
         "pedigree": "DUMMY",
@@ -759,14 +759,14 @@ def create_guidestar(**kwargs):
         "gw_fgs_mode": "WSM-ACQ-2",
         "gw_start_time": _random_astropy_time(),
         "gw_stop_time": _random_astropy_time(),
-        "gw_window_xsize": _random_positive_float(),
+        "gw_window_xsize": 16.0,
         "gw_window_xstart": _random_positive_float(),
-        "gw_window_xstop": _random_positive_float(),
-        "gw_window_ysize": _random_positive_float(),
+        "gw_window_ysize": 16.0,
         "gw_window_ystart": _random_positive_float(),
-        "gw_window_ystop": _random_positive_float(),
         "gs_pattern_error": _random_positive_float(),
     }
+    raw["gw_window_xstop"] = raw["gw_window_xstart"] + 16.0
+    raw["gw_window_ystop"] = raw["gw_window_ystart"] + 16.0
     raw.update(kwargs)
 
     return stnode.Guidestar(raw)
@@ -851,7 +851,7 @@ def create_observation(**kwargs):
         "execution_plan": _random_positive_int(),
         "exposure": _random_positive_int(),
         "ma_table_name": _random_string("MA table "),
-        "ma_table_number": _random_positive_int(),
+        "ma_table_number": _random_positive_int(max=998) + 1,
         "obs_id": _random_string("Obs ID ", 26),
         "observation": _random_positive_int(),
         "observation_label": _random_string("Observation label "),
@@ -1079,10 +1079,10 @@ def create_guidewindow(**kwargs):
     raw['meta']['gw_mode'] = 'WIM-ACQ'
     raw['meta']['gw_window_xstart'] = _random_float()
     raw['meta']['gw_window_ystart'] = _random_float()
-    raw['meta']['gw_window_xstop'] = _random_float()
-    raw['meta']['gw_window_ystop'] = _random_float()
-    raw['meta']['gw_window_xsize'] = _random_float()
-    raw['meta']['gw_window_ysize'] = _random_float()
+    raw['meta']['gw_window_xstop'] = raw['meta']["gw_window_xstart"] + 16.0
+    raw['meta']['gw_window_ystop'] = raw['meta']["gw_window_ystart"] + 16.0
+    raw['meta']['gw_window_xsize'] = 16.0
+    raw['meta']['gw_window_ysize'] = 16.0
 
     return stnode.Guidewindow(raw)
 

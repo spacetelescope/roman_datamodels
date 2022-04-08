@@ -1068,10 +1068,10 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow['meta']['gw_mode'] = 'WIM-ACQ'
     guidewindow['meta']['gw_window_xstart'] = NONUM
     guidewindow['meta']['gw_window_ystart'] = NONUM
-    guidewindow['meta']['gw_window_xstop'] = NONUM
-    guidewindow['meta']['gw_window_ystop'] = NONUM
-    guidewindow['meta']['gw_window_xsize'] = NONUM
-    guidewindow['meta']['gw_window_ysize'] = NONUM
+    guidewindow['meta']['gw_window_xstop'] = guidewindow['meta']['gw_window_xstart'] + 16.0
+    guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 16.0
+    guidewindow['meta']['gw_window_xsize'] = 16.0
+    guidewindow['meta']['gw_window_ysize'] = 16.0
 
     if not shape:
         shape = (2, 8, 16, 32, 32)
