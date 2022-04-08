@@ -224,8 +224,9 @@ def create_aperture(**kwargs):
     -------
     roman_datamodels.stnode.Aperture
     """
+    aper_number = _random_positive_int(17) + 1
     raw = {
-        "name": _random_string("Aperture name ", 40),
+        "name": f"WFI_{aper_number:02d}_FULL",
         "position_angle": _random_angle_degrees(),
 
     }
@@ -395,7 +396,8 @@ def create_ref_meta(**kwargs):
             "optical_element": _random_optical_element(),
         },
         "observation": {
-            "ma_table_name": "ma_table.name",
+            "ma_table_name": _random_string("MA table "),
+            "ma_table_number":  _random_positive_int(max=998) + 1,
         },
         "origin": "STScI",
         "pedigree": "DUMMY",
@@ -665,49 +667,49 @@ def create_wfi_img_photom_ref(**kwargs):
     """
     raw_dict = {
         "F062":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F087":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F106":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F129":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "W146":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F158":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F184":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F213":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "GRISM":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.sr},
+             "pixelareasr": 1.0e-13 * u.steradian},
         "PRISM":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.sr},
+             "pixelareasr": 1.0e-13 * u.steradian},
         "DARK":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.sr},
+             "pixelareasr": 1.0e-13 * u.steradian},
     }
 
     raw = {
@@ -757,11 +759,14 @@ def create_guidestar(**kwargs):
         "gw_fgs_mode": "WSM-ACQ-2",
         "gw_start_time": _random_astropy_time(),
         "gw_stop_time": _random_astropy_time(),
-        "gw_window_xsize": _random_positive_float(),
+        "gw_window_xsize": 16.0,
         "gw_window_xstart": _random_positive_float(),
-        "gw_window_ysize": _random_positive_float(),
+        "gw_window_ysize": 16.0,
         "gw_window_ystart": _random_positive_float(),
+        "gs_pattern_error": _random_positive_float(),
     }
+    raw["gw_window_xstop"] = raw["gw_window_xstart"] + 16.0
+    raw["gw_window_ystop"] = raw["gw_window_ystart"] + 16.0
     raw.update(kwargs)
 
     return stnode.Guidestar(raw)
@@ -846,6 +851,7 @@ def create_observation(**kwargs):
         "execution_plan": _random_positive_int(),
         "exposure": _random_positive_int(),
         "ma_table_name": _random_string("MA table "),
+        "ma_table_number": _random_positive_int(max=998) + 1,
         "obs_id": _random_string("Obs ID ", 26),
         "observation": _random_positive_int(),
         "observation_label": _random_string("Observation label "),
@@ -1036,6 +1042,49 @@ def create_ramp_fit_output(**kwargs):
     raw.update(kwargs)
 
     return stnode.RampFitOutput(raw)
+
+
+def create_guidewindow(**kwargs):
+    """
+    Create a dummy Guide Window instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Guidewindow
+    """
+
+    seg_shape = (2, 8, 16, 32, 32)
+
+    raw = {
+        "meta": create_meta(),
+        "pedestal_frames": _random_array_uint16(seg_shape),
+        "signal_frames": _random_array_uint16(seg_shape),
+        "amp33": _random_array_uint16(seg_shape),
+    }
+    raw.update(kwargs)
+
+    raw["meta"]["file_creation_time"] = _random_astropy_time()
+    raw["meta"]["gw_start_time"] = _random_astropy_time()
+    raw["meta"]["gw_end_time"] = _random_astropy_time()
+    raw['meta']['gw_frame_readout_time'] = _random_float()
+    raw['meta']['pedestal_resultant_exp_time'] = _random_float()
+    raw['meta']['signal_resultant_exp_time'] = _random_float()
+    raw['meta']['gw_acq_number'] = _random_int()
+    raw['meta']['gw_mode'] = 'WIM-ACQ'
+    raw['meta']['gw_window_xstart'] = _random_float()
+    raw['meta']['gw_window_ystart'] = _random_float()
+    raw['meta']['gw_window_xstop'] = raw['meta']["gw_window_xstart"] + 16.0
+    raw['meta']['gw_window_ystop'] = raw['meta']["gw_window_ystart"] + 16.0
+    raw['meta']['gw_window_xsize'] = 16.0
+    raw['meta']['gw_window_ysize'] = 16.0
+
+    return stnode.Guidewindow(raw)
 
 
 def create_target(**kwargs):

@@ -4,6 +4,7 @@ import numpy as np
 from astropy import units as u
 from astropy.modeling import models
 
+from .factories import _random_positive_int
 from .. import stnode
 
 NONUM = -999999
@@ -124,6 +125,7 @@ def mk_observation():
     obs['template'] = NOSTR
     obs['observation_label'] = NOSTR
     obs['ma_table_name'] = NOSTR
+    obs['ma_table_number'] = NONUM
     obs['survey'] = 'N/A'
     return obs
 
@@ -220,7 +222,8 @@ def mk_aperture():
     roman_datamodels.stnode.Aperture
     """
     aper = stnode.Aperture()
-    aper['name'] = NOSTR
+    aper_number = _random_positive_int(17) + 1
+    aper['name'] = f"WFI_{aper_number:02d}_FULL"
     aper['position_angle'] = 30.
     return aper
 
@@ -343,7 +346,7 @@ def mk_cal_logs():
         ]
     )
 
-def mk_guide():
+def mk_guidestar():
     """
     Create a dummy Guide Star instance with valid values for attributes
     required by the schema. Utilized by the model maker utilities below.
@@ -380,10 +383,7 @@ def mk_guide():
     guide['gs_mura'] = NONUM
     guide['gs_mudec'] = NONUM
     guide['gs_para'] = NONUM
-    guide['gw_window_xstart'] = NONUM
-    guide['gw_window_ystart'] = NONUM
-    guide['gw_window_xsize'] = NONUM
-    guide['gw_window_ysize'] = NONUM
+    guide['gs_pattern_error'] = NONUM
     return guide
 
 
@@ -410,7 +410,7 @@ def mk_common_meta():
     meta['coordinates'] = mk_coordinates()
     meta['ephemeris'] = mk_ephemeris()
     meta['exposure'] = mk_exposure()
-    meta['guidestar'] = mk_guide()
+    meta['guidestar'] = mk_guidestar()
     meta['instrument'] = mk_wfi_mode()
     meta['observation'] = mk_observation()
     meta['pointing'] = mk_pointing()
@@ -610,7 +610,8 @@ def mk_dark(shape=None, filepath=None):
     meta['reftype'] = 'DARK'
     darkref['meta'] = meta
     observation = {}
-    observation['ma_table_name']="ma_table.name"
+    observation['ma_table_name']= NOSTR
+    observation['ma_table_number'] = NONUM
     darkref['meta']['observation'] = observation
     exposure = {}
     exposure['ngroups'] = 6
@@ -838,49 +839,49 @@ def mk_wfi_img_photom(filepath=None):
 
     wfi_img_photo_dict = {
         "F062":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F087":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F106":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F129":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "W146":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F158":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F184":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F213":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "GRISM":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.sr},
+             "pixelareasr": 1.0e-13 * u.steradian},
         "PRISM":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.sr},
+             "pixelareasr": 1.0e-13 * u.steradian},
         "DARK":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.sr},
+             "pixelareasr": 1.0e-13 * u.steradian},
     }
     wfi_img_photomref['phot_table'] = wfi_img_photo_dict
 
@@ -1032,6 +1033,59 @@ def mk_rampfitoutput(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return rampfitoutput
+
+def mk_guidewindow(shape=None, filepath=None):
+    """
+    Create a dummy Guidewindow instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Guidewindow
+    """
+    meta = mk_common_meta()
+    guidewindow = stnode.Guidewindow()
+    guidewindow['meta'] = meta
+
+    guidewindow['meta']['file_creation_time'] = time.Time(
+        '2020-01-01T20:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_start_time'] = time.Time(
+        '2020-01-01T00:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_end_time'] = time.Time(
+        '2020-01-01T10:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_frame_readout_time'] = NONUM
+    guidewindow['meta']['pedestal_resultant_exp_time'] = NONUM
+    guidewindow['meta']['signal_resultant_exp_time'] = NONUM
+    guidewindow['meta']['gw_acq_number'] = NONUM
+    guidewindow['meta']['gw_mode'] = 'WIM-ACQ'
+    guidewindow['meta']['gw_window_xstart'] = NONUM
+    guidewindow['meta']['gw_window_ystart'] = NONUM
+    guidewindow['meta']['gw_window_xstop'] = guidewindow['meta']['gw_window_xstart'] + 16.0
+    guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 16.0
+    guidewindow['meta']['gw_window_xsize'] = 16.0
+    guidewindow['meta']['gw_window_ysize'] = 16.0
+
+    if not shape:
+        shape = (2, 8, 16, 32, 32)
+
+    guidewindow['pedestal_frames'] = np.zeros(shape, dtype=np.uint16)
+    guidewindow['signal_frames'] = np.zeros(shape, dtype=np.uint16)
+    guidewindow['amp33'] = np.zeros(shape, dtype=np.uint16)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': guidewindow}
+        af.write_to(filepath)
+    else:
+        return guidewindow
 
 
 def mk_saturation(shape=None, filepath=None):

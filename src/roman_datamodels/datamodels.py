@@ -300,6 +300,10 @@ class RampFitOutputModel(DataModel):
     pass
 
 
+class GuidewindowModel(DataModel):
+    pass
+
+
 class FlatRefModel(DataModel):
     pass
 
@@ -427,6 +431,7 @@ model_registry = {
     stnode.WfiScienceRaw: ScienceRawModel,
     stnode.Ramp: RampModel,
     stnode.RampFitOutput: RampFitOutputModel,
+    stnode.Guidewindow: GuidewindowModel,
     stnode.FlatRef: FlatRefModel,
     stnode.DarkRef: DarkRefModel,
     stnode.DistortionRef: DistortionRefModel,
