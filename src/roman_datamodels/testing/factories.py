@@ -667,49 +667,49 @@ def create_wfi_img_photom_ref(**kwargs):
     """
     raw_dict = {
         "F062":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F087":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F106":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F129":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "W146":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F158":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F184":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "F213":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.MJ / u.sr),
-             "uncertainty": (1.0e-16  * np.random.random() * u.MJ / u.sr),
-             "pixelareasr": 1.0e-13 * u.sr},
+            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
+             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
+             "pixelareasr": 1.0e-13 * u.steradian},
         "GRISM":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.sr},
+             "pixelareasr": 1.0e-13 * u.steradian},
         "PRISM":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.sr},
+             "pixelareasr": 1.0e-13 * u.steradian},
         "DARK":
             {"photmjsr": None,
              "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.sr},
+             "pixelareasr": 1.0e-13 * u.steradian},
     }
 
     raw = {
