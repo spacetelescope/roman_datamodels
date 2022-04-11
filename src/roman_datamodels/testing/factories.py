@@ -360,6 +360,8 @@ def create_exposure(**kwargs):
         "start_time_mjd": _random_mjd_timestamp(),
         "start_time_tdb": _random_mjd_timestamp(),
         "type": _random_exposure_type(),
+        "ma_table_name": _random_string("MA table "),
+        "ma_table_number": _random_positive_int(max=998) + 1,
         "level0_compressed": True,
     }
     raw.update(kwargs)
@@ -388,16 +390,14 @@ def create_ref_meta(**kwargs):
             "type" : "WFI_IMAGE",
             "ngroups" : 6,
             "nframes" : 8,
-            "groupgap" : 0
+            "groupgap" : 0,
+            "ma_table_name": _random_string("MA table "),
+            "ma_table_number": _random_positive_int(max=998) + 1,
         },
         "instrument": {
             "name": "WFI",
             "detector": _random_detector(),
             "optical_element": _random_optical_element(),
-        },
-        "observation": {
-            "ma_table_name": _random_string("MA table "),
-            "ma_table_number":  _random_positive_int(max=998) + 1,
         },
         "origin": "STScI",
         "pedigree": "DUMMY",
@@ -850,8 +850,6 @@ def create_observation(**kwargs):
         "end_time": _random_astropy_time(),
         "execution_plan": _random_positive_int(),
         "exposure": _random_positive_int(),
-        "ma_table_name": _random_string("MA table "),
-        "ma_table_number": _random_positive_int(max=998) + 1,
         "obs_id": _random_string("Obs ID ", 26),
         "observation": _random_positive_int(),
         "observation_label": _random_string("Observation label "),
