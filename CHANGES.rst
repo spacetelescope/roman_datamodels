@@ -13,6 +13,8 @@
 
 - Corrected photom units to megajanskies. [#73]
 
+- Moved ma_table_name and ma_table_number from observation to exposure groups. [#74]
+
 0.10.0 (2022-02-15)
 ===================
 
