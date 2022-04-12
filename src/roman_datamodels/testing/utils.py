@@ -57,6 +57,8 @@ def mk_exposure():
     exp['duration'] = NONUM
     exp['nresets_at_start'] = NONUM
     exp['datamode'] = NONUM
+    exp['ma_table_name'] = NOSTR
+    exp['ma_table_number'] = NONUM
     exp['level0_compressed'] = True
     return exp
 
@@ -124,8 +126,6 @@ def mk_observation():
     obs['exposure'] = NONUM
     obs['template'] = NOSTR
     obs['observation_label'] = NOSTR
-    obs['ma_table_name'] = NOSTR
-    obs['ma_table_number'] = NONUM
     obs['survey'] = 'N/A'
     return obs
 
@@ -609,16 +609,14 @@ def mk_dark(shape=None, filepath=None):
     darkref = stnode.DarkRef()
     meta['reftype'] = 'DARK'
     darkref['meta'] = meta
-    observation = {}
-    observation['ma_table_name']= NOSTR
-    observation['ma_table_number'] = NONUM
-    darkref['meta']['observation'] = observation
     exposure = {}
     exposure['ngroups'] = 6
     exposure['nframes'] = 8
     exposure['groupgap'] = 0
     exposure['type'] = 'WFI_IMAGE'
     exposure['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
+    exposure['ma_table_name'] = NOSTR
+    exposure['ma_table_number'] = NONUM
     darkref['meta']['exposure'] = exposure
 
     if not shape:
