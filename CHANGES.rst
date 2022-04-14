@@ -15,6 +15,8 @@
 
 - Moved ma_table_name and ma_table_number from observation to exposure groups. [#74]
 
+- Update astropy min version pin to 5.0.4. [#75]
+
 0.10.0 (2022-02-15)
 ===================
 
