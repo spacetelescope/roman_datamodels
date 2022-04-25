@@ -529,5 +529,5 @@ def test_crds_parameters(tmp_path):
     utils.mk_ramp(filepath=file_path)
     ramp = datamodels.open(file_path)
 
-    crds_pars = wfi_image.get_crds_parameters()
+    crds_pars = ramp.get_crds_parameters()
     assert 'roman.meta.exposure.start_time' in crds_pars
