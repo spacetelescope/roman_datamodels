@@ -1,4 +1,4 @@
-0.1.0 (unreleased)
+0.11.0 (2022-04-25)
 ==================
 
 - Setup the initial infrastructure and basic files for documenting the roman_datamodels package [#67]
@@ -16,6 +16,8 @@
 - Moved ma_table_name and ma_table_number from observation to exposure groups. [#74]
 
 - Update astropy min version pin to 5.0.4. [#75]
+
+- Add utilities for ``ref_file``. [#76]
 
 0.10.0 (2022-02-15)
 ===================
