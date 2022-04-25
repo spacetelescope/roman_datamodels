@@ -1,4 +1,4 @@
-0.11.0 (2022-04-25)
+0.12.0 (2022-04-25)
 ==================
 
 - Setup the initial infrastructure and basic files for documenting the roman_datamodels package [#67]
