@@ -821,6 +821,7 @@ def create_meta(**kwargs):
         "observation": create_observation(),
         "pointing": create_pointing(),
         "program": create_program(),
+        "ref_file": create_ref_file(),
         "target": create_target(),
         "velocity_aberration": create_velocity_aberration(),
         "visit": create_visit(),
@@ -847,7 +848,6 @@ def create_observation(**kwargs):
     roman_datamodels.stnode.Observation
     """
     raw = {
-        "end_time": _random_astropy_time(),
         "execution_plan": _random_positive_int(),
         "exposure": _random_positive_int(),
         "obs_id": _random_string("Obs ID ", 26),
@@ -856,7 +856,6 @@ def create_observation(**kwargs):
         "pass": _random_positive_int(),
         "program": _random_positive_int(),
         "segment": _random_positive_int(),
-        "start_time": _random_astropy_time(),
         "survey": _random_choice("HLS", "EMS", "SN", "N/A"),
         "template": _random_string("Template ", 50),
         "visit": _random_positive_int(),
@@ -1335,3 +1334,27 @@ def create_node(node_class, **kwargs):
     if not method_name in globals():
         raise ValueError(f"Factory method not implemented for class {node_class.__name__}")
     return globals()[method_name](**kwargs)
+
+
+def create_ref_file(**kwargs):
+    """
+    Create a dummy ref_file instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.RefFileName
+    """
+    reftypes = ["dark", "distortion", "flat", "gain", "linearity", "mask", "readnoise",
+                "saturation", "photom" ]
+    val = {"name": "N/A"}
+    raw = dict(zip(reftypes, [val] * len(reftypes)))
+    raw["crds"] = {"sw_version": "12.1", "context_used": "781"}
+    raw.update(kwargs)
+
+    return stnode.RefFile(raw)
