@@ -518,9 +518,16 @@ def test_datamodel_info_search(capsys):
 
 
 def test_crds_parameters(tmp_path):
+    # CRDS uses meta.exposure.sstart_time to compare to USEAFTER
     file_path = tmp_path / 'testwfi_image.asdf'
     utils.mk_level2_image(filepath=file_path)
     wfi_image = datamodels.open(file_path)
+
+    crds_pars = wfi_image.get_crds_parameters()
+    assert 'roman.meta.exposure.start_time' in crds_pars
+
+    utils.mk_ramp(filepath=file_path)
+    ramp = datamodels.open(file_path)
 
     crds_pars = wfi_image.get_crds_parameters()
     assert 'roman.meta.exposure.start_time' in crds_pars
