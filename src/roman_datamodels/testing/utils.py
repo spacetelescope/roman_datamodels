@@ -108,10 +108,6 @@ def mk_observation():
     roman_datamodels.stnode.Observation
     """
     obs = stnode.Observation()
-    obs['start_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
-    obs['end_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
     obs['obs_id'] = NOSTR
     obs['visit_id'] = NOSTR
     obs['program'] = NONUM
@@ -415,6 +411,7 @@ def mk_common_meta():
     meta['observation'] = mk_observation()
     meta['pointing'] = mk_pointing()
     meta['program'] = mk_program()
+    meta['ref_file'] = mk_ref_file()
     meta['target'] = mk_target()
     meta['velocity_aberration'] = mk_velocity_aberration()
     meta['visit'] = mk_visit()
@@ -1158,3 +1155,27 @@ def mk_superbias(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return superbiasref
+
+
+def mk_ref_file():
+    """
+    Create a dummy RefFile instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.RefFile
+    """
+    ref_file = stnode.RefFile()
+    ref_file['dark'] = {'name': 'N/A'}
+    ref_file['distortion'] = {'name': 'N/A'}
+    ref_file['flat'] = {'name': 'N/A'}
+    ref_file['gain'] = {'name': 'N/A'}
+    ref_file['linearity'] = {'name': 'N/A'}
+    ref_file['mask'] = {'name': 'N/A'}
+    ref_file['readnoise'] = {'name': 'N/A'}
+    ref_file['saturation'] = {'name': 'N/A'}
+    ref_file['photom'] = {'name': 'N/A'}
+    ref_file['crds'] = {'sw_version': "12.3.1", "context_used": "roman_0815.pmap"}
+
+    return ref_file
