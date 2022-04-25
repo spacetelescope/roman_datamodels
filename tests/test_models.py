@@ -1,4 +1,5 @@
 import pytest
+import warnings
 
 from jsonschema import ValidationError
 from astropy import units as u
@@ -208,7 +209,7 @@ def test_flat_model(tmp_path):
 
         # Test that asdf file opens properly
         with datamodels.open(file_path) as model:
-            with pytest.warns(None):
+            with warnings.catch_warnings():
                 model.validate()
 
             # Confirm that asdf file is opened as flat file model
@@ -514,3 +515,12 @@ def test_datamodel_info_search(capsys):
     result = dm.search('optical_element')
     assert 'F062' in repr(result)
     assert result.node == 'F062'
+
+
+def test_crds_parameters(tmp_path):
+    file_path = tmp_path / 'testwfi_image.asdf'
+    utils.mk_level2_image(filepath=file_path)
+    wfi_image = datamodels.open(file_path)
+
+    crds_pars = wfi_image.get_crds_parameters()
+    assert 'roman.meta.exposure.start_time' in crds_pars
