@@ -2,7 +2,6 @@ from asdf.tags.core import NDArrayType
 import numpy as np
 from numpy.testing import assert_array_equal
 from astropy.modeling import Model
-from asdf_astropy.testing.helpers import assert_model_equal
 
 from ..stnode import TaggedObjectNode, TaggedListNode
 
@@ -51,3 +50,38 @@ def _assert_value_equal(value1, value2):
         assert_model_equal(value1, value2)
     else:
         assert value1 == value2
+
+def assert_model_equal(a, b):
+    """
+    Assert that two model instances are equivalent.
+    """
+    if a is None and b is None:
+        return
+
+    assert a.__class__ == b.__class__
+
+    assert a.name == b.name
+    assert a.inputs == b.inputs
+    assert a.input_units == b.input_units
+    assert a.outputs == b.outputs
+    assert a.input_units_allow_dimensionless == b.input_units_allow_dimensionless
+    assert a.input_units_equivalencies == b.input_units_equivalencies
+
+    assert_array_equal(a.parameters, b.parameters)
+
+    try:
+        a_bounding_box = a.bounding_box
+    except NotImplementedError:
+        a_bounding_box = None
+
+    try:
+        b_bounding_box = b.bounding_box
+    except NotImplementedError:
+        b_bounding_box = None
+
+    assert a_bounding_box == b_bounding_box
+
+    assert a.fixed == b.fixed
+    assert a.bounds == b.bounds
+
+    assert_model_equal(a._user_inverse, b._user_inverse)
