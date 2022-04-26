@@ -1,4 +1,4 @@
-0.12.1 (Unreleased)
+0.12.1 (2022-04-26)
 ===================
 - Removed ``observation.date`` and ``observation.time`` from CRDS parameters. [#78]
 
