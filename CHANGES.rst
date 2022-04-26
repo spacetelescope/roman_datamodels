@@ -1,3 +1,8 @@
+0.12.2 (2022-04-26)
+===================
+
+- Added function for model equality. [#79]
+
 0.12.1 (2022-04-26)
 ===================
 - Removed ``observation.date`` and ``observation.time`` from CRDS parameters. [#78]
