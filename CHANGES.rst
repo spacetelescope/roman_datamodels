@@ -1,7 +1,12 @@
+0.12.3 (unreleased)
+===================
+
+- Removed CRDS version information from basic maker utility. [#80]
+
 0.12.2 (2022-04-26)
 ===================
 
-- Added function for model equality. [#79]
+- Added function for model equality. [#79]  
 
 0.12.1 (2022-04-26)
 ===================
