@@ -386,8 +386,6 @@ def mk_guidestar():
 def mk_basic_meta():
     meta = {}
     meta['calibration_software_version'] = '9.9.9'
-    meta['crds_software_version'] = '8.8.8'
-    meta['crds_context_used'] = '222'
     meta['sdf_software_version'] = '7.7.7'
     meta['filename'] = NOSTR
     meta['file_date'] = time.Time(
