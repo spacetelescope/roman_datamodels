@@ -75,7 +75,7 @@ def test_make_ramp():
     assert ramp.pixeldq.shape == (20, 20)
     assert ramp.groupdq.dtype == np.uint8
     assert ramp.err.dtype == np.float32
-    assert ramp.err.shape == (20, 20)
+    assert ramp.err.shape == (2, 20, 20)
 
     # Test validation
     ramp = datamodels.RampModel(ramp)
