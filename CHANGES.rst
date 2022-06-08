@@ -3,6 +3,8 @@
 
 - Removed CRDS version information from basic maker utility. [#80]
 
+- Updated utilities and test for change in dimensionality of err variable in ramp datamodel. [#82]
+
 0.12.2 (2022-04-26)
 ===================
 
