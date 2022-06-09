@@ -977,7 +977,7 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
     ramp['data'] = np.full(shape, 1.0, dtype=np.float32)
     ramp['pixeldq'] = np.zeros(shape[1:], dtype=np.uint32)
     ramp['groupdq'] = np.zeros(shape, dtype=np.uint8)
-    ramp['err'] = np.zeros(shape[1:], dtype=np.float32)
+    ramp['err'] = np.zeros(shape, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()

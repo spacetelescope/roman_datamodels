@@ -992,7 +992,7 @@ def create_ramp(**kwargs):
         "data": _random_array_float32((2, 4096, 4096)),
         "pixeldq": _random_array_uint32((4096, 4096)),
         "groupdq": _random_array_uint8((2, 4096, 4096)),
-        "err": _random_array_float32(min=0.0),
+        "err": _random_array_float32(size=(2, 4096, 4096),min=0.0),
         "amp33": _random_array_uint16((2, 4096, 128)),
         "border_ref_pix_right": _random_array_float32((2, 4096, 4)),
         "border_ref_pix_left": _random_array_float32((2, 4096, 4)),
