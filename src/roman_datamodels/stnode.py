@@ -33,6 +33,7 @@ __all__ = [
     "WfiMode",
     "NODE_CLASSES",
     "CalLogs",
+    "FileDate",
 ]
 
 
@@ -137,6 +138,13 @@ class DNode(UserDict):
             DNode._ctx = asdf.AsdfFile()
         return self._ctx
 
+    @staticmethod
+    def _convert_to_scalar(key, value):
+        if key in _SCALAR_NODE_CLASSES_BY_KEY:
+            value = _SCALAR_NODE_CLASSES_BY_KEY[key](value)
+
+        return value
+
     def __getattr__(self, key):
         """
         Permit accessing dict keys as attributes, assuming they are legal Python
@@ -145,7 +153,7 @@ class DNode(UserDict):
         if key.startswith('_'):
             raise AttributeError('No attribute {0}'.format(key))
         if key in self._data:
-            value = self._data[key]
+            value = self._convert_to_scalar(key, self._data[key])
             if isinstance(value, dict):
                 return DNode(value, parent=self, name=key)
             elif isinstance(value, list):
@@ -225,6 +233,13 @@ class DNode(UserDict):
 
     def __asdf_traverse__(self):
         return dict(self)
+
+    def __setitem__(self, key, value):
+        value = self._convert_to_scalar(key, value)
+        if isinstance(value, dict):
+            for sub_key, sub_value in value.items():
+                value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
+        super().__setitem__(key, value)
 
 
 class LNode(UserList):
@@ -320,8 +335,6 @@ class TaggedListNode(LNode, metaclass=TaggedListNodeMeta):
         return self._tag
 
 
-
-
 _SCALAR_NODE_CLASSES_BY_TAG = {}
 _SCALAR_NODE_CLASSES_BY_KEY = {}
 
@@ -399,6 +412,10 @@ class CalLogs(TaggedListNode):
     _tag = "asdf://stsci.edu/datamodels/roman/tags/cal_logs-1.0.0"
 
 
+class FileDate(Time, TaggedScalarNode):
+    _tag = "asdf://stsci.edu/datamodels/roman/tags/file_date-1.0.0"
+
+
 class TaggedObjectNodeConverter(Converter):
     """
     Converter for all subclasses of TaggedObjectNode.
@@ -459,7 +476,12 @@ class TaggedScalarNodeConverter(Converter):
         return obj.tag
 
     def to_yaml_tree(self, obj, tag, ctx):
-        return obj
+        node = obj.__class__.__bases__[0](obj)
+
+        if tag == FileDate._tag:
+            node = {'time': node}
+
+        return node
 
     def from_yaml_tree(self, node, tag, ctx):
         return _SCALAR_NODE_CLASSES_BY_TAG[tag](node)
@@ -477,6 +499,28 @@ def _class_name_from_tag_uri(tag_uri):
         class_name += "Ref"
     return class_name
 
+def _class_from_tag(tag, docstring):
+    class_name = _class_name_from_tag_uri(tag["tag_uri"])
+
+    schema_uri = tag["schema_uri"]
+    if "tagged_scalar" in schema_uri:
+        cls = type(
+            class_name,
+            (str, TaggedScalarNode),
+            {"_tag": tag["tag_uri"],
+                "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+        )
+    else:
+        cls = type(
+            class_name,
+            (TaggedObjectNode,),
+            {"_tag": tag["tag_uri"],
+                "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+        )
+
+    globals()[class_name] = cls
+    __all__.append(class_name)
+
 
 for tag in _DATAMODELS_MANIFEST["tags"]:
     docstring = ""
@@ -488,19 +532,12 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
         _OBJECT_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
     elif tag["tag_uri"] in _LIST_NODE_CLASSES_BY_TAG:
         _LIST_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
+    elif tag["tag_uri"] in _SCALAR_NODE_CLASSES_BY_TAG:
+        _SCALAR_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
     else:
-        class_name = _class_name_from_tag_uri(tag["tag_uri"])
-
-        cls = type(
-            class_name,
-            (TaggedObjectNode,),
-            {"_tag": tag["tag_uri"],
-                "__module__": "roman_datamodels.stnode", "__doc__": docstring},
-        )
-        globals()[class_name] = cls
-        __all__.append(class_name)
+        _class_from_tag(tag, docstring)
 
 
 # List of node classes made available by this library.  This is part
 # of the public API.
-NODE_CLASSES = list(_OBJECT_NODE_CLASSES_BY_TAG.values()) + list(_LIST_NODE_CLASSES_BY_TAG.values())
+NODE_CLASSES = list(_OBJECT_NODE_CLASSES_BY_TAG.values()) + list(_LIST_NODE_CLASSES_BY_TAG.values()) + list(_SCALAR_NODE_CLASSES_BY_TAG.values())
