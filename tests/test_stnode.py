@@ -10,7 +10,7 @@ def test_generated_node_classes(manifest):
         class_name = stnode._class_name_from_tag_uri(tag["tag_uri"])
         node_class = getattr(stnode, class_name)
 
-        assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode))
+        assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode))
         assert node_class._tag == tag["tag_uri"]
         assert tag["description"] in node_class.__doc__
         assert tag["tag_uri"] in node_class.__doc__

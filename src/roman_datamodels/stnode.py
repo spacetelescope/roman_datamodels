@@ -483,26 +483,8 @@ class TaggedScalarNodeConverter(Converter):
     def to_yaml_tree(self, obj, tag, ctx):
         node = obj.__class__.__bases__[0](obj)
 
-        validate = asdf.get_config().validate_on_read
-
-        if tag == FileDate._tag:
-            converter = ctx.extension_manager.get_converter_for_type(type(node))
-            node = converter.to_yaml_tree(node, tag, ctx)
-
-        # Move enum check to converter due to bug, see spacetelescope/rad#155
-        elif tag == Origin._tag:
-            if validate and node != 'STSCI':
-                raise jsonschema.ValidationError("origin must be 'STSCI'")
-        elif tag == Telescope._tag:
-            if validate and node != 'ROMAN':
-                raise jsonschema.ValidationError("origin must be 'ROMAN'")
-
-        return node
-
-    def from_yaml_tree(self, node, tag, ctx):
         # Move enum check to converter due to bug, see spacetelescope/rad#155
         validate = asdf.get_config().validate_on_read
-
         if tag == Origin._tag:
             if validate and node != 'STSCI':
                 raise jsonschema.ValidationError("origin must be 'STSCI'")
@@ -510,6 +492,26 @@ class TaggedScalarNodeConverter(Converter):
             if validate and node != 'ROMAN':
                 raise jsonschema.ValidationError("origin must be 'ROMAN'")
 
+        if tag == FileDate._tag:
+            converter = ctx.extension_manager.get_converter_for_type(type(node))
+            node = converter.to_yaml_tree(node, tag, ctx)
+
+        return node
+
+    def from_yaml_tree(self, node, tag, ctx):
+        # Move enum check to converter due to bug, see spacetelescope/rad#155
+        validate = asdf.get_config().validate_on_read
+        if tag == Origin._tag:
+            if validate and node != 'STSCI':
+                raise jsonschema.ValidationError("origin must be 'STSCI'")
+        elif tag == Telescope._tag:
+            if validate and node != 'ROMAN':
+                raise jsonschema.ValidationError("origin must be 'ROMAN'")
+
+        if tag == FileDate._tag:
+            converter = ctx.extension_manager.get_converter_for_type(Time)
+            node = converter.from_yaml_tree(node, tag, ctx)
+            
         return _SCALAR_NODE_CLASSES_BY_TAG[tag](node)
 
 
