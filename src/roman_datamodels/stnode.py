@@ -373,10 +373,10 @@ class TaggedScalarNode(metaclass=TaggedScalarNodeMeta):
         if self._ctx is None:
             TaggedScalarNode._ctx = asdf.AsdfFile()
         return self._ctx
-    
+
     def __asdf_traverse__(self):
         return self
-    
+
     @property
     def tag(self):
         return self._tag
@@ -384,7 +384,7 @@ class TaggedScalarNode(metaclass=TaggedScalarNodeMeta):
     @property
     def key(self):
         return _scalar_tag_to_key(self._tag)
-    
+
     def get_schema(self):
         extension_manager = self.ctx.extension_manager
         tag_def = extension_manager.get_tag_definition(self.tag)
@@ -485,10 +485,10 @@ class TaggedScalarNodeConverter(Converter):
 
         # Move enum check to converter due to bug, see spacetelescope/rad#155
         validate = asdf.get_config().validate_on_read
-        if tag == Origin._tag:
+        if tag == Origin._tag: # noqa
             if validate and node != 'STSCI':
                 raise jsonschema.ValidationError("origin must be 'STSCI'")
-        elif tag == Telescope._tag:
+        elif tag == Telescope._tag: # noqa
             if validate and node != 'ROMAN':
                 raise jsonschema.ValidationError("origin must be 'ROMAN'")
 
@@ -501,17 +501,17 @@ class TaggedScalarNodeConverter(Converter):
     def from_yaml_tree(self, node, tag, ctx):
         # Move enum check to converter due to bug, see spacetelescope/rad#155
         validate = asdf.get_config().validate_on_read
-        if tag == Origin._tag:
+        if tag == Origin._tag: # noqa
             if validate and node != 'STSCI':
                 raise jsonschema.ValidationError("origin must be 'STSCI'")
-        elif tag == Telescope._tag:
+        elif tag == Telescope._tag: # noqa
             if validate and node != 'ROMAN':
                 raise jsonschema.ValidationError("origin must be 'ROMAN'")
 
         if tag == FileDate._tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
-            
+
         return _SCALAR_NODE_CLASSES_BY_TAG[tag](node)
 
 
@@ -568,4 +568,8 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
 
 # List of node classes made available by this library.  This is part
 # of the public API.
-NODE_CLASSES = list(_OBJECT_NODE_CLASSES_BY_TAG.values()) + list(_LIST_NODE_CLASSES_BY_TAG.values()) + list(_SCALAR_NODE_CLASSES_BY_TAG.values())
+NODE_CLASSES = (
+    list(_OBJECT_NODE_CLASSES_BY_TAG.values()) +
+    list(_LIST_NODE_CLASSES_BY_TAG.values()) +
+    list(_SCALAR_NODE_CLASSES_BY_TAG.values())
+)
