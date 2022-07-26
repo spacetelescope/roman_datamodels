@@ -171,7 +171,7 @@ class DNode(UserDict):
             if key == 'origin' and value != 'STSCI':
                 raise jsonschema.ValidationError("origin must be 'STSCI'")
             elif key == 'telescope' and value != 'ROMAN':
-                raise jsonschema.ValidationError("origin must be 'ROMAN'")
+                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
             value = self._convert_to_scalar(key, value)
             if key in self._data:
                 if validate:
@@ -490,7 +490,7 @@ class TaggedScalarNodeConverter(Converter):
                 raise jsonschema.ValidationError("origin must be 'STSCI'")
         elif tag == Telescope._tag: # noqa
             if validate and node != 'ROMAN':
-                raise jsonschema.ValidationError("origin must be 'ROMAN'")
+                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
 
         if tag == FileDate._tag:
             converter = ctx.extension_manager.get_converter_for_type(type(node))
@@ -506,7 +506,7 @@ class TaggedScalarNodeConverter(Converter):
                 raise jsonschema.ValidationError("origin must be 'STSCI'")
         elif tag == Telescope._tag: # noqa
             if validate and node != 'ROMAN':
-                raise jsonschema.ValidationError("origin must be 'ROMAN'")
+                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
 
         if tag == FileDate._tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
