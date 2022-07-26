@@ -409,7 +409,7 @@ def create_ref_meta(**kwargs):
         },
         "origin": "STScI",
         "pedigree": "DUMMY",
-        "telescope": "ROMAN",
+        "telescope": create_telescope(**kwargs),
         "useafter": _random_astropy_time(),
     }
     raw.update(kwargs)

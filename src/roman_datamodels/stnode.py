@@ -168,6 +168,11 @@ class DNode(UserDict):
         Permit assigning dict keys as attributes.
         """
         if key[0] != '_':
+            if key == 'origin' and value != 'STSCI':
+                raise jsonschema.ValidationError("origin must be 'STSCI'")
+            elif key == 'telescope' and value != 'ROMAN':
+                raise jsonschema.ValidationError("origin must be 'ROMAN'")
+            value = self._convert_to_scalar(key, value)
             if key in self._data:
                 if validate:
                     self._schema()
@@ -478,24 +483,32 @@ class TaggedScalarNodeConverter(Converter):
     def to_yaml_tree(self, obj, tag, ctx):
         node = obj.__class__.__bases__[0](obj)
 
+        validate = asdf.get_config().validate_on_read
+
         if tag == FileDate._tag:
             converter = ctx.extension_manager.get_converter_for_type(type(node))
             node = converter.to_yaml_tree(node, tag, ctx)
 
         # Move enum check to converter due to bug, see spacetelescope/rad#155
         elif tag == Origin._tag:
-            assert node == 'STSCI'
+            if validate and node != 'STSCI':
+                raise jsonschema.ValidationError("origin must be 'STSCI'")
         elif tag == Telescope._tag:
-            assert node == 'ROMAN'
+            if validate and node != 'ROMAN':
+                raise jsonschema.ValidationError("origin must be 'ROMAN'")
 
         return node
 
     def from_yaml_tree(self, node, tag, ctx):
         # Move enum check to converter due to bug, see spacetelescope/rad#155
+        validate = asdf.get_config().validate_on_read
+
         if tag == Origin._tag:
-            assert node == 'STSCI'
+            if validate and node != 'STSCI':
+                raise jsonschema.ValidationError("origin must be 'STSCI'")
         elif tag == Telescope._tag:
-            assert node == 'ROMAN'
+            if validate and node != 'ROMAN':
+                raise jsonschema.ValidationError("origin must be 'ROMAN'")
 
         return _SCALAR_NODE_CLASSES_BY_TAG[tag](node)
 
