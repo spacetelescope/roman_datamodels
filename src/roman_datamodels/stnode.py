@@ -479,11 +479,24 @@ class TaggedScalarNodeConverter(Converter):
         node = obj.__class__.__bases__[0](obj)
 
         if tag == FileDate._tag:
-            node = {'time': node}
+            converter = ctx.extension_manager.get_converter_for_type(type(node))
+            node = converter.to_yaml_tree(node, tag, ctx)
+
+        # Move enum check to converter due to bug, see spacetelescope/rad#155
+        elif tag == Origin._tag:
+            assert node == 'STSCI'
+        elif tag == Telescope._tag:
+            assert node == 'ROMAN'
 
         return node
 
     def from_yaml_tree(self, node, tag, ctx):
+        # Move enum check to converter due to bug, see spacetelescope/rad#155
+        if tag == Origin._tag:
+            assert node == 'STSCI'
+        elif tag == Telescope._tag:
+            assert node == 'ROMAN'
+
         return _SCALAR_NODE_CLASSES_BY_TAG[tag](node)
 
 
