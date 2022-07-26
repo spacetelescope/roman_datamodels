@@ -5,6 +5,8 @@
 
 - Updated utilities and test for change in dimensionality of err variable in ramp datamodel. [#82]
 
+- Add support for new ``rad`` schema tags. [#86]
+
 0.12.2 (2022-04-26)
 ===================
 
