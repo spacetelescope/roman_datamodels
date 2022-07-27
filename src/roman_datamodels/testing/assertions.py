@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 from astropy.modeling import Model
 
-from ..stnode import TaggedObjectNode, TaggedListNode
+from ..stnode import TaggedObjectNode, TaggedListNode, TaggedScalarNode
 
 
 def assert_node_equal(node1, node2):
@@ -37,12 +37,17 @@ def assert_node_equal(node1, node2):
 
         for value1, value2 in zip(node1, node2):
             _assert_value_equal(value1, value2)
+    elif isinstance(node1, TaggedScalarNode):
+        value1 = node1.__class__.__bases__[0](node1)
+        value2 = node2.__class__.__bases__[0](node2)
+
+        assert value1 == value2
     else:
         raise RuntimeError(f"Unhandled node class: {node1.__class__.__name__}")
 
 
 def _assert_value_equal(value1, value2):
-    if isinstance(value1, (TaggedObjectNode, TaggedListNode)):
+    if isinstance(value1, (TaggedObjectNode, TaggedListNode, TaggedScalarNode)):
         assert_node_equal(value1, value2)
     elif isinstance(value1, (np.ndarray, NDArrayType)):
         assert_array_equal(value1, value2)

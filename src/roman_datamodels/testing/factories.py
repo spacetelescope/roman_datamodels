@@ -26,6 +26,14 @@ __all__ = [
     "create_exposure",
     "create_flat_ref",
     "create_guidestar",
+    "create_file_date",
+    "create_calibration_software_version",
+    "create_filename",
+    "create_model_type",
+    "create_origin",
+    "create_prd_software_version",
+    "create_sdf_software_version",
+    "create_telescope",
     "create_meta",
     "create_node",
     "create_observation",
@@ -401,7 +409,7 @@ def create_ref_meta(**kwargs):
         },
         "origin": "STScI",
         "pedigree": "DUMMY",
-        "telescope": "ROMAN",
+        "telescope": create_telescope(**kwargs),
         "useafter": _random_astropy_time(),
     }
     raw.update(kwargs)
@@ -771,8 +779,39 @@ def create_guidestar(**kwargs):
 
     return stnode.Guidestar(raw)
 
+def create_file_date(**kwargs):
+    return stnode.FileDate(kwargs.get("file_date", _random_astropy_time()))
 
-def _create_basic_meta():
+
+def create_calibration_software_version(**kwargs):
+    return stnode.CalibrationSoftwareVersion(kwargs.get("calibration_sofware_version", _random_string("Version ", 120)))
+
+
+def create_filename(**kwargs):
+    return stnode.Filename(kwargs.get("filename", _random_string("Filename ", 120)))
+
+
+def create_model_type(**kwargs):
+    return stnode.ModelType(kwargs.get("model_type", _random_string("Model type ", 50)))
+
+
+def create_origin(**kwargs):
+    return stnode.Origin(kwargs.get("origin", "STSCI"))
+
+
+def create_prd_software_version(**kwargs):
+    return stnode.PrdSoftwareVersion(kwargs.get("prd_software_version", _random_string("S&OC PRD ", 120)))
+
+
+def create_sdf_software_version(**kwargs):
+    return stnode.SdfSoftwareVersion(kwargs.get("sdf_software_version", _random_software_version()))
+
+
+def create_telescope(**kwargs):
+    return stnode.Telescope(kwargs.get("telescope", "ROMAN"))
+
+
+def _create_basic_meta(**kwargs):
     """
     Create the metadata from the basic-1.0.0 schema, which is shared
     between references and datasets.
@@ -783,16 +822,16 @@ def _create_basic_meta():
     """
 
     return {
-        "calibration_software_version": _random_string("Version ", 120),
+        "calibration_software_version": create_calibration_software_version(**kwargs),
         "crds_context_used": "roman_{:04d}.pmap".format(_random_positive_int(9999)),
         "crds_software_version": _random_software_version(),
-        "filename": _random_string("Filename ", 120),
-        "file_date": _random_astropy_time(),
-        "model_type": _random_string("Model type ", 50),
-        "origin": "STSCI",
-        "prd_software_version": _random_string("S&OC PRD ", 120),
-        "sdf_software_version": _random_software_version(),
-        "telescope": "ROMAN",
+        "filename": create_filename(**kwargs),
+        "file_date": create_file_date(**kwargs),
+        "model_type": create_model_type(**kwargs),
+        "origin": create_origin(**kwargs),
+        "prd_software_version": create_prd_software_version(**kwargs),
+        "sdf_software_version": create_sdf_software_version(**kwargs),
+        "telescope": create_telescope(**kwargs),
     }
 
 
@@ -827,7 +866,7 @@ def create_meta(**kwargs):
         "visit": create_visit(),
         "wcsinfo": create_wcsinfo(),
     }
-    raw.update(_create_basic_meta())
+    raw.update(_create_basic_meta(**kwargs))
     raw.update(kwargs)
 
     return raw

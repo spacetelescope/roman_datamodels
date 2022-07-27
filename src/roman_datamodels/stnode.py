@@ -33,6 +33,7 @@ __all__ = [
     "WfiMode",
     "NODE_CLASSES",
     "CalLogs",
+    "FileDate",
 ]
 
 
@@ -137,6 +138,13 @@ class DNode(UserDict):
             DNode._ctx = asdf.AsdfFile()
         return self._ctx
 
+    @staticmethod
+    def _convert_to_scalar(key, value):
+        if key in _SCALAR_NODE_CLASSES_BY_KEY:
+            value = _SCALAR_NODE_CLASSES_BY_KEY[key](value)
+
+        return value
+
     def __getattr__(self, key):
         """
         Permit accessing dict keys as attributes, assuming they are legal Python
@@ -145,7 +153,7 @@ class DNode(UserDict):
         if key.startswith('_'):
             raise AttributeError('No attribute {0}'.format(key))
         if key in self._data:
-            value = self._data[key]
+            value = self._convert_to_scalar(key, self._data[key])
             if isinstance(value, dict):
                 return DNode(value, parent=self, name=key)
             elif isinstance(value, list):
@@ -160,6 +168,11 @@ class DNode(UserDict):
         Permit assigning dict keys as attributes.
         """
         if key[0] != '_':
+            if key == 'origin' and value != 'STSCI':
+                raise jsonschema.ValidationError("origin must be 'STSCI'")
+            elif key == 'telescope' and value != 'ROMAN':
+                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
+            value = self._convert_to_scalar(key, value)
             if key in self._data:
                 if validate:
                     self._schema()
@@ -225,6 +238,13 @@ class DNode(UserDict):
 
     def __asdf_traverse__(self):
         return dict(self)
+
+    def __setitem__(self, key, value):
+        value = self._convert_to_scalar(key, value)
+        if isinstance(value, dict):
+            for sub_key, sub_value in value.items():
+                value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
+        super().__setitem__(key, value)
 
 
 class LNode(UserList):
@@ -320,6 +340,59 @@ class TaggedListNode(LNode, metaclass=TaggedListNodeMeta):
         return self._tag
 
 
+_SCALAR_NODE_CLASSES_BY_TAG = {}
+_SCALAR_NODE_CLASSES_BY_KEY = {}
+
+
+def _scalar_tag_to_key(tag):
+    return tag.split('/')[-1].split('-')[0]
+
+
+class TaggedScalarNodeMeta(ABCMeta):
+    """
+    Metaclass for TaggedScalarNode that maintains a registry
+    of subclasses.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.__name__ != "TaggedScalarNode":
+            if self._tag in _SCALAR_NODE_CLASSES_BY_TAG:
+                raise RuntimeError(
+                    f"TaggedScalarNode class for tag '{self._tag}' has been defined twice")
+            _SCALAR_NODE_CLASSES_BY_TAG[self._tag] = self
+            _SCALAR_NODE_CLASSES_BY_KEY[_scalar_tag_to_key(self._tag)] = self
+
+
+class TaggedScalarNode(metaclass=TaggedScalarNodeMeta):
+    _tag = None
+    _ctx = None
+
+    @property
+    def ctx(self):
+        if self._ctx is None:
+            TaggedScalarNode._ctx = asdf.AsdfFile()
+        return self._ctx
+
+    def __asdf_traverse__(self):
+        return self
+
+    @property
+    def tag(self):
+        return self._tag
+
+    @property
+    def key(self):
+        return _scalar_tag_to_key(self._tag)
+
+    def get_schema(self):
+        extension_manager = self.ctx.extension_manager
+        tag_def = extension_manager.get_tag_definition(self.tag)
+        schema_uri = tag_def.schema_uris[0]
+        schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
+        return schema
+
+
 class WfiMode(TaggedObjectNode):
     _tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.0.0"
 
@@ -344,40 +417,8 @@ class CalLogs(TaggedListNode):
     _tag = "asdf://stsci.edu/datamodels/roman/tags/cal_logs-1.0.0"
 
 
-_DATAMODELS_MANIFEST_PATH = importlib_resources.files(
-    rad.resources) / "manifests" / "datamodels-1.0.yaml"
-_DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
-
-
-def _class_name_from_tag_uri(tag_uri):
-    tag_name = tag_uri.split("/")[-1].split("-")[0]
-    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
-    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
-        class_name += "Ref"
-    return class_name
-
-
-for tag in _DATAMODELS_MANIFEST["tags"]:
-    docstring = ""
-    if "description" in tag:
-        docstring = tag["description"] + "\n\n"
-    docstring = docstring + f"Class generated from tag '{tag['tag_uri']}'"
-
-    if tag["tag_uri"] in _OBJECT_NODE_CLASSES_BY_TAG:
-        _OBJECT_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
-    elif tag["tag_uri"] in _LIST_NODE_CLASSES_BY_TAG:
-        _LIST_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
-    else:
-        class_name = _class_name_from_tag_uri(tag["tag_uri"])
-
-        cls = type(
-            class_name,
-            (TaggedObjectNode,),
-            {"_tag": tag["tag_uri"],
-                "__module__": "roman_datamodels.stnode", "__doc__": docstring},
-        )
-        globals()[class_name] = cls
-        __all__.append(class_name)
+class FileDate(Time, TaggedScalarNode):
+    _tag = "asdf://stsci.edu/datamodels/roman/tags/file_date-1.0.0"
 
 
 class TaggedObjectNodeConverter(Converter):
@@ -424,6 +465,111 @@ class TaggedListNodeConverter(Converter):
         return _LIST_NODE_CLASSES_BY_TAG[tag](node)
 
 
+class TaggedScalarNodeConverter(Converter):
+    """
+    Converter for all subclasses of TaggedScalarNode.
+    """
+    @property
+    def tags(self):
+        return list(_SCALAR_NODE_CLASSES_BY_TAG.keys())
+
+    @property
+    def types(self):
+        return list(_SCALAR_NODE_CLASSES_BY_TAG.values())
+
+    def select_tag(self, obj, tags, ctx):
+        return obj.tag
+
+    def to_yaml_tree(self, obj, tag, ctx):
+        node = obj.__class__.__bases__[0](obj)
+
+        # Move enum check to converter due to bug, see spacetelescope/rad#155
+        validate = asdf.get_config().validate_on_read
+        if tag == Origin._tag: # noqa
+            if validate and node != 'STSCI':
+                raise jsonschema.ValidationError("origin must be 'STSCI'")
+        elif tag == Telescope._tag: # noqa
+            if validate and node != 'ROMAN':
+                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
+
+        if tag == FileDate._tag:
+            converter = ctx.extension_manager.get_converter_for_type(type(node))
+            node = converter.to_yaml_tree(node, tag, ctx)
+
+        return node
+
+    def from_yaml_tree(self, node, tag, ctx):
+        # Move enum check to converter due to bug, see spacetelescope/rad#155
+        validate = asdf.get_config().validate_on_read
+        if tag == Origin._tag: # noqa
+            if validate and node != 'STSCI':
+                raise jsonschema.ValidationError("origin must be 'STSCI'")
+        elif tag == Telescope._tag: # noqa
+            if validate and node != 'ROMAN':
+                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
+
+        if tag == FileDate._tag:
+            converter = ctx.extension_manager.get_converter_for_type(Time)
+            node = converter.from_yaml_tree(node, tag, ctx)
+
+        return _SCALAR_NODE_CLASSES_BY_TAG[tag](node)
+
+
+_DATAMODELS_MANIFEST_PATH = importlib_resources.files(
+    rad.resources) / "manifests" / "datamodels-1.0.yaml"
+_DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
+
+
+def _class_name_from_tag_uri(tag_uri):
+    tag_name = tag_uri.split("/")[-1].split("-")[0]
+    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
+    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
+        class_name += "Ref"
+    return class_name
+
+def _class_from_tag(tag, docstring):
+    class_name = _class_name_from_tag_uri(tag["tag_uri"])
+
+    schema_uri = tag["schema_uri"]
+    if "tagged_scalar" in schema_uri:
+        cls = type(
+            class_name,
+            (str, TaggedScalarNode),
+            {"_tag": tag["tag_uri"],
+                "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+        )
+    else:
+        cls = type(
+            class_name,
+            (TaggedObjectNode,),
+            {"_tag": tag["tag_uri"],
+                "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+        )
+
+    globals()[class_name] = cls
+    __all__.append(class_name)
+
+
+for tag in _DATAMODELS_MANIFEST["tags"]:
+    docstring = ""
+    if "description" in tag:
+        docstring = tag["description"] + "\n\n"
+    docstring = docstring + f"Class generated from tag '{tag['tag_uri']}'"
+
+    if tag["tag_uri"] in _OBJECT_NODE_CLASSES_BY_TAG:
+        _OBJECT_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
+    elif tag["tag_uri"] in _LIST_NODE_CLASSES_BY_TAG:
+        _LIST_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
+    elif tag["tag_uri"] in _SCALAR_NODE_CLASSES_BY_TAG:
+        _SCALAR_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
+    else:
+        _class_from_tag(tag, docstring)
+
+
 # List of node classes made available by this library.  This is part
 # of the public API.
-NODE_CLASSES = list(_OBJECT_NODE_CLASSES_BY_TAG.values()) + list(_LIST_NODE_CLASSES_BY_TAG.values())
+NODE_CLASSES = (
+    list(_OBJECT_NODE_CLASSES_BY_TAG.values()) +
+    list(_LIST_NODE_CLASSES_BY_TAG.values()) +
+    list(_SCALAR_NODE_CLASSES_BY_TAG.values())
+)
