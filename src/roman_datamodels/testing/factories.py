@@ -200,7 +200,7 @@ def _random_optical_element():
         "F087",
         "F106",
         "F129",
-        "W146",
+        "F146",
         "F158",
         "F184",
         "F213",
@@ -690,7 +690,7 @@ def create_wfi_img_photom_ref(**kwargs):
             {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
              "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
              "pixelareasr": 1.0e-13 * u.steradian},
-        "W146":
+        "F146":
             {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
              "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
              "pixelareasr": 1.0e-13 * u.steradian},
@@ -760,13 +760,8 @@ def create_guidestar(**kwargs):
         "gs_udec": _random_positive_float(),
         "gs_umag": _random_positive_float(),
         "gs_ura": _random_positive_float(),
-        "gw_acq_exec_stat": _random_string("Status ", 15),
         "gw_id": _random_string("ID ", 20),
-        "gw_function_end_time": _random_astropy_time(),
-        "gw_function_start_time": _random_astropy_time(),
         "gw_fgs_mode": "WSM-ACQ-2",
-        "gw_start_time": _random_astropy_time(),
-        "gw_stop_time": _random_astropy_time(),
         "gw_window_xsize": 16.0,
         "gw_window_xstart": _random_positive_float(),
         "gw_window_ysize": 16.0,
@@ -1119,6 +1114,10 @@ def create_guidewindow(**kwargs):
     raw['meta']['gw_window_ystop'] = raw['meta']["gw_window_ystart"] + 16.0
     raw['meta']['gw_window_xsize'] = 16.0
     raw['meta']['gw_window_ysize'] = 16.0
+
+    raw['meta']["gw_acq_exec_stat"] = _random_string("Status ", 15)
+    raw['meta']["gw_function_end_time"] = _random_astropy_time()
+    raw['meta']["gw_function_start_time"] = _random_astropy_time()
 
     return stnode.Guidewindow(raw)
 
