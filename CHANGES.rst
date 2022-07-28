@@ -7,6 +7,8 @@
 
 - Add support for new ``rad`` schema tags. [#86]
 
+- Removed keywords from guidestar. [#88]
+
 - Fixed format of exposure times factory functions, changed filter 'W146' to 'F146'. [#87]
 
 0.12.2 (2022-04-26)

@@ -769,8 +769,6 @@ def create_guidestar(**kwargs):
         "gs_ura": _random_positive_float(),
         "gw_id": _random_string("ID ", 20),
         "gw_fgs_mode": "WSM-ACQ-2",
-        "gw_start_time": _random_astropy_time(),
-        "gw_stop_time": _random_astropy_time(),
         "gw_window_xsize": 16.0,
         "gw_window_xstart": _random_positive_float(),
         "gw_window_ysize": 16.0,
@@ -1126,6 +1124,10 @@ def create_guidewindow(**kwargs):
     raw['meta']['gw_window_xsize'] = 16.0
     raw['meta']['gw_window_ysize'] = 16.0
     raw['meta']['gw_acq_exec_stat'] = _random_string("Status ", 15)
+
+    raw['meta']["gw_acq_exec_stat"] = _random_string("Status ", 15)
+    raw['meta']["gw_function_end_time"] = _random_astropy_time()
+    raw['meta']["gw_function_start_time"] = _random_astropy_time()
 
     return stnode.Guidewindow(raw)
 
