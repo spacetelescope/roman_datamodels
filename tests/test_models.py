@@ -432,12 +432,12 @@ def test_make_wfi_img_photom():
     wfi_img_photom = utils.mk_wfi_img_photom()
 
     assert wfi_img_photom.meta.reftype == 'PHOTOM'
-    assert isinstance(wfi_img_photom.phot_table.W146.photmjsr, u.Quantity)
+    assert isinstance(wfi_img_photom.phot_table.F146.photmjsr, u.Quantity)
     assert isinstance(wfi_img_photom.phot_table.F184.photmjsr, u.Quantity)
-    assert isinstance(wfi_img_photom.phot_table.W146.uncertainty, u.Quantity)
+    assert isinstance(wfi_img_photom.phot_table.F146.uncertainty, u.Quantity)
     assert isinstance(wfi_img_photom.phot_table.F184.uncertainty, u.Quantity)
     assert isinstance(wfi_img_photom.phot_table.F184.pixelareasr, u.Quantity)
-    assert isinstance(wfi_img_photom.phot_table.W146.pixelareasr, u.Quantity)
+    assert isinstance(wfi_img_photom.phot_table.F146.pixelareasr, u.Quantity)
     assert wfi_img_photom.phot_table.PRISM.photmjsr is None
     assert wfi_img_photom.phot_table.PRISM.uncertainty is None
     assert isinstance(wfi_img_photom.phot_table.PRISM.pixelareasr, u.Quantity)

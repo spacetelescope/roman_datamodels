@@ -4,7 +4,7 @@ import numpy as np
 from astropy import units as u
 from astropy.modeling import models
 
-from .factories import _random_positive_int
+from .factories import _random_positive_int, _random_string
 from .. import stnode
 
 NONUM = -999999
@@ -364,10 +364,6 @@ def mk_guidestar():
     guide['gs_mag'] = NONUM
     guide['gs_umag'] = NONUM
     guide['gw_fgs_mode'] = "WSM-ACQ-2"
-    guide['gw_function_start_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
-    guide['gw_function_end_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guide['data_start'] = NONUM
     guide['data_end'] = NONUM
     guide['gw_acq_exec_stat'] = NOSTR
@@ -847,7 +843,7 @@ def mk_wfi_img_photom(filepath=None):
             {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
              "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
              "pixelareasr": 1.0e-13 * u.steradian},
-        "W146":
+        "F146":
             {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
              "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
              "pixelareasr": 1.0e-13 * u.steradian},
@@ -1054,6 +1050,10 @@ def mk_guidewindow(shape=None, filepath=None):
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guidewindow['meta']['gw_end_time'] = time.Time(
         '2020-01-01T10:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_function_start_time'] = time.Time(
+        '2020-01-01T00:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_function_end_time'] = time.Time(
+        '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guidewindow['meta']['gw_frame_readout_time'] = NONUM
     guidewindow['meta']['pedestal_resultant_exp_time'] = NONUM
     guidewindow['meta']['signal_resultant_exp_time'] = NONUM
@@ -1065,6 +1065,7 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 16.0
     guidewindow['meta']['gw_window_xsize'] = 16.0
     guidewindow['meta']['gw_window_ysize'] = 16.0
+    guidewindow['meta']['gw_acq_exec_stat'] = _random_string("Status ", 15)
 
     if not shape:
         shape = (2, 8, 16, 32, 32)
