@@ -352,10 +352,6 @@ def mk_guidestar():
     roman_datamodels.stnode.Guidestar
     """
     guide = stnode.Guidestar()
-    guide['gw_start_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
-    guide['gw_stop_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guide['gw_id'] = NOSTR
     guide['gs_ra'] = NONUM
     guide['gs_dec'] = NONUM
@@ -364,13 +360,8 @@ def mk_guidestar():
     guide['gs_mag'] = NONUM
     guide['gs_umag'] = NONUM
     guide['gw_fgs_mode'] = "WSM-ACQ-2"
-    guide['gw_function_start_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
-    guide['gw_function_end_time'] = time.Time(
-        '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guide['data_start'] = NONUM
     guide['data_end'] = NONUM
-    guide['gw_acq_exec_stat'] = NOSTR
     guide['gs_ctd_x'] = NONUM
     guide['gs_ctd_y'] = NONUM
     guide['gs_ctd_ux'] = NONUM
@@ -847,7 +838,7 @@ def mk_wfi_img_photom(filepath=None):
             {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
              "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
              "pixelareasr": 1.0e-13 * u.steradian},
-        "W146":
+        "F146":
             {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
              "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
              "pixelareasr": 1.0e-13 * u.steradian},
@@ -1065,6 +1056,13 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 16.0
     guidewindow['meta']['gw_window_xsize'] = 16.0
     guidewindow['meta']['gw_window_ysize'] = 16.0
+    guidewindow['meta']['gw_function_start_time'] = time.Time(
+        '2020-01-01T00:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_function_end_time'] = time.Time(
+        '2020-01-01T00:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['data_start'] = NONUM
+    guidewindow['meta']['data_end'] = NONUM
+    guidewindow['meta']['gw_acq_exec_stat'] = NOSTR
 
     if not shape:
         shape = (2, 8, 16, 32, 32)
