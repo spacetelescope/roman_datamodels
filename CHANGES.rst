@@ -7,6 +7,8 @@
 
 - Add support for new ``rad`` schema tags. [#86]
 
+- Moved keywords from guidestar to guidewindow. [#88]
+
 0.12.2 (2022-04-26)
 ===================
 
