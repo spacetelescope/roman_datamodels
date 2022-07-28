@@ -95,8 +95,15 @@ def _random_string_time():
     return datetime.utcfromtimestamp(_random_utc_timestamp()).strftime("%H:%M:%S.%f")[0:12]
 
 
-def _random_astropy_time():
-    return Time(_random_utc_timestamp(), format="unix")
+def _random_astropy_time(time_format='unix'):
+    timeobj =  Time(_random_utc_timestamp(), format="unix")
+
+    if time_format == 'unix':
+        return timeobj
+    else:
+        time_str = timeobj.to_value(format=time_format)
+        timeobj = Time(time_str, format=time_format)
+        return timeobj
 
 
 def _random_int(min=None, max=None):
@@ -347,7 +354,7 @@ def create_exposure(**kwargs):
         "duration": _random_positive_float(),
         "effective_exposure_time": _random_positive_float(),
         "elapsed_exposure_time": _random_positive_float(),
-        "end_time": _random_astropy_time(),
+        "end_time": _random_astropy_time(time_format='isot'),
         "end_time_mjd": _random_mjd_timestamp(),
         "end_time_tdb": _random_mjd_timestamp(),
         "exposure_time": _random_positive_float(),
@@ -358,13 +365,13 @@ def create_exposure(**kwargs):
         "groupgap": 0,
         "id": _random_positive_int(),
         "integration_time": _random_positive_float(),
-        "mid_time": _random_astropy_time(),
+        "mid_time": _random_astropy_time(time_format='isot'),
         "mid_time_mjd": _random_mjd_timestamp(),
         "mid_time_tdb": _random_mjd_timestamp(),
         "nframes": 8,
         "ngroups": 6,
         "sca_number": _random_positive_int(),
-        "start_time": _random_astropy_time(),
+        "start_time": _random_astropy_time(time_format='isot'),
         "start_time_mjd": _random_mjd_timestamp(),
         "start_time_tdb": _random_mjd_timestamp(),
         "type": _random_exposure_type(),
@@ -1103,6 +1110,8 @@ def create_guidewindow(**kwargs):
     raw["meta"]["file_creation_time"] = _random_astropy_time()
     raw["meta"]["gw_start_time"] = _random_astropy_time()
     raw["meta"]["gw_end_time"] = _random_astropy_time()
+    raw["meta"]["gw_function_start_time"] = _random_astropy_time()
+    raw["meta"]["gw_function_end_time"] = _random_astropy_time()
     raw['meta']['gw_frame_readout_time'] = _random_float()
     raw['meta']['pedestal_resultant_exp_time'] = _random_float()
     raw['meta']['signal_resultant_exp_time'] = _random_float()
@@ -1114,6 +1123,7 @@ def create_guidewindow(**kwargs):
     raw['meta']['gw_window_ystop'] = raw['meta']["gw_window_ystart"] + 16.0
     raw['meta']['gw_window_xsize'] = 16.0
     raw['meta']['gw_window_ysize'] = 16.0
+    raw['meta']['gw_acq_exec_stat'] = _random_string("Status ", 15)
 
     raw['meta']["gw_acq_exec_stat"] = _random_string("Status ", 15)
     raw['meta']["gw_function_end_time"] = _random_astropy_time()

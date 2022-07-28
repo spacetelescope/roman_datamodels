@@ -4,7 +4,7 @@ import numpy as np
 from astropy import units as u
 from astropy.modeling import models
 
-from .factories import _random_positive_int
+from .factories import _random_positive_int, _random_string
 from .. import stnode
 
 NONUM = -999999
@@ -1045,6 +1045,10 @@ def mk_guidewindow(shape=None, filepath=None):
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guidewindow['meta']['gw_end_time'] = time.Time(
         '2020-01-01T10:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_function_start_time'] = time.Time(
+        '2020-01-01T00:00:00.0', format='isot', scale='utc')
+    guidewindow['meta']['gw_function_end_time'] = time.Time(
+        '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guidewindow['meta']['gw_frame_readout_time'] = NONUM
     guidewindow['meta']['pedestal_resultant_exp_time'] = NONUM
     guidewindow['meta']['signal_resultant_exp_time'] = NONUM
@@ -1056,13 +1060,14 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 16.0
     guidewindow['meta']['gw_window_xsize'] = 16.0
     guidewindow['meta']['gw_window_ysize'] = 16.0
+
     guidewindow['meta']['gw_function_start_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guidewindow['meta']['gw_function_end_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
     guidewindow['meta']['data_start'] = NONUM
     guidewindow['meta']['data_end'] = NONUM
-    guidewindow['meta']['gw_acq_exec_stat'] = NOSTR
+    guidewindow['meta']['gw_acq_exec_stat'] = _random_string("Status ", 15)
 
     if not shape:
         shape = (2, 8, 16, 32, 32)
