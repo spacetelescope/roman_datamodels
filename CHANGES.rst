@@ -11,6 +11,8 @@
 
 - Fixed format of exposure times factory functions, changed filter 'W146' to 'F146'. [#87]
 
+- Update create_ref_file() to match updated schema. [#89]
+
 0.12.2 (2022-04-26)
 ===================
 
