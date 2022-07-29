@@ -1400,7 +1400,7 @@ def create_ref_file(**kwargs):
     """
     reftypes = ["dark", "distortion", "flat", "gain", "linearity", "mask", "readnoise",
                 "saturation", "photom" ]
-    val = {"name": "N/A"}
+    val = "N/A"
     raw = dict(zip(reftypes, [val] * len(reftypes)))
     raw["crds"] = {"sw_version": "12.1", "context_used": "781"}
     raw.update(kwargs)
