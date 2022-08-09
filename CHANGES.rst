@@ -1,4 +1,4 @@
-0.12.3 (unreleased)
+0.12.3 (2022-08-09)
 ===================
 
 - Removed CRDS version information from basic maker utility. [#80]
