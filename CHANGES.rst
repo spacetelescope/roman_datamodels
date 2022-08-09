@@ -5,7 +5,7 @@
 
 - Updated utilities and test for change in dimensionality of err variable in ramp datamodel. [#82]
 
-- Add support for new ``rad`` schema tags. [#86]
+- Add support for new ``rad`` schema tags. [#86, #90]
 
 - Removed keywords from guidestar. [#88]
 
