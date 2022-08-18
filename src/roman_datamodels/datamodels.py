@@ -277,6 +277,8 @@ class DataModel:
     def search(self, *args, **kwargs):
         return self._asdf.search(*args, **kwargs)
 
+    def schema_info(self, *args, **kwargs):
+        return self._asdf.schema_info(*args, **kwargs)
 
 class ImageModel(DataModel):
     pass

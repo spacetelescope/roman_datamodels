@@ -517,6 +517,23 @@ def test_datamodel_info_search(capsys):
     assert result.node == 'F062'
 
 
+def test_datamodel_schema_info():
+    wfi_science_raw = utils.mk_level1_science_raw()
+    af = asdf.AsdfFile()
+    af.tree = {'roman': wfi_science_raw}
+    dm = datamodels.open(af)
+
+    info = dm.schema_info('archive_catalog')
+    assert info['roman']['meta']['aperture'] == {
+        'name': {
+            'archive_catalog': ({'datatype': 'nvarchar(40)', 'destination': ['ScienceCommon.aperture_name']}, dm.meta.aperture.name),
+        },
+        'position_angle': {
+            'archive_catalog': ({'datatype':'float', 'destination': ['ScienceCommon.position_angle']}, 30.0)
+        }
+    }
+
+
 def test_crds_parameters(tmp_path):
     # CRDS uses meta.exposure.start_time to compare to USEAFTER
     file_path = tmp_path / 'testwfi_image.asdf'
