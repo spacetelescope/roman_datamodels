@@ -23,23 +23,29 @@ import _collections_abc
 # except ImportError:
 #     pass
 
+
 class STUserDict(_collections_abc.MutableMapping):
 
     # Start by filling-out the abstract methods
     def __init__(*args, **kwargs):
         if not args:
-            raise TypeError("descriptor '__init__' of 'STUserDict' object "
-                            "needs an argument")
+            raise TypeError(
+                "descriptor '__init__' of 'STUserDict' object " "needs an argument"
+            )
         self, *args = args
         if len(args) > 1:
-            raise TypeError('expected at most 1 arguments, got %d' % len(args))
+            raise TypeError("expected at most 1 arguments, got %d" % len(args))
         if args:
             dict = args[0]
-        elif 'dict' in kwargs:
-            dict = kwargs.pop('dict')
+        elif "dict" in kwargs:
+            dict = kwargs.pop("dict")
             import warnings
-            warnings.warn("Passing 'dict' as keyword argument is deprecated",
-                          DeprecationWarning, stacklevel=2)
+
+            warnings.warn(
+                "Passing 'dict' as keyword argument is deprecated",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         else:
             dict = None
         self._data = {}
@@ -47,17 +53,25 @@ class STUserDict(_collections_abc.MutableMapping):
             self.update(dict)
         if kwargs:
             self.update(kwargs)
-    __init__.__text_signature__ = '($self, dict=None, /, **kwargs)'
 
-    def __len__(self): return len(self._data)
+    __init__.__text_signature__ = "($self, dict=None, /, **kwargs)"
+
+    def __len__(self):
+        return len(self._data)
+
     def __getitem__(self, key):
         if key in self._data:
             return self._data[key]
         if hasattr(self.__class__, "__missing__"):
             return self.__class__.__missing__(self, key)
         raise KeyError(key)
-    def __setitem__(self, key, item): self._data[key] = item
-    def __delitem__(self, key): del self._data[key]
+
+    def __setitem__(self, key, item):
+        self._data[key] = item
+
+    def __delitem__(self, key):
+        del self._data[key]
+
     def __iter__(self):
         return iter(self._data)
 
@@ -66,7 +80,9 @@ class STUserDict(_collections_abc.MutableMapping):
         return key in self._data
 
     # Now, add the methods in dicts but not in MutableMapping
-    def __repr__(self): return repr(self._data)
+    def __repr__(self):
+        return repr(self._data)
+
     def __copy__(self):
         inst = self.__class__.__new__(self.__class__)
         inst.__dict__.update(self.__dict__)
@@ -78,6 +94,7 @@ class STUserDict(_collections_abc.MutableMapping):
         if self.__class__ is STUserDict:
             return STUserDict(self._data.copy())
         import copy
+
         data = self._data
         try:
             self._data = {}

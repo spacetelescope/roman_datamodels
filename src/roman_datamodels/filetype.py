@@ -15,24 +15,24 @@ def check(init):
     file_type: a string with the file type ("asdf" or "asn")
 
     """
-    supported = ('asdf', 'json')
+    supported = ("asdf", "json")
 
     if isinstance(init, str):
         path, ext = os.path.splitext(init)
-        ext = ext.strip('.')
+        ext = ext.strip(".")
 
         if not ext:
-            raise ValueError(f'Input file path does not have an extension: {init}')
+            raise ValueError(f"Input file path does not have an extension: {init}")
 
         if ext not in supported:  # Could be the file is zipped; try splitting again
             path, ext = os.path.splitext(path)
-            ext = ext.strip('.')
+            ext = ext.strip(".")
 
             if ext not in supported:
-                raise ValueError(f'Unrecognized file type for: {init}')
+                raise ValueError(f"Unrecognized file type for: {init}")
 
-        if ext == 'json':  # Assume json input is an association
-            return 'asn'
+        if ext == "json":  # Assume json input is an association
+            return "asn"
 
         return ext
 
@@ -43,7 +43,7 @@ def check(init):
         if not magic or len(magic) < 5:
             raise ValueError(f"Cannot get file type of {str(init)}")
 
-        if magic == b'#ASDF':
+        if magic == b"#ASDF":
             return "asdf"
 
         return "asn"

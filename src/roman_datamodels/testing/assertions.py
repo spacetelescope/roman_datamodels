@@ -56,6 +56,7 @@ def _assert_value_equal(value1, value2):
     else:
         assert value1 == value2
 
+
 def assert_model_equal(a, b):
     """
     Assert that two model instances are equivalent.

@@ -10,7 +10,10 @@ def test_generated_node_classes(manifest):
         class_name = stnode._class_name_from_tag_uri(tag["tag_uri"])
         node_class = getattr(stnode, class_name)
 
-        assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode))
+        assert issubclass(
+            node_class,
+            (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode),
+        )
         assert node_class._tag == tag["tag_uri"]
         assert tag["description"] in node_class.__doc__
         assert tag["tag_uri"] in node_class.__doc__
@@ -53,9 +56,9 @@ def test_serialization(node_class, tmp_path):
 
 
 def test_info(capsys):
-    node = stnode.WfiMode({"optical_element": "GRISM",
-                           "detector": "WFI18",
-                           "name": "WFI"})
+    node = stnode.WfiMode(
+        {"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"}
+    )
     tree = dict(wfimode=node)
     af = asdf.AsdfFile(tree)
     af.info()
@@ -65,23 +68,41 @@ def test_info(capsys):
 
 
 def test_schema_info():
-    node = stnode.WfiMode({"optical_element": "GRISM",
-                           "detector": "WFI18",
-                           "name": "WFI"})
+    node = stnode.WfiMode(
+        {"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"}
+    )
     tree = dict(wfimode=node)
     af = asdf.AsdfFile(tree)
 
     info = af.schema_info("archive_catalog")
     assert info == {
-        'wfimode': {
-            'detector': {
-                'archive_catalog': ({'datatype': 'nvarchar(10)', 'destination': ['ScienceCommon.detector']}, "WFI18")
+        "wfimode": {
+            "detector": {
+                "archive_catalog": (
+                    {
+                        "datatype": "nvarchar(10)",
+                        "destination": ["ScienceCommon.detector"],
+                    },
+                    "WFI18",
+                )
             },
-            'name': {
-                'archive_catalog': ({'datatype': 'nvarchar(5)', 'destination': ['ScienceCommon.instrument_name']}, "WFI")
+            "name": {
+                "archive_catalog": (
+                    {
+                        "datatype": "nvarchar(5)",
+                        "destination": ["ScienceCommon.instrument_name"],
+                    },
+                    "WFI",
+                )
             },
-            'optical_element': {
-                'archive_catalog': ({'datatype': 'nvarchar(20)', 'destination': ['ScienceCommon.optical_element']}, "GRISM")
-            }
+            "optical_element": {
+                "archive_catalog": (
+                    {
+                        "datatype": "nvarchar(20)",
+                        "destination": ["ScienceCommon.optical_element"],
+                    },
+                    "GRISM",
+                )
+            },
         }
     }

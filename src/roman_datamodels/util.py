@@ -10,8 +10,8 @@ from pydoc import locate
 
 import psutil
 
-#from . import s3_utils
-#from .basic_utils import bytes2human
+# from . import s3_utils
+# from .basic_utils import bytes2human
 from .extensions import DATAMODEL_EXTENSIONS
 
 log = logging.getLogger(__name__)
@@ -42,14 +42,14 @@ def bytes2human(n):
     >>> bytes2human(100001221)
         '95.4M'
     """
-    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+    symbols = ("K", "M", "G", "T", "P", "E", "Z", "Y")
     prefix = {}
     for i, s in enumerate(symbols):
         prefix[s] = 1 << (i + 1) * 10
     for s in reversed(symbols):
         if n >= prefix[s]:
             value = float(n) / prefix[s]
-            return f'{value:.1f}{s}'
+            return f"{value:.1f}{s}"
     return "%sB" % n
 
 
@@ -67,117 +67,9 @@ def get_schema_uri_from_converter(converter_class):
     rclass = locate(classname)
     tag = rclass._tag
     schema_uri = next(
-        t for t in DATAMODEL_EXTENSIONS[0].tags if t.tag_uri == tag).schema_uris[0]
+        t for t in DATAMODEL_EXTENSIONS[0].tags if t.tag_uri == tag
+    ).schema_uris[0]
     return schema_uri
-
-# def open(init=None, memmap=False, **kwargs):
-#     """
-#     Creates a DataModel from a number of different types
-
-#     Parameters
-#     ----------
-#     init : shape tuple, file path, file object, astropy.io.fits.HDUList,
-#            numpy array, dict, None
-
-#         - None: A default data model with no shape
-
-#         - shape tuple: Initialize with empty data of the given shape
-
-#         - file path: Initialize from the given file (FITS , JSON or ASDF)
-
-#         - readable file object: Initialize from the given file object
-
-#         - astropy.io.fits.HDUList: Initialize from the given
-#           `~astropy.io.fits.HDUList`
-
-#         - A numpy array: A new model with the data array initialized
-#           to what was passed in.
-
-#         - dict: The object model tree for the data model
-
-#     memmap : bool
-#         Turn memmap of FITS file on or off.  (default: False).  Ignored for
-#         ASDF files.
-
-#     kwargs : dict
-#         Additional keyword arguments passed to lower level functions. These arguments
-#         are generally file format-specific. Arguments of note are:
-
-#         - FITS
-
-#            skip_fits_update - bool or None
-#               `True` to skip updating the ASDF tree from the FITS headers, if possible.
-#               If `None`, value will be taken from the environmental SKIP_FITS_UPDATE.
-#               Otherwise, the default value is `True`.
-
-#     Returns
-#     -------
-#     model : DataModel instance
-#     """
-
-#     from . import datamodels as dm
-#     from . import filetype
-
-#     # Initialize variables used to select model class
-
-#     shape = ()
-#     file_name = None
-#     file_to_close = None
-
-#     # Get special cases for opening a model out of the way
-#     # all special cases return a model if they match
-
-#     if init is None:
-#         return dm.DataModel(None)
-
-#     elif isinstance(init, dm.DataModel):
-#         # Copy the object so it knows not to close here
-#         return init.__class__(init)
-
-#     elif isinstance(init, (str, bytes)) or hasattr(init, "read"):
-#         # If given a string, presume its a file path.
-#         # if it has a read method, assume a file descriptor
-
-#         if isinstance(init, bytes):
-#             init = init.decode(sys.getfilesystemencoding())
-
-#         file_name = basename(init)
-#         file_type = filetype.check(init)
-
-#         elif file_type == "asn":
-#             raise NotImplementedError("roman_datamodels does not yet support associations")
-#             # Read the file as an association / model container
-#             # from . import container
-#             # return container.ModelContainer(init, **kwargs)
-
-#         elif file_type == "asdf":
-#             # Read the file as asdf, no need for a special class
-#             return dm.DataModel(init, **kwargs)
-
-#     elif isinstance(init, tuple):
-#         for item in init:
-#             if not isinstance(item, int):
-#                 raise ValueError("shape must be a tuple of ints")
-#         shape = init
-
-#     elif isinstance(init, np.ndarray):
-#         shape = init.shape
-
-#     elif is_association(init) or isinstance(init, list):
-#         raise NotImplementedError("stdatamodels does not yet support associations")
-#         # from . import container
-#         # return container.ModelContainer(init, **kwargs)
-
-#     # Log a message about how the model was opened
-#     if file_name:
-#         log.debug(f'Opening {file_name} as {new_class}')
-#     else:
-#         log.debug(f'Opening as {new_class}')
-
-#     # Actually open the model
-#     model = new_class(init, **kwargs)
-
-#     return model
 
 
 def _class_from_model_type(hdulist):
@@ -185,21 +77,8 @@ def _class_from_model_type(hdulist):
     Get the model type from the primary header, lookup to get class
     """
     raise NotImplementedError(
-        "stdatamodels does not yet support automatic model class selection")
-    # from . import _defined_models as defined_models
-
-    # if hdulist:
-    #     primary = hdulist[0]
-    #     model_type = primary.header.get('DATAMODL')
-
-    #     if model_type is None:
-    #         new_class = None
-    #     else:
-    #         new_class = defined_models.get(model_type)
-    # else:
-    #     new_class = None
-
-    # return new_class
+        "stdatamodels does not yet support automatic model class selection"
+    )
 
 
 def _class_from_ramp_type(hdulist, shape):
@@ -207,22 +86,8 @@ def _class_from_ramp_type(hdulist, shape):
     Special check to see if file is ramp file
     """
     raise NotImplementedError(
-        "stdatamodels does not yet support automatic model class selection")
-    # if not hdulist:
-    #     new_class = None
-    # else:
-    #     if len(shape) == 4:
-    #         try:
-    #             hdulist['DQ']
-    #         except KeyError:
-    #             from . import ramp
-    #             new_class = ramp.RampModel
-    #         else:
-    #             new_class = None
-    #     else:
-    #         new_class = None
-
-    # return new_class
+        "stdatamodels does not yet support automatic model class selection"
+    )
 
 
 def _class_from_reftype(hdulist, shape):
@@ -230,30 +95,8 @@ def _class_from_reftype(hdulist, shape):
     Get the class name from the reftype and other header keywords
     """
     raise NotImplementedError(
-        "stdatamodels does not yet support automatic model class selection")
-    # if not hdulist:
-    #     new_class = None
-
-    # else:
-    #     primary = hdulist[0]
-    #     reftype = primary.header.get('REFTYPE')
-    #     if reftype is None:
-    #         new_class = None
-
-    #     else:
-    #         from . import reference
-    #         if len(shape) == 0:
-    #             new_class = reference.ReferenceFileModel
-    #         elif len(shape) == 2:
-    #             new_class = reference.ReferenceImageModel
-    #         elif len(shape) == 3:
-    #             new_class = reference.ReferenceCubeModel
-    #         elif len(shape) == 4:
-    #             new_class = reference.ReferenceQuadModel
-    #         else:
-    #             new_class = None
-
-    # return new_class
+        "stdatamodels does not yet support automatic model class selection"
+    )
 
 
 def _class_from_shape(hdulist, shape):
@@ -261,31 +104,8 @@ def _class_from_shape(hdulist, shape):
     Get the class name from the shape
     """
     raise NotImplementedError(
-        "stdatamodels does not yet support automatic model class selection")
-    # if len(shape) == 0:
-    #     from . import model_base
-    #     new_class = model_base.DataModel
-    # elif len(shape) == 4:
-    #     from . import quad
-    #     new_class = quad.QuadModel
-    # elif len(shape) == 3:
-    #     from . import cube
-    #     new_class = cube.CubeModel
-    # elif len(shape) == 2:
-    #     try:
-    #         hdulist[('SCI', 2)]
-    #     except (KeyError, NameError):
-    #         # It's an ImageModel
-    #         from . import image
-    #         new_class = image.ImageModel
-    #     else:
-    #         # It's a MultiSlitModel
-    #         from . import multislit
-    #         new_class = multislit.MultiSlitModel
-    # else:
-    #     new_class = None
-
-    # return new_class
+        "stdatamodels does not yet support automatic model class selection"
+    )
 
 
 def can_broadcast(a, b):
@@ -303,7 +123,7 @@ def can_broadcast(a, b):
 
 
 def to_camelcase(token):
-    return ''.join(x.capitalize() for x in token.split('_-'))
+    return "".join(x.capitalize() for x in token.split("_-"))
 
 
 def is_association(asn_data):
@@ -311,25 +131,25 @@ def is_association(asn_data):
     Test if an object is an association by checking for required fields
     """
     if isinstance(asn_data, dict):
-        if 'asn_id' in asn_data and 'asn_pool' in asn_data:
+        if "asn_id" in asn_data and "asn_pool" in asn_data:
             return True
     return False
 
 
 def get_short_doc(schema):
-    title = schema.get('title', None)
-    description = schema.get('description', None)
+    title = schema.get("title", None)
+    description = schema.get("description", None)
     if description is None:
-        description = title or ''
+        description = title or ""
     else:
         if title is not None:
-            description = title + '\n\n' + description
-    return description.partition('\n')[0]
+            description = title + "\n\n" + description
+    return description.partition("\n")[0]
 
 
 def ensure_ascii(s):
     if isinstance(s, bytes):
-        s = s.decode('ascii')
+        s = s.decode("ascii")
     return s
 
 
@@ -356,7 +176,8 @@ def create_history_entry(description, software=None):
     Examples
     --------
     >>> soft = {'name': 'jwreftools', 'author': 'STSCI', \
-                'homepage': 'https://github.com/spacetelescope/jwreftools', 'version': "0.7"}
+                'homepage': 'https://github.com/spacetelescope/jwreftools',
+                'version': "0.7"}
     >>> entry = create_history_entry(description="HISTORY of this file", software=soft)
 
     """
@@ -369,13 +190,12 @@ def create_history_entry(description, software=None):
     elif software is not None:
         software = Software(software)
 
-    entry = HistoryEntry({
-        'description': description,
-        'time': datetime.datetime.utcnow()
-    })
+    entry = HistoryEntry(
+        {"description": description, "time": datetime.datetime.utcnow()}
+    )
 
     if software is not None:
-        entry['software'] = software
+        entry["software"] = software
     return entry
 
 
@@ -395,8 +215,8 @@ def get_envar_as_boolean(name, default=False):
     default : bool
         If the environmental variable cannot be accessed, use as the default.
     """
-    truths = ('true', 't', 'yes', 'y')
-    falses = ('false', 'f', 'no', 'n')
+    truths = ("true", "t", "yes", "y")
+    falses = ("false", "f", "no", "n")
     if name in os.environ:
         value = os.environ[name]
         try:
@@ -405,12 +225,14 @@ def get_envar_as_boolean(name, default=False):
             value_lowcase = value.lower()
             if value_lowcase not in truths + falses:
                 raise ValueError(
-                    f'Cannot convert value "{value}" to boolean unambiguously.')
+                    f'Cannot convert value "{value}" to boolean unambiguously.'
+                )
             return value_lowcase in truths
         return value
 
     log.debug(
-        f'Environmental "{name}" cannot be found. Using default value of "{default}".')
+        f'Environmental "{name}" cannot be found. Using default value of "{default}".'
+    )
     return default
 
 
@@ -442,7 +264,7 @@ def check_memory_allocation(shape, allowed=None, model_type=None, include_swap=T
     """
     # Determine desired allowed amount.
     if allowed is None:
-        allowed = os.environ.get('DMODEL_ALLOWED_MEMORY', None)
+        allowed = os.environ.get("DMODEL_ALLOWED_MEMORY", None)
         if allowed is not None:
             allowed = float(allowed)
 
@@ -465,17 +287,19 @@ def check_memory_allocation(shape, allowed=None, model_type=None, include_swap=T
     # Get available memory
     available = get_available_memory(include_swap=include_swap)
     log.debug(
-        f'Model size {bytes2human(size)} available system memory {bytes2human(available)}')
+        f"Model size {bytes2human(size)} available system memory"
+        f"{bytes2human(available)}"
+    )
 
     if size > available:
         log.warning(
-            f'Model {model_type} shape {shape} requires {bytes2human(size)} which is more than'
-            f' system available {bytes2human(available)}'
+            f"Model {model_type} shape {shape} requires {bytes2human(size)}"
+            f" which is more than system available {bytes2human(available)}"
         )
 
     if allowed and size > (allowed * available):
         log.debug(
-            f'Model size greater than allowed memory {bytes2human(allowed * available)}'
+            f"Model size greater than allowed memory {bytes2human(allowed * available)}"
         )
         return False, size
 
@@ -499,7 +323,7 @@ def get_available_memory(include_swap=True):
 
     # Apple MacOS
     log.debug(f'Running OS is "{system}"')
-    if system in ['Darwin']:
+    if system in ["Darwin"]:
         return get_available_memory_darwin(include_swap=include_swap)
 
     # Default to Linux-like:
@@ -555,11 +379,13 @@ def get_available_memory_darwin(include_swap=True):
 
         # Attempt to determine amount of free disk space on the boot partition.
         try:
-            swap = psutil.disk_usage('/private/var/vm').free
+            swap = psutil.disk_usage("/private/var/vm").free
         except FileNotFoundError as exception:
-            log.warn('Cannot determine available swap space.'
-                     f'Reason:\n'
-                     f'{"".join(traceback.format_exception(exception))}')
+            log.warn(
+                "Cannot determine available swap space."
+                f"Reason:\n"
+                f'{"".join(traceback.format_exception(exception))}'
+            )
             swap = 0
         available += swap
 
