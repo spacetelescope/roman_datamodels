@@ -5,8 +5,19 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 write_to = "src/roman_datamodels/_version.py"
 
+[tool.black]
+force-exclude = '''
+^/(
+  (
+      \.eggs
+    | \.git
+    | \.pytest_cache
+    | \.tox
+  )/
+)
+'''
+
 [tool.isort]
 profile = "black"
 filter_files = true
-line_length = 130
 extend_skip_glob = ["eggs/*", ".tox/*"]
