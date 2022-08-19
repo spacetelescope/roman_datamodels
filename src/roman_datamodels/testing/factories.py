@@ -1413,7 +1413,7 @@ def create_node(node_class, **kwargs):
     roman_datamodels.stnode.TaggedObjectNode
     """
     method_name = "create_" + _camel_case_to_snake_case(node_class.__name__)
-    if not method_name in globals():
+    if method_name not in globals():
         raise ValueError(
             f"Factory method not implemented for class {node_class.__name__}"
         )
