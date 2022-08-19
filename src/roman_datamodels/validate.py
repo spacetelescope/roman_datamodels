@@ -3,11 +3,12 @@ Functions that support validation of model changes
 """
 
 import warnings
+
 import jsonschema
 from asdf import AsdfFile
 from asdf import schema as asdf_schema
-from asdf.util import HashableDict
 from asdf import yamlutil
+from asdf.util import HashableDict
 
 
 class ValidationWarning(Warning):

@@ -1,7 +1,9 @@
-from . import stnode
+import os.path
+
 import asdf
 import astropy.time as time
-import os.path
+
+from . import stnode
 
 NONUM = -999999
 NOSTR = "dummy value"

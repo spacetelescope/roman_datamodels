@@ -12,14 +12,14 @@
 
 import datetime
 import importlib
-import sys
 import os
-from distutils.version import LooseVersion
+import sys
 from configparser import ConfigParser
+from distutils.version import LooseVersion
 
 import sphinx
-import stsci_rtd_theme
 import sphinx_astropy
+import stsci_rtd_theme
 
 
 def setup(app):

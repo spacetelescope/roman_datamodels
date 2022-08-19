@@ -6,19 +6,20 @@ keep consistency with the JWST data model version.
 
 It is to be subclassed by the various types of data model variants for products
 '''
-from pathlib import PurePath
+import copy
 import datetime
-import sys
-import asdf
 import os
 import os.path
-import copy
+import sys
+from pathlib import PurePath
+
+import asdf
 import numpy as np
-from astropy.time import Time
 from asdf.fits_embed import AsdfInFits
-from . import stnode
-from . import validate
-from . extensions import DATAMODEL_EXTENSIONS
+from astropy.time import Time
+
+from . import stnode, validate
+from .extensions import DATAMODEL_EXTENSIONS
 
 
 class DataModel:

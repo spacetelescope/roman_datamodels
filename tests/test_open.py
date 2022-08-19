@@ -1,12 +1,10 @@
-import pytest
-
-from astropy.io import fits
 import asdf
 import numpy as np
+import pytest
+from astropy.io import fits
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
-
 from roman_datamodels.testing import utils
 
 

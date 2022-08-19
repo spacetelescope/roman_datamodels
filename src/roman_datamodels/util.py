@@ -2,17 +2,18 @@
 Various utility functions and data types
 """
 
+import logging
 import os
-from platform import system as platform_system
-import psutil
 import traceback
+from platform import system as platform_system
 from pydoc import locate
+
+import psutil
 
 #from . import s3_utils
 #from .basic_utils import bytes2human
 from .extensions import DATAMODEL_EXTENSIONS
 
-import logging
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
@@ -359,8 +360,9 @@ def create_history_entry(description, software=None):
     >>> entry = create_history_entry(description="HISTORY of this file", software=soft)
 
     """
-    from asdf.tags.core import Software, HistoryEntry
     import datetime
+
+    from asdf.tags.core import HistoryEntry, Software
 
     if isinstance(software, list):
         software = [Software(x) for x in software]

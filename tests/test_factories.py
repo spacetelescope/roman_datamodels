@@ -1,8 +1,8 @@
 import asdf
 import pytest
 
-from roman_datamodels.testing import create_node
 from roman_datamodels import stnode
+from roman_datamodels.testing import create_node
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
