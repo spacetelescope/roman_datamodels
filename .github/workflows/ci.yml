@@ -12,6 +12,8 @@ on:
     # Weekly Monday 9AM build
     # * is a special character in YAML so you have to quote this string
     - cron: '0 9 * * 1'
+  workflow_dispatch:
+
 
 jobs:
   tox:
@@ -100,7 +102,10 @@ jobs:
 
   test_rad_dev:
     name: test latest commit of `rad`
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
