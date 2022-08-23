@@ -98,10 +98,26 @@ jobs:
   #     - name: Run tox
   #       run: tox -e build-docs
 
+  test_rad_dev:
+    name: test latest commit of `rad`
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.pythonLocation }}
+          key: test-rad-${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml', '**/setup.*') }}
+      - run: pip install -e ".[test]" pytest-xdist
+      - run: pip install git+https://github.com/spacetelescope/rad.git@main#egg=rad
+      - run: pip freeze
+      - run: pytest -n auto
+
   test_older_numpy:
     name: test Numpy ${{ matrix.numpy }} (Python ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -116,12 +132,12 @@ jobs:
           - python: '3.10'
             numpy: '1.20.*'
     steps:
-      - uses: actions/checkout@main
-      - uses: actions/setup-python@main
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         id: python
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/cache@main
+      - uses: actions/cache@v3
         with:
           path: ${{ env.pythonLocation }}
           key: test-numpy${{ matrix.numpy }}-${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml', '**/setup.*') }}
