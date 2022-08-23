@@ -173,9 +173,9 @@ class DNode(UserDict):
         """
         if key[0] != '_':
             if key == 'origin' and value not in _VALID_ORIGIN:
-                raise jsonschema.ValidationError("origin must be 'STSCI'")
+                raise jsonschema.ValidationError(f"origin must be one of {_VALID_ORIGIN}")
             elif key == 'telescope' and value not in _VALID_TELESCOPE:
-                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
+                raise jsonschema.ValidationError(f"telescope must be one of {_VALID_TELESCOPE}'")
             value = self._convert_to_scalar(key, value)
             if key in self._data:
                 if validate:
@@ -491,10 +491,10 @@ class TaggedScalarNodeConverter(Converter):
         validate = asdf.get_config().validate_on_read
         if tag == Origin._tag: # noqa
             if validate and node not in _VALID_ORIGIN:
-                raise jsonschema.ValidationError("origin must be 'STSCI'")
+                raise jsonschema.ValidationError(f"origin must be one of {_VALID_ORIGIN}")
         elif tag == Telescope._tag: # noqa
             if validate and node not in _VALID_TELESCOPE:
-                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
+                raise jsonschema.ValidationError(f"telescope must be one of {_VALID_TELESCOPE}'")
 
         if tag == FileDate._tag:
             converter = ctx.extension_manager.get_converter_for_type(type(node))
@@ -507,10 +507,10 @@ class TaggedScalarNodeConverter(Converter):
         validate = asdf.get_config().validate_on_read
         if tag == Origin._tag: # noqa
             if validate and node not in _VALID_ORIGIN:
-                raise jsonschema.ValidationError("origin must be 'STSCI'")
+                raise jsonschema.ValidationError(f"origin must be one of {_VALID_ORIGIN}")
         elif tag == Telescope._tag: # noqa
             if validate and node not in _VALID_TELESCOPE:
-                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
+                raise jsonschema.ValidationError(f"telescope must be one of {_VALID_TELESCOPE}'")
 
         if tag == FileDate._tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
