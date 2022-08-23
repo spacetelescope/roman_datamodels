@@ -41,12 +41,24 @@ def test_core_schema(tmp_path):
     wfi_image = utils.mk_level2_image(shape=(10, 10))
     with asdf.AsdfFile() as af:
         af.tree = {'roman': wfi_image}
+
+        # Test telescope name
         with pytest.raises(ValidationError):
             af.tree['roman'].meta.telescope = 'NOTROMAN'
         af.tree['roman'].meta['telescope'] = 'NOTROMAN'
         with pytest.raises(ValidationError):
             af.write_to(file_path)
         af.tree['roman'].meta.telescope = 'ROMAN'
+
+        # Test origin name
+        with pytest.raises(ValidationError):
+            af.tree['roman'].meta.origin = 'NOTSTSCI'
+        af.tree['roman'].meta['origin'] = 'NOTIPAC/SSC'
+        with pytest.raises(ValidationError):
+            af.write_to(file_path)
+        af.tree['roman'].meta.origin = 'IPAC/SSC'
+        af.tree['roman'].meta.origin = 'STSCI'
+
         af.write_to(file_path)
     # Now mangle the file
     with open(file_path, 'rb') as fp:
