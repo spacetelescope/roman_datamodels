@@ -3,6 +3,7 @@
 
 - pin ``asdf`` above ``2.12.1`` to fix issues with unit and regression tests [#91]
 - Add ability to access information stored in ``rad`` schemas relative to the information stored in the datamodel. [#93]
+- Add ``IPAC/SSC`` as valid ``origin`` values. [#95]
 
 0.12.3 (2022-08-09)
 ===================

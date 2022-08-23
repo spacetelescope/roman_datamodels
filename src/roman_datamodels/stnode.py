@@ -40,6 +40,10 @@ __all__ = [
 validate = True
 strict_validation = True
 
+# Needed due to enum bug with ASDF
+_VALID_ORIGIN = ["STSCI", "IPAC/SSC"]
+_VALID_TELESCOPE = ["ROMAN"]
+
 
 def set_validate(value):
     global validate
@@ -168,10 +172,10 @@ class DNode(UserDict):
         Permit assigning dict keys as attributes.
         """
         if key[0] != '_':
-            if key == 'origin' and value != 'STSCI':
-                raise jsonschema.ValidationError("origin must be 'STSCI'")
-            elif key == 'telescope' and value != 'ROMAN':
-                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
+            if key == 'origin' and value not in _VALID_ORIGIN:
+                raise jsonschema.ValidationError(f"origin must be one of {_VALID_ORIGIN}")
+            elif key == 'telescope' and value not in _VALID_TELESCOPE:
+                raise jsonschema.ValidationError(f"telescope must be one of {_VALID_TELESCOPE}'")
             value = self._convert_to_scalar(key, value)
             if key in self._data:
                 if validate:
@@ -486,11 +490,11 @@ class TaggedScalarNodeConverter(Converter):
         # Move enum check to converter due to bug, see spacetelescope/rad#155
         validate = asdf.get_config().validate_on_read
         if tag == Origin._tag: # noqa
-            if validate and node != 'STSCI':
-                raise jsonschema.ValidationError("origin must be 'STSCI'")
+            if validate and node not in _VALID_ORIGIN:
+                raise jsonschema.ValidationError(f"origin must be one of {_VALID_ORIGIN}")
         elif tag == Telescope._tag: # noqa
-            if validate and node != 'ROMAN':
-                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
+            if validate and node not in _VALID_TELESCOPE:
+                raise jsonschema.ValidationError(f"telescope must be one of {_VALID_TELESCOPE}'")
 
         if tag == FileDate._tag:
             converter = ctx.extension_manager.get_converter_for_type(type(node))
@@ -502,11 +506,11 @@ class TaggedScalarNodeConverter(Converter):
         # Move enum check to converter due to bug, see spacetelescope/rad#155
         validate = asdf.get_config().validate_on_read
         if tag == Origin._tag: # noqa
-            if validate and node != 'STSCI':
-                raise jsonschema.ValidationError("origin must be 'STSCI'")
+            if validate and node not in _VALID_ORIGIN:
+                raise jsonschema.ValidationError(f"origin must be one of {_VALID_ORIGIN}")
         elif tag == Telescope._tag: # noqa
-            if validate and node != 'ROMAN':
-                raise jsonschema.ValidationError("telescope must be 'ROMAN'")
+            if validate and node not in _VALID_TELESCOPE:
+                raise jsonschema.ValidationError(f"telescope must be one of {_VALID_TELESCOPE}'")
 
         if tag == FileDate._tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
