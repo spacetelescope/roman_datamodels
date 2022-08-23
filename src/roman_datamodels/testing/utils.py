@@ -1168,15 +1168,15 @@ def mk_ref_file():
     roman_datamodels.stnode.RefFile
     """
     ref_file = stnode.RefFile()
-    ref_file['dark'] = {'name': 'N/A'}
-    ref_file['distortion'] = {'name': 'N/A'}
-    ref_file['flat'] = {'name': 'N/A'}
-    ref_file['gain'] = {'name': 'N/A'}
-    ref_file['linearity'] = {'name': 'N/A'}
-    ref_file['mask'] = {'name': 'N/A'}
-    ref_file['readnoise'] = {'name': 'N/A'}
-    ref_file['saturation'] = {'name': 'N/A'}
-    ref_file['photom'] = {'name': 'N/A'}
+    ref_file['dark'] = 'N/A'
+    ref_file['distortion'] = 'N/A'
+    ref_file['flat'] = 'N/A'
+    ref_file['gain'] = 'N/A'
+    ref_file['linearity'] = 'N/A'
+    ref_file['mask'] = 'N/A'
+    ref_file['readnoise'] = 'N/A'
+    ref_file['saturation'] = 'N/A'
+    ref_file['photom'] = 'N/A'
     ref_file['crds'] = {'sw_version': "12.3.1", "context_used": "roman_0815.pmap"}
 
     return ref_file
