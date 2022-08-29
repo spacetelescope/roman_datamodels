@@ -1,4 +1,7 @@
 import _collections_abc
+from typing import Any, Iterator
+
+
 # import sys as _sys
 
 # from itertools import chain as _chain
@@ -46,34 +49,44 @@ class STUserDict(_collections_abc.MutableMapping):
             self.update(dict)
         if kwargs:
             self.update(kwargs)
+
     __init__.__text_signature__ = '($self, dict=None, /, **kwargs)'
 
-    def __len__(self): return len(self._data)
-    def __getitem__(self, key):
+    def __len__(self) -> int:
+        return len(self._data)
+
+    def __getitem__(self, key: str) -> Any:
         if key in self._data:
             return self._data[key]
         if hasattr(self.__class__, "__missing__"):
             return self.__class__.__missing__(self, key)
         raise KeyError(key)
-    def __setitem__(self, key, item): self._data[key] = item
-    def __delitem__(self, key): del self._data[key]
-    def __iter__(self):
+
+    def __setitem__(self, key: str, item: Any):
+        self._data[key] = item
+
+    def __delitem__(self, key: str):
+        del self._data[key]
+
+    def __iter__(self) -> Iterator[str]:
         return iter(self._data)
 
     # Modify __contains__ to work correctly when __missing__ is present
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         return key in self._data
 
     # Now, add the methods in dicts but not in MutableMapping
-    def __repr__(self): return repr(self._data)
-    def __copy__(self):
+    def __repr__(self) -> str:
+        return repr(self._data)
+
+    def __copy__(self) -> 'STUserDict':
         inst = self.__class__.__new__(self.__class__)
         inst.__dict__.update(self.__dict__)
         # Create a copy and avoid triggering descriptors
         inst.__dict__["_data"] = self.__dict__["_data"].copy()
         return inst
 
-    def copy(self):
+    def copy(self) -> 'STUserDict':
         if self.__class__ is STUserDict:
             return STUserDict(self._data.copy())
         import copy
@@ -87,7 +100,7 @@ class STUserDict(_collections_abc.MutableMapping):
         return c
 
     @classmethod
-    def fromkeys(cls, iterable, value=None):
+    def fromkeys(cls, iterable, value=None) -> 'STUserDict':
         d = cls()
         for key in iterable:
             d[key] = value
