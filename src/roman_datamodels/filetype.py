@@ -1,7 +1,10 @@
+import io
 import os
+from pathlib import Path
+from typing import Union
 
 
-def check(init):
+def check(init: Union[os.PathLike, Path, io.FileIO]) -> str:
     """
     Determine the type of a file and return it as a string
 
@@ -15,9 +18,10 @@ def check(init):
     file_type: a string with the file type ("asdf" or "asn")
 
     """
+
     supported = ('asdf', 'json')
 
-    if isinstance(init, str):
+    if isinstance(init, (os.PathLike, Path)):
         path, ext = os.path.splitext(init)
         ext = ext.strip('.')
 
