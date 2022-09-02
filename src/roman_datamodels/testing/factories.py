@@ -1082,6 +1082,91 @@ def create_ramp_fit_output(**kwargs):
     return stnode.RampFitOutput(raw)
 
 
+def create_associations(**kwargs):
+    """
+    Create a dummy Association table instance (or file) with table and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Associations
+    """
+
+    raw = {
+#        "meta": create_meta(),
+    }
+    raw.update(kwargs)
+
+    raw["asn_type"] = "image"
+    raw["asn_rule"] = "candidate_Asn_Lv2Image_i2d"
+    raw["version_id"] = "null"
+    raw["code_version"] = "0.16.2.dev16+g640b0b79"
+    raw["degraded_status"] = "No known degraded exposures in association."
+    raw['program'] = 1
+    raw['constraints'] = "DMSAttrConstraint({'name': 'program', 'sources': ['program'], " \
+                         "'value': '001'})\nConstraint_TargetAcq({'name': 'target_acq', 'value': " \
+                         "'target_acquisition'})\nDMSAttrConstraint({'name': 'science', " \
+                         "'DMSAttrConstraint({'name': 'asn_candidate','sources': " \
+                         "['asn_candidate'], 'value': \"\\\\('o036',\\\\ 'observation'\\\\)\"})"
+    raw['asn_id'] = "o036"
+    raw['asn_pool'] = "r00001_20200530t023154_pool"
+    raw['target'] = 16
+
+    length = 7
+
+    exptypes = random.choices(['SCIENCE', 'CALIBRATION', 'ENGINEERING'], k=length)
+    exposerr = ["null"] * length
+    expname = ["file_" + str(x) + ".asdf" for x in range(length)]
+
+    raw['products'] = []
+    raw['products'].append({
+        'name' : "product0",
+        'members' : [{
+            "expname" : expname[0],
+            "exposerr" : exposerr[0],
+            "exptype" : exptypes[0]
+        },
+        {
+            "expname": expname[1],
+            "exposerr": exposerr[1],
+            "exptype": exptypes[1]
+        }]
+    })
+    raw['products'].append({
+        'name': "product1",
+        'members': [{
+            "expname": expname[2],
+            "exposerr": exposerr[2],
+            "exptype": exptypes[2]
+        }]
+    })
+    raw['products'].append({
+        'name': "product1",
+        'members': [{
+            "expname" : expname[3],
+            "exposerr" : exposerr[3],
+            "exptype" : exptypes[3]
+        },
+        {
+            "expname": expname[4],
+            "exposerr": exposerr[4],
+            "exptype": exptypes[4]
+        },
+        {
+            "expname": expname[5],
+            "exposerr": exposerr[5],
+            "exptype": exptypes[5]
+        }]
+    })
+
+    return stnode.Associations(raw)
+
+
 def create_guidewindow(**kwargs):
     """
     Create a dummy Guide Window instance with valid values for attributes
