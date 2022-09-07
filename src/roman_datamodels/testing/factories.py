@@ -1167,6 +1167,68 @@ def create_associations(**kwargs):
     return stnode.Associations(raw)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def create_model_container(**kwargs):
+    """
+    Create a dummy Model Container instance with valid values for attributes
+    in the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.ModelContainer
+    """
+
+    raw = {
+        #"meta": create_meta(),
+    }
+    raw.update(kwargs)
+
+    raw["asn_exptypes"] = "image"
+    raw["asn_rule"] = "candidate_Asn_Lv2Image_i2d"
+    raw["asn_table_name"] = "null"
+    raw["asn_pool_name"] = "0.16.2.dev16+g640b0b79"
+    raw["asn_table"] = create_associations()
+    raw['asn_n_members'] = 1
+
+    return stnode.ModelContainer(raw)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def create_guidewindow(**kwargs):
     """
     Create a dummy Guide Window instance with valid values for attributes

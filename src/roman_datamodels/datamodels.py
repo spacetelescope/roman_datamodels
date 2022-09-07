@@ -300,6 +300,9 @@ class AssociationsModel(DataModel):
     # Need an init to allow instantiation from a JSON file
     pass
 
+class ModelContainerModel(DataModel):
+    # Needs a number of methods to properly handle the contents
+    pass
 
 class GuidewindowModel(DataModel):
     pass
@@ -433,6 +436,7 @@ model_registry = {
     stnode.Ramp: RampModel,
     stnode.RampFitOutput: RampFitOutputModel,
     stnode.Associations: AssociationsModel,
+    stnode.ModelContainer: ModelContainerModel,
     stnode.Guidewindow: GuidewindowModel,
     stnode.FlatRef: FlatRefModel,
     stnode.DarkRef: DarkRefModel,
