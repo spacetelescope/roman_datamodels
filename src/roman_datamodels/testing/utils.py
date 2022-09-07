@@ -7,7 +7,7 @@ from random import choices
 
 from .factories import _random_positive_int, _random_string
 from .. import stnode
-
+from .. import datamodels
 
 NONUM = -999999
 NOSTR = "dummy value"
@@ -1085,6 +1085,87 @@ def mk_associations(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return associations
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def mk_model_container(shape=None, hasmodels=True, filepath=None):
+    """
+    Create a dummy Model Container instance (or file) with alid values for attributes required by
+    the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) The shape of the member elements of products.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.AssociationsModel
+    """
+
+    model_container = stnode.Associations()
+
+    model_container["asn_exptypes"] = "image"
+
+    model_container["asn_table_name"] = "asn.json"
+    model_container["asn_pool_name"] = "r00001_20200530t023154_pool"
+    model_container["degraded_status"] = "No known degraded exposures in association."
+
+    if not shape:
+        shape = (2, 3, 1)
+
+    model_container["asn_n_members"] = len(shape)
+
+    model_container["asn_table_name"] = mk_associations(shape=shape)
+
+    model_container["asn_table_name"] = []
+    if hasmodels:
+        for product_group in model_container["asn_table_name"]["products"]:
+            for member in product_group["members"]:
+                model_obj = datamodels.open(member["expname"])
+
+
+
+
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': model_container}
+        af.write_to(filepath)
+    else:
+        return model_container
+
+
+
+
+
+
+
+
+
+
+
 
 
 def mk_guidewindow(shape=None, filepath=None):
