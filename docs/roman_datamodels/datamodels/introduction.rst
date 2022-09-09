@@ -93,7 +93,7 @@ search works on them.
 
 Each Roman data file type corresponds to a specific Roman datamodel for which
 there is a corresponding schema file for that datamodel. Any changes to the
-contents of the data file must be accompanied by corresponding changed to the
+contents of the data file must be accompanied by corresponding changes to the
 schema. This ensures that the validation tools stay in sync with the file
 contents.
 
