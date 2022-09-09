@@ -139,8 +139,6 @@ def test_make_association():
     member_shapes = (3, 8, 5, 2)
     association = utils.mk_associations(shape=member_shapes)
 
-    print("XXX association.products = "+str(association.products))
-
     assert association.asn_type == "image"
     assert len(association.products) == len(member_shapes)
 
@@ -173,35 +171,74 @@ def test_opening_association_ref(tmp_path):
 
 
 # Model Container tests
-def test_make_model_container():
-    member_shapes = (3, 8, 5, 2)
-    association = utils.mk_associations(shape=member_shapes)
+def test_make_model_container(tmp_path):
+    association = utils.mk_associations(shape=(3,2))
 
-    print("XXX association.products = "+str(association.products))
+    # Make Temporary files
+    # Presently set to match the default association in mk_associations
+    f0_model = utils.mk_level2_image(shape=(20, 20))
+    f0_af = asdf.AsdfFile()
+    f0_af.tree = {'roman': f0_model}
+    f0_af.write_to(tmp_path / 'file_0.asdf')
+    f1_model = utils.mk_flat(shape=(20, 20))
+    f1_af = asdf.AsdfFile()
+    f1_af.tree = {'roman': f1_model}
+    f1_af.write_to(tmp_path / 'file_1.asdf')
+    f2_model = utils.mk_pixelarea(shape=(20, 20))
+    f2_af = asdf.AsdfFile()
+    f2_af.tree = {'roman': f2_model}
+    f2_af.write_to(tmp_path / 'file_2.asdf')
+    f3_model = utils.mk_level2_image(shape=(30, 30))
+    f3_model.data = 2.0 * np.ones(shape=(30, 30), dtype=f3_model.data.dtype)
+    f3_af = asdf.AsdfFile()
+    f3_af.tree = {'roman': f3_model}
+    f3_af.write_to(tmp_path / 'file_3.asdf')
+    f4_model = utils.mk_level2_image(shape=(40, 40))
+    f4_model.data = 4.0 * np.ones(shape=(40, 40), dtype=f4_model.data.dtype)
+    f4_af = asdf.AsdfFile()
+    f4_af.tree = {'roman': f4_model}
+    f4_af.write_to(tmp_path / 'file_4.asdf')
 
-    assert association.asn_type == "image"
-    assert len(association.products) == len(member_shapes)
+    model_container = utils.mk_model_container(association=association, inputpath=str(tmp_path)+"/")
 
-    for prod_idx in range(len(member_shapes)):
-        assert association.products[prod_idx].name == "product" + str(prod_idx)
-        assert len(association.products[prod_idx].members) == member_shapes[prod_idx]
-        assert association.products[prod_idx].members[-1].expname == "file_" + str(sum(member_shapes[0:prod_idx+1])-1) + ".asdf"
-        assert association.products[prod_idx].members[-1].exposerr == "null"
-        assert association.products[prod_idx].members[-1].exptype in \
-               ['SCIENCE', 'CALIBRATION', 'ENGINEERING']
+    assert type(model_container) == stnode.ModelContainer
+    assert model_container.asn_table == association
 
-    # Test validation
-    association_model = datamodels.AssociationsModel(association)
-    assert association_model.validate() is None
+    assert len(model_container.models) == 5
+    assert model_container.models[0].name == 'file_0.asdf'
+    assert type(model_container.models[0].datamodel) == datamodels.ImageModel
+    assert model_container.models[0].datamodel.data.shape == (20, 20)
+    assert model_container.models[0].datamodel.data[2][4] == 0
+
+    assert model_container.models[1].name == 'file_1.asdf'
+    assert type(model_container.models[1].datamodel) == datamodels.FlatRefModel
+    assert model_container.models[1].datamodel.data.shape == (20, 20)
+    assert model_container.models[1].datamodel.data[2][4] == 0
+
+    assert model_container.models[2].name == 'file_2.asdf'
+    assert type(model_container.models[2].datamodel) == datamodels.PixelareaRefModel
+    assert model_container.models[2].datamodel.data.shape == (20, 20)
+    assert model_container.models[2].datamodel.data[2][4] == 0
+
+    assert model_container.models[3].name == 'file_3.asdf'
+    assert type(model_container.models[3].datamodel) == datamodels.ImageModel
+    assert model_container.models[3].datamodel.data.shape == (30, 30)
+    assert model_container.models[3].datamodel.data[2][4] == 2.0
+
+    assert model_container.models[4].name == 'file_4.asdf'
+    assert type(model_container.models[4].datamodel) == datamodels.ImageModel
+    assert model_container.models[4].datamodel.data.shape == (40, 40)
+    assert model_container.models[4].datamodel.data[2][4] == 4.0
 
 
-def test_opening_model_container_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / 'testassociations.asdf'
-    utils.mk_associations(filepath=file_path)
-    association = datamodels.open(file_path)
-    assert association.program == 1
-    assert isinstance(association, datamodels.AssociationsModel)
+#
+# def test_opening_model_container_ref(tmp_path):
+#     # First make test reference file
+#     file_path = tmp_path / 'testassociations.asdf'
+#     utils.mk_associations(filepath=file_path)
+#     association = datamodels.open(file_path)
+#     assert association.program == 1
+#     assert isinstance(association, datamodels.AssociationsModel)
 
 
 

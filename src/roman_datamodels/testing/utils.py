@@ -1106,25 +1106,35 @@ def mk_associations(shape=None, filepath=None):
 
 
 
-def mk_model_container(shape=None, hasmodels=True, filepath=None):
+def mk_model_container(association=None, hasmodels=True, inputpath = "", filepath=None):
     """
     Create a dummy Model Container instance (or file) with alid values for attributes required by
     the schema.
 
     Parameters
     ----------
-    shape
-        (optional) The shape of the member elements of products.
+    association
+        (optional) Association model used to populate the container.
+
+    hasmodels
+        (optional) Switch to determine if models are to be opened or not.
+
+    inputpath
+        (optional) Path to directory contianing files specified by Association model.
 
     filepath
         (optional) File name and path to write model to.
 
     Returns
     -------
-    roman_datamodels.stnode.AssociationsModel
+    roman_datamodels.stnode.ModelContainerModel
     """
 
-    model_container = stnode.Associations()
+    # Do not open models if writing to a file.
+    if filepath:
+        hasmodels = False
+
+    model_container = stnode.ModelContainer()
 
     model_container["asn_exptypes"] = "image"
 
@@ -1132,22 +1142,27 @@ def mk_model_container(shape=None, hasmodels=True, filepath=None):
     model_container["asn_pool_name"] = "r00001_20200530t023154_pool"
     model_container["degraded_status"] = "No known degraded exposures in association."
 
-    if not shape:
-        shape = (2, 3, 1)
+    if not association:
+        model_container["asn_table"] = mk_associations(shape=(2, 3, 1))
+        model_container["asn_n_members"] = 3
+    else:
+        model_container["asn_table"] = association
+        model_container["asn_n_members"] = len(association.products)
 
-    model_container["asn_n_members"] = len(shape)
+    model_container["models"] = []
 
-    model_container["asn_table_name"] = mk_associations(shape=shape)
-
-    model_container["asn_table_name"] = []
-    if hasmodels:
-        for product_group in model_container["asn_table_name"]["products"]:
-            for member in product_group["members"]:
-                model_obj = datamodels.open(member["expname"])
-
-
-
-
+    for product_group in model_container["asn_table"]["products"]:
+        for member in product_group["members"]:
+            if hasmodels:
+                model_obj = datamodels.open(inputpath + member["expname"])
+            else:
+                model_obj = "null"
+            model_container["models"].append(
+                {
+                    "name" : member["expname"],
+                    "datamodel" : model_obj
+                }
+            )
 
     if filepath:
         af = asdf.AsdfFile()
