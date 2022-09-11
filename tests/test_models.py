@@ -1,5 +1,7 @@
 import pytest
 import warnings
+import random
+import json
 
 from jsonschema import ValidationError
 from astropy import units as u
@@ -158,6 +160,162 @@ def test_opening_guidewindow_ref(tmp_path):
     guidewindow = datamodels.open(file_path)
     assert guidewindow.meta.gw_mode == 'WIM-ACQ'
     assert isinstance(guidewindow, datamodels.GuidewindowModel)
+
+
+
+
+
+
+
+
+
+
+# Model Container tests
+def test_make_model_container(tmp_path):
+    # Make JSON Association file
+    exptypes = random.choices(['SCIENCE', 'CALIBRATION', 'ENGINEERING'], k=5)
+    exposerr = ["null"] * 5
+    expname = ["file_" + str(x) + ".asdf" for x in range(5)]
+    asn_dict = {
+        "asn_type" : "image",
+        "asn_rule" : "candidate_Asn_Lv2Image_i2d",
+        "version_id" : "null",
+        "code_version" : "0.16.2.dev16+g640b0b79",
+        "degraded_status" : "No known degraded exposures in association.",
+        'program' : 1,
+        'constraints' : "DMSAttrConstraint({'name': 'program', 'sources': ['program'], " \
+                         "'value': '001'})\nConstraint_TargetAcq({'name': 'target_acq', 'value': " \
+                         "'target_acquisition'})\nDMSAttrConstraint({'name': 'science', " \
+                         "'DMSAttrConstraint({'name': 'asn_candidate','sources': " \
+                         "['asn_candidate'], 'value': \"\\\\('o036',\\\\ 'observation'\\\\)\"})",
+        'asn_id' : "o036",
+        'asn_pool' : "r00001_20200530t023154_pool",
+        'target' : 16,
+        'products' : [
+            {
+                'name': "product0",
+                'members': [
+                    {
+                        "expname": expname[0],
+                        "exposerr": exposerr[0],
+                        "exptype": exptypes[0]
+                    },
+                    {
+                        "expname": expname[1],
+                        "exposerr": exposerr[1],
+                        "exptype": exptypes[1]
+                    }
+                ]
+            },
+            {
+                'name': "product1",
+                'members': [
+                    {
+                        "expname": expname[2],
+                        "exposerr": exposerr[2],
+                        "exptype": exptypes[2]
+                    },
+                ]
+            },
+            {
+                'name': "product2",
+                'members': [
+                    {
+                        "expname": expname[3],
+                        "exposerr": exposerr[3],
+                        "exptype": exptypes[3]
+                    },
+                    {
+                        "expname": expname[4],
+                        "exposerr": exposerr[4],
+                        "exptype": exptypes[4]
+                    }
+                ]
+            },
+        ]
+    }
+    with open(tmp_path / 'asn.json', 'w') as asn_file:
+        json.dump(asn_dict, asn_file)
+
+    # Make Temporary model files
+    f0_model = utils.mk_level2_image(shape=(20, 20))
+    f0_model.meta.filename = 'file_0.asdf'
+    f0_af = asdf.AsdfFile()
+    f0_af.tree = {'roman': f0_model}
+    f0_af.write_to(tmp_path / 'file_0.asdf')
+    f1_model = utils.mk_flat(shape=(20, 20))
+    f1_model.meta['filename'] = 'file_1.asdf'
+    f1_af = asdf.AsdfFile()
+    f1_af.tree = {'roman': f1_model}
+    f1_af.write_to(tmp_path / 'file_1.asdf')
+    f2_model = utils.mk_pixelarea(shape=(20, 20))
+    f2_model.meta['filename'] = 'file_2.asdf'
+    f2_af = asdf.AsdfFile()
+    f2_af.tree = {'roman': f2_model}
+    f2_af.write_to(tmp_path / 'file_2.asdf')
+    f3_model = utils.mk_level2_image(shape=(30, 30))
+    f3_model.data = 2.0 * np.ones(shape=(30, 30), dtype=f3_model.data.dtype)
+    f3_model.meta.filename = 'file_3.asdf'
+    f3_af = asdf.AsdfFile()
+    f3_af.tree = {'roman': f3_model}
+    f3_af.write_to(tmp_path / 'file_3.asdf')
+    f4_model = utils.mk_level2_image(shape=(40, 40))
+    f4_model.data = 4.0 * np.ones(shape=(40, 40), dtype=f4_model.data.dtype)
+    f4_model.meta.filename = 'file_4.asdf'
+    f4_af = asdf.AsdfFile()
+    f4_af.tree = {'roman': f4_model}
+    f4_af.write_to(tmp_path / 'file_4.asdf')
+
+    model_container = datamodels.ModelContainerModel(asn_file_path=tmp_path/'asn.json', iscopy=True, model_file_path = str(tmp_path)+'/')
+
+    assert type(model_container) == datamodels.ModelContainerModel
+
+    assert len(model_container) == 5
+    assert model_container[0].meta.filename == 'file_0.asdf'
+    assert type(model_container[0]) == datamodels.ImageModel
+    assert model_container[0].data.shape == (20, 20)
+    assert model_container[0].data[2][4] == 0
+
+    assert model_container[1].meta.filename == 'file_1.asdf'
+    assert type(model_container[1]) == datamodels.FlatRefModel
+    assert model_container[1].data.shape == (20, 20)
+    assert model_container[1].data[2][4] == 0
+
+    assert model_container[2].meta.filename == 'file_2.asdf'
+    assert type(model_container[2]) == datamodels.PixelareaRefModel
+    assert model_container[2].data.shape == (20, 20)
+    assert model_container[2].data[2][4] == 0
+
+    assert model_container[3].meta.filename == 'file_3.asdf'
+    assert type(model_container[3]) == datamodels.ImageModel
+    assert model_container[3].data.shape == (30, 30)
+    assert model_container[3].data[2][4] == 2.0
+
+    assert model_container[4].meta.filename == 'file_4.asdf'
+    assert type(model_container[4]) == datamodels.ImageModel
+    assert model_container[4].data.shape == (40, 40)
+    assert model_container[4].data[2][4] == 4.0
+
+
+#
+# def test_opening_model_container_ref(tmp_path):
+#     # First make test reference file
+#     file_path = tmp_path / 'testassociations.asdf'
+#     utils.mk_associations(filepath=file_path)
+#     association = datamodels.open(file_path)
+#     assert association.program == 1
+#     assert isinstance(association, datamodels.AssociationsModel)
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Testing all reference file schemas

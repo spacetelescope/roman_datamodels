@@ -7,13 +7,16 @@ keep consistency with the JWST data model version.
 It is to be subclassed by the various types of data model variants for products
 '''
 from pathlib import PurePath
+import builtins
 import datetime
 import sys
 import asdf
 import os
 import os.path
 import copy
+import json
 import numpy as np
+from collections.abc import Sequence
 from astropy.time import Time
 from asdf.fits_embed import AsdfInFits
 from . import stnode
@@ -298,6 +301,57 @@ class RampFitOutputModel(DataModel):
 
 class GuidewindowModel(DataModel):
     pass
+
+
+class ModelContainerModel(DataModel, Sequence):
+    # Needs a number of methods to properly handle the contents
+    def __init__(self, init=None, asn_schema= None, asn_file_path=None, model_file_path=None, iscopy=False, **kwargs):
+        # __init__(self, init=None, asn_exptypes=None, asn_n_members=None,
+        #                  iscopy=False, **kwargs):
+        super().__init__(init=None, **kwargs)
+
+        self._models = []
+        self._iscopy = iscopy
+        # self.asn_exptypes = asn_exptypes
+        # self.asn_n_members = asn_n_members
+        # self.asn_table = {}
+        # self.asn_table_name = None
+        # self.asn_pool_name = None
+
+        self._memmap = kwargs.get("memmap", False)
+        self._return_open = kwargs.get('return_open', True)
+        self._save_open = kwargs.get('save_open', True)
+
+        if asn_file_path:
+            with builtins.open(asn_file_path, 'r') as asn_file:
+                asn_schema = json.load(asn_file)
+
+        for product in asn_schema['products']:
+            for member in product['members']:
+                if self._iscopy:
+                    member_model = open(model_file_path + member['expname'])
+                else:
+                    member_model = "null"
+
+                self._models.append(
+                    # {
+                    #     "name" : member['expname'],
+                    #     "datamodel" : member_model
+                    # }
+                    member_model
+                )
+
+    def __len__(self):
+        return len(self._models)
+
+    def __getitem__(self, index):
+        m = self._models[index]
+        if not isinstance(m, DataModel) and self._return_open:
+            m = open(m, memmap=self._memmap)
+        return m
+
+
+
 
 
 class FlatRefModel(DataModel):
