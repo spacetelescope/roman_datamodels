@@ -24,7 +24,7 @@ Some of the most relevant methods are:
 - **save:** save in a new file
 - **close:** 
 - **get_primary_array_name:** the attribute name of the primary array
-- **shape: shape of primary array
+- **shape**: shape of primary array
 - **to_flat_dict:** return all items as a flat dictionary with keys as dotted
   attribute paths such as ``meta.observation.date``
 - **items:** return all items as a list of key, value pairs, with keys expressed as
