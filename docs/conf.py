@@ -22,12 +22,12 @@ import sphinx
 import stsci_rtd_theme
 import tomli
 
+
 def setup(app):
     try:
         app.add_css_file("stsci.css")
     except AttributeError:
         app.add_stylesheet("stsci.css")
-
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
