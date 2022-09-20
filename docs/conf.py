@@ -122,8 +122,8 @@ suppress_warnings = ['app.add_directive', ]
 
 # General information about the project
 project = setup_cfg['name']
-author = setup_cfg['authors'][0]['name']
-copyright = '{0}, {1}'.format(datetime.datetime.now().year, author)
+author = author = f'{setup_cfg["authors"][0]["name"]} <{setup_cfg["authors"][0]["email"]}>'
+copyright = f'{datetime.datetime.now().year}, {author}'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
