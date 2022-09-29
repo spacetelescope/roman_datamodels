@@ -10,7 +10,7 @@ format.
 
 Each model instance is created to contain a variety of attributes and data that
 are needed for analysis or to propagate information about the file and the
-contents of the file. For example, the ``ImageModel`` class
+contents of the file. For example, the `roman_datamodels.datamodels.ImageModel` class
 has the following arrays associated with it:
 
     - ``data``: The science data
