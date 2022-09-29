@@ -226,9 +226,9 @@ class DataModel:
         """
         Iterates over all of the model items in a flat way.
 
-        Each element is a pair (`key`, `value`).  Each `key` is a
+        Each element is a pair (``key``, ``value``).  Each ``key`` is a
         dot-separated name.  For example, the schema element
-        `meta.observation.date` will end up in the result as::
+        ``meta.observation.date`` will end up in the result as::
 
             ("meta.observation.date": "2012-04-22T03:22:05.432")
 
@@ -364,15 +364,15 @@ def open(init, memmap=False, target=None, **kwargs):
 
     Parameters
     ----------
-    init :
+    init : str, `DataModel`, `asdf.AsdfFile`
         May be any one of the following types:
-            - AsdfFile instance
+            - `asdf.AsdfFile` instance
             - string indicating the path to an ASDF file
-            - Roman data model instance
+            - `DataModel` Roman data model instance
     memmap : bool
         Open ASDF file binary data using memmap (default: False)
-    target : DataModel class
-        If not None value, the DataModel implied by the init argument
+    target : `DataModel`
+        If not None value, the `DataModel` implied by the init argument
         must be an instance of the target class. If the init value
         is already a data model, and matches the target, the init
         value is returned, not copied, as opposed to the case where
@@ -381,7 +381,7 @@ def open(init, memmap=False, target=None, **kwargs):
 
     Returns
     -------
-    Roman DataModel instance
+    `DataModel`
     """
     if target is not None:
         if not issubclass(target, DataModel):

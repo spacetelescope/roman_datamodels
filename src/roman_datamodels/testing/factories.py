@@ -1376,7 +1376,7 @@ def create_node(node_class, **kwargs):
 
     Returns
     -------
-    roman_datamodels.stnode.TaggedObjectNode
+    `roman_datamodels.stnode.TaggedObjectNode`
     """
     method_name = "create_" + _camel_case_to_snake_case(node_class.__name__)
     if not method_name in globals():

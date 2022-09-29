@@ -11,11 +11,13 @@ def check(init: Union[os.PathLike, Path, io.FileIO]) -> str:
     Parameters
     ----------
 
-    init : file path or file object
+    init : str
+        file path or file object
 
     Returns
     -------
-    file_type: a string with the file type ("asdf" or "asn")
+    file_type: str
+        a string with the file type ("asdf" or "asn")
 
     """
 

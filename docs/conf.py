@@ -65,7 +65,8 @@ intersphinx_mapping = {
     'numpy': ('https://numpy.org/devdocs', None),
     'scipy': ('http://scipy.github.io/devdocs', None),
     'matplotlib': ('http://matplotlib.org/', None),
-    }
+    'asdf': ('https://asdf.readthedocs.io', None),
+}
 
 if sys.version_info[0] == 2:
     intersphinx_mapping['python'] = ('http://docs.python.org/2/', None)
