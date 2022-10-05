@@ -422,9 +422,9 @@ def check_memory_allocation(shape, allowed=None, model_type=None, include_swap=T
 
     allowed : number or None
         Fraction of memory allowed to be allocated.
-        If None, the environmental variable `DMODEL_ALLOWED_MEMORY`
+        If None, the environmental variable ``DMODEL_ALLOWED_MEMORY``
         is retrieved. If undefined, then no check is performed.
-        `1.0` would be all available memory. `0.5` would be half available memory.
+        ``1.0`` would be all available memory. ``0.5`` would be half available memory.
 
     model_type : DataModel or None
         The desired model to instantiate.
@@ -435,7 +435,7 @@ def check_memory_allocation(shape, allowed=None, model_type=None, include_swap=T
 
     Returns
     -------
-    can_instantiate, required_memory : bool, number
+    can_instantiate, required_memory : bool, numbers.Number
         True if the model can be instantiated and the predicted memory footprint.
     """
     # Determine desired allowed amount.
@@ -490,7 +490,7 @@ def get_available_memory(include_swap=True):
 
     Returns
     -------
-    available : number
+    available : numbers.Number
         The amount available.
     """
     system = platform_system()
@@ -517,7 +517,7 @@ def get_available_memory_linux(include_swap=True):
 
     Returns
     -------
-    available : number
+    available : numbers.Number
         The amount available.
     """
     vm_stats = psutil.virtual_memory()

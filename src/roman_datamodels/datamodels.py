@@ -201,7 +201,7 @@ class DataModel:
         Returns a dictionary of all of the model items as a flat dictionary.
 
         Each dictionary key is a dot-separated name.  For example, the
-        model element `meta.observation.date` will end up in the
+        model element ``meta.observation.date`` will end up in the
         dictionary as::
 
             { "meta.observation.date": "2012-04-22T03:22:05.432" }

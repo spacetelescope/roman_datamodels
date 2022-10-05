@@ -13,14 +13,13 @@
 
 import datetime
 import importlib
-import sys
 import os
-from distutils.version import LooseVersion
+import sys
 from configparser import ConfigParser
+from distutils.version import LooseVersion
 
 import sphinx
 import stsci_rtd_theme
-import sphinx_astropy
 
 
 def setup(app):
@@ -31,7 +30,6 @@ def setup(app):
 
 
 conf = ConfigParser()
-
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -66,6 +64,7 @@ intersphinx_mapping = {
     'scipy': ('http://scipy.github.io/devdocs', None),
     'matplotlib': ('http://matplotlib.org/', None),
     'asdf': ('https://asdf.readthedocs.io', None),
+    'psutil': ('https://psutil.readthedocs.io', None),
 }
 
 if sys.version_info[0] == 2:
@@ -93,8 +92,7 @@ extensions = [
     'sphinx_automodapi.autodoc_enhancements',
     'sphinx_automodapi.smart_resolver',
     'sphinx_asdf',
-    ]
-
+]
 
 if on_rtd:
     extensions.append('sphinx.ext.mathjax')
@@ -103,7 +101,6 @@ elif LooseVersion(sphinx.__version__) < LooseVersion('1.4'):
     extensions.append('sphinx.ext.pngmath')
 else:
     extensions.append('sphinx.ext.imgmath')
-
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
@@ -124,7 +121,6 @@ master_doc = 'index'
 # Suppress the warnings requires Sphinx v1.4.2
 
 suppress_warnings = ['app.add_directive', ]
-
 
 # General information about the project
 project = setup_cfg['name']
@@ -167,7 +163,6 @@ rst_epilog = """.. _roman_datamodels: high-level_API.html"""
 # documents.
 default_role = 'obj'
 
-
 # Don't show summaries of the members in each class along with the
 # class' docstring
 numpydoc_show_class_members = False
@@ -191,7 +186,6 @@ graphviz_dot_args = [
     '-Gfontsize=10',
     '-Gfontname=Helvetica Neue, Helvetica, Arial, sans-serif'
 ]
-
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
@@ -230,7 +224,7 @@ html_theme = 'stsci_rtd_theme'
 # documentation.
 html_theme_options = {
     "collapse_navigation": True
-    }
+}
 #        "nosidebar": "false",
 #        "sidebarbgcolor": "#4db8ff",
 #        "sidebartextcolor": "black",
@@ -310,7 +304,6 @@ html_use_index = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'roman_datamodelsdoc'
 
-
 # -- Options for LaTeX output ---------------------------------------------
 
 # latex_elements = {
@@ -363,16 +356,15 @@ man_pages = [
 # If true, show URL addresses after external links.
 man_show_urls = True
 
-
 # -- Options for Texinfo output -------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'roman_datamodels', u'Roman Datamodels Documentation',
-   u'roman_datamodels', 'roman_datamodels', 'Roman Datamodels Documentation',
-   'Miscellaneous'),
+    ('index', 'roman_datamodels', u'Roman Datamodels Documentation',
+     u'roman_datamodels', 'roman_datamodels', 'Roman Datamodels Documentation',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -459,3 +451,5 @@ epub_exclude_files = ['search.html']
 
 # Enable nitpicky mode - which ensures that all references in the docs resolve.
 nitpicky = True
+nitpick_ignore = ['roman_datamodels.stnode.TaggedObjectNode', 'roman_datamodels.stnode.TaggedListNode',
+                  'roman_datamodels.stnode.TaggedScalarNode', 'astropy.time.core.Time']
