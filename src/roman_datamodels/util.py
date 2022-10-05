@@ -340,10 +340,10 @@ def create_history_entry(description, software=None):
     ----------
     description : str
         Description of the change.
-    software : dict or list of dict
+    software : dict, List[dict]
         A description of the software used.  It should not include
         asdf itself, as that is automatically notated in the
-        `asdf_library` entry.
+        ``asdf_library`` entry.
 
         Each dict must have the following keys:
 
@@ -420,7 +420,7 @@ def check_memory_allocation(shape, allowed=None, model_type=None, include_swap=T
     shape : tuple
         The desired shape of the model.
 
-    allowed : number or None
+    allowed : numbers.Number or None
         Fraction of memory allowed to be allocated.
         If None, the environmental variable ``DMODEL_ALLOWED_MEMORY``
         is retrieved. If undefined, then no check is performed.
@@ -544,7 +544,7 @@ def get_available_memory_darwin(include_swap=True):
 
     Returns
     -------
-    available : number
+    available : numbers.Number
         The amount available.
     """
     vm_stats = psutil.virtual_memory()

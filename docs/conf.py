@@ -451,5 +451,22 @@ epub_exclude_files = ['search.html']
 
 # Enable nitpicky mode - which ensures that all references in the docs resolve.
 nitpicky = True
-nitpick_ignore = ['stnode.TaggedObjectNode', 'stnode.TaggedListNode', 'stnode.TaggedScalarNode',
-                  'astropy.time.core.Time', '_io.FileIO']
+nitpick_ignore = [
+    ('py:class', 'roman_datamodels.stnode.TaggedObjectNode'),
+    ('py:class', 'roman_datamodels.stnode.TaggedListNode'),
+    ('py:class', 'roman_datamodels.stnode.TaggedScalarNode'),
+    ('py:class', 'astropy.time.core.Time'),
+    ('py:class', '_io.FileIO'),
+    ('py:obj', 'roman_datamodels.datamodels.AsdfInFits'),
+    ('py:obj', 'roman_datamodels.datamodels.PurePath'),
+    ('py:obj', 'roman_datamodels.datamodels.Time'),
+    ('py:class', 'roman_datamodels.stnode.DNode'),
+    ('py:class', 'roman_datamodels.stnode.LNode'),
+    ('py:class', 'astropy.time.core.TimeBase'),
+    ('py:class', 'astropy.utils.shapes.ShapedLikeNDArray'),
+    ('py:class', 'astropy.utils.shapes.NDArrayShapeMethods'),
+    ('py:obj', 'roman_datamodels.util.locate'),
+    ('py:obj', 'roman_datamodels.util.platform_system'),
+    ('py:obj', 'roman_datamodels.validate.AsdfFile'),
+    ('py:obj', 'roman_datamodels.validate.HashableDict'),
+]

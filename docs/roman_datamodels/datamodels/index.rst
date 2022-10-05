@@ -8,3 +8,4 @@ Data Models
    :maxdepth: 2
 
    models.rst
+   developer_api.rst
