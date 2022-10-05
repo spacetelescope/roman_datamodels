@@ -21,7 +21,7 @@ def check(init: Union[os.PathLike, Path, io.FileIO]) -> str:
 
     supported = ('asdf', 'json')
 
-    if isinstance(init, (os.PathLike, Path)):
+    if isinstance(init, (str, os.PathLike, Path)):
         path, ext = os.path.splitext(init)
         ext = ext.strip('.')
 
@@ -39,8 +39,7 @@ def check(init: Union[os.PathLike, Path, io.FileIO]) -> str:
             return 'asn'
 
         return ext
-
-    if hasattr(init, "read") and hasattr(init, "seek"):
+    elif hasattr(init, "read") and hasattr(init, "seek"):
         magic = init.read(5)
         init.seek(0, 0)
 
@@ -51,5 +50,5 @@ def check(init: Union[os.PathLike, Path, io.FileIO]) -> str:
             return "asdf"
 
         return "asn"
-
-    raise ValueError(f"Cannot get file type of {str(init)}")
+    else:
+        raise ValueError(f"Cannot get file type of {str(init)}")
