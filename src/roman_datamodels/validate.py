@@ -10,6 +10,12 @@ from asdf.util import HashableDict
 from asdf import yamlutil
 
 
+__all__ = [
+    'ValidationWarning',
+    'value_change',
+]
+
+
 class ValidationWarning(Warning):
     pass
 

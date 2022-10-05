@@ -59,20 +59,18 @@ def check_sphinx_version(expected_version):
 
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://numpy.org/devdocs/', None),
-    'scipy': ('http://scipy.github.io/devdocs/', None),
-    'matplotlib': ('https://matplotlib.org/stable/', None),
+    'python': ('https://docs.python.org/3/',
+               (None, 'http://data.astropy.org/intersphinx/python3.inv')),
+    'numpy': ('https://numpy.org/doc/stable/',
+              (None, 'http://data.astropy.org/intersphinx/numpy.inv')),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/',
+              (None, 'http://data.astropy.org/intersphinx/scipy.inv')),
+    'matplotlib': ('https://matplotlib.org/stable/',
+                   (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),
+    'astropy': ('https://docs.astropy.org/en/stable/', None),
     'asdf': ('https://asdf.readthedocs.io/en/stable/', None),
     'psutil': ('https://psutil.readthedocs.io/en/stable/', None),
 }
-
-if sys.version_info[0] == 2:
-    intersphinx_mapping['python'] = ('http://docs.python.org/2/', None)
-    intersphinx_mapping['pythonloc'] = (
-        'http://docs.python.org/',
-        os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                     'local/python2_local_links.inv')))
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -452,21 +450,5 @@ epub_exclude_files = ['search.html']
 # Enable nitpicky mode - which ensures that all references in the docs resolve.
 nitpicky = True
 nitpick_ignore = [
-    ('py:class', 'roman_datamodels.stnode.TaggedObjectNode'),
-    ('py:class', 'roman_datamodels.stnode.TaggedListNode'),
-    ('py:class', 'roman_datamodels.stnode.TaggedScalarNode'),
-    ('py:class', 'astropy.time.core.Time'),
     ('py:class', '_io.FileIO'),
-    ('py:obj', 'roman_datamodels.datamodels.AsdfInFits'),
-    ('py:obj', 'roman_datamodels.datamodels.PurePath'),
-    ('py:obj', 'roman_datamodels.datamodels.Time'),
-    ('py:class', 'roman_datamodels.stnode.DNode'),
-    ('py:class', 'roman_datamodels.stnode.LNode'),
-    ('py:class', 'astropy.time.core.TimeBase'),
-    ('py:class', 'astropy.utils.shapes.ShapedLikeNDArray'),
-    ('py:class', 'astropy.utils.shapes.NDArrayShapeMethods'),
-    ('py:obj', 'roman_datamodels.util.locate'),
-    ('py:obj', 'roman_datamodels.util.platform_system'),
-    ('py:obj', 'roman_datamodels.validate.AsdfFile'),
-    ('py:obj', 'roman_datamodels.validate.HashableDict'),
 ]
