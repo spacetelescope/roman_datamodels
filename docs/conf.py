@@ -60,11 +60,11 @@ def check_sphinx_version(expected_version):
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://numpy.org/devdocs', None),
-    'scipy': ('http://scipy.github.io/devdocs', None),
-    'matplotlib': ('http://matplotlib.org/', None),
-    'asdf': ('https://asdf.readthedocs.io', None),
-    'psutil': ('https://psutil.readthedocs.io', None),
+    'numpy': ('https://numpy.org/devdocs/', None),
+    'scipy': ('http://scipy.github.io/devdocs/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
+    'asdf': ('https://asdf.readthedocs.io/en/stable/', None),
+    'psutil': ('https://psutil.readthedocs.io/en/stable/', None),
 }
 
 if sys.version_info[0] == 2:
@@ -451,5 +451,5 @@ epub_exclude_files = ['search.html']
 
 # Enable nitpicky mode - which ensures that all references in the docs resolve.
 nitpicky = True
-nitpick_ignore = ['roman_datamodels.stnode.TaggedObjectNode', 'roman_datamodels.stnode.TaggedListNode',
-                  'roman_datamodels.stnode.TaggedScalarNode', 'astropy.time.core.Time']
+nitpick_ignore = ['stnode.TaggedObjectNode', 'stnode.TaggedListNode', 'stnode.TaggedScalarNode',
+                  'astropy.time.core.Time', '_io.FileIO']
