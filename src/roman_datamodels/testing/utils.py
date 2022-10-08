@@ -450,7 +450,8 @@ def mk_level1_science_raw(shape=None, filepath=None):
     else:
         n_ints = shape[0]
 
-    wfi_science_raw['data'] = np.zeros(shape, dtype=np.uint16) * u.meter
+    wfi_science_raw['data'] = u.Quantity(np.zeros(shape, dtype=np.uint16),
+                                         u.meter, dtype=np.uint16)
 
     # add amp 33 ref pix
     wfi_science_raw['amp33'] = np.zeros((n_ints, 4096, 128), dtype=np.uint16)
@@ -947,14 +948,14 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
         shape = (8, 4096, 4096)
 
     # add border reference pixel arrays
-    ramp['border_ref_pix_left'] = np.zeros((shape[0], shape[1], 4),
-                                           dtype=np.float32) * u.meter
-    ramp['border_ref_pix_right'] = np.zeros((shape[0], shape[1], 4),
-                                            dtype=np.float32)  * u.meter
-    ramp['border_ref_pix_top'] = np.zeros((shape[0], 4, shape[2]),
-                                           dtype=np.float32) * u.meter
-    ramp['border_ref_pix_bottom'] = np.zeros((shape[0], 4, shape[2]),
-                                              dtype=np.float32) * u.meter
+    ramp['border_ref_pix_left'] = u.Quantity(np.zeros((shape[0], shape[1], 4), dtype=np.float32),
+                                                      u.meter, dtype=np.float32)
+    ramp['border_ref_pix_right'] = u.Quantity(np.zeros((shape[0], shape[1], 4), dtype=np.float32),
+                                                      u.meter, dtype=np.float32)
+    ramp['border_ref_pix_top'] = u.Quantity(np.zeros((shape[0], 4, shape[2]), dtype=np.float32),
+                                                      u.meter, dtype=np.float32)
+    ramp['border_ref_pix_bottom'] = u.Quantity(np.zeros((shape[0], 4, shape[2]), dtype=np.float32),
+                                                      u.meter, dtype=np.float32)
 
     # and their dq arrays
     ramp['dq_border_ref_pix_left'] = np.zeros((shape[1], 4), dtype=np.uint32)
@@ -966,10 +967,10 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
     amp33_size = (shape[0], 4096, 128)
     ramp['amp33'] = np.zeros(amp33_size, dtype=np.uint16)
 
-    ramp['data'] = np.full(shape, 1.0, dtype=np.float32) * u.meter
+    ramp['data'] = u.Quantity(np.full(shape, 1.0, dtype=np.float32), u.meter, dtype=np.float32)
     ramp['pixeldq'] = np.zeros(shape[1:], dtype=np.uint32)
     ramp['groupdq'] = np.zeros(shape, dtype=np.uint8)
-    ramp['err'] = np.zeros(shape, dtype=np.float32) * u.meter
+    ramp['err'] = u.Quantity(np.zeros(shape, dtype=np.float32), u.meter, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
