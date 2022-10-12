@@ -9,6 +9,8 @@ class Unit(u.Unit):
     Class for the non-VOunits, which need to be serialized by Roman.
     """
 
+    _tag = "asdf://stsci.edu/datamodels/roman/tags/unit-1.0.0"
+
     def __init__(self, st, represents=None, doc=None, format=None, namespace=None):
         super().__init__(st, represents=represents, doc=doc, format=format, namespace=namespace)
 

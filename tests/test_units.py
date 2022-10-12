@@ -1,4 +1,4 @@
-from numpy import isin
+import asdf
 import pytest
 
 from astropy import units as u
@@ -33,3 +33,16 @@ def test_string(unit):
     astropy_unit = getattr(u, unit)
 
     assert roman_unit.to_string() == astropy_unit.to_string() == unit
+
+
+@pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
+def test_serialization(unit, tmp_path):
+    roman_unit = getattr(units, unit)
+
+    file_path = tmp_path / "test.asdf"
+    with asdf.AsdfFile() as af:
+        af["unit"] = roman_unit
+        af.write_to(file_path)
+
+    with asdf.open(file_path) as af:
+        assert af["unit"] == roman_unit
