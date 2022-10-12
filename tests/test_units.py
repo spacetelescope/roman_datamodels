@@ -11,7 +11,7 @@ def test_RomanUnit_fail():
 
 
 @pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
-def test_units(unit):
+def test_roman_datamodels_unit(unit):
     roman_unit = getattr(units, unit)
     astropy_unit = getattr(u, unit)
 
@@ -36,7 +36,7 @@ def test_string(unit):
 
 
 @pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
-def test_serialization(unit, tmp_path):
+def test_unit_serialization(unit, tmp_path):
     roman_unit = getattr(units, unit)
 
     file_path = tmp_path / "test.asdf"
@@ -46,3 +46,17 @@ def test_serialization(unit, tmp_path):
 
     with asdf.open(file_path) as af:
         assert af["unit"] == roman_unit
+
+
+@pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
+def test_quantity_serialization(unit, tmp_path):
+    quantity = 3.14 * getattr(units, unit)
+
+    file_path = tmp_path / "test.asdf"
+    with asdf.AsdfFile() as af:
+        af["quantity"] = quantity
+        af.write_to(file_path)
+
+    with asdf.open(file_path) as af:
+        assert af["quantity"] == quantity
+        assert isinstance(af["quantity"].unit, units.Unit)

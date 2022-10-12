@@ -11,9 +11,6 @@ class Unit(u.Unit):
 
     _tag = "asdf://stsci.edu/datamodels/roman/tags/unit-1.0.0"
 
-    def __init__(self, st, represents=None, doc=None, format=None, namespace=None):
-        super().__init__(st, represents=represents, doc=doc, format=format, namespace=namespace)
-
 
 def def_roman_unit(symbol):
     """
