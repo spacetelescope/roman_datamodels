@@ -2,6 +2,7 @@ import asdf
 import pytest
 
 from roman_datamodels import stnode
+from roman_datamodels import units
 from roman_datamodels.testing import assert_node_equal, create_node
 
 
@@ -10,11 +11,17 @@ def test_generated_node_classes(manifest):
         class_name = stnode._class_name_from_tag_uri(tag["tag_uri"])
         node_class = getattr(stnode, class_name)
 
-        assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode))
+        assert issubclass(node_class, (
+            stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode, stnode.Unit
+        ))
         assert node_class._tag == tag["tag_uri"]
         assert tag["description"] in node_class.__doc__
         assert tag["tag_uri"] in node_class.__doc__
-        assert node_class.__module__ == stnode.__name__
+        if issubclass(node_class, stnode.Unit):
+            assert issubclass(node_class, units.Unit)
+            assert node_class.__module__ == units.__name__
+        else:
+            assert node_class.__module__ == stnode.__name__
         assert node_class.__name__ in stnode.__all__
 
 
