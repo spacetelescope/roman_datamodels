@@ -1420,3 +1420,9 @@ def create_ref_file(**kwargs):
     raw.update(kwargs)
 
     return stnode.RefFile(raw)
+
+
+def create_unit(**kwargs):
+    import roman_datamodels.units as u
+
+    return u.DN

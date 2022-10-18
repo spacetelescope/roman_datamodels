@@ -16,6 +16,7 @@ def test_filetype():
     file_6 = filetype.check(open(DATA_DIRECTORY / 'pluto.asdf', 'rb'))
     file_7 = filetype.check(DATA_DIRECTORY / 'fake.asdf')
     file_8 = filetype.check(open(DATA_DIRECTORY / 'fake.asdf'))
+    file_9 = filetype.check(str(DATA_DIRECTORY / 'pluto.asdf'))
 
     assert file_1 == 'asn'
     assert file_2 == 'asn'
@@ -26,6 +27,7 @@ def test_filetype():
     assert file_6 == 'asdf'
     assert file_7 == 'asdf'
     assert file_8 == 'asn'
+    assert file_9 == 'asdf'
 
     with pytest.raises(ValueError):
         filetype.check(DATA_DIRECTORY / 'empty.txt')
