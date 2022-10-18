@@ -136,35 +136,49 @@ def _random_bool():
     return _random_choice(*[True, False])
 
 
-def _random_array_float32(size=(4096, 4096), min=None, max=None):
+def _random_array_float32(size=(4096, 4096), min=None, max=None, units=None):
     if min is None:
         min = np.finfo("float32").min
     if max is None:
         max = np.finfo("float32").max
-    array = np.random.default_rng().random(size=size, dtype=np.float32)
-    return min + max * array - min * array
 
-def _random_array_uint8(size=(4096, 4096), min=None, max=None):
+    array = np.random.default_rng().random(size=size, dtype=np.float32)
+    array = min + max * array - min * array
+    if units:
+        array = u.Quantity(array, units, dtype=np.float32)
+    #return min + max * array - min * array
+    return array
+
+def _random_array_uint8(size=(4096, 4096), min=None, max=None, units=None):
     if min is None:
         min = np.iinfo("uint8").min
     if max is None:
         max = np.iinfo("uint8").max
-    return np.random.randint(min, high=max, size=size, dtype=np.uint8)
+    array = np.random.randint(min, high=max, size=size, dtype=np.uint8)
+    if units:
+        array = u.Quantity(array, units, dtype=np.uint8)
+    return array
 
-def _random_array_uint16(size=(4096, 4096), min=None, max=None):
+def _random_array_uint16(size=(4096, 4096), min=None, max=None, units=None):
     if min is None:
         min = np.iinfo("uint16").min
     if max is None:
         max = np.iinfo("uint16").max
-    return np.random.randint(min, high=max, size=size, dtype=np.uint16)
+    array = np.random.randint(min, high=max, size=size, dtype=np.uint16)
+    if units:
+        array = u.Quantity(array, units, dtype=np.uint16)
+    return array
 
 
-def _random_array_uint32(size=(4096, 4096), min=None, max=None):
+def _random_array_uint32(size=(4096, 4096), min=None, max=None, units=None):
     if min is None:
         min = np.iinfo("uint32").min
     if max is None:
         max = np.iinfo("uint32").max
-    return np.random.randint(min, high=max, size=size, dtype=np.uint32)
+    array = np.random.randint(min, high=max, size=size, dtype=np.uint32)
+    if units:
+        array = u.Quantity(array, units, dtype=np.uint32)
+    return array
 
 
 def _random_exposure_type():
@@ -1030,15 +1044,15 @@ def create_ramp(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "data": _random_array_float32((2, 4096, 4096)),
+        "data": _random_array_float32((2, 4096, 4096), units=u.electron/u.s),
         "pixeldq": _random_array_uint32((4096, 4096)),
         "groupdq": _random_array_uint8((2, 4096, 4096)),
-        "err": _random_array_float32(size=(2, 4096, 4096),min=0.0),
-        "amp33": _random_array_uint16((2, 4096, 128)),
-        "border_ref_pix_right": _random_array_float32((2, 4096, 4)),
-        "border_ref_pix_left": _random_array_float32((2, 4096, 4)),
-        "border_ref_pix_top": _random_array_float32((2, 4, 4096)),
-        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096)),
+        "err": _random_array_float32(size=(2, 4096, 4096),min=0.0, units=u.electron/u.s),
+        "amp33": _random_array_uint16((2, 4096, 128), units=u.DN),
+        "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=u.DN),
+        "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=u.DN),
+        "border_ref_pix_top": _random_array_float32((2, 4, 4096), units=u.DN),
+        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096), units=u.DN),
         "dq_border_ref_pix_right": _random_array_uint32((4096, 4)),
         "dq_border_ref_pix_left": _random_array_uint32((4096, 4)),
         "dq_border_ref_pix_top": _random_array_uint32((4, 4096)),
@@ -1071,11 +1085,11 @@ def create_ramp_fit_output(**kwargs):
         "sigslope": _random_array_float32(seg_shape),
         "yint": _random_array_float32(seg_shape),
         "sigyint": _random_array_float32(seg_shape),
-        "pedestal": _random_array_float32(seg_shape[1:]),
+        "pedestal": _random_array_float32(seg_shape[1:], units=u.electron / u.s),
         "weights": _random_array_float32(seg_shape),
-        "crmag": _random_array_float32(seg_shape),
-        "var_poisson": _random_array_float32(seg_shape),
-        "var_rnoise": _random_array_float32(seg_shape),
+        "crmag": u.Magnitude(_random_array_float32(seg_shape) * u.ct/u.s, dtype=np.float32),
+        "var_poisson": _random_array_float32(seg_shape, units=u.electron / u.s),
+        "var_rnoise": _random_array_float32(seg_shape, units=u.electron / u.s),
     }
     raw.update(kwargs)
 
@@ -1101,9 +1115,9 @@ def create_guidewindow(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "pedestal_frames": _random_array_uint16(seg_shape),
-        "signal_frames": _random_array_uint16(seg_shape),
-        "amp33": _random_array_uint16(seg_shape),
+        "pedestal_frames": _random_array_uint16(seg_shape, units=u.DN),
+        "signal_frames": _random_array_uint16(seg_shape, units=u.DN),
+        "amp33": _random_array_uint16(seg_shape, units=u.DN),
     }
     raw.update(kwargs)
 
@@ -1284,18 +1298,18 @@ def create_wfi_image(**kwargs):
     """
 
     raw = {
-        "data": _random_array_float32((4088, 4088)),
+        "data": _random_array_float32((4088, 4088), units=u.electron / u.s),
         "dq": _random_array_uint32((4088, 4088)),
-        "err": _random_array_float32((4088, 4088), min=0.0),
+        "err": _random_array_float32((4088, 4088), min=0.0, units=u.electron / u.s),
         "meta": create_meta(),
-        "var_flat": _random_array_float32((4088, 4088)),
-        "var_poisson": _random_array_float32((4088, 4088)),
-        "var_rnoise": _random_array_float32((4088, 4088)),
-        "amp33": _random_array_uint16((2, 4096, 128)),
-        "border_ref_pix_right": _random_array_float32((2, 4096, 4)),
-        "border_ref_pix_left": _random_array_float32((2, 4096, 4)),
-        "border_ref_pix_top": _random_array_float32((2, 4, 4096)),
-        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096)),
+        "var_flat": _random_array_float32((4088, 4088), units=u.electron / u.s),
+        "var_poisson": _random_array_float32((4088, 4088), units=u.electron / u.s),
+        "var_rnoise": _random_array_float32((4088, 4088), units=u.electron / u.s),
+        "amp33": _random_array_uint16((2, 4096, 128), units=u.DN),
+        "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=u.DN),
+        "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=u.DN),
+        "border_ref_pix_top": _random_array_float32((2, 4, 4096), units=u.DN),
+        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096), units=u.DN),
         "dq_border_ref_pix_right": _random_array_uint32((4096, 4)),
         "dq_border_ref_pix_left": _random_array_uint32((4096, 4)),
         "dq_border_ref_pix_top": _random_array_uint32((4, 4096)),
@@ -1348,8 +1362,8 @@ def create_wfi_science_raw(**kwargs):
     """
     raw = {
         # TODO: What should this shape be?
-        "data": _random_array_uint16((2, 4096, 4096)),
-        "amp33": _random_array_uint16((2, 4096, 128)),
+        "data": _random_array_uint16((2, 4096, 4096), units=u.DN),
+        "amp33": _random_array_uint16((2, 4096, 128), units=u.DN),
         "meta": create_meta(),
     }
     raw.update(kwargs)
