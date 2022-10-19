@@ -22,7 +22,7 @@ from .validate import _check_type, ValidationWarning, _error_message
 import rad.resources
 from .stuserdict import STUserDict as UserDict
 
-from roman_datamodels.units import Unit
+from roman_datamodels.units import Unit, CompositeUnit
 
 if sys.version_info < (3, 9):
     import importlib_resources
@@ -532,9 +532,17 @@ class UnitConverter(Converter):
 
     @property
     def types(self):
-        return list(_UNIT_NODE_CLASSES_BY_TAG.values())
+        return [Unit, CompositeUnit]
 
     def to_yaml_tree(self, obj, tag, ctx):
+        if isinstance(obj, Unit):
+            return self._base_to_yaml_tree(obj, tag, ctx)
+        elif isinstance(obj, CompositeUnit):
+            return self._composite_to_yaml_tree(obj, tag, ctx)
+        else:
+            raise TypeError(f"Unsupported type {type(obj)}")
+
+    def _base_to_yaml_tree(self, obj, tag, ctx):
         import roman_datamodels.units as units
 
         unit = obj.to_string()
@@ -543,10 +551,31 @@ class UnitConverter(Converter):
         else:
             raise ValueError(f"Unit {unit} is not a valid Roman unit")
 
+    def _composite_to_yaml_tree(self, obj, tag, ctx):
+        from astropy.units import UnitsError
+
+        for unit in obj.bases:
+            if isinstance(unit, Unit):
+                self._base_to_yaml_tree(unit, tag, ctx)
+            else:
+                try:
+                    unit.to_string(format="vounit")
+                except (UnitsError, ValueError) as e:
+                    raise ValueError(f"Unit '{unit}' is not representable as VOUnit and cannot be serialized to ASDF") from e
+
+        return obj.to_string()
+
+
     def from_yaml_tree(self, node, tag, ctx):
         import roman_datamodels.units as units
 
-        return getattr(units, node)
+        if (unit := getattr(units, node, None)) is not None:
+            return unit
+
+        unit = Unit(node, parse_strict="silent")
+        bases = [getattr(units, base.to_string(), base) for base in unit.bases]
+
+        return CompositeUnit(unit.scale, bases, unit.powers)
 
 
 _DATAMODELS_MANIFEST_PATH = importlib_resources.files(
