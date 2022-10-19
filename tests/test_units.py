@@ -169,3 +169,43 @@ def test_roman_unit_mul_astropy_unit(unit, tmp_path):
         assert isinstance(uu, u.NamedUnit) and not isinstance(uu, units.Unit)
         assert uu == u.s
         assert af["composite"].powers[1] == 1
+
+
+def test_force_roman_unit():
+    # Roman units
+    for unit in units.ROMAN_UNIT_SYMBOLS:
+        # Basic conversion
+        assert isinstance(units.force_roman_unit(getattr(units, unit)), units.Unit)
+        assert isinstance(units.force_roman_unit(getattr(u, unit)), units.Unit)
+
+        # Powers
+        assert isinstance(units.force_roman_unit(getattr(units, unit) ** -1), units.CompositeUnit)
+        assert isinstance(units.force_roman_unit(getattr(u, unit) ** -1), units.CompositeUnit)
+
+        # Division
+        assert isinstance(units.force_roman_unit(getattr(units, unit) / u.s), units.CompositeUnit)
+        assert isinstance(units.force_roman_unit(getattr(u, unit) / u.s), units.CompositeUnit)
+        assert isinstance(units.force_roman_unit(u.s / getattr(units, unit)), units.CompositeUnit)
+        assert isinstance(units.force_roman_unit(u.s / getattr(u, unit)), units.CompositeUnit)
+
+        # Multiplication
+        assert isinstance(units.force_roman_unit(getattr(units, unit) * u.s), units.CompositeUnit)
+        assert isinstance(units.force_roman_unit(getattr(u, unit) * u.s), units.CompositeUnit)
+        assert isinstance(units.force_roman_unit(u.s * getattr(units, unit)), units.CompositeUnit)
+        assert isinstance(units.force_roman_unit(u.s * getattr(u, unit)), units.CompositeUnit)
+
+    # Non-Roman units
+    for unit in [u.m, u.kg]:
+        # Basic conversion
+        assert isinstance(uu := units.force_roman_unit(unit), u.NamedUnit) and not isinstance(uu, units.Unit)
+
+        # Powers
+        assert isinstance(units.force_roman_unit(unit ** -1), u.CompositeUnit) and not isinstance(uu, units.CompositeUnit)
+
+        # Division
+        assert isinstance(units.force_roman_unit(unit / u.s), u.CompositeUnit) and not isinstance(uu, units.CompositeUnit)
+        assert isinstance(units.force_roman_unit(u.s / unit), u.CompositeUnit) and not isinstance(uu, units.CompositeUnit)
+
+        # Multiplication
+        assert isinstance(units.force_roman_unit(unit * u.s), u.CompositeUnit) and not isinstance(uu, units.CompositeUnit)
+        assert isinstance(units.force_roman_unit(u.s * unit), u.CompositeUnit) and not isinstance(uu, units.CompositeUnit)
