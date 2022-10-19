@@ -18,11 +18,12 @@ import asdf.schema as asdfschema
 import asdf.yamlutil as yamlutil
 from asdf.util import HashableDict
 from asdf.tags.core import ndarray
+
 from .validate import _check_type, ValidationWarning, _error_message
 import rad.resources
 from .stuserdict import STUserDict as UserDict
 
-from roman_datamodels.units import Unit, CompositeUnit
+from roman_datamodels.units import Unit, CompositeUnit, force_roman_unit
 
 if sys.version_info < (3, 9):
     import importlib_resources
@@ -49,6 +50,7 @@ _VALID_TELESCOPE = ["ROMAN"]
 
 
 _UNIT_NODE_CLASSES_BY_TAG = {Unit._tag: Unit}
+
 
 
 def set_validate(value):
@@ -567,15 +569,10 @@ class UnitConverter(Converter):
 
 
     def from_yaml_tree(self, node, tag, ctx):
-        import roman_datamodels.units as units
+        import astropy.units as u
+        from roman_datamodels.units import force_roman_unit
 
-        if (unit := getattr(units, node, None)) is not None:
-            return unit
-
-        unit = Unit(node, parse_strict="silent")
-        bases = [getattr(units, base.to_string(), base) for base in unit.bases]
-
-        return CompositeUnit(unit.scale, bases, unit.powers)
+        return force_roman_unit(u.Unit(node, parse_strict="silent"))
 
 
 _DATAMODELS_MANIFEST_PATH = importlib_resources.files(

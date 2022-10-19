@@ -84,5 +84,33 @@ def def_roman_unit(symbol):
     return Unit(symbol, represents=represents, namespace=globals())
 
 
+def force_roman_unit(unit):
+    """
+    Force a unit to be a roman unit. If necessary
+
+    Parameters
+    ----------
+
+    unit :
+        The unit to force to be a roman unit
+
+    Returns
+    -------
+        A roman unit version if called for
+    """
+
+    import roman_datamodels.units as units
+    import astropy.units as u
+
+    if (ru := getattr(units, unit.to_string(), None)) is not None:
+        return ru
+    elif isinstance(unit, u.CompositeUnit):
+        bases = [getattr(units, base.to_string(), base) for base in unit.bases]
+        if any([isinstance(base, units.Unit) for base in bases]):
+            return units.CompositeUnit(unit.scale, bases, unit.powers)
+
+    return unit
+
+
 for unit in ROMAN_UNIT_SYMBOLS:
     def_roman_unit(unit)
