@@ -2,6 +2,7 @@
 ===================
 
 - Explicitly add ``gwcs`` to the list of dependencies. [#108]
+- Remove the unused ``stnode_test`` module. [#110]
 
 0.13.0 (2022-08-23)
 ===================
