@@ -122,7 +122,8 @@ suppress_warnings = ['app.add_directive', ]
 
 # General information about the project
 project = setup_cfg['name']
-author = author = f'{setup_cfg["authors"][0]["name"]} <{setup_cfg["authors"][0]["email"]}>'
+primary_author = setup_cfg["authors"][0]
+author = f'{primary_author["name"]} <{primary_author["email"]}>'
 copyright = f'{datetime.datetime.now().year}, {author}'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -130,7 +131,7 @@ copyright = f'{datetime.datetime.now().year}, {author}'
 # built documents.
 #
 # The short X.Y version.
-package = importlib.import_module(setup_cfg['name'])
+package = importlib.import_module(project)
 try:
     version = package.__version__.split('-', 1)[0]
     # The full version, including alpha/beta/rc tags.
