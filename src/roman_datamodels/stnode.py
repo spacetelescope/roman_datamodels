@@ -22,6 +22,7 @@ from asdf.tags.core import ndarray
 from .validate import _check_type, ValidationWarning, _error_message
 import rad.resources
 from .stuserdict import STUserDict as UserDict
+from .units import Unit, CompositeUnit
 
 from roman_datamodels.units import Unit, CompositeUnit, force_roman_unit
 

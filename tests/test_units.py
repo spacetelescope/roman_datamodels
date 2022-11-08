@@ -1,5 +1,4 @@
 import asdf
-from numpy import isin
 import pytest
 
 from astropy import units as u
