@@ -522,7 +522,7 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
 
     # add amp 33 ref pixel array
     amp33_size = (n_ints, 4096, 128)
-    wfi_image['amp33'] = u.Quantity(np.zeros(shape, dtype=np.float32),
+    wfi_image['amp33'] = u.Quantity(np.zeros(amp33_size, dtype=np.float32),
                                          ru.DN, dtype=np.float32)
 
     wfi_image['data'] = u.Quantity(np.zeros(shape, dtype=np.float32),
@@ -1093,7 +1093,6 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow['amp33'] = u.Quantity(np.zeros(shape, dtype=np.uint16),
                                          ru.DN, dtype=np.uint16)
 
-    
     if filepath:
         af = asdf.AsdfFile()
         af.tree = {'roman': guidewindow}
