@@ -457,7 +457,7 @@ def mk_level1_science_raw(shape=None, filepath=None):
     # add amp 33 ref pix
     #wfi_science_raw['amp33'] = np.zeros((n_ints, 4096, 128), dtype=np.uint16)
     #wfi_science_raw['amp33']['units'] = "No units"
-    wfi_science_raw['amp33'] = u.Quantity(np.zeros(shape, dtype=np.uint16),
+    wfi_science_raw['amp33'] = u.Quantity(np.zeros((n_ints, 4096, 128), dtype=np.uint16),
                                          ru.DN, dtype=np.uint16)
 
     if filepath:
@@ -548,11 +548,11 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
     #wfi_image['var_rnoise'] = np.zeros(shape, dtype=np.float32)
     #wfi_image['var_flat'] = np.zeros(shape, dtype=np.float32)
     wfi_image['var_poisson'] = u.Quantity(np.zeros(shape, dtype=np.float32),
-                                         ru.electron / u.s, dtype=np.float32)
+                                         ru.electron**2 / u.s**2, dtype=np.float32)
     wfi_image['var_rnoise'] = u.Quantity(np.zeros(shape, dtype=np.float32),
-                                         ru.electron / u.s, dtype=np.float32)
+                                         ru.electron**2 / u.s**2, dtype=np.float32)
     wfi_image['var_flat'] = u.Quantity(np.zeros(shape, dtype=np.float32),
-                                         ru.electron / u.s, dtype=np.float32)
+                                         ru.electron**2 / u.s**2, dtype=np.float32)
     wfi_image['cal_logs'] = mk_cal_logs()
 
     if filepath:
