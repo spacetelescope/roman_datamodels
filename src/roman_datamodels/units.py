@@ -1,6 +1,9 @@
 from astropy import units as u
 
 
+__all__ = ["Unit"]
+
+
 ROMAN_UNIT_SYMBOLS = ['DN', 'electron']
 
 

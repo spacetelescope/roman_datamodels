@@ -36,7 +36,6 @@ __all__ = [
     "NODE_CLASSES",
     "CalLogs",
     "FileDate",
-    "Unit",
     "DNode",
     "LNode",
     "TaggedObjectNode",
