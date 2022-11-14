@@ -148,7 +148,6 @@ def _random_array_float32(size=(4096, 4096), min=None, max=None, units=None):
     array = min + max * array - min * array
     if units:
         array = u.Quantity(array, units, dtype=np.float32)
-    #return min + max * array - min * array
     return array
 
 def _random_array_uint8(size=(4096, 4096), min=None, max=None, units=None):
@@ -1089,7 +1088,10 @@ def create_ramp_fit_output(**kwargs):
         "sigyint": _random_array_float32(seg_shape),
         "pedestal": _random_array_float32(seg_shape[1:], units=ru.electron / u.s),
         "weights": _random_array_float32(seg_shape),
-        #"crmag": u.Magnitude(_random_array_float32(seg_shape) * u.ct / u.s, dtype=np.float32),
+
+        # Magnitude support does not seem to be implemented in ASDF yet 
+        # "crmag": u.Magnitude(_random_array_float32(seg_shape) * u.ct / u.s, dtype=np.float32),
+
         "crmag": _random_array_float32(seg_shape, units=u.ct/u.s),
         "var_poisson": _random_array_float32(seg_shape, units=ru.electron / u.s),
         "var_rnoise": _random_array_float32(seg_shape, units=ru.electron / u.s),
