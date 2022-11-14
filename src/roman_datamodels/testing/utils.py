@@ -455,8 +455,6 @@ def mk_level1_science_raw(shape=None, filepath=None):
                                          ru.DN, dtype=np.uint16)
 
     # add amp 33 ref pix
-    #wfi_science_raw['amp33'] = np.zeros((n_ints, 4096, 128), dtype=np.uint16)
-    #wfi_science_raw['amp33']['units'] = "No units"
     wfi_science_raw['amp33'] = u.Quantity(np.zeros((n_ints, 4096, 128), dtype=np.uint16),
                                          ru.DN, dtype=np.uint16)
 
@@ -506,15 +504,6 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
         n_ints = 8
 
     # add border reference pixel arrays
-    #wfi_image['border_ref_pix_left'] = np.zeros((n_ints, shape[0] + 8, 4),
-    #                                            dtype=np.float32)
-    #wfi_image['border_ref_pix_right'] = np.zeros((n_ints, shape[0] + 8, 4),
-    #                                            dtype=np.float32)
-    #wfi_image['border_ref_pix_top'] = np.zeros((n_ints, 4, shape[1] + 8),
-    #                                            dtype=np.float32)
-    #wfi_image['border_ref_pix_bottom'] = np.zeros((n_ints, 4, shape[1] + 8),
-    #                                              dtype=np.float32)
-
     wfi_image['border_ref_pix_left'] = u.Quantity(np.zeros(shape, dtype=np.float32),
                                          ru.DN, dtype=np.float32)
     wfi_image['border_ref_pix_right'] = u.Quantity(np.zeros(shape, dtype=np.float32),
@@ -533,20 +522,15 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
 
     # add amp 33 ref pixel array
     amp33_size = (n_ints, 4096, 128)
-    #wfi_image['amp33'] = np.zeros(amp33_size, dtype=np.uint16)
     wfi_image['amp33'] = u.Quantity(np.zeros(shape, dtype=np.float32),
                                          ru.DN, dtype=np.float32)
 
-    #wfi_image['data'] = np.zeros(shape, dtype=np.float32)
     wfi_image['data'] = u.Quantity(np.zeros(shape, dtype=np.float32),
                                          ru.electron / u.s, dtype=np.float32)
     wfi_image['dq'] = np.zeros(shape, dtype=np.uint32)
-    #wfi_image['err'] = np.zeros(shape, dtype=np.float32)
     wfi_image['err'] = u.Quantity(np.zeros(shape, dtype=np.float32),
                                          ru.electron / u.s, dtype=np.float32)
-    #wfi_image['var_poisson'] = np.zeros(shape, dtype=np.float32)
-    #wfi_image['var_rnoise'] = np.zeros(shape, dtype=np.float32)
-    #wfi_image['var_flat'] = np.zeros(shape, dtype=np.float32)
+
     wfi_image['var_poisson'] = u.Quantity(np.zeros(shape, dtype=np.float32),
                                          ru.electron**2 / u.s**2, dtype=np.float32)
     wfi_image['var_rnoise'] = u.Quantity(np.zeros(shape, dtype=np.float32),
@@ -989,8 +973,6 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
     ramp['dq_border_ref_pix_bottom'] = np.zeros((4, shape[2]), dtype=np.uint32)
 
     # add amp 33 ref pixel array
-    #amp33_size = (shape[0], 4096, 128)
-    #ramp['amp33'] = np.zeros(amp33_size, dtype=np.uint16)
     ramp['amp33'] = u.Quantity(np.full(shape, 1.0, dtype=np.float32), ru.DN, dtype=np.float32)
 
     ramp['data'] = u.Quantity(np.full(shape, 1.0, dtype=np.float32), ru.DN, dtype=np.float32)
@@ -1036,8 +1018,6 @@ def mk_rampfitoutput(shape=None, filepath=None):
     rampfitoutput['pedestal'] = u.Quantity(np.zeros(shape[1:], dtype=np.float32),
                                            ru.electron / u.s, dtype=np.float32)
     rampfitoutput['weights'] = np.zeros(shape, dtype=np.float32)
-    #rampfitoutput['crmag'] = u.Magnitude(np.zeros(shape, dtype=np.float32) * u.ct/u.s,
-    #                                     dtype=np.float32)
     rampfitoutput['crmag'] = u.Quantity(np.zeros(shape, dtype=np.float32),
                                         u.ct * u.s, dtype=np.float32)
     rampfitoutput['var_poisson'] = u.Quantity(np.zeros(shape, dtype=np.float32),
@@ -1106,14 +1086,8 @@ def mk_guidewindow(shape=None, filepath=None):
     if not shape:
         shape = (2, 8, 16, 32, 32)
 
-    #guidewindow['pedestal_frames'] = np.zeros(shape, dtype=np.uint16)
-    #guidewindow['signal_frames'] = np.zeros(shape, dtype=np.uint16)
-    #guidewindow['amp33'] = np.zeros(shape, dtype=np.uint16)
-
     guidewindow['pedestal_frames'] = u.Quantity(np.zeros(shape, dtype=np.uint16),
                                          ru.DN, dtype=np.uint16)
-#    guidewindow['pedestal_frames'] = u.Magnitude(np.zeros(shape, dtype=np.uint16) * u.ct/u.s,
-#                                                 dtype=np.uint16)
     guidewindow['signal_frames'] = u.Quantity(np.zeros(shape, dtype=np.uint16),
                                          ru.DN, dtype=np.uint16)
     guidewindow['amp33'] = u.Quantity(np.zeros(shape, dtype=np.uint16),

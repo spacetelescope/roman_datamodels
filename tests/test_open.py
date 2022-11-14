@@ -53,9 +53,10 @@ def test_path_input(tmp_path):
 
 def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
-    #data = np.random.uniform(size=(1024, 1024)).astype(np.float32)
+
     data = u.Quantity(np.random.uniform(size=(1024, 1024)).astype(np.float32),
                       ru.electron/u.s, dtype=np.float32)
+
     with asdf.AsdfFile() as af:
         af.tree = {'roman': utils.mk_level2_image()}
         af.tree['roman'].meta['bozo'] = 'clown'
@@ -85,16 +86,12 @@ def test_memmap(tmp_path):
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
         af.tree = {'roman': utils.mk_level2_image()}
-        #af.tree['roman'].data = np.zeros((400, 400,), dtype=np.float32)
+
         af.tree['roman'].data = u.Quantity(np.zeros((400, 400,), dtype=np.float32),
                                            ru.electron/u.s, dtype=np.float32)
         af.write_to(file_path)
 
     with datamodels.open(file_path, memmap=True) as model:
-        #assert isinstance(model.data.base, np.memmap)
-        #assert isinstance(model.data.value, np.memmap)
-        #assert isinstance(model.data.base, np.memmap)
-        #assert isinstance(model.data.base.value, np.memmap)
         assert isinstance(model.data, np.memmap)
 
     with datamodels.open(file_path, memmap=False) as model:
