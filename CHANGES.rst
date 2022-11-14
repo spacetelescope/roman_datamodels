@@ -1,4 +1,4 @@
-0.14.0 (unreleased)
+0.14.0 (2022-11-14)
 ===================
 
 - Explicitly add ``gwcs`` to the list of dependencies. [#108]
