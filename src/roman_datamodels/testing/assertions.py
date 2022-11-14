@@ -13,9 +13,9 @@ def assert_node_equal(node1, node2):
 
     Parameters
     ----------
-    node1 : TaggedObjectNode
+    node1 : `roman_datamodels.stnode.TaggedObjectNode`
         First node to compare.
-    node2 : TaggedObjectNode
+    node2 : `roman_datamodels.stnode.TaggedObjectNode`
         Second node to compare.
 
     Raises

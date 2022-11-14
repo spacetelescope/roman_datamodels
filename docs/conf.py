@@ -13,14 +13,13 @@
 
 import datetime
 import importlib
-import sys
 import os
-from distutils.version import LooseVersion
+import sys
 from configparser import ConfigParser
+from distutils.version import LooseVersion
 
 import sphinx
 import stsci_rtd_theme
-import sphinx_astropy
 
 
 def setup(app):
@@ -31,7 +30,6 @@ def setup(app):
 
 
 conf = ConfigParser()
-
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -61,18 +59,18 @@ def check_sphinx_version(expected_version):
 
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://numpy.org/devdocs', None),
-    'scipy': ('http://scipy.github.io/devdocs', None),
-    'matplotlib': ('http://matplotlib.org/', None),
-    }
-
-if sys.version_info[0] == 2:
-    intersphinx_mapping['python'] = ('http://docs.python.org/2/', None)
-    intersphinx_mapping['pythonloc'] = (
-        'http://docs.python.org/',
-        os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                     'local/python2_local_links.inv')))
+    'python': ('https://docs.python.org/3/',
+               (None, 'http://data.astropy.org/intersphinx/python3.inv')),
+    'numpy': ('https://numpy.org/doc/stable/',
+              (None, 'http://data.astropy.org/intersphinx/numpy.inv')),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/',
+              (None, 'http://data.astropy.org/intersphinx/scipy.inv')),
+    'matplotlib': ('https://matplotlib.org/stable/',
+                   (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),
+    'astropy': ('https://docs.astropy.org/en/stable/', None),
+    'asdf': ('https://asdf.readthedocs.io/en/stable/', None),
+    'psutil': ('https://psutil.readthedocs.io/en/stable/', None),
+}
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -92,8 +90,7 @@ extensions = [
     'sphinx_automodapi.autodoc_enhancements',
     'sphinx_automodapi.smart_resolver',
     'sphinx_asdf',
-    ]
-
+]
 
 if on_rtd:
     extensions.append('sphinx.ext.mathjax')
@@ -102,7 +99,6 @@ elif LooseVersion(sphinx.__version__) < LooseVersion('1.4'):
     extensions.append('sphinx.ext.pngmath')
 else:
     extensions.append('sphinx.ext.imgmath')
-
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
@@ -123,7 +119,6 @@ master_doc = 'index'
 # Suppress the warnings requires Sphinx v1.4.2
 
 suppress_warnings = ['app.add_directive', ]
-
 
 # General information about the project
 project = setup_cfg['name']
@@ -166,7 +161,6 @@ rst_epilog = """.. _roman_datamodels: high-level_API.html"""
 # documents.
 default_role = 'obj'
 
-
 # Don't show summaries of the members in each class along with the
 # class' docstring
 numpydoc_show_class_members = False
@@ -190,7 +184,6 @@ graphviz_dot_args = [
     '-Gfontsize=10',
     '-Gfontname=Helvetica Neue, Helvetica, Arial, sans-serif'
 ]
-
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
@@ -229,7 +222,7 @@ html_theme = 'stsci_rtd_theme'
 # documentation.
 html_theme_options = {
     "collapse_navigation": True
-    }
+}
 #        "nosidebar": "false",
 #        "sidebarbgcolor": "#4db8ff",
 #        "sidebartextcolor": "black",
@@ -309,7 +302,6 @@ html_use_index = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'roman_datamodelsdoc'
 
-
 # -- Options for LaTeX output ---------------------------------------------
 
 # latex_elements = {
@@ -362,16 +354,15 @@ man_pages = [
 # If true, show URL addresses after external links.
 man_show_urls = True
 
-
 # -- Options for Texinfo output -------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'roman_datamodels', u'Roman Datamodels Documentation',
-   u'roman_datamodels', 'roman_datamodels', 'Roman Datamodels Documentation',
-   'Miscellaneous'),
+    ('index', 'roman_datamodels', u'Roman Datamodels Documentation',
+     u'roman_datamodels', 'roman_datamodels', 'Roman Datamodels Documentation',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -455,3 +446,9 @@ epub_exclude_files = ['search.html']
 
 # If false, no index is generated.
 # epub_use_index = True
+
+# Enable nitpicky mode - which ensures that all references in the docs resolve.
+nitpicky = True
+nitpick_ignore = [
+    ('py:class', '_io.FileIO'),
+]

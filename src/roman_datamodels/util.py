@@ -17,6 +17,15 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
+__all__ = [
+    'bytes2human',
+    'NoTypeWarning',
+    'get_schema_uri_from_converter',
+    'can_broadcast',
+    'to_camelcase',
+]
+
+
 def bytes2human(n):
     """Convert bytes to human-readable format
 
@@ -340,10 +349,10 @@ def create_history_entry(description, software=None):
     ----------
     description : str
         Description of the change.
-    software : dict or list of dict
+    software : dict, List[dict]
         A description of the software used.  It should not include
         asdf itself, as that is automatically notated in the
-        `asdf_library` entry.
+        ``asdf_library`` entry.
 
         Each dict must have the following keys:
 
@@ -420,11 +429,11 @@ def check_memory_allocation(shape, allowed=None, model_type=None, include_swap=T
     shape : tuple
         The desired shape of the model.
 
-    allowed : number or None
+    allowed : numbers.Number or None
         Fraction of memory allowed to be allocated.
-        If None, the environmental variable `DMODEL_ALLOWED_MEMORY`
+        If None, the environmental variable ``DMODEL_ALLOWED_MEMORY``
         is retrieved. If undefined, then no check is performed.
-        `1.0` would be all available memory. `0.5` would be half available memory.
+        ``1.0`` would be all available memory. ``0.5`` would be half available memory.
 
     model_type : DataModel or None
         The desired model to instantiate.
@@ -435,7 +444,7 @@ def check_memory_allocation(shape, allowed=None, model_type=None, include_swap=T
 
     Returns
     -------
-    can_instantiate, required_memory : bool, number
+    can_instantiate, required_memory : bool, numbers.Number
         True if the model can be instantiated and the predicted memory footprint.
     """
     # Determine desired allowed amount.
@@ -490,7 +499,7 @@ def get_available_memory(include_swap=True):
 
     Returns
     -------
-    available : number
+    available : numbers.Number
         The amount available.
     """
     system = platform_system()
@@ -517,7 +526,7 @@ def get_available_memory_linux(include_swap=True):
 
     Returns
     -------
-    available : number
+    available : numbers.Number
         The amount available.
     """
     vm_stats = psutil.virtual_memory()
@@ -544,7 +553,7 @@ def get_available_memory_darwin(include_swap=True):
 
     Returns
     -------
-    available : number
+    available : numbers.Number
         The amount available.
     """
     vm_stats = psutil.virtual_memory()
