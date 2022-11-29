@@ -80,23 +80,78 @@ def test_invalid_input():
     with pytest.raises(TypeError):
         datamodels.open(fits.HDUList())
 
-#XFAIL THIS UNTIL ASTROPY FIXES THIS
-@pytest.mark.xfail
 def test_memmap(tmp_path):
+    data = u.Quantity(np.zeros((400, 400,), dtype=np.float32),
+                      ru.electron/u.s, dtype=np.float32) 
+    new_value = u.Quantity(1.0, ru.electron/u.s, dtype=np.float32)
+    new_data = data.copy()
+    new_data[6, 19] = new_value
+
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
         af.tree = {'roman': utils.mk_level2_image()}
 
-        af.tree['roman'].data = u.Quantity(np.zeros((400, 400,), dtype=np.float32),
-                                           ru.electron/u.s, dtype=np.float32)
+        af.tree['roman'].data = data
         af.write_to(file_path)
 
-    with datamodels.open(file_path, memmap=True) as model:
-        assert isinstance(model.data, np.memmap)
+    # Since quantities don't inherit from np.memmap we have to test they are effectively
+    # memapped.
+    # rw mode needed because we have to test the memmap by manipulating the data on disk.
+    with datamodels.open(file_path, memmap=True, mode="rw") as model:
+        # Test value before change
+        assert (model.data == data).all()
+        assert model.data[6, 19] != new_value
 
-    with datamodels.open(file_path, memmap=False) as model:
-        assert not isinstance(model.data.base, np.memmap)
+        # Change value (full assignment to avoid segfault)
+        model.data[6, 19] = new_value
 
-    # Default should be false:
-    with datamodels.open(file_path) as model:
-        assert not isinstance(model.data.base, np.memmap)
+        # Test value after change
+        assert model.data[6, 19] == new_value
+        assert (model.data == new_data).all()
+        assert (model.data != data).any()
+        assert (data != new_data).any()
+
+    # Test that the file was modified without pushing an update to it
+    with datamodels.open(file_path, memmap=True, mode="rw") as model:
+        assert model.data[6, 19] == new_value
+        assert (model.data == new_data).all()
+
+@pytest.mark.parametrize("kwargs", [
+    {"memmap": False}, # explicit False
+    {}, # default
+])
+def test_no_memmap(tmp_path, kwargs):
+    data = u.Quantity(np.zeros((400, 400,), dtype=np.float32),
+                      ru.electron/u.s, dtype=np.float32) 
+    new_value = u.Quantity(1.0, ru.electron/u.s, dtype=np.float32)
+    new_data = data.copy()
+    new_data[6, 19] = new_value
+
+    file_path = tmp_path / "test.asdf"
+    with asdf.AsdfFile() as af:
+        af.tree = {'roman': utils.mk_level2_image()}
+
+        af.tree['roman'].data = data
+        af.write_to(file_path)
+
+    # Since quantities don't inherit from np.memmap we have to test they are effectively
+    # memapped.
+    # rw mode needed because we have to test the memmap by manipulating the data on disk.
+    with datamodels.open(file_path, mode="rw", **kwargs) as model:
+        # Test value before change
+        assert (model.data == data).all()
+        assert model.data[6, 19] != new_value
+
+        # Change value (full assignment to avoid segfault)
+        model.data[6, 19] = new_value
+
+        # Test value after change
+        assert model.data[6, 19] == new_value
+        assert (model.data == new_data).all()
+        assert (model.data != data).any()
+        assert (data != new_data).any()
+
+    # Test that the file was modified without pushing an update to it
+    with datamodels.open(file_path, mode="rw", **kwargs) as model:
+        assert model.data[6, 19] != new_value
+        assert (model.data == data).all()
