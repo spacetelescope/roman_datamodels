@@ -18,7 +18,7 @@ dependencies = [
     'psutil >=5.7.2',
     'numpy',
     'astropy >=5.0.4',
-    'rad >=0.13.1',
+    'rad >=0.14.0',
     'asdf-standard >=1.0.3',
 ]
 dynamic = ['version']
@@ -72,12 +72,10 @@ testpaths = ['tests']
 omit = [
     'roman_datamodels/pyproject.toml',
     'roman_datamodels/tests',
-    'roman_datamodels/src/roman_datamodels/stnode_test.py',
     # And list these again for running against installed version
     '*/roman_datamodels/pyproject.toml',
     '*/roman_datamodels/tests',
     '*/roman_datamodels/src/roman_datamodels/mktest.py',
-    '*/roman_datamodels/src/roman_datamodels/stnode_test.py',
 ]
 
 [tool.coverage.report]
