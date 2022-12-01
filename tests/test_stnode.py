@@ -22,7 +22,7 @@ def test_generated_node_classes(manifest):
             assert node_class.__module__ == units.__name__
         else:
             assert node_class.__module__ == stnode.__name__
-        assert node_class.__name__ in stnode.__all__
+            assert node_class.__name__ in stnode.__all__
 
 
 def test_wfi_mode():

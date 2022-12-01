@@ -104,12 +104,12 @@ The following displays the output of the info method on a Dark reference file::
     ├─dq (NDArrayType): shape=(4096, 4096), dtype=uint32 # 2-D data quality array for all planes
     └─err (NDArrayType): shape=(6, 4096, 4096), dtype=float32 # Error array
 
-Everything appearing before the `roman` attribute is general metadata about 
+Everything appearing before the ``roman`` attribute is general metadata about
 versions of various aspects of the ASDF file and the extensions it is using.
 For Roman, the general convention is that all metadata appears under the meta
 attribute, and that science and associated arrays appear directly under the
-`roman` attribute. You should note that the metadata has attributes that 
-consist of groups of other attributes (e.g., `exposure` and `instrument`).
+``roman`` attribute. You should note that the metadata has attributes that
+consist of groups of other attributes (e.g., ``exposure`` and ``instrument``).
 
 Most users of the datamodel objects do not need to deal with the schemas, 
 unless they are involved in creating new types of files, or are dealing 
@@ -169,9 +169,9 @@ The corresponding schema is::
 This won't go in to a great deal of detail about schemas but a few things will be
 noted. The end of the schema lists the required attributes, and also specifies 
 the order they should appear in the YAML. The data array attributes specifies the 
-dimensionality of the arrays and their numeric type. The details of the `meta`
+dimensionality of the arrays and their numeric type. The details of the ``meta``
 are mostly specified in other schemas (done this way since these are shared
-amongst many schemas), with exception of the `reftype` and `observation` 
+amongst many schemas), with exception of the ``reftype`` and ``observation``
 attributes. For those one can see their type and sometimes their permissible
 values are listed. The other schemas referenced are: ref_common-1.0.0,
 ref_exposure_type-1.0.0, and ref_optical_element-1.0.0. These are displayed below.

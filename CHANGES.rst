@@ -1,8 +1,10 @@
-0.14.0 (unreleased)
+0.14.0 (2022-11-14)
 ===================
 
 - Explicitly add ``gwcs`` to the list of dependencies. [#108]
+- Remove the unused ``stnode_test`` module. [#110]
 - Add support for non-VOUnits to be used by Roman. [#109]
+
 
 0.13.0 (2022-08-23)
 ===================
