@@ -82,7 +82,7 @@ def test_invalid_input():
 
 def test_memmap(tmp_path):
     data = u.Quantity(np.zeros((400, 400,), dtype=np.float32),
-                      ru.electron/u.s, dtype=np.float32) 
+                      ru.electron/u.s, dtype=np.float32)
     new_value = u.Quantity(1.0, ru.electron/u.s, dtype=np.float32)
     new_data = data.copy()
     new_data[6, 19] = new_value
@@ -122,7 +122,7 @@ def test_memmap(tmp_path):
 ])
 def test_no_memmap(tmp_path, kwargs):
     data = u.Quantity(np.zeros((400, 400,), dtype=np.float32),
-                      ru.electron/u.s, dtype=np.float32) 
+                      ru.electron/u.s, dtype=np.float32)
     new_value = u.Quantity(1.0, ru.electron/u.s, dtype=np.float32)
     new_data = data.copy()
     new_data[6, 19] = new_value
