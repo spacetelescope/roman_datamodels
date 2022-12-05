@@ -14,6 +14,8 @@ from astropy import units as u
 from astropy.modeling import models
 import numpy as np
 
+from roman_datamodels import units as ru
+
 from .. import stnode
 # from .. import table_definitions
 
@@ -1044,15 +1046,15 @@ def create_ramp(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "data": _random_array_float32((2, 4096, 4096), units=u.electron/u.s),
+        "data": _random_array_float32((2, 4096, 4096), units=ru.electron/u.s),
         "pixeldq": _random_array_uint32((4096, 4096)),
         "groupdq": _random_array_uint8((2, 4096, 4096)),
-        "err": _random_array_float32(size=(2, 4096, 4096),min=0.0, units=u.electron/u.s),
-        "amp33": _random_array_uint16((2, 4096, 128), units=u.DN),
-        "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=u.DN),
-        "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=u.DN),
-        "border_ref_pix_top": _random_array_float32((2, 4, 4096), units=u.DN),
-        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096), units=u.DN),
+        "err": _random_array_float32(size=(2, 4096, 4096),min=0.0, units=ru.electron/u.s),
+        "amp33": _random_array_uint16((2, 4096, 128), units=ru.DN),
+        "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=ru.DN),
+        "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=ru.DN),
+        "border_ref_pix_top": _random_array_float32((2, 4, 4096), units=ru.DN),
+        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096), units=ru.DN),
         "dq_border_ref_pix_right": _random_array_uint32((4096, 4)),
         "dq_border_ref_pix_left": _random_array_uint32((4096, 4)),
         "dq_border_ref_pix_top": _random_array_uint32((4, 4096)),
@@ -1085,11 +1087,12 @@ def create_ramp_fit_output(**kwargs):
         "sigslope": _random_array_float32(seg_shape),
         "yint": _random_array_float32(seg_shape),
         "sigyint": _random_array_float32(seg_shape),
-        "pedestal": _random_array_float32(seg_shape[1:], units=u.electron / u.s),
+        "pedestal": _random_array_float32(seg_shape[1:], units=ru.electron / u.s),
         "weights": _random_array_float32(seg_shape),
-        "crmag": u.Magnitude(_random_array_float32(seg_shape) * u.ct/u.s, dtype=np.float32),
-        "var_poisson": _random_array_float32(seg_shape, units=u.electron / u.s),
-        "var_rnoise": _random_array_float32(seg_shape, units=u.electron / u.s),
+        #"crmag": u.Magnitude(_random_array_float32(seg_shape) * u.ct / u.s, dtype=np.float32),
+        "crmag": _random_array_float32(seg_shape, units=u.ct/u.s),
+        "var_poisson": _random_array_float32(seg_shape, units=ru.electron / u.s),
+        "var_rnoise": _random_array_float32(seg_shape, units=ru.electron / u.s),
     }
     raw.update(kwargs)
 
@@ -1115,9 +1118,9 @@ def create_guidewindow(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "pedestal_frames": _random_array_uint16(seg_shape, units=u.DN),
-        "signal_frames": _random_array_uint16(seg_shape, units=u.DN),
-        "amp33": _random_array_uint16(seg_shape, units=u.DN),
+        "pedestal_frames": _random_array_uint16(seg_shape, units=ru.DN),
+        "signal_frames": _random_array_uint16(seg_shape, units=ru.DN),
+        "amp33": _random_array_uint16(seg_shape, units=ru.DN),
     }
     raw.update(kwargs)
 
@@ -1298,18 +1301,18 @@ def create_wfi_image(**kwargs):
     """
 
     raw = {
-        "data": _random_array_float32((4088, 4088), units=u.electron / u.s),
+        "data": _random_array_float32((4088, 4088), units=ru.electron / u.s),
         "dq": _random_array_uint32((4088, 4088)),
-        "err": _random_array_float32((4088, 4088), min=0.0, units=u.electron / u.s),
+        "err": _random_array_float32((4088, 4088), min=0.0, units=ru.electron / u.s),
         "meta": create_meta(),
-        "var_flat": _random_array_float32((4088, 4088), units=u.electron / u.s),
-        "var_poisson": _random_array_float32((4088, 4088), units=u.electron / u.s),
-        "var_rnoise": _random_array_float32((4088, 4088), units=u.electron / u.s),
-        "amp33": _random_array_uint16((2, 4096, 128), units=u.DN),
-        "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=u.DN),
-        "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=u.DN),
-        "border_ref_pix_top": _random_array_float32((2, 4, 4096), units=u.DN),
-        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096), units=u.DN),
+        "var_flat": _random_array_float32((4088, 4088), units=ru.electron / u.s),
+        "var_poisson": _random_array_float32((4088, 4088), units=ru.electron / u.s),
+        "var_rnoise": _random_array_float32((4088, 4088), units=ru.electron / u.s),
+        "amp33": _random_array_uint16((2, 4096, 128), units=ru.DN),
+        "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=ru.DN),
+        "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=ru.DN),
+        "border_ref_pix_top": _random_array_float32((2, 4, 4096), units=ru.DN),
+        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096), units=ru.DN),
         "dq_border_ref_pix_right": _random_array_uint32((4096, 4)),
         "dq_border_ref_pix_left": _random_array_uint32((4096, 4)),
         "dq_border_ref_pix_top": _random_array_uint32((4, 4096)),
@@ -1362,8 +1365,8 @@ def create_wfi_science_raw(**kwargs):
     """
     raw = {
         # TODO: What should this shape be?
-        "data": _random_array_uint16((2, 4096, 4096), units=u.DN),
-        "amp33": _random_array_uint16((2, 4096, 128), units=u.DN),
+        "data": _random_array_uint16((2, 4096, 4096), units=ru.DN),
+        "amp33": _random_array_uint16((2, 4096, 128), units=ru.DN),
         "meta": create_meta(),
     }
     raw.update(kwargs)
