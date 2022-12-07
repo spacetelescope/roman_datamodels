@@ -1045,10 +1045,10 @@ def create_ramp(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "data": _random_array_float32((2, 4096, 4096), units=ru.electron/u.s),
+        "data": _random_array_float32((2, 4096, 4096), units=ru.electron),
         "pixeldq": _random_array_uint32((4096, 4096)),
         "groupdq": _random_array_uint8((2, 4096, 4096)),
-        "err": _random_array_float32(size=(2, 4096, 4096),min=0.0, units=ru.electron/u.s),
+        "err": _random_array_float32(size=(2, 4096, 4096),min=0.0, units=ru.electron),
         "amp33": _random_array_uint16((2, 4096, 128), units=ru.DN),
         "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=ru.DN),
         "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=ru.DN),
@@ -1082,19 +1082,19 @@ def create_ramp_fit_output(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "slope": _random_array_float32(seg_shape),
-        "sigslope": _random_array_float32(seg_shape),
-        "yint": _random_array_float32(seg_shape),
-        "sigyint": _random_array_float32(seg_shape),
-        "pedestal": _random_array_float32(seg_shape[1:], units=ru.electron / u.s),
+        "slope": _random_array_float32(seg_shape, units=ru.electron / u.s),
+        "sigslope": _random_array_float32(seg_shape, units=ru.electron / u.s),
+        "yint": _random_array_float32(seg_shape, units=ru.electron),
+        "sigyint": _random_array_float32(seg_shape, units=ru.electron),
+        "pedestal": _random_array_float32(seg_shape[1:], units=ru.electron),
         "weights": _random_array_float32(seg_shape),
 
         # Magnitude support does not seem to be implemented in ASDF yet
         # "crmag": u.Magnitude(_random_array_float32(seg_shape) * u.ct / u.s, dtype=np.float32)
 
-        "crmag": _random_array_float32(seg_shape, units=u.ct/u.s),
-        "var_poisson": _random_array_float32(seg_shape, units=ru.electron / u.s),
-        "var_rnoise": _random_array_float32(seg_shape, units=ru.electron / u.s),
+        "crmag": _random_array_float32(seg_shape, units=ru.electron),
+        "var_poisson": _random_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
+        "var_rnoise": _random_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
     }
     raw.update(kwargs)
 
@@ -1307,9 +1307,9 @@ def create_wfi_image(**kwargs):
         "dq": _random_array_uint32((4088, 4088)),
         "err": _random_array_float32((4088, 4088), min=0.0, units=ru.electron / u.s),
         "meta": create_meta(),
-        "var_flat": _random_array_float32((4088, 4088), units=ru.electron / u.s),
-        "var_poisson": _random_array_float32((4088, 4088), units=ru.electron / u.s),
-        "var_rnoise": _random_array_float32((4088, 4088), units=ru.electron / u.s),
+        "var_flat": _random_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
+        "var_poisson": _random_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
+        "var_rnoise": _random_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
         "amp33": _random_array_uint16((2, 4096, 128), units=ru.DN),
         "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=ru.DN),
         "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=ru.DN),

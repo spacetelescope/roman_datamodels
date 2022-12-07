@@ -1011,19 +1011,23 @@ def mk_rampfitoutput(shape=None, filepath=None):
     if not shape:
         shape = (8, 4096, 4096)
 
-    rampfitoutput['slope'] = np.zeros(shape, dtype=np.float32)
-    rampfitoutput['sigslope'] = np.zeros(shape, dtype=np.float32)
-    rampfitoutput['yint'] = np.zeros(shape, dtype=np.float32)
-    rampfitoutput['sigyint'] = np.zeros(shape, dtype=np.float32)
+    rampfitoutput['slope'] = u.Quantity(np.zeros(shape, dtype=np.float32),
+                                        ru.electron / u.s, dtype=np.float32)
+    rampfitoutput['sigslope'] = u.Quantity(np.zeros(shape, dtype=np.float32),
+                                        ru.electron / u.s, dtype=np.float32)
+    rampfitoutput['yint'] = u.Quantity(np.zeros(shape, dtype=np.float32),
+                                        ru.electron, dtype=np.float32)
+    rampfitoutput['sigyint'] = u.Quantity(np.zeros(shape, dtype=np.float32),
+                                        ru.electron, dtype=np.float32)
     rampfitoutput['pedestal'] = u.Quantity(np.zeros(shape[1:], dtype=np.float32),
-                                           ru.electron / u.s, dtype=np.float32)
+                                           ru.electron, dtype=np.float32)
     rampfitoutput['weights'] = np.zeros(shape, dtype=np.float32)
     rampfitoutput['crmag'] = u.Quantity(np.zeros(shape, dtype=np.float32),
-                                        u.ct * u.s, dtype=np.float32)
+                                        ru.electron, dtype=np.float32)
     rampfitoutput['var_poisson'] = u.Quantity(np.zeros(shape, dtype=np.float32),
-                                              ru.electron / u.s, dtype=np.float32)
+                                              ru.electron**2 / u.s**2, dtype=np.float32)
     rampfitoutput['var_rnoise'] = u.Quantity(np.zeros(shape, dtype=np.float32),
-                                             ru.electron / u.s, dtype=np.float32)
+                                             ru.electron**2 / u.s**2, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
