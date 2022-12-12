@@ -166,7 +166,7 @@ class DNode(UserDict):
         variable names.
         """
         if key.startswith('_'):
-            raise AttributeError('No attribute {0}'.format(key))
+            raise AttributeError(f'No attribute {key}')
         if key in self._data:
             value = self._convert_to_scalar(key, self._data[key])
             if isinstance(value, dict):
@@ -235,10 +235,10 @@ class DNode(UserDict):
             return val
 
         if include_arrays:
-            return dict((key, convert_val(val)) for (key, val) in self.items())
+            return {key: convert_val(val) for (key, val) in self.items()}
         else:
-            return dict((key, convert_val(val)) for (key, val) in self.items()
-                        if not isinstance(val, (np.ndarray, ndarray.NDArrayType)))
+            return {key: convert_val(val) for (key, val) in self.items()
+                        if not isinstance(val, (np.ndarray, ndarray.NDArrayType))}
 
     def _schema(self):
         """
