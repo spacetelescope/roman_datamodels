@@ -500,10 +500,10 @@ class TaggedScalarNodeConverter(Converter):
 
         # Move enum check to converter due to bug, see spacetelescope/rad#155
         validate = asdf.get_config().validate_on_read
-        if tag == Origin._tag: # noqa
+        if tag == Origin._tag: # noqa: F821
             if validate and node not in _VALID_ORIGIN:
                 raise jsonschema.ValidationError(f"origin must be one of {_VALID_ORIGIN}")
-        elif tag == Telescope._tag: # noqa
+        elif tag == Telescope._tag: # noqa: F821
             if validate and node not in _VALID_TELESCOPE:
                 raise jsonschema.ValidationError(f"telescope must be one of {_VALID_TELESCOPE}'")
 
@@ -516,10 +516,10 @@ class TaggedScalarNodeConverter(Converter):
     def from_yaml_tree(self, node, tag, ctx):
         # Move enum check to converter due to bug, see spacetelescope/rad#155
         validate = asdf.get_config().validate_on_read
-        if tag == Origin._tag: # noqa
+        if tag == Origin._tag: # noqa: F821
             if validate and node not in _VALID_ORIGIN:
                 raise jsonschema.ValidationError(f"origin must be one of {_VALID_ORIGIN}")
-        elif tag == Telescope._tag: # noqa
+        elif tag == Telescope._tag: # noqa: F821
             if validate and node not in _VALID_TELESCOPE:
                 raise jsonschema.ValidationError(f"telescope must be one of {_VALID_TELESCOPE}'")
 
