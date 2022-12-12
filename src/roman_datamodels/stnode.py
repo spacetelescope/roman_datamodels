@@ -272,7 +272,7 @@ class LNode(UserList):
         elif isinstance(node, list):
             self.data = node
         else:
-            raise ValueError("Initalizer only accepts lists")
+            raise ValueError("Initializer only accepts lists")
         # else:
         #     self.data = node.data
 
