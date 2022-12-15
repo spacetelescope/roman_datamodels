@@ -1090,12 +1090,7 @@ def create_ramp_fit_output(**kwargs):
         "yint": _random_array_float32(seg_shape, units=ru.electron),
         "sigyint": _random_array_float32(seg_shape, units=ru.electron),
         "pedestal": _random_array_float32(seg_shape[1:], units=ru.electron),
-
         "weights": _random_array_float32(seg_shape),
-
-        # Magnitude support does not seem to be implemented in ASDF yet
-        # "crmag": u.Magnitude(_random_array_float32(seg_shape) * u.ct / u.s, dtype=np.float32)
-
         "crmag": _random_array_float32(seg_shape, units=ru.electron),
         "var_poisson": _random_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
         "var_rnoise": _random_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
