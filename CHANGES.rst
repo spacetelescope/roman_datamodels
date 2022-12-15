@@ -5,6 +5,8 @@
 - Remove the unused ``stnode_test`` module. [#110]
 - Add support for non-VOUnits to be used by Roman. [#109]
 
+- Changed science arrays to quantities. [#111]
+  
 
 0.13.0 (2022-08-23)
 ===================

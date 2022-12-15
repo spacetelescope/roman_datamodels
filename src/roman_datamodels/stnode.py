@@ -24,6 +24,8 @@ import rad.resources
 from .stuserdict import STUserDict as UserDict
 from .units import Unit, CompositeUnit
 
+from roman_datamodels.units import Unit, CompositeUnit, force_roman_unit
+
 if sys.version_info < (3, 9):
     import importlib_resources
 else:
