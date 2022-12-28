@@ -348,7 +348,7 @@ class ModelContainer(DataModel, Sequence):
             is_all_roman_datamodels = all(isinstance(x, DataModel) for x in init)
 
             if is_all_string or is_all_roman_datamodels:
-                self._models.extend([open(item) if is_all_string else item for item in init])
+                self._models.extend(init)
             else:
                 raise TypeError(
                         "Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
