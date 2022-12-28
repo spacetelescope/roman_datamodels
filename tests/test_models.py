@@ -162,14 +162,6 @@ def test_opening_guidewindow_ref(tmp_path):
     assert isinstance(guidewindow, datamodels.GuidewindowModel)
 
 
-
-
-
-
-
-
-
-
 # Model Container tests
 def test_make_model_container(tmp_path):
     # Make JSON Association file
@@ -266,9 +258,9 @@ def test_make_model_container(tmp_path):
     f4_af.tree = {'roman': f4_model}
     f4_af.write_to(tmp_path / 'file_4.asdf')
 
-    model_container = datamodels.ModelContainerModel(asn_file_path=tmp_path/'asn.json', iscopy=True, model_file_path = str(tmp_path)+'/')
+    model_container = datamodels.ModelContainer(asn_file_path=tmp_path/'asn.json', iscopy=True, model_file_path = str(tmp_path)+'/')
 
-    assert type(model_container) == datamodels.ModelContainerModel
+    assert type(model_container) == datamodels.ModelContainer
 
     assert len(model_container) == 5
     assert model_container[0].meta.filename == 'file_0.asdf'
@@ -296,7 +288,6 @@ def test_make_model_container(tmp_path):
     assert model_container[4].data.shape == (40, 40)
     assert model_container[4].data[2][4] == 4.0
 
-
 #
 # def test_opening_model_container_ref(tmp_path):
 #     # First make test reference file
@@ -306,16 +297,39 @@ def test_make_model_container(tmp_path):
 #     assert association.program == 1
 #     assert isinstance(association, datamodels.AssociationsModel)
 
+def test_model_container_input_as_list_of_filepaths(tmp_path):
+    n = 2
+    # generate a list of n filepaths and files to be read later on by ModelContainer
+    filepath_list = []
+    for i in range(n):
+        filepath = tmp_path / f'test_model_container_input_as_list_of_filepaths_{i:02}.asdf'
+        # create L2 file using filepath
+        utils.mk_level2_image(filepath=filepath)
+        # append filepath to filepath list
+        filepath_list.append(filepath)
 
+    # provide filepath list as input to ModelContainer
+    model_container = datamodels.ModelContainer(filepath_list)
 
+    assert len(model_container) == n
+    # check if all model_container elements are instances of DataModel
+    assert all(isinstance(x, datamodels.DataModel) for x in model_container)
 
+def test_model_container_input_as_list_of_datamodels():
+    n = 2
+    # generate a list of n filepaths and files to be read later on by ModelContainer
+    datamodel_list = []
+    for i in range(n):
+        # create L2 file in memory
+        l2_image = utils.mk_level2_image()
+        # append datamodel to datamodel list
+        datamodel_list.append(l2_image)
 
-
-
-
-
-
-
+    # provide datamodel list as input to ModelContainer
+    model_container = datamodels.ModelContainer(datamodel_list)
+    
+    assert len(datamodel_list) == n
+    assert all(isinstance(x, datamodels.DataModel) for x in model_container)
 
 
 # Testing all reference file schemas
