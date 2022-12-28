@@ -303,7 +303,7 @@ class GuidewindowModel(DataModel):
     pass
 
 
-class ModelContainerModel(DataModel, Sequence):
+class ModelContainer(DataModel, Sequence):
     # Needs a number of methods to properly handle the contents
     def __init__(self, init=None, asn_schema= None, asn_file_path=None, model_file_path=None, iscopy=False, **kwargs):
         # __init__(self, init=None, asn_exptypes=None, asn_n_members=None,
@@ -326,20 +326,35 @@ class ModelContainerModel(DataModel, Sequence):
             with builtins.open(asn_file_path, 'r') as asn_file:
                 asn_schema = json.load(asn_file)
 
-        for product in asn_schema['products']:
-            for member in product['members']:
-                if self._iscopy:
-                    member_model = open(model_file_path + member['expname'])
-                else:
-                    member_model = "null"
+            for product in asn_schema['products']:
+                for member in product['members']:
+                    if self._iscopy:
+                        member_model = open(model_file_path + member['expname'])
+                    else:
+                        member_model = "null"
 
-                self._models.append(
-                    # {
-                    #     "name" : member['expname'],
-                    #     "datamodel" : member_model
-                    # }
-                    member_model
-                )
+                    self._models.append(
+                        # {
+                        #     "name" : member['expname'],
+                        #     "datamodel" : member_model
+                        # }
+                        member_model
+                    )
+        elif isinstance(init, list):
+            # only append list items to self._models if all items are either 
+            # strings (i.e. path to an ASDF file) or instances of DataModel
+
+            is_all_string = all(isinstance(x, str) for x in init)
+            is_all_roman_datamodels = all(isinstance(x, DataModel) for x in init)
+
+            if is_all_string or is_all_roman_datamodels:
+                self._models.extend([open(item) if is_all_string else item for item in init])
+            else:
+                raise TypeError(
+                        "Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
+        else:
+            raise TypeError(
+                        "Input must be an ASN filepath or list of either strings (full path to ASDF files) or Roman datamodels.")
 
     def __len__(self):
         return len(self._models)
