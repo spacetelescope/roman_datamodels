@@ -18,9 +18,12 @@ import asdf.schema as asdfschema
 import asdf.yamlutil as yamlutil
 from asdf.util import HashableDict
 from asdf.tags.core import ndarray
+
 from .validate import _check_type, ValidationWarning, _error_message
 import rad.resources
 from .stuserdict import STUserDict as UserDict
+from .units import Unit, CompositeUnit
+
 
 if sys.version_info < (3, 9):
     import importlib_resources
@@ -34,6 +37,11 @@ __all__ = [
     "NODE_CLASSES",
     "CalLogs",
     "FileDate",
+    "DNode",
+    "LNode",
+    "TaggedObjectNode",
+    "TaggedListNode",
+    "TaggedScalarNode",
 ]
 
 
@@ -43,6 +51,10 @@ strict_validation = True
 # Needed due to enum bug with ASDF
 _VALID_ORIGIN = ["STSCI", "IPAC/SSC"]
 _VALID_TELESCOPE = ["ROMAN"]
+
+
+_UNIT_NODE_CLASSES_BY_TAG = {Unit._tag: Unit}
+
 
 
 def set_validate(value):
@@ -210,7 +222,7 @@ class DNode(UserDict):
         Returns a dictionary of all of the schema items as a flat dictionary.
 
         Each dictionary key is a dot-separated name.  For example, the
-        schema element `meta.observation.date` will end up in the
+        schema element ``meta.observation.date`` will end up in the
         dictionary as::
 
             { "meta.observation.date": "2012-04-22T03:22:05.432" }
@@ -519,6 +531,54 @@ class TaggedScalarNodeConverter(Converter):
         return _SCALAR_NODE_CLASSES_BY_TAG[tag](node)
 
 
+class UnitConverter(Converter):
+    @property
+    def tags(self):
+        return list(_UNIT_NODE_CLASSES_BY_TAG.keys())
+
+    @property
+    def types(self):
+        return [Unit, CompositeUnit]
+
+    def to_yaml_tree(self, obj, tag, ctx):
+        if isinstance(obj, Unit):
+            return self._base_to_yaml_tree(obj, tag, ctx)
+        elif isinstance(obj, CompositeUnit):
+            return self._composite_to_yaml_tree(obj, tag, ctx)
+        else:
+            raise TypeError(f"Unsupported type {type(obj)}")
+
+    def _base_to_yaml_tree(self, obj, tag, ctx):
+        import roman_datamodels.units as units
+
+        unit = obj.to_string()
+        if unit in units.ROMAN_UNIT_SYMBOLS:
+            return unit
+        else:
+            raise ValueError(f"Unit {unit} is not a valid Roman unit")
+
+    def _composite_to_yaml_tree(self, obj, tag, ctx):
+        from astropy.units import UnitsError
+
+        for unit in obj.bases:
+            if isinstance(unit, Unit):
+                self._base_to_yaml_tree(unit, tag, ctx)
+            else:
+                try:
+                    unit.to_string(format="vounit")
+                except (UnitsError, ValueError) as e:
+                    raise ValueError(f"Unit '{unit}' is not representable as VOUnit and cannot be serialized to ASDF") from e
+
+        return obj.to_string()
+
+
+    def from_yaml_tree(self, node, tag, ctx):
+        import astropy.units as u
+        from roman_datamodels.units import force_roman_unit
+
+        return force_roman_unit(u.Unit(node, parse_strict="silent"))
+
+
 _DATAMODELS_MANIFEST_PATH = importlib_resources.files(
     rad.resources) / "manifests" / "datamodels-1.0.yaml"
 _DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
@@ -566,6 +626,8 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
         _LIST_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
     elif tag["tag_uri"] in _SCALAR_NODE_CLASSES_BY_TAG:
         _SCALAR_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
+    elif tag["tag_uri"] in _UNIT_NODE_CLASSES_BY_TAG:
+        _UNIT_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
     else:
         _class_from_tag(tag, docstring)
 
@@ -575,5 +637,6 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
 NODE_CLASSES = (
     list(_OBJECT_NODE_CLASSES_BY_TAG.values()) +
     list(_LIST_NODE_CLASSES_BY_TAG.values()) +
-    list(_SCALAR_NODE_CLASSES_BY_TAG.values())
+    list(_SCALAR_NODE_CLASSES_BY_TAG.values()) +
+    list(_UNIT_NODE_CLASSES_BY_TAG.values())
 )

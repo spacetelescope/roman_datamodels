@@ -11,7 +11,11 @@ User Manual
 .. toctree::
    :maxdepth: 2
 
-   roman_datamodels/introduction.rst
+   roman_datamodels/datamodels/introduction.rst
+   roman_datamodels/datamodels/general_structure.rst
+   roman_datamodels/datamodels/using_datamodels.rst
+   roman_datamodels/datamodels/index.rst
+
 
 
 =====================
