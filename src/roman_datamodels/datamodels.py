@@ -22,6 +22,7 @@ from asdf.fits_embed import AsdfInFits
 from . import stnode
 from . import validate
 from . extensions import DATAMODEL_EXTENSIONS
+from collections import OrderedDict
 
 
 __all__ = [
@@ -386,6 +387,108 @@ class ModelContainer(DataModel, Sequence):
         if not isinstance(m, DataModel) and self._return_open:
             m = open(m, memmap=self._memmap)
         return m
+    
+    def __setitem__(self, index, model):
+        self._models[index] = model
+
+    def __delitem__(self, index):
+        del self._models[index]
+
+    def __iter__(self):
+        for model in self._models:
+            if not isinstance(model, DataModel) and self._return_open:
+                model = open(model, memmap=self._memmap)
+            yield model
+
+    def insert(self, index, model):
+        self._models.insert(index, model)
+
+    def append(self, model):
+        self._models.append(model)
+
+    def extend(self, model):
+        self._models.extend(model)
+
+    def pop(self, index=-1):
+        self._models.pop(index)
+
+    def copy(self, memo=None):
+        """
+        Returns a deep copy of the models in this model container.
+        """
+        result = self.__class__(init=None,
+                                pass_invalid_values=self._pass_invalid_values,
+                                strict_validation=self._strict_validation)
+        instance = copy.deepcopy(self._instance, memo=memo)
+        result._asdf = asdf.AsdfFile(instance)
+        result._instance = instance
+        result._iscopy = self._iscopy
+        result._schema = self._schema
+        result._ctx = result
+        for m in self._models:
+            if isinstance(m, DataModel):
+                result.append(m.copy())
+            else:
+                result.append(m)
+        return result
+    
+    @property
+    def models_grouped(self):
+        """
+        Returns a list of a list of datamodels grouped by exposure.
+        Assign an ID grouping by exposure.
+
+        Data from different detectors of the same exposure will have the
+        same group id, which allows grouping by exposure.  The following
+        metadata is used for grouping:
+
+        meta.observation.program
+        meta.observation.observation
+        meta.observation.visit
+        meta.observation.visit_file_group
+        meta.observation.visit_file_sequence
+        meta.observation.visit_file_activity
+        meta.observation.exposure
+        """
+        unique_exposure_parameters = [
+            'program',
+            'observation',
+            'visit',
+            'visit_file_group',
+            'visit_file_sequence',
+            'visit_file_activity',
+            'exposure'
+        ]
+
+        group_dict = OrderedDict()
+        for i, model in enumerate(self._models):
+            params = []
+
+            model = model if isinstance(model, DataModel) else open(model)
+
+            if not self._save_open:
+                model = open(model, memmap=self._memmap)
+
+            for param in unique_exposure_parameters:
+                params.append(str(getattr(model.meta.observation, param)))
+            try:
+                group_id = ('roman' + '_'.join([''.join(params[:3]),
+                                             ''.join(params[3:6]), params[6]]))
+                model.meta["group_id"] = group_id
+            except TypeError:
+                model.meta["group_id"] = 'exposure{0:04d}'.format(i + 1)
+
+            group_id = model.meta.group_id
+            if not self._save_open and not self._return_open:
+                model.close()
+                model = self._models[i]
+
+            if group_id in group_dict:
+                group_dict[group_id].append(model)
+            else:
+                group_dict[group_id] = [model]
+
+        return group_dict.values()
 
 
 
