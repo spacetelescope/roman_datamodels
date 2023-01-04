@@ -623,7 +623,6 @@ model_registry = {
     stnode.WfiScienceRaw: ScienceRawModel,
     stnode.Ramp: RampModel,
     stnode.RampFitOutput: RampFitOutputModel,
-    stnode.ModelContainer: ModelContainer,
     stnode.Guidewindow: GuidewindowModel,
     stnode.FlatRef: FlatRefModel,
     stnode.DarkRef: DarkRefModel,
