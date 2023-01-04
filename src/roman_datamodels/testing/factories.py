@@ -479,9 +479,9 @@ def create_dark_ref(**kwargs):
     roman_datamodels.stnode.DarkRef
     """
     raw = {
-        "data": _random_array_float32((2, 4096, 4096)),
+        "data": _random_array_float32((2, 4096, 4096), units=ru.DN),
         "dq": _random_array_uint32(),
-        "err": _random_array_float32((2, 4096, 4096)),
+        "err": _random_array_float32((2, 4096, 4096), units=ru.DN),
         "meta": create_ref_meta(reftype="DARK")
     }
     raw.update(kwargs)
@@ -532,7 +532,7 @@ def create_gain_ref(**kwargs):
     roman_datamodels.stnode.GainRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096)),
+        "data": _random_array_float32((4096, 4096), units=ru.electron / ru.DN),
         "meta": create_ref_meta(reftype="GAIN"),
     }
     raw.update(kwargs)
@@ -554,7 +554,7 @@ def create_linearity_ref(**kwargs):
     roman_datamodels.stnode.LinearityRef
     """
     raw = {
-        "coeffs": _random_array_float32((2, 4096, 4096)),
+        "coeffs": _random_array_float32((2, 4096, 4096), units=ru.DN),
         "dq": _random_array_uint32((4096, 4096)),
         "meta": create_ref_meta(reftype="LINEARITY"),
     }
@@ -626,7 +626,7 @@ def create_readnoise_ref(**kwargs):
     roman_datamodels.stnode.ReadnoiseRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096)),
+        "data": _random_array_float32((4096, 4096), units=ru.DN),
         "meta": create_ref_meta(reftype="READNOISE"),
     }
     raw.update(kwargs)
@@ -649,7 +649,7 @@ def create_saturation_ref(**kwargs):
     roman_datamodels.stnode.SaturationRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096)),
+        "data": _random_array_float32((4096, 4096), units=ru.DN),
         "dq": _random_array_uint32((4096, 4096)),
         "meta": create_ref_meta(reftype="SATURATION"),
     }
