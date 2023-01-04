@@ -3,10 +3,12 @@ import astropy.time as time
 import numpy as np
 from astropy import units as u
 from astropy.modeling import models
+from random import choices
 from roman_datamodels import units as ru
 
 from .factories import _random_positive_int, _random_string
 from .. import stnode
+from .. import datamodels
 
 NONUM = -999999
 NOSTR = "dummy value"
@@ -1035,6 +1037,129 @@ def mk_rampfitoutput(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return rampfitoutput
+
+def mk_associations(shape=None, filepath=None):
+    """
+    Create a dummy Association table instance (or file) with table and valid values for attributes
+    required by the schema.
+    Parameters
+    ----------
+    shape
+        (optional) The shape of the member elements of products.
+    filepath
+        (optional) File name and path to write model to.
+    Returns
+    -------
+    roman_datamodels.stnode.AssociationsModel
+    """
+
+    associations = stnode.Associations()
+
+    associations["asn_type"] = "image"
+    associations["asn_rule"] = "candidate_Asn_Lv2Image_i2d"
+    associations["version_id"] = "null"
+    associations["code_version"] = "0.16.2.dev16+g640b0b79"
+    associations["degraded_status"] = "No known degraded exposures in association."
+    associations['program'] = 1
+    associations['constraints'] = "DMSAttrConstraint({'name': 'program', 'sources': ['program'], " \
+                         "'value': '001'})\nConstraint_TargetAcq({'name': 'target_acq', 'value': " \
+                         "'target_acquisition'})\nDMSAttrConstraint({'name': 'science', " \
+                         "'DMSAttrConstraint({'name': 'asn_candidate','sources': " \
+                         "['asn_candidate'], 'value': \"\\\\('o036',\\\\ 'observation'\\\\)\"})"
+    associations['asn_id'] = "o036"
+    associations['asn_pool'] = "r00001_20200530t023154_pool"
+    associations['target'] = 16
+
+    if not shape:
+        shape = (2, 3, 1)
+
+    file_idx = 0
+    associations['products'] = []
+    for product_idx in range(len(shape)):
+        exptypes = choices(['SCIENCE', 'CALIBRATION', 'ENGINEERING'], k=shape[product_idx])
+        members_lst = []
+        for member_idx in range(shape[product_idx]):
+            members_lst.append(
+                {
+                    "expname": "file_" + str(file_idx) + ".asdf",
+                    "exposerr": "null",
+                    "exptype": exptypes[member_idx]
+                }
+            )
+            file_idx += 1
+        associations['products'].append(
+            {
+                "name" : "product" + str(product_idx),
+                "members" : members_lst
+            }
+        )
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': associations}
+        af.write_to(filepath)
+    else:
+        return associations
+
+def mk_model_container(association=None, hasmodels=True, inputpath = "", filepath=None):
+    """
+    Create a dummy Model Container instance (or file) with alid values for attributes required by
+    the schema.
+    Parameters
+    ----------
+    association
+        (optional) Association model used to populate the container.
+    hasmodels
+        (optional) Switch to determine if models are to be opened or not.
+    inputpath
+        (optional) Path to directory contianing files specified by Association model.
+    filepath
+        (optional) File name and path to write model to.
+    Returns
+    -------
+    roman_datamodels.stnode.ModelContainerModel
+    """
+
+    # Do not open models if writing to a file.
+    if filepath:
+        hasmodels = False
+
+    model_container = stnode.ModelContainer()
+
+    model_container["asn_exptypes"] = "image"
+
+    model_container["asn_table_name"] = "asn.json"
+    model_container["asn_pool_name"] = "r00001_20200530t023154_pool"
+    model_container["degraded_status"] = "No known degraded exposures in association."
+
+    if not association:
+        model_container["asn_table"] = mk_associations(shape=(2, 3, 1))
+        model_container["asn_n_members"] = 3
+    else:
+        model_container["asn_table"] = association
+        model_container["asn_n_members"] = len(association.products)
+
+    model_container["models"] = []
+
+    for product_group in model_container["asn_table"]["products"]:
+        for member in product_group["members"]:
+            if hasmodels:
+                model_obj = datamodels.open(inputpath + member["expname"])
+            else:
+                model_obj = "null"
+            model_container["models"].append(
+                {
+                    "name" : member["expname"],
+                    "datamodel" : model_obj
+                }
+            )
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': model_container}
+        af.write_to(filepath)
+    else:
+        return model_container
 
 def mk_guidewindow(shape=None, filepath=None):
     """

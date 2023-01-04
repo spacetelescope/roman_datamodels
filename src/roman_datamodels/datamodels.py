@@ -322,6 +322,11 @@ class RampFitOutputModel(DataModel):
     pass
 
 
+class AssociationsModel(DataModel):
+    # Need an init to allow instantiation from a JSON file
+    pass
+
+
 class GuidewindowModel(DataModel):
     pass
 
@@ -491,9 +496,6 @@ class ModelContainer(DataModel, Sequence):
         return group_dict.values()
 
 
-
-
-
 class FlatRefModel(DataModel):
     pass
 
@@ -621,6 +623,8 @@ model_registry = {
     stnode.WfiScienceRaw: ScienceRawModel,
     stnode.Ramp: RampModel,
     stnode.RampFitOutput: RampFitOutputModel,
+    stnode.Associations: AssociationsModel,
+    stnode.ModelContainer: ModelContainer,
     stnode.Guidewindow: GuidewindowModel,
     stnode.FlatRef: FlatRefModel,
     stnode.DarkRef: DarkRefModel,
