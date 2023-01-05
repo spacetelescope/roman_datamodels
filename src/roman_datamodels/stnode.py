@@ -579,6 +579,10 @@ class UnitConverter(Converter):
         return force_roman_unit(u.Unit(node, parse_strict="silent"))
 
 
+class Associations(dict):
+    __slots__ = ()
+
+
 _DATAMODELS_MANIFEST_PATH = importlib_resources.files(
     rad.resources) / "manifests" / "datamodels-1.0.yaml"
 _DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
