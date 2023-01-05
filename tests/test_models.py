@@ -43,16 +43,18 @@ def test_core_schema(tmp_path):
         af.tree = {'roman': wfi_image}
 
         # Test telescope name
+        af.tree['roman'].meta.telescope = 'NOTROMAN'
         with pytest.raises(ValidationError):
-            af.tree['roman'].meta.telescope = 'NOTROMAN'
+            af.write_to(file_path)
         af.tree['roman'].meta['telescope'] = 'NOTROMAN'
         with pytest.raises(ValidationError):
             af.write_to(file_path)
         af.tree['roman'].meta.telescope = 'ROMAN'
 
         # Test origin name
+        af.tree['roman'].meta.origin = 'NOTSTSCI'
         with pytest.raises(ValidationError):
-            af.tree['roman'].meta.origin = 'NOTSTSCI'
+            af.write_to(file_path)
         af.tree['roman'].meta['origin'] = 'NOTIPAC/SSC'
         with pytest.raises(ValidationError):
             af.write_to(file_path)
