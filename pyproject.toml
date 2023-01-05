@@ -20,7 +20,7 @@ dependencies = [
     'astropy >=5.0.4',
     #'rad >=0.14.0',
     # Temporary path for github PR tests
-    'rad @git+https://github.com/spacetelescope/rad.git@main',
+    'rad @git+https://github.com/PaulHuwe/rad.git@RAD-72_ModelContainer',
     'asdf-standard >=1.0.3',
 ]
 dynamic = ['version']
