@@ -29,7 +29,7 @@ of data file. It can apply to raw data (i.e., data from the ground system
 that the calibration pipelines start with), intermediate data products, or
 the final data products sent to observers or the archive.
 
-While the roman_datamodels respository would seem like the location of the
+While the roman_datamodels repository would seem like the location of the
 Roman datamodels, it is the combination of the schemas in the rad repository
 with the converter software in the roman_datamodels that form the totality
 of the datamodels. The schemas are intentionally kept separate to remove
@@ -41,7 +41,7 @@ The following documentation outlines the basic relationship between these
 elements with links to some examples and a list of existing datamodels.
 
 It should be noted that how datamodels are implemented for Roman has
-signficant difference from those used for JWST. These differences will
+significant difference from those used for JWST. These differences will
 be explained at various points in the documentation.
 
 Datamodel Outline

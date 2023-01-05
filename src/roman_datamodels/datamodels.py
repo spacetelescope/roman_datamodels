@@ -1,6 +1,6 @@
 """
 This module provides the same interface as the older, non-tag version of datamodels
-for the whole asdf file. It will start very basic, initialy only to support running
+for the whole asdf file. It will start very basic, initially only to support running
 of the flat field step, but many other methods and capabilities will be added to
 keep consistency with the JWST data model version.
 
@@ -89,7 +89,7 @@ class DataModel:
 
     @property
     def schema_uri(self):
-        # Determine the schema corresonding to this model's tag
+        # Determine the schema corresponding to this model's tag
         schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uri
         return schema_uri
 
@@ -406,7 +406,7 @@ def open(init, memmap=False, target=None, **kwargs):
     if target is not None:
         if not issubclass(target, DataModel):
             raise ValueError("Target must be a subclass of DataModel")
-    # Temp fix to catch JWST args defore being passed to asdf open
+    # Temp fix to catch JWST args before being passed to asdf open
     if "asn_n_members" in kwargs:
         del kwargs["asn_n_members"]
     if isinstance(init, asdf.AsdfFile):
