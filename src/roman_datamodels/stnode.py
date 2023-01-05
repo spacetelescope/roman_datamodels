@@ -581,6 +581,8 @@ class UnitConverter(Converter):
 
 class Associations(dict):
     __slots__ = ()
+    def __init__(self):
+        self._tag = None
 
 
 _DATAMODELS_MANIFEST_PATH = importlib_resources.files(
