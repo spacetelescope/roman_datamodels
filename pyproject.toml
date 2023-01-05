@@ -109,3 +109,6 @@ force-exclude = '''
   )/
 )
 '''
+
+[tool.ruff]
+line-length = 130
