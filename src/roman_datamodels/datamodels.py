@@ -31,6 +31,7 @@ __all__ = [
     'ScienceRawModel',
     'RampModel',
     'RampFitOutputModel',
+    'AssociationsModel',
     'GuidewindowModel',
     'FlatRefModel',
     'DarkRefModel',

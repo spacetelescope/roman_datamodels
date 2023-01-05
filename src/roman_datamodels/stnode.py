@@ -583,6 +583,12 @@ class Associations(dict):
     __slots__ = ()
     _tag = ""
 
+    def __getattr__(self, attr):
+        return self[attr]
+
+    def __setattr__(self, attr, value):
+        self[attr] = value
+
 
 _DATAMODELS_MANIFEST_PATH = importlib_resources.files(
     rad.resources) / "manifests" / "datamodels-1.0.yaml"
