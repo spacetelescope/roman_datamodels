@@ -1,10 +1,15 @@
+0.15.0 (unreleased)
+===================
+
+- Move metadata to ``pyproject.toml`` in accordance with PEP621 [#100]
+- Cleanup ``enum`` validation code. [#112]
+
 0.14.0 (2022-11-14)
 ===================
 
 - Explicitly add ``gwcs`` to the list of dependencies. [#108]
 - Remove the unused ``stnode_test`` module. [#110]
 - Add support for non-VOUnits to be used by Roman. [#109]
-
 - Changed science arrays to quantities. [#111]
   
 
