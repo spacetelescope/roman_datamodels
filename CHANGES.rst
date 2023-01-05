@@ -3,6 +3,7 @@
 
 - Move metadata to ``pyproject.toml`` in accordance with PEP621 [#100]
 - Cleanup ``enum`` validation code. [#112]
+- Add ``pre-commit`` support. [#119]
 
 0.14.0 (2022-11-14)
 ===================
