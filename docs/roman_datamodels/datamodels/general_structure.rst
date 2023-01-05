@@ -20,9 +20,9 @@ variation in the rest of the attributes.
 
 Some of the most relevant methods are:
 
-- **clone:** an in-memory copy 
+- **clone:** an in-memory copy
 - **save:** save in a new file
-- **close:** 
+- **close:**
 - **get_primary_array_name:** the attribute name of the primary array
 - **shape**: shape of primary array
 - **to_flat_dict:** return all items as a flat dictionary with keys as dotted
@@ -38,7 +38,7 @@ Some of the most relevant methods are:
 While ASDF permits a wide variety of legal attribute names, the convention is that Roman
 only uses attribute name that are legal Python variable names. This is so they can be
 used as Python object attributes. Using the above example of for the keys that ``to_flat_dict``
-returns, that permits using ``dm.meta.observation.date`` to obtain the value of that attribute 
+returns, that permits using ``dm.meta.observation.date`` to obtain the value of that attribute
 instead of ``dm.tree['roman']['meta']['observation']['date']``. The latter can still be used
 if you enjoy typing lots of brackets and quotes instead of periods.
 
@@ -111,10 +111,10 @@ attribute, and that science and associated arrays appear directly under the
 ``roman`` attribute. You should note that the metadata has attributes that
 consist of groups of other attributes (e.g., ``exposure`` and ``instrument``).
 
-Most users of the datamodel objects do not need to deal with the schemas, 
-unless they are involved in creating new types of files, or are dealing 
+Most users of the datamodel objects do not need to deal with the schemas,
+unless they are involved in creating new types of files, or are dealing
 with validation errors that aren't obvious from the validation error
-messages. But we will spend some space with some schema examples. Those 
+messages. But we will spend some space with some schema examples. Those
 doing an initial read of this documentation should feel free to skip
 the schema examples.
 
@@ -167,8 +167,8 @@ The corresponding schema is::
     ...
 
 This won't go in to a great deal of detail about schemas but a few things will be
-noted. The end of the schema lists the required attributes, and also specifies 
-the order they should appear in the YAML. The data array attributes specifies the 
+noted. The end of the schema lists the required attributes, and also specifies
+the order they should appear in the YAML. The data array attributes specifies the
 dimensionality of the arrays and their numeric type. The details of the ``meta``
 are mostly specified in other schemas (done this way since these are shared
 amongst many schemas), with exception of the ``reftype`` and ``observation``
@@ -567,7 +567,7 @@ Level 2 Example
 ...............
 
 The calibrated data has very much the same structure in the meta content.
-The following example of Level 2 dataset is shown to show that it now 
+The following example of Level 2 dataset is shown to show that it now
 contains logging messages, and a noticeably different data content. Most
 of the content has been removed to keep it reasonably short, as well as
 not showing the associated schemas::
