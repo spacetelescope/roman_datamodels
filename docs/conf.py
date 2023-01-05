@@ -15,11 +15,12 @@ import datetime
 import importlib
 import os
 import sys
-from configparser import ConfigParser
 from distutils.version import LooseVersion
+from pathlib import Path
 
 import sphinx
 import stsci_rtd_theme
+import tomli
 
 
 def setup(app):
@@ -29,8 +30,6 @@ def setup(app):
         app.add_stylesheet("stsci.css")
 
 
-conf = ConfigParser()
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -38,8 +37,9 @@ sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('roman_datamodels/'))
 
 # -- General configuration ------------------------------------------------
-conf.read([os.path.join(os.path.dirname(__file__), '..', 'setup.cfg')])
-setup_cfg = dict(conf.items('metadata'))
+with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as configuration_file:
+    conf = tomli.load(configuration_file)
+setup_cfg = conf['project']
 
 # If your documentation needs a minimal Sphinx version, state it here.
 # needs_sphinx = '1.3'
@@ -122,15 +122,16 @@ suppress_warnings = ['app.add_directive', ]
 
 # General information about the project
 project = setup_cfg['name']
-author = setup_cfg['author']
-copyright = '{0}, {1}'.format(datetime.datetime.now().year, author)
+primary_author = setup_cfg["authors"][0]
+author = f'{primary_author["name"]} <{primary_author["email"]}>'
+copyright = f'{datetime.datetime.now().year}, {author}'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-package = importlib.import_module(setup_cfg['name'])
+package = importlib.import_module(project)
 try:
     version = package.__version__.split('-', 1)[0]
     # The full version, including alpha/beta/rc tags.

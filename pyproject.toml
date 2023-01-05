@@ -1,6 +1,95 @@
+[project]
+name = 'roman_datamodels'
+description = 'data models supporting calibration of the Nancy Grace Roman Space Telescope'
+readme = 'README.md'
+requires-python = '>=3.8'
+license = { file = 'LICENSE' }
+authors = [{ name = 'STScI', email = 'help@stsci.edu' }]
+classifiers = [
+    'Intended Audience :: Science/Research',
+    'Topic :: Scientific/Engineering :: Astronomy',
+    'License :: OSI Approved :: BSD License',
+    'Programming Language :: Python :: 3',
+]
+dependencies = [
+    'asdf >=2.13.0',
+    'asdf-astropy >=0.3.0',
+    'gwcs >=0.18.1',
+    'psutil >=5.7.2',
+    'numpy',
+    'astropy >=5.0.4',
+    #'rad >=0.14.0',
+    # Temporary path for github PR tests
+    'rad @git+https://github.com/spacetelescope/rad.git@main',
+    'asdf-standard >=1.0.3',
+]
+dynamic = ['version']
+
+[project.optional-dependencies]
+test = [
+    'pytest >=6.0.0',
+    'pytest-doctestplus',
+    'pytest-openfiles >=0.5.0',
+    'pytest-doctestplus >=0.10.0',
+]
+aws = [
+    'stsci-aws-utils >= 0.1.2',
+]
+docs = [
+    'sphinx',
+    'sphinx-automodapi',
+    'sphinx-rtd-theme',
+    'stsci-rtd-theme',
+    'sphinx-astropy',
+    'sphinx-asdf',
+    'tomli; python_version <"3.11"',
+]
+
+[project.urls]
+'issues' = 'https://github.com/spacetelescope/roman_datamodels/issues'
+'repository' = 'https://github.com/spacetelescope/roman_datamodels'
+
+[project.entry-points]
+'asdf.extensions' = { roman_datamodels = 'roman_datamodels.integration:get_extensions' }
+
 [build-system]
-requires = ["setuptools>=42", "setuptools_scm[toml]>=3.4", "wheel"]
+requires = ["setuptools >=61", "setuptools_scm[toml] >=3.4", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 write_to = "src/roman_datamodels/_version.py"
+
+[tool.setuptools.packages.find]
+where = ['src']
+
+[tool.pytest.ini_options]
+minversion = 4.6
+doctest_plus = true
+doctest_rst = true
+text_file_format = 'rst'
+addopts = '--show-capture=no --open-files'
+testpaths = ['tests']
+
+[tool.coverage.run]
+omit = [
+    'roman_datamodels/pyproject.toml',
+    'roman_datamodels/tests',
+    # And list these again for running against installed version
+    '*/roman_datamodels/pyproject.toml',
+    '*/roman_datamodels/tests',
+    '*/roman_datamodels/src/roman_datamodels/mktest.py',
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    'pragma: no cover',
+    # Don't complain about packages we have installed
+    'except ImportError',
+    # Don't complain if tests don't hit assertions
+    'raise AssertionError',
+    'raise NotImplementedError',
+    # Don't complain about script hooks
+    'def main\(.*\):',
+    'if __name__ == \(.*\):',
+]
