@@ -17,3 +17,12 @@ repos:
       exclude: ".*.asdf"
     - id: trailing-whitespace
       exclude: ".*.asdf"
+
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.9.0
+  hooks:
+    - id: python-check-blanket-noqa
+    - id: python-check-mock-methods
+    - id: rst-directive-colons
+    - id: rst-inline-touching-normal
+    - id: text-unicode-replacement-char
