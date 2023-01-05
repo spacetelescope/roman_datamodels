@@ -840,7 +840,7 @@ def _create_basic_meta(**kwargs):
 
     return {
         "calibration_software_version": create_calibration_software_version(**kwargs),
-        "crds_context_used": "roman_{:04d}.pmap".format(_random_positive_int(9999)),
+        "crds_context_used": f"roman_{_random_positive_int(9999):04d}.pmap",
         "crds_software_version": _random_software_version(),
         "filename": create_filename(**kwargs),
         "file_date": create_file_date(**kwargs),

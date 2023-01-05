@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Roman Datamodels documentation build configuration file
 #
@@ -52,9 +51,8 @@ def check_sphinx_version(expected_version):
     expected_version = LooseVersion(expected_version)
     if sphinx_version < expected_version:
         raise RuntimeError(
-            "At least Sphinx version {0} is required to build this "
-            "documentation.  Found {1}.".format(
-                expected_version, sphinx_version))
+            f"At least Sphinx version {expected_version} is required to build this "
+            f"documentation.  Found {sphinx_version}.")
 
 
 # Configuration for intersphinx: refer to the Python standard library.
@@ -348,8 +346,8 @@ htmlhelp_basename = 'roman_datamodelsdoc'
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'roman_datamodels', u'Roman Datamodels Documentation',
-     [u'roman_datamodels'], 1)
+    ('index', 'roman_datamodels', 'Roman Datamodels Documentation',
+     ['roman_datamodels'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -361,8 +359,8 @@ man_show_urls = True
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'roman_datamodels', u'Roman Datamodels Documentation',
-     u'roman_datamodels', 'roman_datamodels', 'Roman Datamodels Documentation',
+    ('index', 'roman_datamodels', 'Roman Datamodels Documentation',
+     'roman_datamodels', 'roman_datamodels', 'Roman Datamodels Documentation',
      'Miscellaneous'),
 ]
 
@@ -382,10 +380,10 @@ texinfo_show_urls = 'inline'
 # -- Options for Epub output ----------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'Roman'
-epub_author = u'STSCI'
-epub_publisher = u'STSCI'
-epub_copyright = u'2017, AURA'
+epub_title = 'Roman'
+epub_author = 'STSCI'
+epub_publisher = 'STSCI'
+epub_copyright = '2017, AURA'
 
 # The basename for the epub file. It defaults to the project name.
 # epub_basename = u'Roman'
