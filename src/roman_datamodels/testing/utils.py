@@ -728,7 +728,7 @@ def mk_linearity(shape=None, filepath=None):
         shape = (2, 4096, 4096)
 
     linearityref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
-    linearityref['coeffs'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
+    linearityref['coeffs'] = np.zeros(shape, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()

@@ -554,7 +554,7 @@ def create_linearity_ref(**kwargs):
     roman_datamodels.stnode.LinearityRef
     """
     raw = {
-        "coeffs": _random_array_float32((2, 4096, 4096), units=ru.DN),
+        "coeffs": _random_array_float32((2, 4096, 4096)),
         "dq": _random_array_uint32((4096, 4096)),
         "meta": create_ref_meta(reftype="LINEARITY"),
     }

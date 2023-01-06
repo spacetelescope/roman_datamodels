@@ -315,7 +315,6 @@ def test_make_linearity():
     linearity = utils.mk_linearity(shape=(2, 20, 20))
     assert linearity.meta.reftype == 'LINEARITY'
     assert linearity.coeffs.dtype == np.float32
-    assert linearity.coeffs.unit == ru.DN
     assert linearity.dq.dtype == np.uint32
 
     # Test validation
