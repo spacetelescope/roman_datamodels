@@ -560,6 +560,9 @@ def create_linearity_ref(**kwargs):
     }
     raw.update(kwargs)
 
+    raw['meta']['input_units'] = ru.DN
+    raw['meta']['output_units'] = ru.DN
+
     return stnode.LinearityRef(raw)
 
 

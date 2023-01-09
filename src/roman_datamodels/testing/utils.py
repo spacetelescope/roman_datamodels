@@ -724,6 +724,9 @@ def mk_linearity(shape=None, filepath=None):
     meta['reftype'] = 'LINEARITY'
     linearityref['meta'] = meta
 
+    linearityref['meta']['input_units'] = ru.DN
+    linearityref['meta']['output_units'] = ru.DN
+
     if not shape:
         shape = (2, 4096, 4096)
 
