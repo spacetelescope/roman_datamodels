@@ -10,8 +10,6 @@ from pydoc import locate
 
 import psutil
 
-# from . import s3_utils
-# from .basic_utils import bytes2human
 from .extensions import DATAMODEL_EXTENSIONS
 
 log = logging.getLogger(__name__)
