@@ -3,6 +3,7 @@ import astropy.time as time
 import numpy as np
 from astropy import units as u
 from astropy.modeling import models
+from astropy.table import Table
 from roman_datamodels import units as ru
 
 from .factories import _random_positive_int, _random_string
@@ -194,6 +195,19 @@ def mk_photometry():
     phot['conversion_megajanskys_uncertainty'] = NONUM * u.MJy / u.sr
     return phot
 
+def mk_source_detection():
+    """
+    Create a dummy Dource Detection instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SourceDetection
+    """
+    source_detection = stnode.SourceDetection()
+    source_detection['name'] = NOSTR
+    source_detection['tweakreg_catalog'] = Table(names=['id', 'xcentroid', 'ycentroid', 'flux'])
+    return source_detection
 
 def mk_coordinates():
     """
@@ -324,6 +338,7 @@ def mk_cal_step():
     calstep['photom'] = 'INCOMPLETE'
     calstep['ramp_fit'] = 'INCOMPLETE'
     calstep['saturation'] = 'INCOMPLETE'
+    calstep['source_detection'] = 'INCOMPLETE'
 
     return calstep
 
@@ -372,6 +387,12 @@ def mk_guidestar():
     guide['gs_mudec'] = NONUM
     guide['gs_para'] = NONUM
     guide['gs_pattern_error'] = NONUM
+    guide['gw_window_xstart'] = NONUM
+    guide['gw_window_ystart'] = NONUM
+    guide['gw_window_xstop'] = guide['gw_window_xstart'] + 170
+    guide['gw_window_ystop'] = guide['gw_window_ystart'] + 24
+    guide['gw_window_xsize'] = 170
+    guide['gw_window_ysize'] = 24
     return guide
 
 
@@ -496,6 +517,7 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
     """
     meta = mk_common_meta()
     meta['photometry'] = mk_photometry()
+    meta['source_detection'] = mk_source_detection()
     wfi_image = stnode.WfiImage()
     wfi_image['meta'] = meta
     if not shape:
@@ -619,9 +641,9 @@ def mk_dark(shape=None, filepath=None):
     if not shape:
         shape = (2, 4096, 4096)
 
-    darkref['data'] = np.zeros(shape, dtype=np.float32)
+    darkref['data'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
     darkref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
-    darkref['err'] = np.zeros(shape, dtype=np.float32)
+    darkref['err'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -692,7 +714,7 @@ def mk_gain(shape=None, filepath=None):
     if not shape:
         shape = (4096, 4096)
 
-    gainref['data'] = np.zeros(shape, dtype=np.float32)
+    gainref['data'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron / ru.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -700,6 +722,44 @@ def mk_gain(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return gainref
+
+
+def mk_ipc(shape=None, filepath=None):
+    """
+    Create a dummy IPC instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of array in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.IpcRef
+    """
+    meta = {}
+    add_ref_common(meta)
+    ipcref = stnode.IpcRef()
+    meta['reftype'] = 'IPC'
+    ipcref['meta'] = meta
+
+    if not shape:
+        shape = (3, 3)
+
+    ipcref['data'] = np.zeros(shape, dtype=np.float32)
+    ipcref['data'][int(np.floor(shape[0]/2))][int(np.floor(shape[1]/2))] = 1.0
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': ipcref}
+        af.write_to(filepath)
+    else:
+        return ipcref
+
 
 def mk_linearity(shape=None, filepath=None):
     """
@@ -724,11 +784,14 @@ def mk_linearity(shape=None, filepath=None):
     meta['reftype'] = 'LINEARITY'
     linearityref['meta'] = meta
 
+    linearityref['meta']['input_units'] = ru.DN
+    linearityref['meta']['output_units'] = ru.DN
+
     if not shape:
         shape = (2, 4096, 4096)
 
-    linearityref['coeffs'] = np.zeros(shape, dtype=np.float32)
     linearityref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
+    linearityref['coeffs'] = np.zeros(shape, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -918,7 +981,7 @@ def mk_readnoise(shape=None, filepath=None):
     if not shape:
         shape = (4096, 4096)
 
-    readnoiseref['data'] = np.zeros(shape, dtype=np.float32)
+    readnoiseref['data'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -1074,10 +1137,10 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow['meta']['gw_mode'] = 'WIM-ACQ'
     guidewindow['meta']['gw_window_xstart'] = NONUM
     guidewindow['meta']['gw_window_ystart'] = NONUM
-    guidewindow['meta']['gw_window_xstop'] = guidewindow['meta']['gw_window_xstart'] + 16.0
-    guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 16.0
-    guidewindow['meta']['gw_window_xsize'] = 16.0
-    guidewindow['meta']['gw_window_ysize'] = 16.0
+    guidewindow['meta']['gw_window_xstop'] = guidewindow['meta']['gw_window_xstart'] + 170
+    guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 24
+    guidewindow['meta']['gw_window_xsize'] = 170
+    guidewindow['meta']['gw_window_ysize'] = 24
 
     guidewindow['meta']['gw_function_start_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
@@ -1131,8 +1194,8 @@ def mk_saturation(shape=None, filepath=None):
     if not shape:
         shape = (4096, 4096)
 
-    saturationref['data'] = np.zeros(shape, dtype=np.float32)
     saturationref['dq'] = np.zeros(shape, dtype=np.uint32)
+    saturationref['data'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()

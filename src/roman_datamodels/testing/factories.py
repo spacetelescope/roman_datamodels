@@ -12,6 +12,7 @@ import sys
 from astropy.time import Time
 from astropy import units as u
 from astropy.modeling import models
+from astropy.table import Table
 import numpy as np
 
 from roman_datamodels import units as ru
@@ -40,6 +41,7 @@ __all__ = [
     "create_node",
     "create_observation",
     "create_photometry",
+    "create_source_detection",
     "create_pixelarea",
     "create_pointing",
     "create_program",
@@ -287,6 +289,7 @@ def create_cal_step(**kwargs):
         "jump" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "linearity" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "photom": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "source_detection": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "ramp_fit" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "saturation" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
     }
@@ -479,9 +482,9 @@ def create_dark_ref(**kwargs):
     roman_datamodels.stnode.DarkRef
     """
     raw = {
-        "data": _random_array_float32((2, 4096, 4096)),
+        "data": _random_array_float32((2, 4096, 4096), units=ru.DN),
         "dq": _random_array_uint32(),
-        "err": _random_array_float32((2, 4096, 4096)),
+        "err": _random_array_float32((2, 4096, 4096), units=ru.DN),
         "meta": create_ref_meta(reftype="DARK")
     }
     raw.update(kwargs)
@@ -532,12 +535,38 @@ def create_gain_ref(**kwargs):
     roman_datamodels.stnode.GainRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096)),
+        "data": _random_array_float32((4096, 4096), units=ru.electron / ru.DN),
         "meta": create_ref_meta(reftype="GAIN"),
     }
     raw.update(kwargs)
 
     return stnode.GainRef(raw)
+
+
+def create_ipc_ref(**kwargs):
+    """
+    Create a dummy IpcRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.IpcRef
+    """
+    kernel = np.abs(_random_array_float32((3, 3)))
+    kernel /= np.sum(kernel)
+    raw = {
+        "data": kernel,
+        "meta": create_ref_meta(reftype="IPC"),
+    }
+    raw.update(kwargs)
+
+    return stnode.IpcRef(raw)
+
 
 def create_linearity_ref(**kwargs):
     """
@@ -559,6 +588,9 @@ def create_linearity_ref(**kwargs):
         "meta": create_ref_meta(reftype="LINEARITY"),
     }
     raw.update(kwargs)
+
+    raw['meta']['input_units'] = ru.DN
+    raw['meta']['output_units'] = ru.DN
 
     return stnode.LinearityRef(raw)
 
@@ -626,7 +658,7 @@ def create_readnoise_ref(**kwargs):
     roman_datamodels.stnode.ReadnoiseRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096)),
+        "data": _random_array_float32((4096, 4096), units=ru.DN),
         "meta": create_ref_meta(reftype="READNOISE"),
     }
     raw.update(kwargs)
@@ -649,7 +681,7 @@ def create_saturation_ref(**kwargs):
     roman_datamodels.stnode.SaturationRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096)),
+        "data": _random_array_float32((4096, 4096), units=ru.DN),
         "dq": _random_array_uint32((4096, 4096)),
         "meta": create_ref_meta(reftype="SATURATION"),
     }
@@ -784,14 +816,14 @@ def create_guidestar(**kwargs):
         "gs_ura": _random_positive_float(),
         "gw_id": _random_string("ID ", 20),
         "gw_fgs_mode": "WSM-ACQ-2",
-        "gw_window_xsize": 16.0,
-        "gw_window_xstart": _random_positive_float(),
-        "gw_window_ysize": 16.0,
-        "gw_window_ystart": _random_positive_float(),
+        "gw_window_xsize": 16,
+        "gw_window_xstart": _random_positive_int(4000),
+        "gw_window_ysize": 16,
+        "gw_window_ystart": _random_positive_int(4000),
         "gs_pattern_error": _random_positive_float(),
     }
-    raw["gw_window_xstop"] = raw["gw_window_xstart"] + 16.0
-    raw["gw_window_ystop"] = raw["gw_window_ystart"] + 16.0
+    raw["gw_window_xstop"] = raw["gw_window_xstart"] + 16
+    raw["gw_window_ystop"] = raw["gw_window_ystart"] + 16
     raw.update(kwargs)
 
     return stnode.Guidestar(raw)
@@ -950,6 +982,21 @@ def create_photometry(**kwargs):
     raw.update(kwargs)
 
     return stnode.Photometry(raw)
+
+def create_source_detection(**kwargs):
+    """
+    Create a dummy SourceDetection instance with valid values for attributes
+    required by the schema.
+    """
+
+    raw = {
+        "name":_random_string("file", 17),
+        "tweakreg_catalog": Table(names=['id', 'xcentroid', 'ycentroid', 'flux'])
+        }
+
+    raw.update(kwargs)
+
+    return stnode.SourceDetection(raw)
 
 
 def create_pixelarea(**kwargs):
@@ -1136,12 +1183,12 @@ def create_guidewindow(**kwargs):
     raw['meta']['signal_resultant_exp_time'] = _random_float()
     raw['meta']['gw_acq_number'] = _random_int()
     raw['meta']['gw_mode'] = 'WIM-ACQ'
-    raw['meta']['gw_window_xstart'] = _random_float()
-    raw['meta']['gw_window_ystart'] = _random_float()
-    raw['meta']['gw_window_xstop'] = raw['meta']["gw_window_xstart"] + 16.0
-    raw['meta']['gw_window_ystop'] = raw['meta']["gw_window_ystart"] + 16.0
-    raw['meta']['gw_window_xsize'] = 16.0
-    raw['meta']['gw_window_ysize'] = 16.0
+    raw['meta']['gw_window_xstart'] = _random_positive_int(4000)
+    raw['meta']['gw_window_ystart'] = _random_positive_int(4000)
+    raw['meta']['gw_window_xstop'] = raw['meta']["gw_window_xstart"] + 16
+    raw['meta']['gw_window_ystop'] = raw['meta']["gw_window_ystart"] + 16
+    raw['meta']['gw_window_xsize'] = 16
+    raw['meta']['gw_window_ysize'] = 16
     raw['meta']['gw_acq_exec_stat'] = _random_string("Status ", 15)
 
     raw['meta']["gw_acq_exec_stat"] = _random_string("Status ", 15)
