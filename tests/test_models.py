@@ -3,6 +3,7 @@ import warnings
 
 from jsonschema import ValidationError
 from astropy import units as u
+from roman_datamodels import units as ru
 import asdf
 from astropy.modeling import Model
 import numpy as np
@@ -85,11 +86,13 @@ def test_make_ramp():
 
     assert ramp.meta.exposure.type == 'WFI_IMAGE'
     assert ramp.data.dtype == np.float32
+    assert ramp.data.unit == ru.DN
     assert ramp.pixeldq.dtype == np.uint32
     assert ramp.pixeldq.shape == (20, 20)
     assert ramp.groupdq.dtype == np.uint8
     assert ramp.err.dtype == np.float32
     assert ramp.err.shape == (2, 20, 20)
+    assert ramp.err.unit == ru.DN
 
     # Test validation
     ramp = datamodels.RampModel(ramp)
@@ -111,14 +114,22 @@ def test_make_rampfitoutput():
 
     assert rampfitoutput.meta.exposure.type == 'WFI_IMAGE'
     assert rampfitoutput.slope.dtype == np.float32
+    assert rampfitoutput.slope.unit == ru.electron / u.s
     assert rampfitoutput.sigslope.dtype == np.float32
+    assert rampfitoutput.sigslope.unit == ru.electron / u.s
     assert rampfitoutput.yint.dtype == np.float32
+    assert rampfitoutput.yint.unit == ru.electron
     assert rampfitoutput.sigyint.dtype == np.float32
+    assert rampfitoutput.sigyint.unit == ru.electron
     assert rampfitoutput.pedestal.dtype == np.float32
+    assert rampfitoutput.pedestal.unit == ru.electron
     assert rampfitoutput.weights.dtype == np.float32
     assert rampfitoutput.crmag.dtype == np.float32
+    assert rampfitoutput.crmag.unit == ru.electron
     assert rampfitoutput.var_poisson.dtype == np.float32
+    assert rampfitoutput.var_poisson.unit == ru.electron**2 / u.s**2
     assert rampfitoutput.var_rnoise.dtype == np.float32
+    assert rampfitoutput.var_rnoise.unit == ru.electron**2 / u.s**2
     assert rampfitoutput.var_poisson.shape == (2, 20, 20)
     assert rampfitoutput.pedestal.shape == (20, 20)
 
@@ -142,8 +153,11 @@ def test_make_guidewindow():
 
     assert guidewindow.meta.exposure.type == 'WFI_IMAGE'
     assert guidewindow.pedestal_frames.dtype == np.uint16
+    assert guidewindow.pedestal_frames.unit == ru.DN
     assert guidewindow.signal_frames.dtype == np.uint16
+    assert guidewindow.signal_frames.unit == ru.DN
     assert guidewindow.amp33.dtype == np.uint16
+    assert guidewindow.amp33.unit == ru.DN
     assert guidewindow.pedestal_frames.shape == (2, 8, 16, 32, 32)
     assert guidewindow.signal_frames.shape == (2, 8, 16, 32, 32)
     assert guidewindow.amp33.shape == (2, 8, 16, 32, 32)
@@ -238,6 +252,7 @@ def test_make_dark():
     assert dark.dq.dtype == np.uint32
     assert dark.dq.shape == (20, 20)
     assert dark.err.dtype == np.float32
+    assert dark.data.unit == ru.DN
 
     # Test validation
     dark_model = datamodels.DarkRefModel(dark)
@@ -281,6 +296,7 @@ def test_make_gain():
     gain = utils.mk_gain(shape=(20, 20))
     assert gain.meta.reftype == 'GAIN'
     assert gain.data.dtype == np.float32
+    assert gain.data.unit == ru.electron / ru.DN
 
     # Test validation
     gain_model = datamodels.GainRefModel(gain)
@@ -364,6 +380,7 @@ def test_make_readnoise():
     readnoise = utils.mk_readnoise(shape=(20, 20))
     assert readnoise.meta.reftype == 'READNOISE'
     assert readnoise.data.dtype == np.float32
+    assert readnoise.data.unit == ru.DN
 
     # Test validation
     readnoise_model = datamodels.ReadnoiseRefModel(readnoise)
@@ -403,6 +420,8 @@ def test_make_saturation():
     saturation = utils.mk_saturation(shape=(20, 20))
     assert saturation.meta.reftype == 'SATURATION'
     assert saturation.dq.dtype == np.uint32
+    assert saturation.data.dtype == np.float32
+    assert saturation.data.unit == ru.DN
 
     # Test validation
     saturation_model = datamodels.SaturationRefModel(saturation)
@@ -447,11 +466,17 @@ def test_make_wfi_img_photom():
 
     assert wfi_img_photom.meta.reftype == 'PHOTOM'
     assert isinstance(wfi_img_photom.phot_table.F146.photmjsr, u.Quantity)
+    assert wfi_img_photom.phot_table.F146.photmjsr.unit == u.megajansky / u.steradian
     assert isinstance(wfi_img_photom.phot_table.F184.photmjsr, u.Quantity)
+
     assert isinstance(wfi_img_photom.phot_table.F146.uncertainty, u.Quantity)
     assert isinstance(wfi_img_photom.phot_table.F184.uncertainty, u.Quantity)
+    assert wfi_img_photom.phot_table.F184.uncertainty.unit == u.megajansky / u.steradian
+
     assert isinstance(wfi_img_photom.phot_table.F184.pixelareasr, u.Quantity)
     assert isinstance(wfi_img_photom.phot_table.F146.pixelareasr, u.Quantity)
+    assert wfi_img_photom.phot_table.GRISM.pixelareasr.unit == u.steradian
+
     assert wfi_img_photom.phot_table.PRISM.photmjsr is None
     assert wfi_img_photom.phot_table.PRISM.uncertainty is None
     assert isinstance(wfi_img_photom.phot_table.PRISM.pixelareasr, u.Quantity)
@@ -476,6 +501,7 @@ def test_level1_science_raw():
     wfi_science_raw = utils.mk_level1_science_raw()
 
     assert wfi_science_raw.data.dtype == np.uint16
+    assert wfi_science_raw.data.unit == ru.DN
 
     # Test validation
     wfi_science_raw_model = datamodels.ScienceRawModel(wfi_science_raw)
@@ -497,10 +523,14 @@ def test_level2_image():
     wfi_image = utils.mk_level2_image()
 
     assert wfi_image.data.dtype == np.float32
+    assert wfi_image.data.unit == ru.electron / u.s
     assert wfi_image.dq.dtype == np.uint32
     assert wfi_image.err.dtype == np.float32
+    assert wfi_image.err.unit == ru.electron / u.s
     assert wfi_image.var_poisson.dtype == np.float32
+    assert wfi_image.var_poisson.unit == ru.electron**2 / u.s**2
     assert wfi_image.var_rnoise.dtype == np.float32
+    assert wfi_image.var_rnoise.unit == ru.electron ** 2 / u.s ** 2
     assert wfi_image.var_flat.dtype == np.float32
     assert type(wfi_image.cal_logs[0]) == str
 
