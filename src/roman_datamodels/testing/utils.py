@@ -621,9 +621,9 @@ def mk_dark(shape=None, filepath=None):
     if not shape:
         shape = (2, 4096, 4096)
 
-    darkref['data'] = np.zeros(shape, dtype=np.float32)
+    darkref['data'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
     darkref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
-    darkref['err'] = np.zeros(shape, dtype=np.float32)
+    darkref['err'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -694,7 +694,7 @@ def mk_gain(shape=None, filepath=None):
     if not shape:
         shape = (4096, 4096)
 
-    gainref['data'] = np.zeros(shape, dtype=np.float32)
+    gainref['data'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron / ru.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -726,11 +726,14 @@ def mk_linearity(shape=None, filepath=None):
     meta['reftype'] = 'LINEARITY'
     linearityref['meta'] = meta
 
+    linearityref['meta']['input_units'] = ru.DN
+    linearityref['meta']['output_units'] = ru.DN
+
     if not shape:
         shape = (2, 4096, 4096)
 
-    linearityref['coeffs'] = np.zeros(shape, dtype=np.float32)
     linearityref['dq'] = np.zeros(shape[1:], dtype=np.uint32)
+    linearityref['coeffs'] = np.zeros(shape, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -920,7 +923,7 @@ def mk_readnoise(shape=None, filepath=None):
     if not shape:
         shape = (4096, 4096)
 
-    readnoiseref['data'] = np.zeros(shape, dtype=np.float32)
+    readnoiseref['data'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -1256,8 +1259,8 @@ def mk_saturation(shape=None, filepath=None):
     if not shape:
         shape = (4096, 4096)
 
-    saturationref['data'] = np.zeros(shape, dtype=np.float32)
     saturationref['dq'] = np.zeros(shape, dtype=np.uint32)
+    saturationref['data'] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
