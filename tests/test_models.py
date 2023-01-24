@@ -317,6 +317,8 @@ def test_make_ipc():
     ipc = utils.mk_ipc(shape=(20, 20))
     assert ipc.meta.reftype == 'IPC'
     assert ipc.data.dtype == np.float32
+    assert ipc.data[10,10] == 1.0
+    assert np.sum(ipc.data) == 1.0
 
     # Test validation
     ipc_model = datamodels.GainRefModel(ipc)
@@ -328,6 +330,8 @@ def test_opening_ipc_ref(tmp_path):
     file_path = tmp_path / 'testipc.asdf'
     utils.mk_ipc(filepath=file_path)
     ipc = datamodels.open(file_path)
+    assert ipc.data[1, 1] == 1.0
+    assert np.sum(ipc.data) == 1.0
     assert ipc.meta.instrument.optical_element == 'F158'
     assert isinstance(ipc, datamodels.IpcRefModel)
 

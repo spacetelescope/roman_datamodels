@@ -374,10 +374,10 @@ def mk_guidestar():
     guide['gs_pattern_error'] = NONUM
     guide['gw_window_xstart'] = NONUM
     guide['gw_window_ystart'] = NONUM
-    guide['gw_window_xstop'] = guide['gw_window_xstart'] + 16
-    guide['gw_window_ystop'] = guide['gw_window_ystart'] + 16
-    guide['gw_window_xsize'] = 16
-    guide['gw_window_ysize'] = 16
+    guide['gw_window_xstop'] = guide['gw_window_xstart'] + 170
+    guide['gw_window_ystop'] = guide['gw_window_ystart'] + 24
+    guide['gw_window_xsize'] = 170
+    guide['gw_window_ysize'] = 24
     return guide
 
 
@@ -732,9 +732,10 @@ def mk_ipc(shape=None, filepath=None):
     ipcref['meta'] = meta
 
     if not shape:
-        shape = (4096, 4096)
+        shape = (3, 3)
 
     ipcref['data'] = np.zeros(shape, dtype=np.float32)
+    ipcref['data'][int(np.floor(shape[0]/2))][int(np.floor(shape[1]/2))] = 1.0
 
     if filepath:
         af = asdf.AsdfFile()
@@ -1120,10 +1121,10 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow['meta']['gw_mode'] = 'WIM-ACQ'
     guidewindow['meta']['gw_window_xstart'] = NONUM
     guidewindow['meta']['gw_window_ystart'] = NONUM
-    guidewindow['meta']['gw_window_xstop'] = guidewindow['meta']['gw_window_xstart'] + 16
-    guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 16
-    guidewindow['meta']['gw_window_xsize'] = 16
-    guidewindow['meta']['gw_window_ysize'] = 16
+    guidewindow['meta']['gw_window_xstop'] = guidewindow['meta']['gw_window_xstart'] + 170
+    guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 24
+    guidewindow['meta']['gw_window_xsize'] = 170
+    guidewindow['meta']['gw_window_ysize'] = 24
 
     guidewindow['meta']['gw_function_start_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')
