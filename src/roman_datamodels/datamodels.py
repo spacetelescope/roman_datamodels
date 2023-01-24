@@ -337,6 +337,8 @@ class DistortionRefModel(DataModel):
 class GainRefModel(DataModel):
     pass
 
+class IpcRefModel(DataModel):
+    pass
 
 class LinearityRefModel(DataModel):
     def get_primary_array_name(self):
@@ -454,6 +456,7 @@ model_registry = {
     stnode.DarkRef: DarkRefModel,
     stnode.DistortionRef: DistortionRefModel,
     stnode.GainRef: GainRefModel,
+    stnode.IpcRef: IpcRefModel,
     stnode.LinearityRef: LinearityRefModel,
     stnode.MaskRef: MaskRefModel,
     stnode.PixelareaRef: PixelareaRefModel,
