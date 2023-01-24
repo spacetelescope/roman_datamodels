@@ -314,7 +314,7 @@ def test_opening_gain_ref(tmp_path):
 
 # Gain tests
 def test_make_ipc():
-    ipc = utils.mk_ipc(shape=(20, 20))
+    ipc = utils.mk_ipc(shape=(21, 21))
     assert ipc.meta.reftype == 'IPC'
     assert ipc.data.dtype == np.float32
     assert ipc.data[10,10] == 1.0
