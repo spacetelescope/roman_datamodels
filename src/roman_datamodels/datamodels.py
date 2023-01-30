@@ -23,6 +23,7 @@ from . import stnode
 from . import validate
 from . extensions import DATAMODEL_EXTENSIONS
 from collections import OrderedDict
+from asdf import AsdfFile
 
 
 __all__ = [
@@ -308,7 +309,30 @@ class DataModel:
         return self._asdf.schema_info(*args, **kwargs)
 
 class ImageModel(DataModel):
-    pass
+    def __delattr__(self, attr):
+        try:
+            print ('Deleting attribute: %s' % attr)
+            del self._instance[attr]
+        except KeyError:
+            print ('Already deleted this attribute!')
+
+    def __setattr__(self, attr, value):
+        if attr.startswith('_'):
+            self.__dict__[attr] = value
+        else:
+            setattr(self._instance, attr, value)
+
+    def __getattr__(self, attr):
+        return getattr(self._instance, attr)
+
+    def __setitem__(self, key, value):
+        if key.startswith('_'):
+            raise ValueError(
+                'May not specify attributes/keys that start with _')
+        if hasattr(self._instance, key):
+            setattr(self._instance, key, value)
+        else:
+            self._instance._data[key] = value
 
 
 class ScienceRawModel(DataModel):
@@ -323,35 +347,121 @@ class RampFitOutputModel(DataModel):
     pass
 
 
-class AssociationsModel(DataModel):
-    # Need an init to allow instantiation from a JSON file
-    pass
-
-
 class GuidewindowModel(DataModel):
     pass
 
 
-class ModelContainer(DataModel, Sequence):
-    # Needs a number of methods to properly handle the contents
-    def __init__(self, init=None, asn_schema= None, asn_file_path=None, model_file_path=None, iscopy=False, **kwargs):
-        # __init__(self, init=None, asn_exptypes=None, asn_n_members=None,
-        #                  iscopy=False, **kwargs):
-        super().__init__(init=None, **kwargs)
+class ModelContainer(Sequence):
+    """
+    A container for holding DataModels.
+
+    This functions like a list for holding DataModel objects.  It can be
+    iterated through like a list, DataModels within the container can be
+    addressed by index, and the datamodels can be grouped into a list of
+    lists for grouped looping, useful for NIRCam where grouping together
+    all detectors of a given exposure is useful for some pipeline steps.
+
+    Parameters
+    ----------
+    init : file path, list of DataModels, or None
+
+        - file path: initialize from an association table
+
+        - list: a list of DataModels of any type
+
+        - None: initializes an empty `ModelContainer` instance, to which
+          DataModels can be added via the ``append()`` method.
+
+    asn_exptypes: str
+        list of exposure types from the asn file to read
+        into the ModelContainer, if None read all the given files.
+
+    asn_n_members : int
+        Open only the first N qualifying members.
+
+    iscopy : bool
+        Presume this model is a copy. Members will not be closed
+        when the model is closed/garbage-collected.
+
+    Examples
+    --------
+    >>> container = ModelContainer('example_asn.json')
+    >>> for model in container:
+    ...     print(model.meta.filename)
+
+    Say the association was a NIRCam dithered dataset. The `models_grouped`
+    attribute is a list of lists, the first index giving the list of exposure
+    groups, with the second giving the individual datamodels representing
+    each detector in the exposure (2 or 8 in the case of NIRCam).
+
+    >>> total_exposure_time = 0.0
+    >>> for group in container.models_grouped:
+    ...     total_exposure_time += group[0].meta.exposure.exposure_time
+
+    >>> c = ModelContainer()
+    >>> m = datamodels.open('myfile.fits')
+    >>> c.append(m)
+
+    Notes
+    -----
+        The optional paramters ``save_open`` and ``return_open`` can be
+        provided to control how the `DataModel` are used by the
+        :py:class:`ModelContainer`. If ``save_open`` is set to `False`, each input
+        `DataModel` instance in ``init`` will be written out to disk and
+        closed, then only the filename for the `DataModel` will be used to
+        initialize the :py:class:`ModelContainer` object.
+        Subsequent access of each member will then open the `DataModel` file to
+        work with it. If ``return_open`` is also `False`, then the `DataModel`
+        will be closed when access to the `DataModel` is completed. The use of
+        these parameters can minimize the amount of memory used by this object
+        during processing, with these parameters being used
+        by :py:class:`~jwst.outlier_detection.OutlierDetectionStep`.
+
+        When ASN table's members contain attributes listed in
+        :py:data:`RECOGNIZED_MEMBER_FIELDS`, :py:class:`ModelContainer` will
+        read those attribute values and update the corresponding attributes
+        in the ``meta`` of input models.
+
+        .. code-block::
+            :caption: Example of ASN table with additional model attributes \
+to supply custom catalogs.
+
+            "products": [
+                {
+                    "name": "resampled_image",
+                    "members": [
+                        {
+                            "expname": "input_image1_cal.fits",
+                            "exptype": "science",
+                            "tweakreg_catalog": "custom_catalog1.ecsv"
+                        },
+                        {
+                            "expname": "input_image2_cal.fits",
+                            "exptype": "science",
+                            "tweakreg_catalog": "custom_catalog2.ecsv"
+                        }
+                    ]
+                }
+            ]
+
+        .. warning::
+            Input files will be updated in-place with new ``meta`` attribute
+            values when ASN table's members contain additional attributes.
+
+    """
+    def __init__(self, init=None, asn_schema= None, asn_file_path=None, 
+                 model_file_path=None, iscopy=False, **kwargs):
 
         self._models = []
         self._iscopy = iscopy
-        # self.asn_exptypes = asn_exptypes
-        # self.asn_n_members = asn_n_members
-        # self.asn_table = {}
-        # self.asn_table_name = None
-        # self.asn_pool_name = None
-
         self._memmap = kwargs.get("memmap", False)
         self._return_open = kwargs.get('return_open', True)
         self._save_open = kwargs.get('save_open', True)
 
-        if asn_file_path:
+        if init is None:
+            # don't populate container
+            pass
+        elif asn_file_path:
             with builtins.open(asn_file_path, 'r') as asn_file:
                 asn_schema = json.load(asn_file)
 
@@ -362,17 +472,10 @@ class ModelContainer(DataModel, Sequence):
                     else:
                         member_model = "null"
 
-                    self._models.append(
-                        # {
-                        #     "name" : member['expname'],
-                        #     "datamodel" : member_model
-                        # }
-                        member_model
-                    )
+                    self._models.append(member_model)
         elif isinstance(init, list):
             # only append list items to self._models if all items are either 
             # strings (i.e. path to an ASDF file) or instances of DataModel
-
             is_all_string = all(isinstance(x, str) for x in init)
             is_all_roman_datamodels = all(isinstance(x, DataModel) for x in init)
 
@@ -381,6 +484,15 @@ class ModelContainer(DataModel, Sequence):
             else:
                 raise TypeError(
                         "Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
+        elif isinstance(init, self.__class__):
+            instance = copy.deepcopy(init._instance)
+            self._schema = init._schema
+            self._shape = init._shape
+            self._asdf = AsdfFile(instance)
+            self._instance = instance
+            self._ctx = self
+            self._models = init._models
+            self._iscopy = True
         else:
             raise TypeError(
                         "Input must be an ASN filepath or list of either strings (full path to ASDF files) or Roman datamodels.")
@@ -417,26 +529,6 @@ class ModelContainer(DataModel, Sequence):
 
     def pop(self, index=-1):
         self._models.pop(index)
-
-    def copy(self, memo=None):
-        """
-        Returns a deep copy of the models in this model container.
-        """
-        result = self.__class__(init=None,
-                                pass_invalid_values=self._pass_invalid_values,
-                                strict_validation=self._strict_validation)
-        instance = copy.deepcopy(self._instance, memo=memo)
-        result._asdf = asdf.AsdfFile(instance)
-        result._instance = instance
-        result._iscopy = self._iscopy
-        result._schema = self._schema
-        result._ctx = result
-        for m in self._models:
-            if isinstance(m, DataModel):
-                result.append(m.copy())
-            else:
-                result.append(m)
-        return result
     
     @property
     def models_grouped(self):
