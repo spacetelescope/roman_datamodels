@@ -526,9 +526,6 @@ to supply custom catalogs.
 
     def extend(self, model):
         self._models.extend(model)
-
-    def pop(self, index=-1):
-        self._models.pop(index)
     
     @property
     def models_grouped(self):
