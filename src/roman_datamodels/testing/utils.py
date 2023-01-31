@@ -374,6 +374,12 @@ def mk_guidestar():
     guide['gs_mudec'] = NONUM
     guide['gs_para'] = NONUM
     guide['gs_pattern_error'] = NONUM
+    guide['gw_window_xstart'] = NONUM
+    guide['gw_window_ystart'] = NONUM
+    guide['gw_window_xstop'] = guide['gw_window_xstart'] + 170
+    guide['gw_window_ystop'] = guide['gw_window_ystart'] + 24
+    guide['gw_window_xsize'] = 170
+    guide['gw_window_ysize'] = 24
     return guide
 
 
@@ -702,6 +708,44 @@ def mk_gain(shape=None, filepath=None):
         af.write_to(filepath)
     else:
         return gainref
+
+
+def mk_ipc(shape=None, filepath=None):
+    """
+    Create a dummy IPC instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of array in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.IpcRef
+    """
+    meta = {}
+    add_ref_common(meta)
+    ipcref = stnode.IpcRef()
+    meta['reftype'] = 'IPC'
+    ipcref['meta'] = meta
+
+    if not shape:
+        shape = (3, 3)
+
+    ipcref['data'] = np.zeros(shape, dtype=np.float32)
+    ipcref['data'][int(np.floor(shape[0]/2))][int(np.floor(shape[1]/2))] = 1.0
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {'roman': ipcref}
+        af.write_to(filepath)
+    else:
+        return ipcref
+
 
 def mk_linearity(shape=None, filepath=None):
     """
@@ -1202,10 +1246,10 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow['meta']['gw_mode'] = 'WIM-ACQ'
     guidewindow['meta']['gw_window_xstart'] = NONUM
     guidewindow['meta']['gw_window_ystart'] = NONUM
-    guidewindow['meta']['gw_window_xstop'] = guidewindow['meta']['gw_window_xstart'] + 16.0
-    guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 16.0
-    guidewindow['meta']['gw_window_xsize'] = 16.0
-    guidewindow['meta']['gw_window_ysize'] = 16.0
+    guidewindow['meta']['gw_window_xstop'] = guidewindow['meta']['gw_window_xstart'] + 170
+    guidewindow['meta']['gw_window_ystop'] = guidewindow['meta']['gw_window_ystart'] + 24
+    guidewindow['meta']['gw_window_xsize'] = 170
+    guidewindow['meta']['gw_window_ysize'] = 24
 
     guidewindow['meta']['gw_function_start_time'] = time.Time(
         '2020-01-01T00:00:00.0', format='isot', scale='utc')

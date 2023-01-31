@@ -539,6 +539,32 @@ def create_gain_ref(**kwargs):
 
     return stnode.GainRef(raw)
 
+
+def create_ipc_ref(**kwargs):
+    """
+    Create a dummy IpcRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.IpcRef
+    """
+    kernel = np.abs(_random_array_float32((3, 3)))
+    kernel /= np.sum(kernel)
+    raw = {
+        "data": kernel,
+        "meta": create_ref_meta(reftype="IPC"),
+    }
+    raw.update(kwargs)
+
+    return stnode.IpcRef(raw)
+
+
 def create_linearity_ref(**kwargs):
     """
     Create a dummy LinearityRef instance with valid values for attributes
@@ -787,14 +813,14 @@ def create_guidestar(**kwargs):
         "gs_ura": _random_positive_float(),
         "gw_id": _random_string("ID ", 20),
         "gw_fgs_mode": "WSM-ACQ-2",
-        "gw_window_xsize": 16.0,
-        "gw_window_xstart": _random_positive_float(),
-        "gw_window_ysize": 16.0,
-        "gw_window_ystart": _random_positive_float(),
+        "gw_window_xsize": 16,
+        "gw_window_xstart": _random_positive_int(4000),
+        "gw_window_ysize": 16,
+        "gw_window_ystart": _random_positive_int(4000),
         "gs_pattern_error": _random_positive_float(),
     }
-    raw["gw_window_xstop"] = raw["gw_window_xstart"] + 16.0
-    raw["gw_window_ystop"] = raw["gw_window_ystart"] + 16.0
+    raw["gw_window_xstop"] = raw["gw_window_xstart"] + 16
+    raw["gw_window_ystop"] = raw["gw_window_ystart"] + 16
     raw.update(kwargs)
 
     return stnode.Guidestar(raw)
@@ -1247,12 +1273,12 @@ def create_guidewindow(**kwargs):
     raw['meta']['signal_resultant_exp_time'] = _random_float()
     raw['meta']['gw_acq_number'] = _random_int()
     raw['meta']['gw_mode'] = 'WIM-ACQ'
-    raw['meta']['gw_window_xstart'] = _random_float()
-    raw['meta']['gw_window_ystart'] = _random_float()
-    raw['meta']['gw_window_xstop'] = raw['meta']["gw_window_xstart"] + 16.0
-    raw['meta']['gw_window_ystop'] = raw['meta']["gw_window_ystart"] + 16.0
-    raw['meta']['gw_window_xsize'] = 16.0
-    raw['meta']['gw_window_ysize'] = 16.0
+    raw['meta']['gw_window_xstart'] = _random_positive_int(4000)
+    raw['meta']['gw_window_ystart'] = _random_positive_int(4000)
+    raw['meta']['gw_window_xstop'] = raw['meta']["gw_window_xstart"] + 16
+    raw['meta']['gw_window_ystop'] = raw['meta']["gw_window_ystart"] + 16
+    raw['meta']['gw_window_xsize'] = 16
+    raw['meta']['gw_window_ysize'] = 16
     raw['meta']['gw_acq_exec_stat'] = _random_string("Status ", 15)
 
     raw['meta']["gw_acq_exec_stat"] = _random_string("Status ", 15)
