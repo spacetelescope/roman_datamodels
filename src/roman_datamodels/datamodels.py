@@ -570,7 +570,7 @@ to supply custom catalogs.
                                              ''.join(params[3:6]), params[6]]))
                 model.meta["group_id"] = group_id
             except TypeError:
-                model.meta["group_id"] = 'exposure{0:04d}'.format(i + 1)
+                model.meta["group_id"] = f'exposure{i + 1:04d}'
 
             group_id = model.meta.group_id
             if not self._save_open and not self._return_open:
