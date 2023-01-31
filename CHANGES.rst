@@ -5,6 +5,7 @@
 - Cleanup ``enum`` validation code. [#112]
 - Add ``pre-commit`` support. [#119]
 - Apply ``isort`` and ``black`` code formatters to all files. [#120]
+- Switch from ``flake8`` to ``ruff`` for code linting. [#121]
 
 0.14.0 (2022-11-14)
 ===================
