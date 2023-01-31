@@ -302,7 +302,11 @@ def test_make_model_container(tmp_path):
     f4_af.tree = {'roman': f4_model}
     f4_af.write_to(tmp_path / 'file_4.asdf')
 
-    model_container = datamodels.ModelContainer(asn_file_path=tmp_path/'asn.json', iscopy=True, model_file_path = str(tmp_path)+'/')
+    model_container = datamodels.ModelContainer(
+        asn_file_path=tmp_path/'asn.json',
+        iscopy=True,
+        model_file_path=str(tmp_path)+'/'
+    )
 
     assert type(model_container) == datamodels.ModelContainer
 
@@ -371,7 +375,7 @@ def test_model_container_input_as_list_of_datamodels():
 
     # provide datamodel list as input to ModelContainer
     model_container = datamodels.ModelContainer(datamodel_list)
-    
+
     assert len(datamodel_list) == n
     assert all(isinstance(x, datamodels.DataModel) for x in model_container)
 

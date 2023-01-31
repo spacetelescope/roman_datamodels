@@ -32,7 +32,6 @@ __all__ = [
     'ScienceRawModel',
     'RampModel',
     'RampFitOutputModel',
-    'AssociationsModel',
     'GuidewindowModel',
     'FlatRefModel',
     'DarkRefModel',
@@ -449,7 +448,7 @@ to supply custom catalogs.
             values when ASN table's members contain additional attributes.
 
     """
-    def __init__(self, init=None, asn_schema= None, asn_file_path=None, 
+    def __init__(self, init=None, asn_schema= None, asn_file_path=None,
                  model_file_path=None, iscopy=False, **kwargs):
 
         self._models = []
@@ -474,7 +473,7 @@ to supply custom catalogs.
 
                     self._models.append(member_model)
         elif isinstance(init, list):
-            # only append list items to self._models if all items are either 
+            # only append list items to self._models if all items are either
             # strings (i.e. path to an ASDF file) or instances of DataModel
             is_all_string = all(isinstance(x, str) for x in init)
             is_all_roman_datamodels = all(isinstance(x, DataModel) for x in init)
@@ -505,7 +504,7 @@ to supply custom catalogs.
         if not isinstance(m, DataModel) and self._return_open:
             m = open(m, memmap=self._memmap)
         return m
-    
+
     def __setitem__(self, index, model):
         self._models[index] = model
 
@@ -526,7 +525,7 @@ to supply custom catalogs.
 
     def extend(self, model):
         self._models.extend(model)
-    
+
     @property
     def models_grouped(self):
         """
