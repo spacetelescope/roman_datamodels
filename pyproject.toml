@@ -91,3 +91,8 @@ exclude_lines = [
     'def main\(.*\):',
     'if __name__ == \(.*\):',
 ]
+
+[tool.isort]
+profile = "black"
+filter_files = true
+line_length = 130
