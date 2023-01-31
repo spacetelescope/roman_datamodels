@@ -1,7 +1,5 @@
 import pytest
 import warnings
-import random
-import json
 
 from jsonschema import ValidationError
 from astropy import units as u
