@@ -1,6 +1,7 @@
 from copy import copy
 
 import pytest
+
 from roman_datamodels.stuserdict import STUserDict
 
 

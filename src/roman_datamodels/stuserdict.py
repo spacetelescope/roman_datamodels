@@ -1,6 +1,6 @@
-import _collections_abc
 from typing import Any, Iterator
 
+import _collections_abc
 
 # import sys as _sys
 

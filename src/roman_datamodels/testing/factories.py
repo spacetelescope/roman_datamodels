@@ -2,21 +2,22 @@
 Factory methods that create (not necessarily realistic) nodes
 that validate against their schemas.
 """
-from datetime import datetime
 import math
 import random
 import re
 import secrets
 import sys
+from datetime import datetime
 
-from astropy.time import Time
+import numpy as np
 from astropy import units as u
 from astropy.modeling import models
-import numpy as np
+from astropy.time import Time
 
 from roman_datamodels import units as ru
 
 from .. import stnode
+
 # from .. import table_definitions
 
 

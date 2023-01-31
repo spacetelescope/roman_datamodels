@@ -3,10 +3,11 @@ import astropy.time as time
 import numpy as np
 from astropy import units as u
 from astropy.modeling import models
+
 from roman_datamodels import units as ru
 
-from .factories import _random_positive_int, _random_string
 from .. import stnode
+from .factories import _random_positive_int, _random_string
 
 NONUM = -999999
 NOSTR = "dummy value"

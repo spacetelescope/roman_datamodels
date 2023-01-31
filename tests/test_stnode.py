@@ -1,8 +1,7 @@
 import asdf
 import pytest
 
-from roman_datamodels import stnode
-from roman_datamodels import units
+from roman_datamodels import stnode, units
 from roman_datamodels.testing import assert_node_equal, create_node
 
 

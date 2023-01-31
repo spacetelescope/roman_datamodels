@@ -2,28 +2,27 @@
 Proof of concept of using tags with the data model framework
 """
 
+import datetime
 import sys
 import warnings
-import datetime
 from abc import ABCMeta
-from asdf.extension import Converter
 from collections import UserList
-import yaml
-import jsonschema
-import numpy as np
 
-from astropy.time import Time
 import asdf
 import asdf.schema as asdfschema
 import asdf.yamlutil as yamlutil
-from asdf.util import HashableDict
-from asdf.tags.core import ndarray
-
-from .validate import _check_type, ValidationWarning, _error_message
+import jsonschema
+import numpy as np
 import rad.resources
-from .stuserdict import STUserDict as UserDict
-from .units import Unit, CompositeUnit
+import yaml
+from asdf.extension import Converter
+from asdf.tags.core import ndarray
+from asdf.util import HashableDict
+from astropy.time import Time
 
+from .stuserdict import STUserDict as UserDict
+from .units import CompositeUnit, Unit
+from .validate import ValidationWarning, _check_type, _error_message
 
 if sys.version_info < (3, 9):
     import importlib_resources
@@ -548,6 +547,7 @@ class UnitConverter(Converter):
 
     def from_yaml_tree(self, node, tag, ctx):
         import astropy.units as u
+
         from roman_datamodels.units import force_roman_unit
 
         return force_roman_unit(u.Unit(node, parse_strict="silent"))
