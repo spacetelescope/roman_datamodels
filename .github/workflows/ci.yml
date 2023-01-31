@@ -92,7 +92,7 @@ jobs:
           path: ${{ env.pythonLocation }}
           key: test-rad-${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml', '**/setup.*') }}
       - run: pip install -e ".[test]" pytest-xdist
-      - run: pip install rad@git+https://github.com/PaulHuwe/rad.git@RAD-72_ModelContainer
+      - run: pip install git+https://github.com/spacetelescope/rad.git@main#egg=rad
       - run: pip freeze
       - run: pytest -n auto
 
