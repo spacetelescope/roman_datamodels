@@ -6,6 +6,7 @@
 - Add ``pre-commit`` support. [#119]
 - Apply ``isort`` and ``black`` code formatters to all files. [#120]
 - Switch from ``flake8`` to ``ruff`` for code linting. [#121]
+- Start using ``codespell`` for automated spell checking. [#122]
 
 0.14.0 (2022-11-14)
 ===================
