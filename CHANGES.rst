@@ -1,4 +1,4 @@
-0.14.1 (unreleased)
+0.14.1 (2023-01-31)
 ===================
 
 - Move metadata to ``pyproject.toml`` in accordance with PEP621 [#100]
