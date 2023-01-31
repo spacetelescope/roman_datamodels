@@ -74,7 +74,7 @@ class DataModel:
             asdffile = asdf.AsdfFile()
             asdffile.tree = {'roman': init}
         else:
-            raise IOError("Argument does not appear to be an ASDF file"
+            raise OSError("Argument does not appear to be an ASDF file"
                           " or TaggedObjectNode.")
         self._asdf = asdffile
 
@@ -152,7 +152,7 @@ class DataModel:
         if ext == '.asdf':
             self.to_asdf(output_path, *args, **kwargs)
         else:
-            raise ValueError("unknown filetype {0}".format(ext))
+            raise ValueError(f"unknown filetype {ext}")
 
         return output_path
 
@@ -239,10 +239,10 @@ class DataModel:
             return val
 
         if include_arrays:
-            return dict(('roman.' + key, convert_val(val)) for (key, val) in self.items())
+            return {'roman.' + key: convert_val(val) for (key, val) in self.items()}
         else:
-            return dict(('roman.' + key, convert_val(val)) for (key, val) in self.items()
-                        if not isinstance(val, np.ndarray))
+            return {'roman.' + key: convert_val(val) for (key, val) in self.items()
+                        if not isinstance(val, np.ndarray)}
 
     def items(self):
         """
@@ -260,17 +260,14 @@ class DataModel:
         def recurse(tree, path=[]):
             if isinstance(tree, (stnode.DNode, dict)):
                 for key, val in tree.items():
-                    for x in recurse(val, path + [key]):
-                        yield x
+                    yield from recurse(val, path + [key])
             elif isinstance(tree, (stnode.LNode, list, tuple)):
                 for i, val in enumerate(tree):
-                    for x in recurse(val, path + [i]):
-                        yield x
+                    yield from recurse(val, path + [i])
             elif tree is not None:
                 yield ('.'.join(str(x) for x in path), tree)
 
-        for x in recurse(self._instance):
-            yield x
+        yield from recurse(self._instance)
 
     def get_crds_parameters(self):
         """

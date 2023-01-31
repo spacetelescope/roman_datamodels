@@ -3,6 +3,7 @@
 
 - Move metadata to ``pyproject.toml`` in accordance with PEP621 [#100]
 - Cleanup ``enum`` validation code. [#112]
+- Add ``pre-commit`` support. [#119]
 
 0.14.0 (2022-11-14)
 ===================
@@ -11,7 +12,7 @@
 - Remove the unused ``stnode_test`` module. [#110]
 - Add support for non-VOUnits to be used by Roman. [#109]
 - Changed science arrays to quantities. [#111]
-  
+
 
 0.13.0 (2022-08-23)
 ===================
@@ -38,7 +39,7 @@
 0.12.2 (2022-04-26)
 ===================
 
-- Added function for model equality. [#79]  
+- Added function for model equality. [#79]
 
 0.12.1 (2022-04-26)
 ===================
