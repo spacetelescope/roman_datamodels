@@ -25,23 +25,23 @@ import _collections_abc
 # except ImportError:
 #     pass
 
+
 class STUserDict(_collections_abc.MutableMapping):
 
     # Start by filling-out the abstract methods
     def __init__(*args, **kwargs):
         if not args:
-            raise TypeError("descriptor '__init__' of 'STUserDict' object "
-                            "needs an argument")
+            raise TypeError("descriptor '__init__' of 'STUserDict' object needs an argument")
         self, *args = args
         if len(args) > 1:
-            raise TypeError('expected at most 1 arguments, got %d' % len(args))
+            raise TypeError("expected at most 1 arguments, got %d" % len(args))
         if args:
             dict = args[0]
-        elif 'dict' in kwargs:
-            dict = kwargs.pop('dict')
+        elif "dict" in kwargs:
+            dict = kwargs.pop("dict")
             import warnings
-            warnings.warn("Passing 'dict' as keyword argument is deprecated",
-                          DeprecationWarning, stacklevel=2)
+
+            warnings.warn("Passing 'dict' as keyword argument is deprecated", DeprecationWarning, stacklevel=2)
         else:
             dict = None
         self._data = {}
@@ -50,7 +50,7 @@ class STUserDict(_collections_abc.MutableMapping):
         if kwargs:
             self.update(kwargs)
 
-    __init__.__text_signature__ = '($self, dict=None, /, **kwargs)'
+    __init__.__text_signature__ = "($self, dict=None, /, **kwargs)"
 
     def __len__(self) -> int:
         return len(self._data)
@@ -79,17 +79,18 @@ class STUserDict(_collections_abc.MutableMapping):
     def __repr__(self) -> str:
         return repr(self._data)
 
-    def __copy__(self) -> 'STUserDict':
+    def __copy__(self) -> "STUserDict":
         inst = self.__class__.__new__(self.__class__)
         inst.__dict__.update(self.__dict__)
         # Create a copy and avoid triggering descriptors
         inst.__dict__["_data"] = self.__dict__["_data"].copy()
         return inst
 
-    def copy(self) -> 'STUserDict':
+    def copy(self) -> "STUserDict":
         if self.__class__ is STUserDict:
             return STUserDict(self._data.copy())
         import copy
+
         data = self._data
         try:
             self._data = {}
@@ -100,7 +101,7 @@ class STUserDict(_collections_abc.MutableMapping):
         return c
 
     @classmethod
-    def fromkeys(cls, iterable, value=None) -> 'STUserDict':
+    def fromkeys(cls, iterable, value=None) -> "STUserDict":
         d = cls()
         for key in iterable:
             d[key] = value

@@ -1,11 +1,11 @@
-'''
+"""
 This module provides the same interface as the older, non-tag version of datamodels
 for the whole asdf file. It will start very basic, initialy only to support running
 of the flat field step, but many other methods and capabilities will be added to
 keep consistency with the JWST data model version.
 
 It is to be subclassed by the various types of data model variants for products
-'''
+"""
 import copy
 import datetime
 import os
@@ -22,31 +22,31 @@ from . import stnode, validate
 from .extensions import DATAMODEL_EXTENSIONS
 
 __all__ = [
-    'DataModel',
-    'ImageModel',
-    'ScienceRawModel',
-    'RampModel',
-    'RampFitOutputModel',
-    'GuidewindowModel',
-    'FlatRefModel',
-    'DarkRefModel',
-    'DistortionRefModel',
-    'GainRefModel',
-    'LinearityRefModel',
-    'MaskRefModel',
-    'PixelareaRefModel',
-    'ReadnoiseRefModel',
-    'SuperbiasRefModel',
-    'SaturationRefModel',
-    'WfiImgPhotomRefModel',
-    'open',
+    "DataModel",
+    "ImageModel",
+    "ScienceRawModel",
+    "RampModel",
+    "RampFitOutputModel",
+    "GuidewindowModel",
+    "FlatRefModel",
+    "DarkRefModel",
+    "DistortionRefModel",
+    "GainRefModel",
+    "LinearityRefModel",
+    "MaskRefModel",
+    "PixelareaRefModel",
+    "ReadnoiseRefModel",
+    "SuperbiasRefModel",
+    "SaturationRefModel",
+    "WfiImgPhotomRefModel",
+    "open",
 ]
 
 
 class DataModel:
-    '''Base class for all top level datamodels'''
+    """Base class for all top level datamodels"""
 
-    crds_observatory = 'roman'
+    crds_observatory = "roman"
 
     def __init__(self, init=None, **kwargs):
         self._iscopy = False
@@ -62,30 +62,27 @@ class DataModel:
                 init = init.decode(sys.getfilesystemencoding())
             asdffile = self.open_asdf(init, **kwargs)
             if not self.check_type(asdffile):
-                raise ValueError(
-                    f'ASDF file is not of the type expected. Expected {self.__class__.__name__}')
-            self._instance = asdffile.tree['roman']
+                raise ValueError(f"ASDF file is not of the type expected. Expected {self.__class__.__name__}")
+            self._instance = asdffile.tree["roman"]
         elif isinstance(init, asdf.AsdfFile):
             asdffile = init
             self._asdf = asdffile
-            self._instance = asdffile.tree['roman']
+            self._instance = asdffile.tree["roman"]
         elif isinstance(init, stnode.TaggedObjectNode):
             self._instance = init
             asdffile = asdf.AsdfFile()
-            asdffile.tree = {'roman': init}
+            asdffile.tree = {"roman": init}
         else:
-            raise OSError("Argument does not appear to be an ASDF file"
-                          " or TaggedObjectNode.")
+            raise OSError("Argument does not appear to be an ASDF file or TaggedObjectNode.")
         self._asdf = asdffile
 
     def check_type(self, asdffile_instance):
-        '''
+        """
         Subclass is expected to check for proper type of node
-        '''
-        if 'roman' not in asdffile_instance.tree:
-            raise ValueError(
-                'ASDF file does not have expected "roman" attribute')
-        topnode = asdffile_instance.tree['roman']
+        """
+        if "roman" not in asdffile_instance.tree:
+            raise ValueError('ASDF file does not have expected "roman" attribute')
+        topnode = asdffile_instance.tree["roman"]
         if model_registry[topnode.__class__] != self.__class__:
             return False
         return True
@@ -93,8 +90,7 @@ class DataModel:
     @property
     def schema_uri(self):
         # Determine the schema corresonding to this model's tag
-        schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags
-                          if t.tag_uri == self._instance._tag).schema_uri
+        schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uri
         return schema_uri
 
     def close(self):
@@ -149,7 +145,7 @@ class DataModel:
         output_path = os.path.join(path_head, path_tail)
 
         # TODO: Support gzip-compressed fits
-        if ext == '.asdf':
+        if ext == ".asdf":
             self.to_asdf(output_path, *args, **kwargs)
         else:
             raise ValueError(f"unknown filetype {ext}")
@@ -167,7 +163,7 @@ class DataModel:
         # self.on_save(init)
 
         asdffile = self.open_asdf(**kwargs)
-        asdffile.tree = {'roman': self._instance}
+        asdffile.tree = {"roman": self._instance}
         asdffile.write_to(init, *args, **kwargs)
 
     def get_primary_array_name(self):
@@ -177,10 +173,10 @@ class DataModel:
         This is intended to be overridden in the subclasses if the
         primary array's name is not "data".
         """
-        if hasattr(self, 'data'):
-            primary_array_name = 'data'
+        if hasattr(self, "data"):
+            primary_array_name = "data"
         else:
-            primary_array_name = ''
+            primary_array_name = ""
         return primary_array_name
 
     @property
@@ -201,7 +197,7 @@ class DataModel:
         return self._shape
 
     def __setattr__(self, attr, value):
-        if attr.startswith('_'):
+        if attr.startswith("_"):
             self.__dict__[attr] = value
         else:
             setattr(self._instance, attr, value)
@@ -210,9 +206,8 @@ class DataModel:
         return getattr(self._instance, attr)
 
     def __setitem__(self, key, value):
-        if key.startswith('_'):
-            raise ValueError(
-                'May not specify attributes/keys that start with _')
+        if key.startswith("_"):
+            raise ValueError("May not specify attributes/keys that start with _")
         if hasattr(self._instance, key):
             setattr(self._instance, key, value)
         else:
@@ -231,6 +226,7 @@ class DataModel:
         This differs from the JWST data model in that the schema is not
         directly used
         """
+
         def convert_val(val):
             if isinstance(val, datetime.datetime):
                 return val.isoformat()
@@ -239,10 +235,9 @@ class DataModel:
             return val
 
         if include_arrays:
-            return {'roman.' + key: convert_val(val) for (key, val) in self.items()}
+            return {"roman." + key: convert_val(val) for (key, val) in self.items()}
         else:
-            return {'roman.' + key: convert_val(val) for (key, val) in self.items()
-                        if not isinstance(val, np.ndarray)}
+            return {"roman." + key: convert_val(val) for (key, val) in self.items() if not isinstance(val, np.ndarray)}
 
     def items(self):
         """
@@ -257,6 +252,7 @@ class DataModel:
         Unlike the JWST DataModel implementation, this does not use
         schemas directly.
         """
+
         def recurse(tree, path=[]):
             if isinstance(tree, (stnode.DNode, dict)):
                 for key, val in tree.items():
@@ -265,7 +261,7 @@ class DataModel:
                 for i, val in enumerate(tree):
                     yield from recurse(val, path + [i])
             elif tree is not None:
-                yield ('.'.join(str(x) for x in path), tree)
+                yield (".".join(str(x) for x in path), tree)
 
         yield from recurse(self._instance)
 
@@ -278,7 +274,8 @@ class DataModel:
         dict
         """
         crds_header = {
-            key: val for key, val in self.to_flat_dict(include_arrays=False).items()
+            key: val
+            for key, val in self.to_flat_dict(include_arrays=False).items()
             if isinstance(val, (str, int, float, complex, bool))
         }
         return crds_header
@@ -287,8 +284,7 @@ class DataModel:
         """
         Re-validate the model instance against the tags
         """
-        validate.value_change(self._instance, pass_invalid_values=False,
-                              strict_validation=True)
+        validate.value_change(self._instance, pass_invalid_values=False, strict_validation=True)
 
     def info(self, *args, **kwargs):
         return self._asdf.info(*args, **kwargs)
@@ -298,6 +294,7 @@ class DataModel:
 
     def schema_info(self, *args, **kwargs):
         return self._asdf.schema_info(*args, **kwargs)
+
 
 class ImageModel(DataModel):
     pass
@@ -334,8 +331,10 @@ class DistortionRefModel(DataModel):
 class GainRefModel(DataModel):
     pass
 
+
 class IpcRefModel(DataModel):
     pass
+
 
 class LinearityRefModel(DataModel):
     def get_primary_array_name(self):
@@ -345,7 +344,7 @@ class LinearityRefModel(DataModel):
         This is intended to be overridden in the subclasses if the
         primary array's name is not "data".
         """
-        return 'coeffs'
+        return "coeffs"
 
 
 class MaskRefModel(DataModel):
@@ -356,7 +355,7 @@ class MaskRefModel(DataModel):
         This is intended to be overridden in the subclasses if the
         primary array's name is not "data".
         """
-        return 'dq'
+        return "dq"
 
 
 class PixelareaRefModel(DataModel):
@@ -422,21 +421,18 @@ def open(init, memmap=False, target=None, **kwargs):
         return init.copy()
     else:
         try:
-            kwargs['copy_arrays'] = not memmap
+            kwargs["copy_arrays"] = not memmap
             asdffile = asdf.open(init, **kwargs)
         except ValueError:
-            raise TypeError(
-                "Open requires a filepath, file-like object, or Roman datamodel")
+            raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
         if isinstance(asdffile, AsdfInFits):
-            raise TypeError(
-                "Roman datamodels does not accept FITS files or objects")
-    modeltype = type(asdffile.tree['roman'])
+            raise TypeError("Roman datamodels does not accept FITS files or objects")
+    modeltype = type(asdffile.tree["roman"])
     if modeltype in model_registry:
         rmodel = model_registry[modeltype](asdffile, **kwargs)
         if target is not None:
             if not issubclass(rmodel.__class__, target):
-                raise ValueError(
-                    "Referenced ASDF file model type is not subclass of target")
+                raise ValueError("Referenced ASDF file model type is not subclass of target")
         else:
             return rmodel
     else:

@@ -3,7 +3,7 @@ from astropy import units as u
 __all__ = ["Unit"]
 
 
-ROMAN_UNIT_SYMBOLS = ['DN', 'electron']
+ROMAN_UNIT_SYMBOLS = ["DN", "electron"]
 
 
 class UnitMixin:
@@ -25,6 +25,7 @@ class UnitMixin:
         try:
             # Cannot handle this as Unit, re-try as Quantity
             from astropy.units.quantity import Quantity
+
             return Quantity(1, self) / m
         except TypeError:
             return NotImplemented
@@ -43,6 +44,7 @@ class UnitMixin:
         # Cannot handle this as Unit, re-try as Quantity.
         try:
             from astropy.units.quantity import Quantity
+
             return Quantity(1, unit=self) * m
         except TypeError:
             return NotImplemented

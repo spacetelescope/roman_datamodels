@@ -51,18 +51,16 @@ strict_validation = True
 _UNIT_NODE_CLASSES_BY_TAG = {Unit._tag: Unit}
 
 
-
 def set_validate(value):
     global validate
     validate = bool(value)
 
 
 validator_callbacks = HashableDict(asdfschema.YAML_VALIDATORS)
-validator_callbacks.update({'type': _check_type})
+validator_callbacks.update({"type": _check_type})
 
 
-def _value_change(path, value, schema, pass_invalid_values,
-                  strict_validation, ctx):
+def _value_change(path, value, schema, pass_invalid_values, strict_validation, ctx):
     """
     Validate a change in value against a schema.
     Trap error and return a flag.
@@ -90,14 +88,9 @@ def _check_value(value, schema, validator_context):
 
     validator_resolver = validator_context.resolver
 
-    temp_schema = {
-        '$schema':
-        'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema'}
+    temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
     temp_schema.update(schema)
-    validator = asdfschema.get_validator(temp_schema,
-                                         validator_context,
-                                         validator_callbacks,
-                                         validator_resolver)
+    validator = asdfschema.get_validator(temp_schema, validator_context, validator_callbacks, validator_resolver)
 
     validator.validate(value, _schema=temp_schema)
     validator_context.close()
@@ -109,10 +102,10 @@ def _validate(attr, instance, schema, ctx):
 
 
 def _get_schema_for_property(schema, attr):
-    subschema = schema.get('properties', {}).get(attr, None)
+    subschema = schema.get("properties", {}).get(attr, None)
     if subschema is not None:
         return subschema
-    for combiner in ['allOf', 'anyOf']:
+    for combiner in ["allOf", "anyOf"]:
         for subschema in schema.get(combiner, []):
             subsubschema = _get_schema_for_property(subschema, attr)
             if subsubschema != {}:
@@ -128,9 +121,9 @@ class DNode(UserDict):
     def __init__(self, node=None, parent=None, name=None):
 
         if node is None:
-            self.__dict__['_data'] = {}
+            self.__dict__["_data"] = {}
         elif isinstance(node, dict):
-            self.__dict__['_data'] = node
+            self.__dict__["_data"] = node
         else:
             raise ValueError("Initializer only accepts dicts")
         self._x_schema = None
@@ -161,8 +154,8 @@ class DNode(UserDict):
         Permit accessing dict keys as attributes, assuming they are legal Python
         variable names.
         """
-        if key.startswith('_'):
-            raise AttributeError(f'No attribute {key}')
+        if key.startswith("_"):
+            raise AttributeError(f"No attribute {key}")
         if key in self._data:
             value = self._convert_to_scalar(key, self._data[key])
             if isinstance(value, dict):
@@ -178,22 +171,21 @@ class DNode(UserDict):
         """
         Permit assigning dict keys as attributes.
         """
-        if key[0] != '_':
+        if key[0] != "_":
             value = self._convert_to_scalar(key, value)
             if key in self._data:
                 if validate:
                     self._schema()
-                    schema = self._x_schema.get('properties')
+                    schema = self._x_schema.get("properties")
                     if schema is None:
                         # See if the key is in one of the combiners.
                         # This implementation is not completely general
                         # A more robust one would potentially handle nested
                         # references, though that is probably unlikely
                         # in practical cases.
-                        for combiner in ['allOf', 'anyOf']:
+                        for combiner in ["allOf", "anyOf"]:
                             for subschema in self._x_schema.get(combiner, []):
-                                subsubschema = _get_schema_for_property(
-                                    subschema, key)
+                                subsubschema = _get_schema_for_property(subschema, key)
                                 if subsubschema != {}:
                                     schema = subsubschema
                                     break
@@ -201,10 +193,9 @@ class DNode(UserDict):
                         schema = schema.get(key, None)
                     if schema is None or _validate(key, value, schema, self.ctx):
                         self._data[key] = value
-                self.__dict__['_data'][key] = value
+                self.__dict__["_data"][key] = value
             else:
-                raise AttributeError(
-                    f"No such attribute ({key}) found in node")
+                raise AttributeError(f"No such attribute ({key}) found in node")
         else:
             self.__dict__[key] = value
 
@@ -219,6 +210,7 @@ class DNode(UserDict):
             { "meta.observation.date": "2012-04-22T03:22:05.432" }
 
         """
+
         def convert_val(val):
             if isinstance(val, datetime.datetime):
                 return val.isoformat()
@@ -229,8 +221,9 @@ class DNode(UserDict):
         if include_arrays:
             return {key: convert_val(val) for (key, val) in self.items()}
         else:
-            return {key: convert_val(val) for (key, val) in self.items()
-                        if not isinstance(val, (np.ndarray, ndarray.NDArrayType))}
+            return {
+                key: convert_val(val) for (key, val) in self.items() if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
+            }
 
     def _schema(self):
         """
@@ -294,8 +287,7 @@ class TaggedObjectNodeMeta(ABCMeta):
         super().__init__(*args, **kwargs)
         if self.__name__ != "TaggedObjectNode":
             if self._tag in _OBJECT_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(
-                    f"TaggedObjectNode class for tag '{self._tag}' has been defined twice")
+                raise RuntimeError(f"TaggedObjectNode class for tag '{self._tag}' has been defined twice")
             _OBJECT_NODE_CLASSES_BY_TAG[self._tag] = self
 
 
@@ -335,13 +327,11 @@ class TaggedListNodeMeta(ABCMeta):
         super().__init__(*args, **kwargs)
         if self.__name__ != "TaggedListNode":
             if self._tag in _LIST_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(
-                    f"TaggedListNode class for tag '{self._tag}' has been defined twice")
+                raise RuntimeError(f"TaggedListNode class for tag '{self._tag}' has been defined twice")
             _LIST_NODE_CLASSES_BY_TAG[self._tag] = self
 
 
 class TaggedListNode(LNode, metaclass=TaggedListNodeMeta):
-
     @property
     def tag(self):
         return self._tag
@@ -352,7 +342,7 @@ _SCALAR_NODE_CLASSES_BY_KEY = {}
 
 
 def _scalar_tag_to_key(tag):
-    return tag.split('/')[-1].split('-')[0]
+    return tag.split("/")[-1].split("-")[0]
 
 
 class TaggedScalarNodeMeta(ABCMeta):
@@ -365,8 +355,7 @@ class TaggedScalarNodeMeta(ABCMeta):
         super().__init__(*args, **kwargs)
         if self.__name__ != "TaggedScalarNode":
             if self._tag in _SCALAR_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(
-                    f"TaggedScalarNode class for tag '{self._tag}' has been defined twice")
+                raise RuntimeError(f"TaggedScalarNode class for tag '{self._tag}' has been defined twice")
             _SCALAR_NODE_CLASSES_BY_TAG[self._tag] = self
             _SCALAR_NODE_CLASSES_BY_KEY[_scalar_tag_to_key(self._tag)] = self
 
@@ -432,6 +421,7 @@ class TaggedObjectNodeConverter(Converter):
     """
     Converter for all subclasses of TaggedObjectNode.
     """
+
     @property
     def tags(self):
         return list(_OBJECT_NODE_CLASSES_BY_TAG.keys())
@@ -454,6 +444,7 @@ class TaggedListNodeConverter(Converter):
     """
     Converter for all subclasses of TaggedListNode.
     """
+
     @property
     def tags(self):
         return list(_LIST_NODE_CLASSES_BY_TAG.keys())
@@ -476,6 +467,7 @@ class TaggedScalarNodeConverter(Converter):
     """
     Converter for all subclasses of TaggedScalarNode.
     """
+
     @property
     def tags(self):
         return list(_SCALAR_NODE_CLASSES_BY_TAG.keys())
@@ -544,7 +536,6 @@ class UnitConverter(Converter):
 
         return obj.to_string()
 
-
     def from_yaml_tree(self, node, tag, ctx):
         import astropy.units as u
 
@@ -553,8 +544,7 @@ class UnitConverter(Converter):
         return force_roman_unit(u.Unit(node, parse_strict="silent"))
 
 
-_DATAMODELS_MANIFEST_PATH = importlib_resources.files(
-    rad.resources) / "manifests" / "datamodels-1.0.yaml"
+_DATAMODELS_MANIFEST_PATH = importlib_resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
 _DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
 
 
@@ -565,6 +555,7 @@ def _class_name_from_tag_uri(tag_uri):
         class_name += "Ref"
     return class_name
 
+
 def _class_from_tag(tag, docstring):
     class_name = _class_name_from_tag_uri(tag["tag_uri"])
 
@@ -573,15 +564,13 @@ def _class_from_tag(tag, docstring):
         cls = type(
             class_name,
             (str, TaggedScalarNode),
-            {"_tag": tag["tag_uri"],
-                "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+            {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring},
         )
     else:
         cls = type(
             class_name,
             (TaggedObjectNode,),
-            {"_tag": tag["tag_uri"],
-                "__module__": "roman_datamodels.stnode", "__doc__": docstring},
+            {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring},
         )
 
     globals()[class_name] = cls
@@ -609,8 +598,8 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
 # List of node classes made available by this library.  This is part
 # of the public API.
 NODE_CLASSES = (
-    list(_OBJECT_NODE_CLASSES_BY_TAG.values()) +
-    list(_LIST_NODE_CLASSES_BY_TAG.values()) +
-    list(_SCALAR_NODE_CLASSES_BY_TAG.values()) +
-    list(_UNIT_NODE_CLASSES_BY_TAG.values())
+    list(_OBJECT_NODE_CLASSES_BY_TAG.values())
+    + list(_LIST_NODE_CLASSES_BY_TAG.values())
+    + list(_SCALAR_NODE_CLASSES_BY_TAG.values())
+    + list(_UNIT_NODE_CLASSES_BY_TAG.values())
 )

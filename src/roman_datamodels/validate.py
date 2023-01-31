@@ -11,8 +11,8 @@ from asdf import yamlutil
 from asdf.util import HashableDict
 
 __all__ = [
-    'ValidationWarning',
-    'value_change',
+    "ValidationWarning",
+    "value_change",
 ]
 
 
@@ -20,8 +20,7 @@ class ValidationWarning(Warning):
     pass
 
 
-def value_change(value, pass_invalid_values,
-                 strict_validation):
+def value_change(value, pass_invalid_values, strict_validation):
     """
     Validate a change in value against a schema.
     Trap error and return a flag.
@@ -47,13 +46,12 @@ def _check_type(validator, types, instance, schema):
     if instance is None:
         errors = []
     else:
-        errors = asdf_schema.validate_type(validator, types,
-                                           instance, schema)
+        errors = asdf_schema.validate_type(validator, types, instance, schema)
     return errors
 
 
 validator_callbacks = HashableDict(asdf_schema.YAML_VALIDATORS)
-validator_callbacks.update({'type': _check_type})
+validator_callbacks.update({"type": _check_type})
 
 
 def _check_value(value):
@@ -64,13 +62,8 @@ def _check_value(value):
     validator_context = AsdfFile()
     validator_resolver = validator_context.resolver
 
-    temp_schema = {
-        '$schema':
-        'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema'}
-    validator = asdf_schema.get_validator(temp_schema,
-                                          validator_context,
-                                          validator_callbacks,
-                                          validator_resolver)
+    temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
+    validator = asdf_schema.get_validator(temp_schema, validator_context, validator_callbacks, validator_resolver)
 
     value = yamlutil.custom_tree_to_tagged_tree(value, validator_context)
     validator.validate(value, _schema=temp_schema)
@@ -83,7 +76,7 @@ def _error_message(path, error):
     """
     if isinstance(path, list):
         spath = [str(p) for p in path]
-        name = '.'.join(spath)
+        name = ".".join(spath)
     else:
         name = str(path)
 
