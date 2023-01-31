@@ -32,18 +32,18 @@ def setup(app):
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('roman_datamodels/'))
+sys.path.insert(0, os.path.abspath("../"))
+sys.path.insert(0, os.path.abspath("roman_datamodels/"))
 
 # -- General configuration ------------------------------------------------
 with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as configuration_file:
     conf = tomli.load(configuration_file)
-setup_cfg = conf['project']
+setup_cfg = conf["project"]
 
 # If your documentation needs a minimal Sphinx version, state it here.
 # needs_sphinx = '1.3'
 
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+on_rtd = os.environ.get("READTHEDOCS", None) == "True"
 
 
 def check_sphinx_version(expected_version):
@@ -51,64 +51,60 @@ def check_sphinx_version(expected_version):
     expected_version = LooseVersion(expected_version)
     if sphinx_version < expected_version:
         raise RuntimeError(
-            f"At least Sphinx version {expected_version} is required to build this "
-            f"documentation.  Found {sphinx_version}.")
+            f"At least Sphinx version {expected_version} is required to build this documentation.  Found {sphinx_version}."
+        )
 
 
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/',
-               (None, 'http://data.astropy.org/intersphinx/python3.inv')),
-    'numpy': ('https://numpy.org/doc/stable/',
-              (None, 'http://data.astropy.org/intersphinx/numpy.inv')),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/',
-              (None, 'http://data.astropy.org/intersphinx/scipy.inv')),
-    'matplotlib': ('https://matplotlib.org/stable/',
-                   (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),
-    'astropy': ('https://docs.astropy.org/en/stable/', None),
-    'asdf': ('https://asdf.readthedocs.io/en/stable/', None),
-    'psutil': ('https://psutil.readthedocs.io/en/stable/', None),
+    "python": ("https://docs.python.org/3/", (None, "http://data.astropy.org/intersphinx/python3.inv")),
+    "numpy": ("https://numpy.org/doc/stable/", (None, "http://data.astropy.org/intersphinx/numpy.inv")),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", (None, "http://data.astropy.org/intersphinx/scipy.inv")),
+    "matplotlib": ("https://matplotlib.org/stable/", (None, "http://data.astropy.org/intersphinx/matplotlib.inv")),
+    "astropy": ("https://docs.astropy.org/en/stable/", None),
+    "asdf": ("https://asdf.readthedocs.io/en/stable/", None),
+    "psutil": ("https://psutil.readthedocs.io/en/stable/", None),
 }
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'pytest_doctestplus.sphinx.doctestplus',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.inheritance_diagram',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon',
-    'sphinx_automodapi.automodapi',
-    'sphinx_automodapi.automodsumm',
-    'sphinx_automodapi.autodoc_enhancements',
-    'sphinx_automodapi.smart_resolver',
-    'sphinx_asdf',
+    "pytest_doctestplus.sphinx.doctestplus",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.inheritance_diagram",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.napoleon",
+    "sphinx_automodapi.automodapi",
+    "sphinx_automodapi.automodsumm",
+    "sphinx_automodapi.autodoc_enhancements",
+    "sphinx_automodapi.smart_resolver",
+    "sphinx_asdf",
 ]
 
 if on_rtd:
-    extensions.append('sphinx.ext.mathjax')
+    extensions.append("sphinx.ext.mathjax")
 
-elif LooseVersion(sphinx.__version__) < LooseVersion('1.4'):
-    extensions.append('sphinx.ext.pngmath')
+elif LooseVersion(sphinx.__version__) < LooseVersion("1.4"):
+    extensions.append("sphinx.ext.pngmath")
 else:
-    extensions.append('sphinx.ext.imgmath')
+    extensions.append("sphinx.ext.imgmath")
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # A list of warning types to suppress arbitrary warning messages. We mean to
 # override directives in astropy_helpers.sphinx.ext.autodoc_enhancements,
@@ -116,13 +112,15 @@ master_doc = 'index'
 # released in upstream Sphinx (https://github.com/sphinx-doc/sphinx/pull/1843).
 # Suppress the warnings requires Sphinx v1.4.2
 
-suppress_warnings = ['app.add_directive', ]
+suppress_warnings = [
+    "app.add_directive",
+]
 
 # General information about the project
-project = setup_cfg['name']
+project = setup_cfg["name"]
 primary_author = setup_cfg["authors"][0]
 author = f'{primary_author["name"]} <{primary_author["email"]}>'
-copyright = f'{datetime.datetime.now().year}, {author}'
+copyright = f"{datetime.datetime.now().year}, {author}"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -131,12 +129,12 @@ copyright = f'{datetime.datetime.now().year}, {author}'
 # The short X.Y version.
 package = importlib.import_module(project)
 try:
-    version = package.__version__.split('-', 1)[0]
+    version = package.__version__.split("-", 1)[0]
     # The full version, including alpha/beta/rc tags.
     release = package.__version__
 except AttributeError:
-    version = 'dev'
-    release = 'dev'
+    version = "dev"
+    release = "dev"
 
 # The language for content autogenerated by Sphinx. Refer to documentation
 # for a list of supported languages.
@@ -150,7 +148,7 @@ except AttributeError:
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ["_build"]
 
 # This is added to the end of RST files - a good place to put substitutions to
 # be used globally.
@@ -158,7 +156,7 @@ rst_epilog = """.. _roman_datamodels: high-level_API.html"""
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
-default_role = 'obj'
+default_role = "obj"
 
 # Don't show summaries of the members in each class along with the
 # class' docstring
@@ -166,7 +164,7 @@ numpydoc_show_class_members = False
 
 autosummary_generate = True
 
-automodapi_toctreedirnm = 'api'
+automodapi_toctreedirnm = "api"
 
 # Class documentation should contain *both* the class docstring and
 # the __init__ docstring
@@ -176,12 +174,12 @@ autoclass_content = "both"
 graphviz_output_format = "svg"
 
 graphviz_dot_args = [
-    '-Nfontsize=10',
-    '-Nfontname=Helvetica Neue, Helvetica, Arial, sans-serif',
-    '-Efontsize=10',
-    '-Efontname=Helvetica Neue, Helvetica, Arial, sans-serif',
-    '-Gfontsize=10',
-    '-Gfontname=Helvetica Neue, Helvetica, Arial, sans-serif'
+    "-Nfontsize=10",
+    "-Nfontname=Helvetica Neue, Helvetica, Arial, sans-serif",
+    "-Efontsize=10",
+    "-Efontname=Helvetica Neue, Helvetica, Arial, sans-serif",
+    "-Gfontsize=10",
+    "-Gfontname=Helvetica Neue, Helvetica, Arial, sans-serif",
 ]
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
@@ -196,7 +194,7 @@ graphviz_dot_args = [
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'default'
+pygments_style = "default"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -206,22 +204,19 @@ pygments_style = 'default'
 
 # Mapping for links to the ASDF Standard in ASDF schema documentation
 asdf_schema_reference_mappings = [
-    ('tag:stsci.edu:asdf',
-     'http://asdf-standard.readthedocs.io/en/latest/generated/stsci.edu/asdf/'),
+    ("tag:stsci.edu:asdf", "http://asdf-standard.readthedocs.io/en/latest/generated/stsci.edu/asdf/"),
 ]
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'stsci_rtd_theme'
+html_theme = "stsci_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {
-    "collapse_navigation": True
-}
+html_theme_options = {"collapse_navigation": True}
 #        "nosidebar": "false",
 #        "sidebarbgcolor": "#4db8ff",
 #        "sidebartextcolor": "black",
@@ -259,14 +254,14 @@ html_theme_path = [stsci_rtd_theme.get_html_theme_path()]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = "%b %d, %Y"
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 # html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {'**': ['globaltoc.html', 'relations.html', 'searchbox.html']}
+html_sidebars = {"**": ["globaltoc.html", "relations.html", "searchbox.html"]}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -299,7 +294,7 @@ html_use_index = True
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'roman_datamodelsdoc'
+htmlhelp_basename = "roman_datamodelsdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -345,10 +340,7 @@ htmlhelp_basename = 'roman_datamodelsdoc'
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'roman_datamodels', 'Roman Datamodels Documentation',
-     ['roman_datamodels'], 1)
-]
+man_pages = [("index", "roman_datamodels", "Roman Datamodels Documentation", ["roman_datamodels"], 1)]
 
 # If true, show URL addresses after external links.
 man_show_urls = True
@@ -359,9 +351,15 @@ man_show_urls = True
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'roman_datamodels', 'Roman Datamodels Documentation',
-     'roman_datamodels', 'roman_datamodels', 'Roman Datamodels Documentation',
-     'Miscellaneous'),
+    (
+        "index",
+        "roman_datamodels",
+        "Roman Datamodels Documentation",
+        "roman_datamodels",
+        "roman_datamodels",
+        "Roman Datamodels Documentation",
+        "Miscellaneous",
+    ),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -371,7 +369,7 @@ texinfo_documents = [
 texinfo_domain_indices = True
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
-texinfo_show_urls = 'inline'
+texinfo_show_urls = "inline"
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
@@ -380,10 +378,10 @@ texinfo_show_urls = 'inline'
 # -- Options for Epub output ----------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = 'Roman'
-epub_author = 'STSCI'
-epub_publisher = 'STSCI'
-epub_copyright = '2017, AURA'
+epub_title = "Roman"
+epub_author = "STSCI"
+epub_publisher = "STSCI"
+epub_copyright = "2017, AURA"
 
 # The basename for the epub file. It defaults to the project name.
 # epub_basename = u'Roman'
@@ -392,7 +390,7 @@ epub_copyright = '2017, AURA'
 # optimized for small screen space, using the same theme for HTML and
 # epub output is usually not wise. This defaults to 'epub', a theme designed
 # to save visual space.
-epub_theme = 'epub'
+epub_theme = "epub"
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
@@ -423,7 +421,7 @@ epub_theme = 'epub'
 # epub_post_files = []
 
 # A list of files that should not be packed into the epub file.
-epub_exclude_files = ['search.html']
+epub_exclude_files = ["search.html"]
 
 # The depth of the table of contents in toc.ncx.
 # epub_tocdepth = 3
@@ -449,5 +447,5 @@ epub_exclude_files = ['search.html']
 # Enable nitpicky mode - which ensures that all references in the docs resolve.
 nitpicky = True
 nitpick_ignore = [
-    ('py:class', '_io.FileIO'),
+    ("py:class", "_io.FileIO"),
 ]

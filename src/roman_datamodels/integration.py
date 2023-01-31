@@ -9,4 +9,5 @@ def get_extensions():
     List[`asdf.extension.Extension`]
     """
     from . import extensions
+
     return extensions.DATAMODEL_EXTENSIONS

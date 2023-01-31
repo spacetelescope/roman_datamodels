@@ -1,6 +1,6 @@
 from asdf.extension import ManifestExtension
-from .stnode import TaggedListNodeConverter, TaggedObjectNodeConverter, TaggedScalarNodeConverter, UnitConverter
 
+from .stnode import TaggedListNodeConverter, TaggedObjectNodeConverter, TaggedScalarNodeConverter, UnitConverter
 
 DATAMODEL_CONVERTERS = [
     TaggedObjectNodeConverter(),
@@ -10,7 +10,5 @@ DATAMODEL_CONVERTERS = [
 ]
 
 DATAMODEL_EXTENSIONS = [
-    ManifestExtension.from_uri(
-        "asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0",
-        converters=DATAMODEL_CONVERTERS)
+    ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0", converters=DATAMODEL_CONVERTERS)
 ]

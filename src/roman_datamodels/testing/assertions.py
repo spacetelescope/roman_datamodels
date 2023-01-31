@@ -1,9 +1,9 @@
-from asdf.tags.core import NDArrayType
 import numpy as np
-from numpy.testing import assert_array_equal
+from asdf.tags.core import NDArrayType
 from astropy.modeling import Model
+from numpy.testing import assert_array_equal
 
-from ..stnode import TaggedObjectNode, TaggedListNode, TaggedScalarNode, Unit
+from ..stnode import TaggedListNode, TaggedObjectNode, TaggedScalarNode, Unit
 
 
 def assert_node_equal(node1, node2):
@@ -57,6 +57,7 @@ def _assert_value_equal(value1, value2):
         assert_model_equal(value1, value2)
     else:
         assert value1 == value2
+
 
 def assert_model_equal(a, b):
     """

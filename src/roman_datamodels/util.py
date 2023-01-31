@@ -2,27 +2,26 @@
 Various utility functions and data types
 """
 
+import logging
 import os
-from platform import system as platform_system
-import psutil
 import traceback
+from platform import system as platform_system
 from pydoc import locate
 
-#from . import s3_utils
-#from .basic_utils import bytes2human
+import psutil
+
 from .extensions import DATAMODEL_EXTENSIONS
 
-import logging
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
 __all__ = [
-    'bytes2human',
-    'NoTypeWarning',
-    'get_schema_uri_from_converter',
-    'can_broadcast',
-    'to_camelcase',
+    "bytes2human",
+    "NoTypeWarning",
+    "get_schema_uri_from_converter",
+    "can_broadcast",
+    "to_camelcase",
 ]
 
 
@@ -50,14 +49,14 @@ def bytes2human(n):
     >>> bytes2human(100001221)
         '95.4M'
     """
-    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+    symbols = ("K", "M", "G", "T", "P", "E", "Z", "Y")
     prefix = {}
     for i, s in enumerate(symbols):
         prefix[s] = 1 << (i + 1) * 10
     for s in reversed(symbols):
         if n >= prefix[s]:
             value = float(n) / prefix[s]
-            return f'{value:.1f}{s}'
+            return f"{value:.1f}{s}"
     return "%sB" % n
 
 
@@ -74,9 +73,9 @@ def get_schema_uri_from_converter(converter_class):
     # Presume these are from the same directory tree
     rclass = locate(classname)
     tag = rclass._tag
-    schema_uri = next(
-        t for t in DATAMODEL_EXTENSIONS[0].tags if t.tag_uri == tag).schema_uris[0]
+    schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags if t.tag_uri == tag).schema_uris[0]
     return schema_uri
+
 
 # def open(init=None, memmap=False, **kwargs):
 #     """
@@ -192,8 +191,7 @@ def _class_from_model_type(hdulist):
     """
     Get the model type from the primary header, lookup to get class
     """
-    raise NotImplementedError(
-        "stdatamodels does not yet support automatic model class selection")
+    raise NotImplementedError("stdatamodels does not yet support automatic model class selection")
     # from . import _defined_models as defined_models
 
     # if hdulist:
@@ -214,8 +212,7 @@ def _class_from_ramp_type(hdulist, shape):
     """
     Special check to see if file is ramp file
     """
-    raise NotImplementedError(
-        "stdatamodels does not yet support automatic model class selection")
+    raise NotImplementedError("stdatamodels does not yet support automatic model class selection")
     # if not hdulist:
     #     new_class = None
     # else:
@@ -237,8 +234,7 @@ def _class_from_reftype(hdulist, shape):
     """
     Get the class name from the reftype and other header keywords
     """
-    raise NotImplementedError(
-        "stdatamodels does not yet support automatic model class selection")
+    raise NotImplementedError("stdatamodels does not yet support automatic model class selection")
     # if not hdulist:
     #     new_class = None
 
@@ -268,8 +264,7 @@ def _class_from_shape(hdulist, shape):
     """
     Get the class name from the shape
     """
-    raise NotImplementedError(
-        "stdatamodels does not yet support automatic model class selection")
+    raise NotImplementedError("stdatamodels does not yet support automatic model class selection")
     # if len(shape) == 0:
     #     from . import model_base
     #     new_class = model_base.DataModel
@@ -311,7 +306,7 @@ def can_broadcast(a, b):
 
 
 def to_camelcase(token):
-    return ''.join(x.capitalize() for x in token.split('_-'))
+    return "".join(x.capitalize() for x in token.split("_-"))
 
 
 def is_association(asn_data):
@@ -319,25 +314,25 @@ def is_association(asn_data):
     Test if an object is an association by checking for required fields
     """
     if isinstance(asn_data, dict):
-        if 'asn_id' in asn_data and 'asn_pool' in asn_data:
+        if "asn_id" in asn_data and "asn_pool" in asn_data:
             return True
     return False
 
 
 def get_short_doc(schema):
-    title = schema.get('title', None)
-    description = schema.get('description', None)
+    title = schema.get("title", None)
+    description = schema.get("description", None)
     if description is None:
-        description = title or ''
+        description = title or ""
     else:
         if title is not None:
-            description = title + '\n\n' + description
-    return description.partition('\n')[0]
+            description = title + "\n\n" + description
+    return description.partition("\n")[0]
 
 
 def ensure_ascii(s):
     if isinstance(s, bytes):
-        s = s.decode('ascii')
+        s = s.decode("ascii")
     return s
 
 
@@ -368,21 +363,19 @@ def create_history_entry(description, software=None):
     >>> entry = create_history_entry(description="HISTORY of this file", software=soft)
 
     """
-    from asdf.tags.core import Software, HistoryEntry
     import datetime
+
+    from asdf.tags.core import HistoryEntry, Software
 
     if isinstance(software, list):
         software = [Software(x) for x in software]
     elif software is not None:
         software = Software(software)
 
-    entry = HistoryEntry({
-        'description': description,
-        'time': datetime.datetime.utcnow()
-    })
+    entry = HistoryEntry({"description": description, "time": datetime.datetime.utcnow()})
 
     if software is not None:
-        entry['software'] = software
+        entry["software"] = software
     return entry
 
 
@@ -402,8 +395,8 @@ def get_envar_as_boolean(name, default=False):
     default : bool
         If the environmental variable cannot be accessed, use as the default.
     """
-    truths = ('true', 't', 'yes', 'y')
-    falses = ('false', 'f', 'no', 'n')
+    truths = ("true", "t", "yes", "y")
+    falses = ("false", "f", "no", "n")
     if name in os.environ:
         value = os.environ[name]
         try:
@@ -411,13 +404,11 @@ def get_envar_as_boolean(name, default=False):
         except ValueError:
             value_lowcase = value.lower()
             if value_lowcase not in truths + falses:
-                raise ValueError(
-                    f'Cannot convert value "{value}" to boolean unambiguously.')
+                raise ValueError(f'Cannot convert value "{value}" to boolean unambiguously.')
             return value_lowcase in truths
         return value
 
-    log.debug(
-        f'Environmental "{name}" cannot be found. Using default value of "{default}".')
+    log.debug(f'Environmental "{name}" cannot be found. Using default value of "{default}".')
     return default
 
 
@@ -449,7 +440,7 @@ def check_memory_allocation(shape, allowed=None, model_type=None, include_swap=T
     """
     # Determine desired allowed amount.
     if allowed is None:
-        allowed = os.environ.get('DMODEL_ALLOWED_MEMORY', None)
+        allowed = os.environ.get("DMODEL_ALLOWED_MEMORY", None)
         if allowed is not None:
             allowed = float(allowed)
 
@@ -471,19 +462,16 @@ def check_memory_allocation(shape, allowed=None, model_type=None, include_swap=T
 
     # Get available memory
     available = get_available_memory(include_swap=include_swap)
-    log.debug(
-        f'Model size {bytes2human(size)} available system memory {bytes2human(available)}')
+    log.debug(f"Model size {bytes2human(size)} available system memory {bytes2human(available)}")
 
     if size > available:
         log.warning(
-            f'Model {model_type} shape {shape} requires {bytes2human(size)} which is more than'
-            f' system available {bytes2human(available)}'
+            f"Model {model_type} shape {shape} requires {bytes2human(size)} which is more than"
+            f" system available {bytes2human(available)}"
         )
 
     if allowed and size > (allowed * available):
-        log.debug(
-            f'Model size greater than allowed memory {bytes2human(allowed * available)}'
-        )
+        log.debug(f"Model size greater than allowed memory {bytes2human(allowed * available)}")
         return False, size
 
     return True, size
@@ -506,7 +494,7 @@ def get_available_memory(include_swap=True):
 
     # Apple MacOS
     log.debug(f'Running OS is "{system}"')
-    if system in ['Darwin']:
+    if system in ["Darwin"]:
         return get_available_memory_darwin(include_swap=include_swap)
 
     # Default to Linux-like:
@@ -562,11 +550,9 @@ def get_available_memory_darwin(include_swap=True):
 
         # Attempt to determine amount of free disk space on the boot partition.
         try:
-            swap = psutil.disk_usage('/private/var/vm').free
+            swap = psutil.disk_usage("/private/var/vm").free
         except FileNotFoundError as exception:
-            log.warn('Cannot determine available swap space.'
-                     f'Reason:\n'
-                     f'{"".join(traceback.format_exception(exception))}')
+            log.warn(f'Cannot determine available swap space.Reason:\n{"".join(traceback.format_exception(exception))}')
             swap = 0
         available += swap
 
