@@ -6,25 +6,25 @@ keep consistency with the JWST data model version.
 
 It is to be subclassed by the various types of data model variants for products
 """
-from pathlib import PurePath
 import builtins
 import copy
 import datetime
+import json
 import os
 import os.path
-import json
-import numpy as np
-from collections.abc import Sequence
-from astropy.time import Time
-from asdf.fits_embed import AsdfInFits
-from . import stnode
-from . import validate
-from . extensions import DATAMODEL_EXTENSIONS
-from collections import OrderedDict
-from asdf import AsdfFile
 import sys
-import asdf
+from collections import OrderedDict
+from collections.abc import Sequence
+from pathlib import PurePath
 
+import asdf
+import numpy as np
+from asdf import AsdfFile
+from asdf.fits_embed import AsdfInFits
+from astropy.time import Time
+
+from . import stnode, validate
+from .extensions import DATAMODEL_EXTENSIONS
 
 __all__ = [
     "DataModel",
@@ -304,13 +304,13 @@ class DataModel:
 class ImageModel(DataModel):
     def __delattr__(self, attr):
         try:
-            print ('Deleting attribute: %s' % attr)
+            print("Deleting attribute: %s" % attr)
             del self._instance[attr]
         except KeyError:
-            print ('Already deleted this attribute!')
+            print("Already deleted this attribute!")
 
     def __setattr__(self, attr, value):
-        if attr.startswith('_'):
+        if attr.startswith("_"):
             self.__dict__[attr] = value
         else:
             setattr(self._instance, attr, value)
@@ -319,9 +319,8 @@ class ImageModel(DataModel):
         return getattr(self._instance, attr)
 
     def __setitem__(self, key, value):
-        if key.startswith('_'):
-            raise ValueError(
-                'May not specify attributes/keys that start with _')
+        if key.startswith("_"):
+            raise ValueError("May not specify attributes/keys that start with _")
         if hasattr(self._instance, key):
             setattr(self._instance, key, value)
         else:
@@ -397,7 +396,7 @@ class ModelContainer(Sequence):
 
     Notes
     -----
-        The optional paramters ``save_open`` and ``return_open`` can be
+        The optional parameters ``save_open`` and ``return_open`` can be
         provided to control how the `DataModel` are used by the
         :py:class:`ModelContainer`. If ``save_open`` is set to `False`, each input
         `DataModel` instance in ``init`` will be written out to disk and
@@ -442,26 +441,26 @@ to supply custom catalogs.
             values when ASN table's members contain additional attributes.
 
     """
-    def __init__(self, init=None, asn_schema= None, asn_file_path=None,
-                 model_file_path=None, iscopy=False, **kwargs):
+
+    def __init__(self, init=None, asn_schema=None, asn_file_path=None, model_file_path=None, iscopy=False, **kwargs):
 
         self._models = []
         self._iscopy = iscopy
         self._memmap = kwargs.get("memmap", False)
-        self._return_open = kwargs.get('return_open', True)
-        self._save_open = kwargs.get('save_open', True)
+        self._return_open = kwargs.get("return_open", True)
+        self._save_open = kwargs.get("save_open", True)
 
         if init is None:
             # don't populate container
             pass
         elif asn_file_path:
-            with builtins.open(asn_file_path, 'r') as asn_file:
+            with builtins.open(asn_file_path, "r") as asn_file:
                 asn_schema = json.load(asn_file)
 
-            for product in asn_schema['products']:
-                for member in product['members']:
+            for product in asn_schema["products"]:
+                for member in product["members"]:
                     if self._iscopy:
-                        member_model = open(model_file_path + member['expname'])
+                        member_model = open(model_file_path + member["expname"])
                     else:
                         member_model = "null"
 
@@ -475,8 +474,7 @@ to supply custom catalogs.
             if is_all_string or is_all_roman_datamodels:
                 self._models.extend(init)
             else:
-                raise TypeError(
-                        "Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
+                raise TypeError("Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
         elif isinstance(init, self.__class__):
             instance = copy.deepcopy(init._instance)
             self._schema = init._schema
@@ -488,7 +486,8 @@ to supply custom catalogs.
             self._iscopy = True
         else:
             raise TypeError(
-                        "Input must be an ASN filepath or list of either strings (full path to ASDF files) or Roman datamodels.")
+                "Input must be an ASN filepath or list of either strings (full path to ASDF files) or Roman datamodels."
+            )
 
     def __len__(self):
         return len(self._models)
@@ -539,13 +538,13 @@ to supply custom catalogs.
         meta.observation.exposure
         """
         unique_exposure_parameters = [
-            'program',
-            'observation',
-            'visit',
-            'visit_file_group',
-            'visit_file_sequence',
-            'visit_file_activity',
-            'exposure'
+            "program",
+            "observation",
+            "visit",
+            "visit_file_group",
+            "visit_file_sequence",
+            "visit_file_activity",
+            "exposure",
         ]
 
         group_dict = OrderedDict()
@@ -560,11 +559,10 @@ to supply custom catalogs.
             for param in unique_exposure_parameters:
                 params.append(str(getattr(model.meta.observation, param)))
             try:
-                group_id = ('roman' + '_'.join([''.join(params[:3]),
-                                             ''.join(params[3:6]), params[6]]))
+                group_id = "roman" + "_".join(["".join(params[:3]), "".join(params[3:6]), params[6]])
                 model.meta["group_id"] = group_id
             except TypeError:
-                model.meta["group_id"] = f'exposure{i + 1:04d}'
+                model.meta["group_id"] = f"exposure{i + 1:04d}"
 
             group_id = model.meta.group_id
             if not self._save_open and not self._return_open:

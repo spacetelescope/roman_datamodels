@@ -1129,6 +1129,7 @@ def create_ramp_fit_output(**kwargs):
 
     return stnode.RampFitOutput(raw)
 
+
 def create_guidewindow(**kwargs):
     """
     Create a dummy Guide Window instance with valid values for attributes

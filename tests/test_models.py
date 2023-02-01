@@ -177,7 +177,7 @@ def test_model_container_input_as_list_of_filepaths(tmp_path):
     # generate a list of n filepaths and files to be read later on by ModelContainer
     filepath_list = []
     for i in range(n):
-        filepath = tmp_path / f'test_model_container_input_as_list_of_filepaths_{i:02}.asdf'
+        filepath = tmp_path / f"test_model_container_input_as_list_of_filepaths_{i:02}.asdf"
         # create L2 file using filepath
         utils.mk_level2_image(filepath=filepath)
         # append filepath to filepath list
@@ -190,12 +190,13 @@ def test_model_container_input_as_list_of_filepaths(tmp_path):
     # check if all model_container elements are instances of DataModel
     assert all(isinstance(x, datamodels.DataModel) for x in model_container)
 
+
 def test_model_container_input_as_list_of_datamodels(tmp_path):
     n = 2
     # generate a list of n filepaths and files to be read later on by ModelContainer
     datamodel_list = []
     for i in range(n):
-        filepath = tmp_path / f'test_model_container_input_as_list_of_datamodels_{i:02}.asdf'
+        filepath = tmp_path / f"test_model_container_input_as_list_of_datamodels_{i:02}.asdf"
         # create L2 file in memory
         utils.mk_level2_image(filepath=filepath)
         datamodel = datamodels.open(str(filepath))
