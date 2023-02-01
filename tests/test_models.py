@@ -142,6 +142,40 @@ def test_opening_rampfitoutput_ref(tmp_path):
     assert isinstance(rampfitoutput, datamodels.RampFitOutputModel)
 
 
+# Association tests
+def test_make_association():
+    member_shapes = (3, 8, 5, 2)
+    association = utils.mk_associations(shape=member_shapes)
+
+    print("XXX association.products = " + str(association.products))
+
+    assert association.asn_type == "image"
+    assert len(association.products) == len(member_shapes)
+
+    for prod_idx in range(len(member_shapes)):
+        assert association.products[prod_idx].name == "product" + str(prod_idx)
+        assert len(association.products[prod_idx].members) == member_shapes[prod_idx]
+        assert (
+            association.products[prod_idx].members[-1].expname
+            == "file_" + str(sum(member_shapes[0 : prod_idx + 1]) - 1) + ".asdf"
+        )
+        assert association.products[prod_idx].members[-1].exposerr == "null"
+        assert association.products[prod_idx].members[-1].exptype in ["SCIENCE", "CALIBRATION", "ENGINEERING"]
+
+    # Test validation
+    association_model = datamodels.AssociationsModel(association)
+    assert association_model.validate() is None
+
+
+def test_opening_association_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / "testassociations.asdf"
+    utils.mk_associations(filepath=file_path)
+    association = datamodels.open(file_path)
+    assert association.program == 1
+    assert isinstance(association, datamodels.AssociationsModel)
+
+
 # Guide Window tests
 def test_make_guidewindow():
     guidewindow = utils.mk_guidewindow(shape=(2, 8, 16, 32, 32))
