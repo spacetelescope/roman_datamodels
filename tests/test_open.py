@@ -1,23 +1,21 @@
-import pytest
-
-from astropy.io import fits
 import asdf
 import numpy as np
-from numpy.testing import assert_array_equal
+import pytest
 from astropy import units as u
+from astropy.io import fits
+from numpy.testing import assert_array_equal
 
-from roman_datamodels import units as ru
 from roman_datamodels import datamodels
-
+from roman_datamodels import units as ru
 from roman_datamodels.testing import utils
 
 
 def test_asdf_file_input():
     tree = utils.mk_level2_image()
     with asdf.AsdfFile() as af:
-        af.tree = {'roman': tree}
+        af.tree = {"roman": tree}
         model = datamodels.open(af)
-        assert model.meta.telescope == 'ROMAN'
+        assert model.meta.telescope == "ROMAN"
         model.close()
         # should the asdf file be closed by model.close()?
 
@@ -26,7 +24,7 @@ def test_path_input(tmp_path):
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
         tree = utils.mk_level2_image()
-        af.tree = {'roman': tree}
+        af.tree = {"roman": tree}
         af.write_to(file_path)
 
     # Test with PurePath input:
@@ -54,13 +52,12 @@ def test_path_input(tmp_path):
 def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    data = u.Quantity(np.random.uniform(size=(1024, 1024)).astype(np.float32),
-                      ru.electron/u.s, dtype=np.float32)
+    data = u.Quantity(np.random.uniform(size=(1024, 1024)).astype(np.float32), ru.electron / u.s, dtype=np.float32)
 
     with asdf.AsdfFile() as af:
-        af.tree = {'roman': utils.mk_level2_image()}
-        af.tree['roman'].meta['bozo'] = 'clown'
-        af.tree['roman'].data = data
+        af.tree = {"roman": utils.mk_level2_image()}
+        af.tree["roman"].meta["bozo"] = "clown"
+        af.tree["roman"].data = data
         af.write_to(file_path)
 
     original_model = datamodels.open(file_path)
@@ -80,18 +77,28 @@ def test_invalid_input():
     with pytest.raises(TypeError):
         datamodels.open(fits.HDUList())
 
+
 def test_memmap(tmp_path):
-    data = u.Quantity(np.zeros((400, 400,), dtype=np.float32),
-                      ru.electron/u.s, dtype=np.float32)
-    new_value = u.Quantity(1.0, ru.electron/u.s, dtype=np.float32)
+    data = u.Quantity(
+        np.zeros(
+            (
+                400,
+                400,
+            ),
+            dtype=np.float32,
+        ),
+        ru.electron / u.s,
+        dtype=np.float32,
+    )
+    new_value = u.Quantity(1.0, ru.electron / u.s, dtype=np.float32)
     new_data = data.copy()
     new_data[6, 19] = new_value
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {'roman': utils.mk_level2_image()}
+        af.tree = {"roman": utils.mk_level2_image()}
 
-        af.tree['roman'].data = data
+        af.tree["roman"].data = data
         af.write_to(file_path)
 
     # Since quantities don't inherit from np.memmap we have to test they are effectively
@@ -116,22 +123,35 @@ def test_memmap(tmp_path):
         assert model.data[6, 19] == new_value
         assert (model.data == new_data).all()
 
-@pytest.mark.parametrize("kwargs", [
-    {"memmap": False}, # explicit False
-    {}, # default
-])
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"memmap": False},  # explicit False
+        {},  # default
+    ],
+)
 def test_no_memmap(tmp_path, kwargs):
-    data = u.Quantity(np.zeros((400, 400,), dtype=np.float32),
-                      ru.electron/u.s, dtype=np.float32)
-    new_value = u.Quantity(1.0, ru.electron/u.s, dtype=np.float32)
+    data = u.Quantity(
+        np.zeros(
+            (
+                400,
+                400,
+            ),
+            dtype=np.float32,
+        ),
+        ru.electron / u.s,
+        dtype=np.float32,
+    )
+    new_value = u.Quantity(1.0, ru.electron / u.s, dtype=np.float32)
     new_data = data.copy()
     new_data[6, 19] = new_value
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {'roman': utils.mk_level2_image()}
+        af.tree = {"roman": utils.mk_level2_image()}
 
-        af.tree['roman'].data = data
+        af.tree["roman"].data = data
         af.write_to(file_path)
 
     # Since quantities don't inherit from np.memmap we have to test they are effectively

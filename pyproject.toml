@@ -18,9 +18,7 @@ dependencies = [
     'psutil >=5.7.2',
     'numpy',
     'astropy >=5.0.4',
-    #'rad >=0.14.0',
-    # Temporary path for github PR tests
-    'rad @git+https://github.com/spacetelescope/rad.git@main',
+    'rad >=0.14.1',
     'asdf-standard >=1.0.3',
 ]
 dynamic = ['version']
@@ -93,3 +91,29 @@ exclude_lines = [
     'def main\(.*\):',
     'if __name__ == \(.*\):',
 ]
+
+[tool.isort]
+profile = "black"
+filter_files = true
+line_length = 130
+
+[tool.black]
+line-length = 130
+force-exclude = '''
+^/(
+  (
+      \.eggs
+    | \.git
+    | \.pytest_cache
+    | \.tox
+  )/
+)
+'''
+
+[tool.ruff]
+line-length = 130
+
+[tool.codespell]
+skip="*.pdf,*.fits,*.asdf,.tox,build,./tags,.git,docs/_build"
+# ignore-words-list="""
+# """

@@ -1,16 +1,16 @@
 import asdf
 import pytest
-
 from astropy import units as u
+
 from roman_datamodels import units
 
 
 def test_RomanUnit_fail():
     with pytest.raises(ValueError):
-        units.Unit('foo')
+        units.Unit("foo")
 
 
-@pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
+@pytest.mark.parametrize("unit", units.ROMAN_UNIT_SYMBOLS)
 def test_roman_datamodels_unit(unit):
     roman_unit = getattr(units, unit)
     astropy_unit = getattr(u, unit)
@@ -27,7 +27,7 @@ def test_roman_datamodels_unit(unit):
     assert roman_value == astropy_value
 
 
-@pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
+@pytest.mark.parametrize("unit", units.ROMAN_UNIT_SYMBOLS)
 def test_string(unit):
     roman_unit = getattr(units, unit)
     astropy_unit = getattr(u, unit)
@@ -35,7 +35,7 @@ def test_string(unit):
     assert roman_unit.to_string() == astropy_unit.to_string() == unit
 
 
-@pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
+@pytest.mark.parametrize("unit", units.ROMAN_UNIT_SYMBOLS)
 def test_unit_serialization(unit, tmp_path):
     roman_unit = getattr(units, unit)
 
@@ -49,7 +49,7 @@ def test_unit_serialization(unit, tmp_path):
         assert af["unit"] == roman_unit
 
 
-@pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
+@pytest.mark.parametrize("unit", units.ROMAN_UNIT_SYMBOLS)
 def test_quantity_serialization(unit, tmp_path):
     quantity = 3.14 * getattr(units, unit)
 
@@ -63,12 +63,12 @@ def test_quantity_serialization(unit, tmp_path):
         assert isinstance(af["quantity"].unit, units.Unit)
 
 
-@pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
-@pytest.mark.parametrize('pwr', [-2, -1, 2])
+@pytest.mark.parametrize("unit", units.ROMAN_UNIT_SYMBOLS)
+@pytest.mark.parametrize("pwr", [-2, -1, 2])
 def test_roman_unit_pow(unit, pwr, tmp_path):
     roman_unit = getattr(units, unit)
 
-    power = roman_unit ** pwr
+    power = roman_unit**pwr
     assert isinstance(power, units.CompositeUnit)
 
     file_path = tmp_path / "test.asdf"
@@ -87,7 +87,7 @@ def test_roman_unit_pow(unit, pwr, tmp_path):
         assert af["power"].powers[0] == pwr
 
 
-@pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
+@pytest.mark.parametrize("unit", units.ROMAN_UNIT_SYMBOLS)
 def test_roman_unit_div_astropy_unit(unit, tmp_path):
     roman_unit = getattr(units, unit)
 
@@ -114,14 +114,14 @@ def test_roman_unit_div_astropy_unit(unit, tmp_path):
         assert af["composite"].powers[1] == -1
 
 
-@pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
+@pytest.mark.parametrize("unit", units.ROMAN_UNIT_SYMBOLS)
 def test_astropy_unit_div_roman_unit(unit, tmp_path):
     roman_unit = getattr(units, unit)
 
     composite = roman_unit / u.s
     assert isinstance(composite, units.CompositeUnit)
 
-    composite = composite ** -1
+    composite = composite**-1
     assert isinstance(composite, units.CompositeUnit)
 
     file_path = tmp_path / "test.asdf"
@@ -144,7 +144,7 @@ def test_astropy_unit_div_roman_unit(unit, tmp_path):
         assert af["composite"].powers[1] == -1
 
 
-@pytest.mark.parametrize('unit', units.ROMAN_UNIT_SYMBOLS)
+@pytest.mark.parametrize("unit", units.ROMAN_UNIT_SYMBOLS)
 def test_roman_unit_mul_astropy_unit(unit, tmp_path):
     roman_unit = getattr(units, unit)
 
@@ -200,7 +200,7 @@ def test_force_roman_unit():
         assert isinstance(uu := units.force_roman_unit(unit), u.NamedUnit) and not isinstance(uu, units.Unit)
 
         # Powers
-        assert isinstance(units.force_roman_unit(unit ** -1), u.CompositeUnit) and not isinstance(uu, units.CompositeUnit)
+        assert isinstance(units.force_roman_unit(unit**-1), u.CompositeUnit) and not isinstance(uu, units.CompositeUnit)
 
         # Division
         assert isinstance(units.force_roman_unit(unit / u.s), u.CompositeUnit) and not isinstance(uu, units.CompositeUnit)
