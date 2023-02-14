@@ -2,22 +2,23 @@
 Factory methods that create (not necessarily realistic) nodes
 that validate against their schemas.
 """
-from datetime import datetime
 import math
 import random
 import re
 import secrets
 import sys
+from datetime import datetime
 
-from astropy.time import Time
+import numpy as np
 from astropy import units as u
 from astropy.modeling import models
+from astropy.time import Time
 from astropy.table import Table
-import numpy as np
 
 from roman_datamodels import units as ru
 
 from .. import stnode
+
 # from .. import table_definitions
 
 
@@ -41,8 +42,8 @@ __all__ = [
     "create_node",
     "create_observation",
     "create_photometry",
-    "create_source_detection",
     "create_pixelarea",
+    "create_source_detection",
     "create_pointing",
     "create_program",
     "create_ref_meta",
@@ -99,10 +100,10 @@ def _random_string_time():
     return datetime.utcfromtimestamp(_random_utc_timestamp()).strftime("%H:%M:%S.%f")[0:12]
 
 
-def _random_astropy_time(time_format='unix'):
-    timeobj =  Time(_random_utc_timestamp(), format="unix")
+def _random_astropy_time(time_format="unix"):
+    timeobj = Time(_random_utc_timestamp(), format="unix")
 
-    if time_format == 'unix':
+    if time_format == "unix":
         return timeobj
     else:
         time_str = timeobj.to_value(format=time_format)
@@ -113,9 +114,9 @@ def _random_astropy_time(time_format='unix'):
 def _random_int(min=None, max=None):
     # Assume 32-bit signed integers for now
     if min is None:
-        min = -1 * 2 ** 31
+        min = -1 * 2**31
     if max is None:
-        max = 2 ** 31 - 1
+        max = 2**31 - 1
     return random.randint(min, max)
 
 
@@ -152,6 +153,7 @@ def _random_array_float32(size=(4096, 4096), min=None, max=None, units=None):
         array = u.Quantity(array, units, dtype=np.float32)
     return array
 
+
 def _random_array_uint8(size=(4096, 4096), min=None, max=None, units=None):
     if min is None:
         min = np.iinfo("uint8").min
@@ -161,6 +163,7 @@ def _random_array_uint8(size=(4096, 4096), min=None, max=None, units=None):
     if units:
         array = u.Quantity(array, units, dtype=np.uint8)
     return array
+
 
 def _random_array_uint16(size=(4096, 4096), min=None, max=None, units=None):
     if min is None:
@@ -260,7 +263,6 @@ def create_aperture(**kwargs):
     raw = {
         "name": f"WFI_{aper_number:02d}_FULL",
         "position_angle": _random_angle_degrees(),
-
     }
     raw.update(kwargs)
 
@@ -284,14 +286,14 @@ def create_cal_step(**kwargs):
     raw = {
         "flat_field": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "dq_init": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "assign_wcs" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "dark" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "jump" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "linearity" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "assign_wcs": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "dark": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "jump": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "linearity": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "photom": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "source_detection": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "ramp_fit" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "saturation" : _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "ramp_fit": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "saturation": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
     }
     raw.update(kwargs)
 
@@ -372,7 +374,7 @@ def create_exposure(**kwargs):
         "duration": _random_positive_float(),
         "effective_exposure_time": _random_positive_float(),
         "elapsed_exposure_time": _random_positive_float(),
-        "end_time": _random_astropy_time(time_format='isot'),
+        "end_time": _random_astropy_time(time_format="isot"),
         "end_time_mjd": _random_mjd_timestamp(),
         "end_time_tdb": _random_mjd_timestamp(),
         "exposure_time": _random_positive_float(),
@@ -383,13 +385,13 @@ def create_exposure(**kwargs):
         "groupgap": 0,
         "id": _random_positive_int(),
         "integration_time": _random_positive_float(),
-        "mid_time": _random_astropy_time(time_format='isot'),
+        "mid_time": _random_astropy_time(time_format="isot"),
         "mid_time_mjd": _random_mjd_timestamp(),
         "mid_time_tdb": _random_mjd_timestamp(),
         "nframes": 8,
         "ngroups": 6,
         "sca_number": _random_positive_int(),
-        "start_time": _random_astropy_time(time_format='isot'),
+        "start_time": _random_astropy_time(time_format="isot"),
         "start_time_mjd": _random_mjd_timestamp(),
         "start_time_tdb": _random_mjd_timestamp(),
         "type": _random_exposure_type(),
@@ -420,10 +422,10 @@ def create_ref_meta(**kwargs):
         "author": _random_string("Reference author "),
         "description": _random_string("Reference description "),
         "exposure": {
-            "type" : "WFI_IMAGE",
-            "ngroups" : 6,
-            "nframes" : 8,
-            "groupgap" : 0,
+            "type": "WFI_IMAGE",
+            "ngroups": 6,
+            "nframes": 8,
+            "groupgap": 0,
             "ma_table_name": _random_string("MA table "),
             "ma_table_number": _random_positive_int(max=998) + 1,
         },
@@ -485,10 +487,10 @@ def create_dark_ref(**kwargs):
         "data": _random_array_float32((2, 4096, 4096), units=ru.DN),
         "dq": _random_array_uint32(),
         "err": _random_array_float32((2, 4096, 4096), units=ru.DN),
-        "meta": create_ref_meta(reftype="DARK")
+        "meta": create_ref_meta(reftype="DARK"),
     }
     raw.update(kwargs)
-    raw['meta']['exposure']['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
+    raw["meta"]["exposure"]["p_exptype"] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
 
     return stnode.DarkRef(raw)
 
@@ -508,14 +510,11 @@ def create_distortion_ref(**kwargs):
     roman_datamodels.stnode.DistortionRef
     """
     m = models.Shift(1) & models.Shift(2)
-    raw = {
-        "coordinate_distortion_transform": m,
-        "meta": create_ref_meta(reftype="DISTORTION")
-    }
+    raw = {"coordinate_distortion_transform": m, "meta": create_ref_meta(reftype="DISTORTION")}
     raw.update(kwargs)
 
-    raw['meta']['input_units'] = u.pixel
-    raw['meta']['output_units'] = u.arcsec
+    raw["meta"]["input_units"] = u.pixel
+    raw["meta"]["output_units"] = u.arcsec
 
     return stnode.DistortionRef(raw)
 
@@ -589,8 +588,8 @@ def create_linearity_ref(**kwargs):
     }
     raw.update(kwargs)
 
-    raw['meta']['input_units'] = ru.DN
-    raw['meta']['output_units'] = ru.DN
+    raw["meta"]["input_units"] = ru.DN
+    raw["meta"]["output_units"] = ru.DN
 
     return stnode.LinearityRef(raw)
 
@@ -617,6 +616,7 @@ def create_mask_ref(**kwargs):
 
     return stnode.MaskRef(raw)
 
+
 def create_pixelarea_ref(**kwargs):
     """
     Create a dummy PixelareaRef instance with valid values for attributes
@@ -635,13 +635,14 @@ def create_pixelarea_ref(**kwargs):
         "data": _random_array_float32((4096, 4096)),
         "meta": create_ref_meta(reftype="AREA"),
     }
-    raw['meta']['photometry'] = {
-        'pixelarea_steradians': _random_positive_float() * u.sr,
-        'pixelarea_arcsecsq': _random_positive_float() * u.arcsec ** 2,
+    raw["meta"]["photometry"] = {
+        "pixelarea_steradians": _random_positive_float() * u.sr,
+        "pixelarea_arcsecsq": _random_positive_float() * u.arcsec**2,
     }
     raw.update(kwargs)
 
     return stnode.PixelareaRef(raw)
+
 
 def create_readnoise_ref(**kwargs):
     """
@@ -662,9 +663,10 @@ def create_readnoise_ref(**kwargs):
         "meta": create_ref_meta(reftype="READNOISE"),
     }
     raw.update(kwargs)
-    raw['meta']['exposure']['p_exptype'] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
+    raw["meta"]["exposure"]["p_exptype"] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
 
     return stnode.ReadnoiseRef(raw)
+
 
 def create_saturation_ref(**kwargs):
     """
@@ -688,6 +690,7 @@ def create_saturation_ref(**kwargs):
     raw.update(kwargs)
 
     return stnode.SaturationRef(raw)
+
 
 def create_superbias_ref(**kwargs):
     """
@@ -713,6 +716,7 @@ def create_superbias_ref(**kwargs):
 
     return stnode.SuperbiasRef(raw)
 
+
 def create_wfi_img_photom_ref(**kwargs):
     """
     Create a dummy WfiImgPhotomRef instance with valid values for attributes
@@ -728,50 +732,49 @@ def create_wfi_img_photom_ref(**kwargs):
     roman_datamodels.stnode.WfiImgPhotomRef
     """
     raw_dict = {
-        "F062":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
-             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
-             "pixelareasr": 1.0e-13 * u.steradian},
-        "F087":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
-             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
-             "pixelareasr": 1.0e-13 * u.steradian},
-        "F106":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
-             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
-             "pixelareasr": 1.0e-13 * u.steradian},
-        "F129":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
-             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
-             "pixelareasr": 1.0e-13 * u.steradian},
-        "F146":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
-             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
-             "pixelareasr": 1.0e-13 * u.steradian},
-        "F158":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
-             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
-             "pixelareasr": 1.0e-13 * u.steradian},
-        "F184":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
-             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
-             "pixelareasr": 1.0e-13 * u.steradian},
-        "F213":
-            {"photmjsr": (1.0e-15  * np.random.random() * u.megajansky / u.steradian),
-             "uncertainty": (1.0e-16  * np.random.random() * u.megajansky / u.steradian),
-             "pixelareasr": 1.0e-13 * u.steradian},
-        "GRISM":
-            {"photmjsr": None,
-             "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.steradian},
-        "PRISM":
-            {"photmjsr": None,
-             "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.steradian},
-        "DARK":
-            {"photmjsr": None,
-             "uncertainty": None,
-             "pixelareasr": 1.0e-13 * u.steradian},
+        "F062": {
+            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
+            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
+            "pixelareasr": 1.0e-13 * u.steradian,
+        },
+        "F087": {
+            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
+            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
+            "pixelareasr": 1.0e-13 * u.steradian,
+        },
+        "F106": {
+            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
+            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
+            "pixelareasr": 1.0e-13 * u.steradian,
+        },
+        "F129": {
+            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
+            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
+            "pixelareasr": 1.0e-13 * u.steradian,
+        },
+        "F146": {
+            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
+            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
+            "pixelareasr": 1.0e-13 * u.steradian,
+        },
+        "F158": {
+            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
+            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
+            "pixelareasr": 1.0e-13 * u.steradian,
+        },
+        "F184": {
+            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
+            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
+            "pixelareasr": 1.0e-13 * u.steradian,
+        },
+        "F213": {
+            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
+            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
+            "pixelareasr": 1.0e-13 * u.steradian,
+        },
+        "GRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1.0e-13 * u.steradian},
+        "PRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1.0e-13 * u.steradian},
+        "DARK": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1.0e-13 * u.steradian},
     }
 
     raw = {
@@ -828,6 +831,7 @@ def create_guidestar(**kwargs):
 
     return stnode.Guidestar(raw)
 
+
 def create_file_date(**kwargs):
     return stnode.FileDate(kwargs.get("file_date", _random_astropy_time()))
 
@@ -872,7 +876,7 @@ def _create_basic_meta(**kwargs):
 
     return {
         "calibration_software_version": create_calibration_software_version(**kwargs),
-        "crds_context_used": "roman_{:04d}.pmap".format(_random_positive_int(9999)),
+        "crds_context_used": f"roman_{_random_positive_int(9999):04d}.pmap",
         "crds_software_version": _random_software_version(),
         "filename": create_filename(**kwargs),
         "file_date": create_file_date(**kwargs),
@@ -974,10 +978,10 @@ def create_photometry(**kwargs):
     raw = {
         "conversion_megajanskys": _random_positive_float() * u.MJy / u.sr,
         "conversion_microjanskys": _random_positive_float() * u.uJy / u.sr,
-        "pixelarea_arcsecsq": _random_positive_float() * u.arcsec ** 2,
+        "pixelarea_arcsecsq": _random_positive_float() * u.arcsec**2,
         "pixelarea_steradians": _random_positive_float() * u.sr,
         "conversion_megajanskys_uncertainty": _random_positive_float() * u.MJy / u.sr,
-        "conversion_microjanskys_uncertainty": _random_positive_float() * u.uJy / u.sr
+        "conversion_microjanskys_uncertainty": _random_positive_float() * u.uJy / u.sr,
     }
     raw.update(kwargs)
 
@@ -1018,8 +1022,7 @@ def create_pixelarea(**kwargs):
     }
     raw.update(kwargs)
     raw["meta"] = {}
-    raw["meta"]["photometry"] = {'pixelarea_steradians': .3 * u.sr,
-                                 'pixelarea_arcsecsq': .3 * u.arcsec ** 2}
+    raw["meta"]["photometry"] = {"pixelarea_steradians": 0.3 * u.sr, "pixelarea_arcsecsq": 0.3 * u.arcsec**2}
 
     return stnode.Pixelarea(raw)
 
@@ -1092,12 +1095,10 @@ def create_ramp(**kwargs):
 
     raw = {
         "meta": create_meta(),
-
         "data": _random_array_float32((2, 4096, 4096), units=ru.electron),
         "pixeldq": _random_array_uint32((4096, 4096)),
         "groupdq": _random_array_uint8((2, 4096, 4096)),
-        "err": _random_array_float32(size=(2, 4096, 4096),min=0.0, units=ru.electron),
-
+        "err": _random_array_float32(size=(2, 4096, 4096), min=0.0, units=ru.electron),
         "amp33": _random_array_uint16((2, 4096, 128), units=ru.DN),
         "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=ru.DN),
         "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=ru.DN),
@@ -1106,11 +1107,12 @@ def create_ramp(**kwargs):
         "dq_border_ref_pix_right": _random_array_uint32((4096, 4)),
         "dq_border_ref_pix_left": _random_array_uint32((4096, 4)),
         "dq_border_ref_pix_top": _random_array_uint32((4, 4096)),
-        "dq_border_ref_pix_bottom": _random_array_uint32((4, 4096))
+        "dq_border_ref_pix_bottom": _random_array_uint32((4, 4096)),
     }
     raw.update(kwargs)
 
     return stnode.Ramp(raw)
+
 
 def create_ramp_fit_output(**kwargs):
     """
@@ -1131,7 +1133,6 @@ def create_ramp_fit_output(**kwargs):
 
     raw = {
         "meta": create_meta(),
-
         "slope": _random_array_float32(seg_shape, units=ru.electron / u.s),
         "sigslope": _random_array_float32(seg_shape, units=ru.electron / u.s),
         "yint": _random_array_float32(seg_shape, units=ru.electron),
@@ -1141,7 +1142,6 @@ def create_ramp_fit_output(**kwargs):
         "crmag": _random_array_float32(seg_shape, units=ru.electron),
         "var_poisson": _random_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
         "var_rnoise": _random_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
-
     }
     raw.update(kwargs)
 
@@ -1178,22 +1178,22 @@ def create_guidewindow(**kwargs):
     raw["meta"]["gw_end_time"] = _random_astropy_time()
     raw["meta"]["gw_function_start_time"] = _random_astropy_time()
     raw["meta"]["gw_function_end_time"] = _random_astropy_time()
-    raw['meta']['gw_frame_readout_time'] = _random_float()
-    raw['meta']['pedestal_resultant_exp_time'] = _random_float()
-    raw['meta']['signal_resultant_exp_time'] = _random_float()
-    raw['meta']['gw_acq_number'] = _random_int()
-    raw['meta']['gw_mode'] = 'WIM-ACQ'
-    raw['meta']['gw_window_xstart'] = _random_positive_int(4000)
-    raw['meta']['gw_window_ystart'] = _random_positive_int(4000)
-    raw['meta']['gw_window_xstop'] = raw['meta']["gw_window_xstart"] + 16
-    raw['meta']['gw_window_ystop'] = raw['meta']["gw_window_ystart"] + 16
-    raw['meta']['gw_window_xsize'] = 16
-    raw['meta']['gw_window_ysize'] = 16
-    raw['meta']['gw_acq_exec_stat'] = _random_string("Status ", 15)
+    raw["meta"]["gw_frame_readout_time"] = _random_float()
+    raw["meta"]["pedestal_resultant_exp_time"] = _random_float()
+    raw["meta"]["signal_resultant_exp_time"] = _random_float()
+    raw["meta"]["gw_acq_number"] = _random_int()
+    raw["meta"]["gw_mode"] = "WIM-ACQ"
+    raw["meta"]["gw_window_xstart"] = _random_positive_int(4000)
+    raw["meta"]["gw_window_ystart"] = _random_positive_int(4000)
+    raw["meta"]["gw_window_xstop"] = raw["meta"]["gw_window_xstart"] + 16
+    raw["meta"]["gw_window_ystop"] = raw["meta"]["gw_window_ystart"] + 16
+    raw["meta"]["gw_window_xsize"] = 16
+    raw["meta"]["gw_window_ysize"] = 16
+    raw["meta"]["gw_acq_exec_stat"] = _random_string("Status ", 15)
 
-    raw['meta']["gw_acq_exec_stat"] = _random_string("Status ", 15)
-    raw['meta']["gw_function_end_time"] = _random_astropy_time()
-    raw['meta']["gw_function_start_time"] = _random_astropy_time()
+    raw["meta"]["gw_acq_exec_stat"] = _random_string("Status ", 15)
+    raw["meta"]["gw_function_end_time"] = _random_astropy_time()
+    raw["meta"]["gw_function_start_time"] = _random_astropy_time()
 
     return stnode.Guidewindow(raw)
 
@@ -1354,11 +1354,9 @@ def create_wfi_image(**kwargs):
         "dq": _random_array_uint32((4088, 4088)),
         "err": _random_array_float32((4088, 4088), min=0.0, units=ru.electron / u.s),
         "meta": create_meta(),
-
         "var_flat": _random_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
         "var_poisson": _random_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
         "var_rnoise": _random_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
-
         "amp33": _random_array_uint16((2, 4096, 128), units=ru.DN),
         "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=ru.DN),
         "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=ru.DN),
@@ -1447,7 +1445,7 @@ def create_node(node_class, **kwargs):
     `roman_datamodels.stnode.TaggedObjectNode`
     """
     method_name = "create_" + _camel_case_to_snake_case(node_class.__name__)
-    if not method_name in globals():
+    if method_name not in globals():
         raise ValueError(f"Factory method not implemented for class {node_class.__name__}")
     return globals()[method_name](**kwargs)
 
@@ -1466,8 +1464,7 @@ def create_ref_file(**kwargs):
     -------
     roman_datamodels.stnode.RefFileName
     """
-    reftypes = ["dark", "distortion", "flat", "gain", "linearity", "mask", "readnoise",
-                "saturation", "photom" ]
+    reftypes = ["dark", "distortion", "flat", "gain", "linearity", "mask", "readnoise", "saturation", "photom"]
     val = "N/A"
     raw = dict(zip(reftypes, [val] * len(reftypes)))
     raw["crds"] = {"sw_version": "12.1", "context_used": "781"}
