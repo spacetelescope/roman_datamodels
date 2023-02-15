@@ -200,7 +200,7 @@ def mk_source_detection():
     roman_datamodels.stnode.SourceDetection
     """
     source_detection = stnode.SourceDetection()
-    source_detection['name'] = NOSTR
+    source_detection['tweakreg_catalog_name'] = NOSTR
     source_detection['tweakreg_catalog'] = Table(names=['id', 'xcentroid', 'ycentroid', 'flux'])
     return source_detection
 

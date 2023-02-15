@@ -994,7 +994,7 @@ def create_source_detection(**kwargs):
     """
 
     raw = {
-        "name":_random_string("file", 17),
+        "tweakreg_catalog_name":_random_string("file", 17),
         "tweakreg_catalog": Table(names=['id', 'xcentroid', 'ycentroid', 'flux'])
         }
 
