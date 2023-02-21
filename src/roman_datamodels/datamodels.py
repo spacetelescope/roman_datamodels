@@ -6,10 +6,8 @@ keep consistency with the JWST data model version.
 
 It is to be subclassed by the various types of data model variants for products
 """
-import builtins
 import copy
 import datetime
-import json
 import os
 import os.path
 import sys
@@ -19,7 +17,6 @@ from pathlib import PurePath
 
 import asdf
 import numpy as np
-from asdf import AsdfFile
 from asdf.fits_embed import AsdfInFits
 from astropy.time import Time
 
@@ -369,35 +366,16 @@ class ModelContainer(Sequence):
         - None: initializes an empty `ModelContainer` instance, to which
           DataModels can be added via the ``append()`` method.
 
-    asn_exptypes: str
-        list of exposure types from the asn file to read
-        into the ModelContainer, if None read all the given files.
-
-    asn_n_members : int
-        Open only the first N qualifying members.
-
     iscopy : bool
         Presume this model is a copy. Members will not be closed
         when the model is closed/garbage-collected.
 
     Examples
     --------
-    >>> container = ModelContainer('example_asn.json')
+    >>> container = ModelContainer(['file1.asdf', 'file2.asdf', ..., 'fileN.asdf'])
     >>> for model in container:
     ...     print(model.meta.filename)
 
-    Say the association was a NIRCam dithered dataset. The `models_grouped`
-    attribute is a list of lists, the first index giving the list of exposure
-    groups, with the second giving the individual datamodels representing
-    each detector in the exposure (2 or 8 in the case of NIRCam).
-
-    >>> total_exposure_time = 0.0
-    >>> for group in container.models_grouped:
-    ...     total_exposure_time += group[0].meta.exposure.exposure_time
-
-    >>> c = ModelContainer()
-    >>> m = datamodels.open('myfile.fits')
-    >>> c.append(m)
 
     Notes
     -----
@@ -414,40 +392,13 @@ class ModelContainer(Sequence):
         during processing, with these parameters being used
         by :py:class:`~jwst.outlier_detection.OutlierDetectionStep`.
 
-        When ASN table's members contain attributes listed in
-        :py:data:`RECOGNIZED_MEMBER_FIELDS`, :py:class:`ModelContainer` will
-        read those attribute values and update the corresponding attributes
-        in the ``meta`` of input models.
-
-        .. code-block::
-            :caption: Example of ASN table with additional model attributes \
-to supply custom catalogs.
-
-            "products": [
-                {
-                    "name": "resampled_image",
-                    "members": [
-                        {
-                            "expname": "input_image1_cal.fits",
-                            "exptype": "science",
-                            "tweakreg_catalog": "custom_catalog1.ecsv"
-                        },
-                        {
-                            "expname": "input_image2_cal.fits",
-                            "exptype": "science",
-                            "tweakreg_catalog": "custom_catalog2.ecsv"
-                        }
-                    ]
-                }
-            ]
-
         .. warning::
             Input files will be updated in-place with new ``meta`` attribute
             values when ASN table's members contain additional attributes.
 
     """
 
-    def __init__(self, init=None, asn_schema=None, asn_file_path=None, model_file_path=None, iscopy=False, **kwargs):
+    def __init__(self, init=None, iscopy=False, **kwargs):
 
         self._models = []
         self._iscopy = iscopy
@@ -458,18 +409,6 @@ to supply custom catalogs.
         if init is None:
             # don't populate container
             pass
-        elif asn_file_path:
-            with builtins.open(asn_file_path, "r") as asn_file:
-                asn_schema = json.load(asn_file)
-
-            for product in asn_schema["products"]:
-                for member in product["members"]:
-                    if self._iscopy:
-                        member_model = open(model_file_path + member["expname"])
-                    else:
-                        member_model = "null"
-
-                    self._models.append(member_model)
         elif isinstance(init, list):
             # only append list items to self._models if all items are either
             # strings (i.e. path to an ASDF file) or instances of DataModel
@@ -480,19 +419,8 @@ to supply custom catalogs.
                 self._models.extend(init)
             else:
                 raise TypeError("Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
-        elif isinstance(init, self.__class__):
-            instance = copy.deepcopy(init._instance)
-            self._schema = init._schema
-            self._shape = init._shape
-            self._asdf = AsdfFile(instance)
-            self._instance = instance
-            self._ctx = self
-            self._models = init._models
-            self._iscopy = True
         else:
-            raise TypeError(
-                "Input must be an ASN filepath or list of either strings (full path to ASDF files) or Roman datamodels."
-            )
+            raise TypeError("Input must be a list of either strings (full path to ASDF files) or Roman datamodels.")
 
     def __len__(self):
         return len(self._models)
@@ -506,23 +434,11 @@ to supply custom catalogs.
     def __setitem__(self, index, model):
         self._models[index] = model
 
-    def __delitem__(self, index):
-        del self._models[index]
-
     def __iter__(self):
         for model in self._models:
             if not isinstance(model, DataModel) and self._return_open:
                 model = open(model, memmap=self._memmap)
             yield model
-
-    def insert(self, index, model):
-        self._models.insert(index, model)
-
-    def append(self, model):
-        self._models.append(model)
-
-    def extend(self, model):
-        self._models.extend(model)
 
     @property
     def models_grouped(self):
