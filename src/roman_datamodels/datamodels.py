@@ -306,23 +306,6 @@ class ImageModel(DataModel):
         except AttributeError:
             print("Attribute %s not found." % attr)
 
-    def __setattr__(self, attr, value):
-        if attr.startswith("_"):
-            self.__dict__[attr] = value
-        else:
-            setattr(self._instance, attr, value)
-
-    def __getattr__(self, attr):
-        return getattr(self._instance, attr)
-
-    def __setitem__(self, key, value):
-        if key.startswith("_"):
-            raise ValueError("May not specify attributes/keys that start with _")
-        if hasattr(self._instance, key):
-            setattr(self._instance, key, value)
-        else:
-            self._instance._data[key] = value
-
 
 class ScienceRawModel(DataModel):
     pass
