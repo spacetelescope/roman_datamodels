@@ -347,6 +347,17 @@ class LinearityRefModel(DataModel):
         return "coeffs"
 
 
+class InverseLinearityRefModel(DataModel):
+    def get_primary_array_name(self):
+        """
+        Returns the name "primary" array for this model, which
+        controls the size of other arrays that are implicitly created.
+        This is intended to be overridden in the subclasses if the
+        primary array's name is not "data".
+        """
+        return "coeffs"
+
+
 class MaskRefModel(DataModel):
     def get_primary_array_name(self):
         """
@@ -451,6 +462,7 @@ model_registry = {
     stnode.GainRef: GainRefModel,
     stnode.IpcRef: IpcRefModel,
     stnode.LinearityRef: LinearityRefModel,
+    stnode.InverseLinearityRef: InverseLinearityRefModel,
     stnode.MaskRef: MaskRefModel,
     stnode.PixelareaRef: PixelareaRefModel,
     stnode.ReadnoiseRef: ReadnoiseRefModel,
