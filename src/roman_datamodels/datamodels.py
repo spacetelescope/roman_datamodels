@@ -303,8 +303,8 @@ class ImageModel(DataModel):
         try:
             print("Deleting attribute: %s" % attr)
             del self._instance[attr]
-        except KeyError:
-            print("Already deleted this attribute!")
+        except AttributeError:
+            print("Attribute %s not found." % attr)
 
     def __setattr__(self, attr, value):
         if attr.startswith("_"):

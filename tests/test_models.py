@@ -15,6 +15,30 @@ from roman_datamodels.testing import utils
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
 
+@pytest.fixture(name="set_up_list_of_l2_files")
+def set_up_list_of_l2_files(tmp_path, request):
+    # generate a list of n filepaths and files to be read later on by ModelContainer
+    marker = request.node.get_closest_marker("set_up_list_of_l2_files_data")
+    number_of_files_to_create = marker.args[0]
+    type_of_returned_object = marker.args[1]
+
+    result_list = []
+    for i in range(number_of_files_to_create):
+        filepath = tmp_path / f"test_model_container_input_as_list_of_filepaths_{i:02}.asdf"
+        # create L2 file using filepath
+        utils.mk_level2_image(filepath=filepath)
+        if type_of_returned_object == "asdf":
+            # append filepath to filepath list
+            result_list.append(str(filepath))
+        elif type_of_returned_object == "datamodel":
+            # parse ASDF file as RDM
+            datamodel = datamodels.open(str(filepath))
+            # append datamodel to datamodel list
+            result_list.append(datamodel)
+
+    return result_list
+
+
 # Helper class to iterate over model subclasses
 def iter_subclasses(model_class, include_base_model=True):
     if include_base_model:
@@ -206,33 +230,26 @@ def test_opening_guidewindow_ref(tmp_path):
 
 
 # Model Container tests
-def test_model_container_input_as_list_of_filepaths(tmp_path):
-    n = 2
-    # generate a list of n filepaths and files to be read later on by ModelContainer
-    filepath_list = []
-    for i in range(n):
-        filepath = tmp_path / f"test_model_container_input_as_list_of_filepaths_{i:02}.asdf"
-        # create L2 file using filepath
-        utils.mk_level2_image(filepath=filepath)
-        # append filepath to filepath list
-        filepath_list.append(str(filepath))
+@pytest.mark.set_up_list_of_l2_files_data(2, "asdf")
+def test_model_container_input_as_list_of_filepaths(set_up_list_of_l2_files):
 
+    filepath_list = set_up_list_of_l2_files
     # provide filepath list as input to ModelContainer
     model_container = datamodels.ModelContainer(filepath_list)
 
-    assert len(model_container) == n
+    assert len(model_container) == 2
     # check if all model_container elements are instances of DataModel
     assert all(isinstance(x, datamodels.DataModel) for x in model_container)
 
 
 def test_model_container_input_as_list_of_datamodels(tmp_path):
     n = 2
-    # generate a list of n filepaths and files to be read later on by ModelContainer
     datamodel_list = []
     for i in range(n):
-        filepath = tmp_path / f"test_model_container_input_as_list_of_datamodels_{i:02}.asdf"
-        # create L2 file in memory
+        filepath = tmp_path / f"test_model_container_input_as_list_of_filepaths_{i:02}.asdf"
+        # create L2 file using filepath
         utils.mk_level2_image(filepath=filepath)
+        # parse ASDF file as RDM
         datamodel = datamodels.open(str(filepath))
         # append datamodel to datamodel list
         datamodel_list.append(datamodel)
@@ -242,6 +259,44 @@ def test_model_container_input_as_list_of_datamodels(tmp_path):
 
     assert len(datamodel_list) == n
     assert all(isinstance(x, datamodels.DataModel) for x in model_container)
+
+
+@pytest.mark.set_up_list_of_l2_files_data(2, "asdf")
+def test_imagemodel_set_item(set_up_list_of_l2_files):
+
+    filepath_list = set_up_list_of_l2_files
+    # provide filepath list as input to ModelContainer
+    model_container = datamodels.ModelContainer(filepath_list)
+    # grab first datamodel for testing
+    image_model = model_container[0]
+
+    image_model["test_attr"] = "test_attr_value"
+    assert hasattr(image_model, "test_attr")
+    assert image_model.test_attr == "test_attr_value"
+    image_model["test_attr"] = "test_attr_new_value"
+    assert image_model.test_attr == "test_attr_new_value"
+    # test ValueError
+    with pytest.raises(Exception) as e:
+        image_model["_test_attr"] = "test_attr_some_other_value"
+    assert e.type == ValueError
+
+
+@pytest.mark.set_up_list_of_l2_files_data(2, "asdf")
+def test_imagemodel_delete_attribute(set_up_list_of_l2_files):
+
+    filepath_list = set_up_list_of_l2_files
+    # provide filepath list as input to ModelContainer
+    model_container = datamodels.ModelContainer(filepath_list)
+    # grab first datamodel for testing
+    image_model = model_container[0]
+
+    image_model["test_attr"] = "test_attr_value"
+    del image_model.test_attr
+    assert not hasattr(image_model, "test_attr")
+    # test KeyError
+    with pytest.raises(Exception) as e:
+        del image_model["_test_attr"]
+    assert e.type == AttributeError
 
 
 # Testing all reference file schemas
