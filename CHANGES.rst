@@ -1,7 +1,8 @@
 0.15.0 (unreleased)
 ===================
 
--
+- Added support for Inverse Nonlinearity data model, maker utilities, and tests. [#125]
+
 
 0.14.1 (2023-01-31)
 ===================

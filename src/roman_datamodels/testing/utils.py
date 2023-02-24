@@ -771,6 +771,46 @@ def mk_linearity(shape=None, filepath=None):
         return linearityref
 
 
+def mk_inverse_linearity(shape=None, filepath=None):
+    """
+    Create a dummy InverseLinearity instance (or file) with arrays and valid
+    values for attributes required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.InverseLinearityRef
+    """
+    meta = {}
+    add_ref_common(meta)
+    inverselinearityref = stnode.InverseLinearityRef()
+    meta["reftype"] = "INVERSE_LINEARITY"
+    inverselinearityref["meta"] = meta
+
+    inverselinearityref["meta"]["input_units"] = ru.DN
+    inverselinearityref["meta"]["output_units"] = ru.DN
+
+    if not shape:
+        shape = (2, 4096, 4096)
+
+    inverselinearityref["dq"] = np.zeros(shape[1:], dtype=np.uint32)
+    inverselinearityref["coeffs"] = np.zeros(shape, dtype=np.float32)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {"roman": inverselinearityref}
+        af.write_to(filepath)
+    else:
+        return inverselinearityref
+
+
 def mk_mask(shape=None, filepath=None):
     """
     Create a dummy Mask instance (or file) with arrays and valid values for attributes

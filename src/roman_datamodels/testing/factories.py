@@ -591,6 +591,33 @@ def create_linearity_ref(**kwargs):
     return stnode.LinearityRef(raw)
 
 
+def create_inverse_linearity_ref(**kwargs):
+    """
+    Create a dummy InverseLinearityRef instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.InverseLinearityRef
+    """
+    raw = {
+        "coeffs": _random_array_float32((2, 4096, 4096)),
+        "dq": _random_array_uint32((4096, 4096)),
+        "meta": create_ref_meta(reftype="INVERSE_LINEARITY"),
+    }
+    raw.update(kwargs)
+
+    raw["meta"]["input_units"] = ru.DN
+    raw["meta"]["output_units"] = ru.DN
+
+    return stnode.InverseLinearityRef(raw)
+
+
 def create_mask_ref(**kwargs):
     """
     Create a dummy MaskRef instance with valid values for attributes

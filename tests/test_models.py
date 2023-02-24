@@ -353,6 +353,27 @@ def test_opening_linearity_ref(tmp_path):
     assert isinstance(linearity, datamodels.LinearityRefModel)
 
 
+# InverseLinearity tests
+def test_make_inverse_linearity():
+    inverselinearity = utils.mk_inverse_linearity(shape=(2, 20, 20))
+    assert inverselinearity.meta.reftype == "INVERSE_LINEARITY"
+    assert inverselinearity.coeffs.dtype == np.float32
+    assert inverselinearity.dq.dtype == np.uint32
+
+    # Test validation
+    inverselinearity_model = datamodels.InverseLinearityRefModel(inverselinearity)
+    assert inverselinearity_model.validate() is None
+
+
+def test_opening_inverse_linearity_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / "testlinearity.asdf"
+    utils.mk_inverse_linearity(filepath=file_path)
+    inverselinearity = datamodels.open(file_path)
+    assert inverselinearity.meta.instrument.optical_element == "F158"
+    assert isinstance(inverselinearity, datamodels.InverseLinearityRefModel)
+
+
 # Mask tests
 def test_make_mask():
     mask = utils.mk_mask(shape=(20, 20))
