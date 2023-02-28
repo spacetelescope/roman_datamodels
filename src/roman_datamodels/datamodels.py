@@ -333,7 +333,7 @@ class ModelContainer(Sequence):
 
     Parameters
     ----------
-    init : file path, list of DataModels, or None
+    init : file path, list of DataModels or path to ASDF files, or None
 
         - file path: initialize from an association table
 
