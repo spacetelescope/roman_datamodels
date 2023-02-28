@@ -13,15 +13,27 @@ import os.path
 import sys
 from collections import OrderedDict
 from collections.abc import Sequence
+import warnings
 from pathlib import PurePath
 
 import asdf
 import numpy as np
-from asdf.fits_embed import AsdfInFits
+import packaging.version
 from astropy.time import Time
 
 from . import stnode, validate
 from .extensions import DATAMODEL_EXTENSIONS
+
+if packaging.version.Version(asdf.__version__) < packaging.version.Version("3.0"):
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            category=asdf.exceptions.AsdfDeprecationWarning,
+            message=r"AsdfInFits has been deprecated.*",
+        )
+        from asdf.fits_embed import AsdfInFits
+else:
+    AsdfInFits = None
 
 __all__ = [
     "DataModel",
@@ -622,7 +634,7 @@ def open(init, memmap=False, target=None, **kwargs):
             asdffile = asdf.open(init, **kwargs)
         except ValueError:
             raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
-        if isinstance(asdffile, AsdfInFits):
+        if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
             raise TypeError("Roman datamodels does not accept FITS files or objects")
     modeltype = type(asdffile.tree["roman"])
     if modeltype in model_registry:
