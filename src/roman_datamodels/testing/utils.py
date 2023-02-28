@@ -1068,9 +1068,9 @@ def mk_associations(shape=None, filepath=None):
     required by the schema.
     Parameters
     ----------
-    shape
+    shape : tuple
         (optional) The shape of the member elements of products.
-    filepath
+    filepath : string
         (optional) File name and path to write model to.
     Returns
     -------

@@ -299,12 +299,7 @@ class DataModel:
 
 
 class ImageModel(DataModel):
-    def __delattr__(self, attr):
-        try:
-            print("Deleting attribute: %s" % attr)
-            del self._instance[attr]
-        except AttributeError:
-            print("Attribute %s not found." % attr)
+    pass
 
 
 class ScienceRawModel(DataModel):
@@ -333,10 +328,8 @@ class ModelContainer(Sequence):
     A container for holding DataModels.
 
     This functions like a list for holding DataModel objects.  It can be
-    iterated through like a list, DataModels within the container can be
-    addressed by index, and the datamodels can be grouped into a list of
-    lists for grouped looping, useful for NIRCam where grouping together
-    all detectors of a given exposure is useful for some pipeline steps.
+    iterated through like a list and the datamodels within the container can be
+    addressed by index. Additionally, the datamodels can be grouped by exposure.
 
     Parameters
     ----------
@@ -344,7 +337,7 @@ class ModelContainer(Sequence):
 
         - file path: initialize from an association table
 
-        - list: a list of DataModels of any type
+        - list: a list of either datamodels or full path to ASDF files (as string)
 
         - None: initializes an empty `ModelContainer` instance, to which
           DataModels can be added via the ``append()`` method.
@@ -352,6 +345,15 @@ class ModelContainer(Sequence):
     iscopy : bool
         Presume this model is a copy. Members will not be closed
         when the model is closed/garbage-collected.
+
+    memmap : bool
+        Open ASDF file binary data using memmap (default: False)
+
+    return_open : bool
+        (optional) See notes below on usage.
+
+    save_open : bool
+        (optional) See notes below on usage.
 
     Examples
     --------
@@ -372,22 +374,20 @@ class ModelContainer(Sequence):
         work with it. If ``return_open`` is also `False`, then the `DataModel`
         will be closed when access to the `DataModel` is completed. The use of
         these parameters can minimize the amount of memory used by this object
-        during processing, with these parameters being used
-        by :py:class:`~jwst.outlier_detection.OutlierDetectionStep`.
+        during processing.
 
-        .. warning::
-            Input files will be updated in-place with new ``meta`` attribute
-            values when ASN table's members contain additional attributes.
+        .. warning:: Input files will be updated in-place with new ``meta`` attribute
+        values when ASN table's members contain additional attributes.
 
     """
 
-    def __init__(self, init=None, iscopy=False, **kwargs):
+    def __init__(self, init=None, iscopy=False, memmap=False, return_open=True, save_open=True):
 
         self._models = []
         self._iscopy = iscopy
-        self._memmap = kwargs.get("memmap", False)
-        self._return_open = kwargs.get("return_open", True)
-        self._save_open = kwargs.get("save_open", True)
+        self._memmap = memmap
+        self._return_open = return_open
+        self._save_open = save_open
 
         if init is None:
             # don't populate container
@@ -422,6 +422,23 @@ class ModelContainer(Sequence):
             if not isinstance(model, DataModel) and self._return_open:
                 model = open(model, memmap=self._memmap)
             yield model
+
+    def save(self, dir_path=None, *args, **kwargs):
+        # use current path if dir_path is not provided
+        dir_path = dir_path if dir_path is not None else os.getcwd()
+        # output filename suffix
+        output_suffix = "cal_twkreg"
+        for model in self._models:
+            filename = model.meta.filename
+            base, ext = os.path.splitext(filename)
+            base = base.replace("cal", output_suffix)
+            output_filename = "".join([base, ext])
+            output_path = os.path.join(dir_path, output_filename)
+            # TODO: Support gzip-compressed fits
+            if ext == ".asdf":
+                model.to_asdf(output_path, *args, **kwargs)
+            else:
+                raise ValueError(f"unknown filetype {ext}")
 
     @property
     def models_grouped(self):
@@ -479,6 +496,10 @@ class ModelContainer(Sequence):
                 group_dict[group_id] = [model]
 
         return group_dict.values()
+
+    @property
+    def to_association(self):
+        pass
 
 
 class FlatRefModel(DataModel):
