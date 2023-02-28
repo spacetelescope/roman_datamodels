@@ -60,10 +60,9 @@ def _check_value(value):
     """
 
     validator_context = AsdfFile()
-    validator_resolver = validator_context.resolver
 
     temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
-    validator = asdf_schema.get_validator(temp_schema, validator_context, validator_callbacks, validator_resolver)
+    validator = asdf_schema.get_validator(temp_schema, validator_context, validators=validator_callbacks)
 
     value = yamlutil.custom_tree_to_tagged_tree(value, validator_context)
     validator.validate(value, _schema=temp_schema)
