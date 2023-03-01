@@ -1004,7 +1004,7 @@ def create_associations(**kwargs):
 
     length = 7
 
-    exptypes = random.choices(["SCIENCE", "CALIBRATION", "ENGINEERING"], k=length)
+    exptypes = random_utils.generate_choices(["SCIENCE", "CALIBRATION", "ENGINEERING"], k=length)
     exposerr = ["null"] * length
     expname = ["file_" + str(x) + ".asdf" for x in range(length)]
 

@@ -84,6 +84,10 @@ def generate_choice(*args):
     return random.choice(args)
 
 
+def generate_choices(*args, **kwargs):
+    return random.choices(args, **kwargs)
+
+
 def generate_string(prefix="", max_length=None):
     if max_length is not None:
         random_length = min(16, max_length - len(prefix))
