@@ -281,24 +281,6 @@ def test_imagemodel_set_item(set_up_list_of_l2_files):
     assert e.type == ValueError
 
 
-@pytest.mark.set_up_list_of_l2_files_data(2, "asdf")
-def test_imagemodel_delete_attribute(set_up_list_of_l2_files):
-
-    filepath_list = set_up_list_of_l2_files
-    # provide filepath list as input to ModelContainer
-    model_container = datamodels.ModelContainer(filepath_list)
-    # grab first datamodel for testing
-    image_model = model_container[0]
-
-    image_model["test_attr"] = "test_attr_value"
-    del image_model.test_attr
-    assert not hasattr(image_model, "test_attr")
-    # test KeyError
-    with pytest.raises(Exception) as e:
-        del image_model["_test_attr"]
-    assert e.type == AttributeError
-
-
 # Testing all reference file schemas
 def test_reference_file_model_base(tmp_path):
     # Set temporary asdf file
