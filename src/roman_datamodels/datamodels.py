@@ -11,9 +11,9 @@ import datetime
 import os
 import os.path
 import sys
+import warnings
 from collections import OrderedDict
 from collections.abc import Sequence
-import warnings
 from pathlib import PurePath
 
 import asdf
