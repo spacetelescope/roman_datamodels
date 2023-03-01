@@ -3,6 +3,8 @@
 
 - Added support for Inverse Nonlinearity data model, maker utilities, and tests. [#125]
 
+- Moved datamodel maker utilities and split random functions out to utility file. [#128]
+
 
 0.14.1 (2023-01-31)
 ===================

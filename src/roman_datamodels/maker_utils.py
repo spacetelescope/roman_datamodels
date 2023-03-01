@@ -6,10 +6,9 @@ import numpy as np
 from astropy import units as u
 from astropy.modeling import models
 
+from roman_datamodels import stnode
 from roman_datamodels import units as ru
-
-from .. import stnode
-from .factories import _random_positive_int, _random_string
+from roman_datamodels.random_utils import generate_positive_int, generate_string
 
 NONUM = -999999
 NOSTR = "dummy value"
@@ -217,7 +216,7 @@ def mk_aperture():
     roman_datamodels.stnode.Aperture
     """
     aper = stnode.Aperture()
-    aper_number = _random_positive_int(17) + 1
+    aper_number = generate_positive_int(17) + 1
     aper["name"] = f"WFI_{aper_number:02d}_FULL"
     aper["position_angle"] = 30.0
     return aper
@@ -1201,7 +1200,7 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow["meta"]["gw_function_end_time"] = time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
     guidewindow["meta"]["data_start"] = NONUM
     guidewindow["meta"]["data_end"] = NONUM
-    guidewindow["meta"]["gw_acq_exec_stat"] = _random_string("Status ", 15)
+    guidewindow["meta"]["gw_acq_exec_stat"] = generate_string("Status ", 15)
 
     if not shape:
         shape = (2, 8, 16, 32, 32)

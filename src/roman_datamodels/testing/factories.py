@@ -3,17 +3,13 @@ Factory methods that create (not necessarily realistic) nodes
 that validate against their schemas.
 """
 import math
-import random
 import re
-import secrets
-import sys
-from datetime import datetime
 
 import numpy as np
 from astropy import units as u
 from astropy.modeling import models
-from astropy.time import Time
 
+from roman_datamodels import random_utils
 from roman_datamodels import units as ru
 
 from .. import stnode
@@ -55,194 +51,6 @@ __all__ = [
 ]
 
 
-def _random_float(min=None, max=None):
-    if min is None:
-        min = sys.float_info.max * -1.0
-    if max is None:
-        max = sys.float_info.max
-    value = random.random()
-    return min + max * value - min * value
-
-
-def _random_positive_float(max=None):
-    return _random_float(min=0.0, max=max)
-
-
-def _random_angle_radians():
-    return _random_float(0.0, 2.0 * math.pi)
-
-
-def _random_angle_degrees():
-    return _random_float(0.0, 360.0)
-
-
-def _random_mjd_timestamp():
-    # Random timestamp between 2020-01-01 and 2030-01-01
-    return _random_float(58849.0, 62502.0)
-
-
-def _random_utc_timestamp():
-    # Random timestamp between 2020-01-01 and 2030-01-01
-    return _random_float(1577836800.0, 1893456000.0)
-
-
-def _random_string_timestamp():
-    return datetime.utcfromtimestamp(_random_utc_timestamp()).strftime("%Y-%m-%dT%H:%M:%S.%f")[0:23]
-
-
-def _random_string_date():
-    return datetime.utcfromtimestamp(_random_utc_timestamp()).strftime("%Y-%m-%d")
-
-
-def _random_string_time():
-    return datetime.utcfromtimestamp(_random_utc_timestamp()).strftime("%H:%M:%S.%f")[0:12]
-
-
-def _random_astropy_time(time_format="unix"):
-    timeobj = Time(_random_utc_timestamp(), format="unix")
-
-    if time_format == "unix":
-        return timeobj
-    else:
-        time_str = timeobj.to_value(format=time_format)
-        timeobj = Time(time_str, format=time_format)
-        return timeobj
-
-
-def _random_int(min=None, max=None):
-    # Assume 32-bit signed integers for now
-    if min is None:
-        min = -1 * 2**31
-    if max is None:
-        max = 2**31 - 1
-    return random.randint(min, max)
-
-
-def _random_positive_int(max=None):
-    return _random_int(0, max)
-
-
-def _random_choice(*args):
-    return random.choice(args)
-
-
-def _random_string(prefix="", max_length=None):
-    if max_length is not None:
-        random_length = min(16, max_length - len(prefix))
-    else:
-        random_length = 16
-
-    return prefix + secrets.token_hex(random_length)
-
-
-def _random_bool():
-    return _random_choice(*[True, False])
-
-
-def _random_array_float32(size=(4096, 4096), min=None, max=None, units=None):
-    if min is None:
-        min = np.finfo("float32").min
-    if max is None:
-        max = np.finfo("float32").max
-
-    array = np.random.default_rng().random(size=size, dtype=np.float32)
-    array = min + max * array - min * array
-    if units:
-        array = u.Quantity(array, units, dtype=np.float32)
-    return array
-
-
-def _random_array_uint8(size=(4096, 4096), min=None, max=None, units=None):
-    if min is None:
-        min = np.iinfo("uint8").min
-    if max is None:
-        max = np.iinfo("uint8").max
-    array = np.random.randint(min, high=max, size=size, dtype=np.uint8)
-    if units:
-        array = u.Quantity(array, units, dtype=np.uint8)
-    return array
-
-
-def _random_array_uint16(size=(4096, 4096), min=None, max=None, units=None):
-    if min is None:
-        min = np.iinfo("uint16").min
-    if max is None:
-        max = np.iinfo("uint16").max
-    array = np.random.randint(min, high=max, size=size, dtype=np.uint16)
-    if units:
-        array = u.Quantity(array, units, dtype=np.uint16)
-    return array
-
-
-def _random_array_uint32(size=(4096, 4096), min=None, max=None, units=None):
-    if min is None:
-        min = np.iinfo("uint32").min
-    if max is None:
-        max = np.iinfo("uint32").max
-    array = np.random.randint(min, high=max, size=size, dtype=np.uint32)
-    if units:
-        array = u.Quantity(array, units, dtype=np.uint32)
-    return array
-
-
-def _random_exposure_type():
-    return _random_choice(
-        "WFI_DARK",
-        "WFI_FLAT",
-        "WFI_GRISM",
-        "WFI_IMAGE",
-        "WFI_PRISM",
-        "WFI_WFSC",
-    )
-
-
-def _random_detector():
-    return _random_choice(
-        "WFI01",
-        "WFI02",
-        "WFI03",
-        "WFI04",
-        "WFI05",
-        "WFI06",
-        "WFI07",
-        "WFI08",
-        "WFI09",
-        "WFI10",
-        "WFI11",
-        "WFI12",
-        "WFI13",
-        "WFI14",
-        "WFI15",
-        "WFI16",
-        "WFI17",
-        "WFI18",
-    )
-
-
-def _random_optical_element():
-    return _random_choice(
-        "F062",
-        "F087",
-        "F106",
-        "F129",
-        "F146",
-        "F158",
-        "F184",
-        "F213",
-        "GRISM",
-        "PRISM",
-        "DARK",
-    )
-
-
-def _random_software_version():
-    return "{}.{}.{}".format(
-        _random_positive_int(100),
-        _random_positive_int(100),
-        _random_positive_int(100),
-    )
-
-
 def create_aperture(**kwargs):
     """
     Create a dummy Aperture instance with valid values for attributes
@@ -257,10 +65,10 @@ def create_aperture(**kwargs):
     -------
     roman_datamodels.stnode.Aperture
     """
-    aper_number = _random_positive_int(17) + 1
+    aper_number = random_utils.generate_positive_int(17) + 1
     raw = {
         "name": f"WFI_{aper_number:02d}_FULL",
-        "position_angle": _random_angle_degrees(),
+        "position_angle": random_utils.generate_angle_degrees(),
     }
     raw.update(kwargs)
 
@@ -282,15 +90,15 @@ def create_cal_step(**kwargs):
     roman_datamodels.stnode.CalStep
     """
     raw = {
-        "flat_field": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "dq_init": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "assign_wcs": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "dark": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "jump": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "linearity": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "photom": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "ramp_fit": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
-        "saturation": _random_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "flat_field": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "dq_init": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "assign_wcs": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "dark": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "jump": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "linearity": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "photom": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "ramp_fit": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "saturation": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
     }
     raw.update(kwargs)
 
@@ -334,18 +142,18 @@ def create_ephemeris(**kwargs):
     roman_datamodels.stnode.Ephemeris
     """
     raw = {
-        "earth_angle": _random_angle_radians(),
-        "ephemeris_reference_frame": _random_string("Frame ", 10),
-        "moon_angle": _random_angle_radians(),
-        "time": _random_mjd_timestamp(),
-        "type": _random_choice("DEFINITIVE", "PREDICTED"),
-        "spatial_x": _random_float(),
-        "spatial_y": _random_float(),
-        "spatial_z": _random_float(),
-        "sun_angle": _random_angle_radians(),
-        "velocity_x": _random_float(),
-        "velocity_y": _random_float(),
-        "velocity_z": _random_float(),
+        "earth_angle": random_utils.generate_angle_radians(),
+        "ephemeris_reference_frame": random_utils.generate_string("Frame ", 10),
+        "moon_angle": random_utils.generate_angle_radians(),
+        "time": random_utils.generate_mjd_timestamp(),
+        "type": random_utils.generate_choice("DEFINITIVE", "PREDICTED"),
+        "spatial_x": random_utils.generate_float(),
+        "spatial_y": random_utils.generate_float(),
+        "spatial_z": random_utils.generate_float(),
+        "sun_angle": random_utils.generate_angle_radians(),
+        "velocity_x": random_utils.generate_float(),
+        "velocity_y": random_utils.generate_float(),
+        "velocity_z": random_utils.generate_float(),
     }
     raw.update(kwargs)
 
@@ -367,33 +175,33 @@ def create_exposure(**kwargs):
     roman_datamodels.stnode.Exposure
     """
     raw = {
-        "data_problem": _random_bool(),
-        "duration": _random_positive_float(),
-        "effective_exposure_time": _random_positive_float(),
-        "elapsed_exposure_time": _random_positive_float(),
-        "end_time": _random_astropy_time(time_format="isot"),
-        "end_time_mjd": _random_mjd_timestamp(),
-        "end_time_tdb": _random_mjd_timestamp(),
-        "exposure_time": _random_positive_float(),
-        "frame_divisor": _random_positive_int(),
-        "frame_time": _random_positive_float(),
-        "gain_factor": _random_positive_float(),
-        "group_time": _random_positive_float(),
+        "data_problem": random_utils.generate_bool(),
+        "duration": random_utils.generate_positive_float(),
+        "effective_exposure_time": random_utils.generate_positive_float(),
+        "elapsed_exposure_time": random_utils.generate_positive_float(),
+        "end_time": random_utils.generate_astropy_time(time_format="isot"),
+        "end_time_mjd": random_utils.generate_mjd_timestamp(),
+        "end_time_tdb": random_utils.generate_mjd_timestamp(),
+        "exposure_time": random_utils.generate_positive_float(),
+        "frame_divisor": random_utils.generate_positive_int(),
+        "frame_time": random_utils.generate_positive_float(),
+        "gain_factor": random_utils.generate_positive_float(),
+        "group_time": random_utils.generate_positive_float(),
         "groupgap": 0,
-        "id": _random_positive_int(),
-        "integration_time": _random_positive_float(),
-        "mid_time": _random_astropy_time(time_format="isot"),
-        "mid_time_mjd": _random_mjd_timestamp(),
-        "mid_time_tdb": _random_mjd_timestamp(),
+        "id": random_utils.generate_positive_int(),
+        "integration_time": random_utils.generate_positive_float(),
+        "mid_time": random_utils.generate_astropy_time(time_format="isot"),
+        "mid_time_mjd": random_utils.generate_mjd_timestamp(),
+        "mid_time_tdb": random_utils.generate_mjd_timestamp(),
         "nframes": 8,
         "ngroups": 6,
-        "sca_number": _random_positive_int(),
-        "start_time": _random_astropy_time(time_format="isot"),
-        "start_time_mjd": _random_mjd_timestamp(),
-        "start_time_tdb": _random_mjd_timestamp(),
-        "type": _random_exposure_type(),
-        "ma_table_name": _random_string("MA table "),
-        "ma_table_number": _random_positive_int(max=998) + 1,
+        "sca_number": random_utils.generate_positive_int(),
+        "start_time": random_utils.generate_astropy_time(time_format="isot"),
+        "start_time_mjd": random_utils.generate_mjd_timestamp(),
+        "start_time_tdb": random_utils.generate_mjd_timestamp(),
+        "type": random_utils.generate_exposure_type(),
+        "ma_table_name": random_utils.generate_string("MA table "),
+        "ma_table_number": random_utils.generate_positive_int(max=998) + 1,
         "level0_compressed": True,
     }
     raw.update(kwargs)
@@ -416,25 +224,25 @@ def create_ref_meta(**kwargs):
     dict
     """
     raw = {
-        "author": _random_string("Reference author "),
-        "description": _random_string("Reference description "),
+        "author": random_utils.generate_string("Reference author "),
+        "description": random_utils.generate_string("Reference description "),
         "exposure": {
             "type": "WFI_IMAGE",
             "ngroups": 6,
             "nframes": 8,
             "groupgap": 0,
-            "ma_table_name": _random_string("MA table "),
-            "ma_table_number": _random_positive_int(max=998) + 1,
+            "ma_table_name": random_utils.generate_string("MA table "),
+            "ma_table_number": random_utils.generate_positive_int(max=998) + 1,
         },
         "instrument": {
             "name": "WFI",
-            "detector": _random_detector(),
-            "optical_element": _random_optical_element(),
+            "detector": random_utils.generate_detector(),
+            "optical_element": random_utils.generate_optical_element(),
         },
         "origin": "STScI",
         "pedigree": "DUMMY",
         "telescope": create_telescope(**kwargs),
-        "useafter": _random_astropy_time(),
+        "useafter": random_utils.generate_astropy_time(),
     }
     raw.update(kwargs)
 
@@ -456,9 +264,9 @@ def create_flat_ref(**kwargs):
     roman_datamodels.stnode.FlatRef
     """
     raw = {
-        "data": _random_array_float32(min=0.0),
-        "dq": _random_array_uint32(),
-        "err": _random_array_float32(min=0.0),
+        "data": random_utils.generate_array_float32(min=0.0),
+        "dq": random_utils.generate_array_uint32(),
+        "err": random_utils.generate_array_float32(min=0.0),
         "meta": create_ref_meta(reftype="FLAT"),
     }
     raw.update(kwargs)
@@ -481,9 +289,9 @@ def create_dark_ref(**kwargs):
     roman_datamodels.stnode.DarkRef
     """
     raw = {
-        "data": _random_array_float32((2, 4096, 4096), units=ru.DN),
-        "dq": _random_array_uint32(),
-        "err": _random_array_float32((2, 4096, 4096), units=ru.DN),
+        "data": random_utils.generate_array_float32((2, 4096, 4096), units=ru.DN),
+        "dq": random_utils.generate_array_uint32(),
+        "err": random_utils.generate_array_float32((2, 4096, 4096), units=ru.DN),
         "meta": create_ref_meta(reftype="DARK"),
     }
     raw.update(kwargs)
@@ -531,7 +339,7 @@ def create_gain_ref(**kwargs):
     roman_datamodels.stnode.GainRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096), units=ru.electron / ru.DN),
+        "data": random_utils.generate_array_float32((4096, 4096), units=ru.electron / ru.DN),
         "meta": create_ref_meta(reftype="GAIN"),
     }
     raw.update(kwargs)
@@ -553,7 +361,7 @@ def create_ipc_ref(**kwargs):
     -------
     roman_datamodels.stnode.IpcRef
     """
-    kernel = np.abs(_random_array_float32((3, 3)))
+    kernel = np.abs(random_utils.generate_array_float32((3, 3)))
     kernel /= np.sum(kernel)
     raw = {
         "data": kernel,
@@ -579,8 +387,8 @@ def create_linearity_ref(**kwargs):
     roman_datamodels.stnode.LinearityRef
     """
     raw = {
-        "coeffs": _random_array_float32((2, 4096, 4096)),
-        "dq": _random_array_uint32((4096, 4096)),
+        "coeffs": random_utils.generate_array_float32((2, 4096, 4096)),
+        "dq": random_utils.generate_array_uint32((4096, 4096)),
         "meta": create_ref_meta(reftype="LINEARITY"),
     }
     raw.update(kwargs)
@@ -606,8 +414,8 @@ def create_inverse_linearity_ref(**kwargs):
     roman_datamodels.stnode.InverseLinearityRef
     """
     raw = {
-        "coeffs": _random_array_float32((2, 4096, 4096)),
-        "dq": _random_array_uint32((4096, 4096)),
+        "coeffs": random_utils.generate_array_float32((2, 4096, 4096)),
+        "dq": random_utils.generate_array_uint32((4096, 4096)),
         "meta": create_ref_meta(reftype="INVERSE_LINEARITY"),
     }
     raw.update(kwargs)
@@ -634,7 +442,7 @@ def create_mask_ref(**kwargs):
     """
     raw = {
         "meta": create_ref_meta(reftype="MASK"),
-        "dq": _random_array_uint32(),
+        "dq": random_utils.generate_array_uint32(),
     }
     raw.update(kwargs)
 
@@ -656,12 +464,12 @@ def create_pixelarea_ref(**kwargs):
     roman_datamodels.stnode.PixelareaRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096)),
+        "data": random_utils.generate_array_float32((4096, 4096)),
         "meta": create_ref_meta(reftype="AREA"),
     }
     raw["meta"]["photometry"] = {
-        "pixelarea_steradians": _random_positive_float() * u.sr,
-        "pixelarea_arcsecsq": _random_positive_float() * u.arcsec**2,
+        "pixelarea_steradians": random_utils.generate_positive_float() * u.sr,
+        "pixelarea_arcsecsq": random_utils.generate_positive_float() * u.arcsec**2,
     }
     raw.update(kwargs)
 
@@ -683,7 +491,7 @@ def create_readnoise_ref(**kwargs):
     roman_datamodels.stnode.ReadnoiseRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096), units=ru.DN),
+        "data": random_utils.generate_array_float32((4096, 4096), units=ru.DN),
         "meta": create_ref_meta(reftype="READNOISE"),
     }
     raw.update(kwargs)
@@ -707,8 +515,8 @@ def create_saturation_ref(**kwargs):
     roman_datamodels.stnode.SaturationRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096), units=ru.DN),
-        "dq": _random_array_uint32((4096, 4096)),
+        "data": random_utils.generate_array_float32((4096, 4096), units=ru.DN),
+        "dq": random_utils.generate_array_uint32((4096, 4096)),
         "meta": create_ref_meta(reftype="SATURATION"),
     }
     raw.update(kwargs)
@@ -731,9 +539,9 @@ def create_superbias_ref(**kwargs):
     roman_datamodels.stnode.SuperbiasRef
     """
     raw = {
-        "data": _random_array_float32((4096, 4096)),
-        "dq": _random_array_uint32((4096, 4096)),
-        "err": _random_array_float32((4096, 4096)),
+        "data": random_utils.generate_array_float32((4096, 4096)),
+        "dq": random_utils.generate_array_uint32((4096, 4096)),
+        "err": random_utils.generate_array_float32((4096, 4096)),
         "meta": create_ref_meta(reftype="BIAS"),
     }
     raw.update(kwargs)
@@ -825,29 +633,29 @@ def create_guidestar(**kwargs):
     roman_datamodels.stnode.Guidestar
     """
     raw = {
-        "data_end": _random_mjd_timestamp(),
-        "data_start": _random_mjd_timestamp(),
-        "gs_ctd_ux": _random_positive_float(),
-        "gs_ctd_uy": _random_positive_float(),
-        "gs_ctd_x": _random_positive_float(),
-        "gs_ctd_y": _random_positive_float(),
-        "gs_dec": _random_float(math.pi / -2.0, math.pi / 2.0),
-        "gs_epoch": _random_string("Epoch ", 10),
-        "gs_mag": _random_float(),
-        "gs_mudec": _random_float(),
-        "gs_mura": _random_float(),
-        "gs_para": _random_float(),
-        "gs_ra": _random_angle_radians(),
-        "gs_udec": _random_positive_float(),
-        "gs_umag": _random_positive_float(),
-        "gs_ura": _random_positive_float(),
-        "gw_id": _random_string("ID ", 20),
+        "data_end": random_utils.generate_mjd_timestamp(),
+        "data_start": random_utils.generate_mjd_timestamp(),
+        "gs_ctd_ux": random_utils.generate_positive_float(),
+        "gs_ctd_uy": random_utils.generate_positive_float(),
+        "gs_ctd_x": random_utils.generate_positive_float(),
+        "gs_ctd_y": random_utils.generate_positive_float(),
+        "gs_dec": random_utils.generate_float(math.pi / -2.0, math.pi / 2.0),
+        "gs_epoch": random_utils.generate_string("Epoch ", 10),
+        "gs_mag": random_utils.generate_float(),
+        "gs_mudec": random_utils.generate_float(),
+        "gs_mura": random_utils.generate_float(),
+        "gs_para": random_utils.generate_float(),
+        "gs_ra": random_utils.generate_angle_radians(),
+        "gs_udec": random_utils.generate_positive_float(),
+        "gs_umag": random_utils.generate_positive_float(),
+        "gs_ura": random_utils.generate_positive_float(),
+        "gw_id": random_utils.generate_string("ID ", 20),
         "gw_fgs_mode": "WSM-ACQ-2",
         "gw_window_xsize": 16,
-        "gw_window_xstart": _random_positive_int(4000),
+        "gw_window_xstart": random_utils.generate_positive_int(4000),
         "gw_window_ysize": 16,
-        "gw_window_ystart": _random_positive_int(4000),
-        "gs_pattern_error": _random_positive_float(),
+        "gw_window_ystart": random_utils.generate_positive_int(4000),
+        "gs_pattern_error": random_utils.generate_positive_float(),
     }
     raw["gw_window_xstop"] = raw["gw_window_xstart"] + 16
     raw["gw_window_ystop"] = raw["gw_window_ystart"] + 16
@@ -857,19 +665,21 @@ def create_guidestar(**kwargs):
 
 
 def create_file_date(**kwargs):
-    return stnode.FileDate(kwargs.get("file_date", _random_astropy_time()))
+    return stnode.FileDate(kwargs.get("file_date", random_utils.generate_astropy_time()))
 
 
 def create_calibration_software_version(**kwargs):
-    return stnode.CalibrationSoftwareVersion(kwargs.get("calibration_sofware_version", _random_string("Version ", 120)))
+    return stnode.CalibrationSoftwareVersion(
+        kwargs.get("calibration_sofware_version", random_utils.generate_string("Version ", 120))
+    )
 
 
 def create_filename(**kwargs):
-    return stnode.Filename(kwargs.get("filename", _random_string("Filename ", 120)))
+    return stnode.Filename(kwargs.get("filename", random_utils.generate_string("Filename ", 120)))
 
 
 def create_model_type(**kwargs):
-    return stnode.ModelType(kwargs.get("model_type", _random_string("Model type ", 50)))
+    return stnode.ModelType(kwargs.get("model_type", random_utils.generate_string("Model type ", 50)))
 
 
 def create_origin(**kwargs):
@@ -877,11 +687,11 @@ def create_origin(**kwargs):
 
 
 def create_prd_software_version(**kwargs):
-    return stnode.PrdSoftwareVersion(kwargs.get("prd_software_version", _random_string("S&OC PRD ", 120)))
+    return stnode.PrdSoftwareVersion(kwargs.get("prd_software_version", random_utils.generate_string("S&OC PRD ", 120)))
 
 
 def create_sdf_software_version(**kwargs):
-    return stnode.SdfSoftwareVersion(kwargs.get("sdf_software_version", _random_software_version()))
+    return stnode.SdfSoftwareVersion(kwargs.get("sdf_software_version", random_utils.generate_software_version()))
 
 
 def create_telescope(**kwargs):
@@ -900,8 +710,8 @@ def _create_basic_meta(**kwargs):
 
     return {
         "calibration_software_version": create_calibration_software_version(**kwargs),
-        "crds_context_used": f"roman_{_random_positive_int(9999):04d}.pmap",
-        "crds_software_version": _random_software_version(),
+        "crds_context_used": f"roman_{random_utils.generate_positive_int(9999):04d}.pmap",
+        "crds_software_version": random_utils.generate_software_version(),
         "filename": create_filename(**kwargs),
         "file_date": create_file_date(**kwargs),
         "model_type": create_model_type(**kwargs),
@@ -964,21 +774,21 @@ def create_observation(**kwargs):
     roman_datamodels.stnode.Observation
     """
     raw = {
-        "execution_plan": _random_positive_int(),
-        "exposure": _random_positive_int(),
-        "obs_id": _random_string("Obs ID ", 26),
-        "observation": _random_positive_int(),
-        "observation_label": _random_string("Observation label "),
-        "pass": _random_positive_int(),
-        "program": _random_positive_int(),
-        "segment": _random_positive_int(),
-        "survey": _random_choice("HLS", "EMS", "SN", "N/A"),
-        "template": _random_string("Template ", 50),
-        "visit": _random_positive_int(),
-        "visit_file_activity": _random_string(max_length=2),
-        "visit_file_group": _random_positive_int(),
-        "visit_file_sequence": _random_positive_int(),
-        "visit_id": _random_string("Visit ID ", 19),
+        "execution_plan": random_utils.generate_positive_int(),
+        "exposure": random_utils.generate_positive_int(),
+        "obs_id": random_utils.generate_string("Obs ID ", 26),
+        "observation": random_utils.generate_positive_int(),
+        "observation_label": random_utils.generate_string("Observation label "),
+        "pass": random_utils.generate_positive_int(),
+        "program": random_utils.generate_positive_int(),
+        "segment": random_utils.generate_positive_int(),
+        "survey": random_utils.generate_choice("HLS", "EMS", "SN", "N/A"),
+        "template": random_utils.generate_string("Template ", 50),
+        "visit": random_utils.generate_positive_int(),
+        "visit_file_activity": random_utils.generate_string(max_length=2),
+        "visit_file_group": random_utils.generate_positive_int(),
+        "visit_file_sequence": random_utils.generate_positive_int(),
+        "visit_id": random_utils.generate_string("Visit ID ", 19),
     }
     raw.update(kwargs)
 
@@ -1000,12 +810,12 @@ def create_photometry(**kwargs):
     roman_datamodels.stnode.Photometry
     """
     raw = {
-        "conversion_megajanskys": _random_positive_float() * u.MJy / u.sr,
-        "conversion_microjanskys": _random_positive_float() * u.uJy / u.sr,
-        "pixelarea_arcsecsq": _random_positive_float() * u.arcsec**2,
-        "pixelarea_steradians": _random_positive_float() * u.sr,
-        "conversion_megajanskys_uncertainty": _random_positive_float() * u.MJy / u.sr,
-        "conversion_microjanskys_uncertainty": _random_positive_float() * u.uJy / u.sr,
+        "conversion_megajanskys": random_utils.generate_positive_float() * u.MJy / u.sr,
+        "conversion_microjanskys": random_utils.generate_positive_float() * u.uJy / u.sr,
+        "pixelarea_arcsecsq": random_utils.generate_positive_float() * u.arcsec**2,
+        "pixelarea_steradians": random_utils.generate_positive_float() * u.sr,
+        "conversion_megajanskys_uncertainty": random_utils.generate_positive_float() * u.MJy / u.sr,
+        "conversion_microjanskys_uncertainty": random_utils.generate_positive_float() * u.uJy / u.sr,
     }
     raw.update(kwargs)
 
@@ -1027,7 +837,7 @@ def create_pixelarea(**kwargs):
     roman_datamodels.stnode.Pixelarea
     """
     raw = {
-        "area": _random_array_float32(min=0.0),
+        "area": random_utils.generate_array_float32(min=0.0),
     }
     raw.update(kwargs)
     raw["meta"] = {}
@@ -1051,9 +861,9 @@ def create_pointing(**kwargs):
     roman_datamodels.stnode.Pointing
     """
     raw = {
-        "dec_v1": _random_float(-90.0, 90.0),
-        "pa_v3": _random_angle_degrees(),
-        "ra_v1": _random_angle_degrees(),
+        "dec_v1": random_utils.generate_float(-90.0, 90.0),
+        "pa_v3": random_utils.generate_angle_degrees(),
+        "ra_v1": random_utils.generate_angle_degrees(),
     }
     raw.update(kwargs)
 
@@ -1075,12 +885,12 @@ def create_program(**kwargs):
     roman_datamodels.stnode.Program
     """
     raw = {
-        "category": _random_string("Cat ", 6),
-        "continuation_id": _random_positive_int(),
-        "pi_name": _random_string("PI name ", 100),
-        "science_category": _random_string("Science category ", 100),
-        "subcategory": _random_string("Subcategory ", 15),
-        "title": _random_string("Proposal title ", 100),
+        "category": random_utils.generate_string("Cat ", 6),
+        "continuation_id": random_utils.generate_positive_int(),
+        "pi_name": random_utils.generate_string("PI name ", 100),
+        "science_category": random_utils.generate_string("Science category ", 100),
+        "subcategory": random_utils.generate_string("Subcategory ", 15),
+        "title": random_utils.generate_string("Proposal title ", 100),
     }
     raw.update(kwargs)
 
@@ -1104,19 +914,19 @@ def create_ramp(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "data": _random_array_float32((2, 4096, 4096), units=ru.electron),
-        "pixeldq": _random_array_uint32((4096, 4096)),
-        "groupdq": _random_array_uint8((2, 4096, 4096)),
-        "err": _random_array_float32(size=(2, 4096, 4096), min=0.0, units=ru.electron),
-        "amp33": _random_array_uint16((2, 4096, 128), units=ru.DN),
-        "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=ru.DN),
-        "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=ru.DN),
-        "border_ref_pix_top": _random_array_float32((2, 4, 4096), units=ru.DN),
-        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096), units=ru.DN),
-        "dq_border_ref_pix_right": _random_array_uint32((4096, 4)),
-        "dq_border_ref_pix_left": _random_array_uint32((4096, 4)),
-        "dq_border_ref_pix_top": _random_array_uint32((4, 4096)),
-        "dq_border_ref_pix_bottom": _random_array_uint32((4, 4096)),
+        "data": random_utils.generate_array_float32((2, 4096, 4096), units=ru.electron),
+        "pixeldq": random_utils.generate_array_uint32((4096, 4096)),
+        "groupdq": random_utils.generate_array_uint8((2, 4096, 4096)),
+        "err": random_utils.generate_array_float32(size=(2, 4096, 4096), min=0.0, units=ru.electron),
+        "amp33": random_utils.generate_array_uint16((2, 4096, 128), units=ru.DN),
+        "border_ref_pix_right": random_utils.generate_array_float32((2, 4096, 4), units=ru.DN),
+        "border_ref_pix_left": random_utils.generate_array_float32((2, 4096, 4), units=ru.DN),
+        "border_ref_pix_top": random_utils.generate_array_float32((2, 4, 4096), units=ru.DN),
+        "border_ref_pix_bottom": random_utils.generate_array_float32((2, 4, 4096), units=ru.DN),
+        "dq_border_ref_pix_right": random_utils.generate_array_uint32((4096, 4)),
+        "dq_border_ref_pix_left": random_utils.generate_array_uint32((4096, 4)),
+        "dq_border_ref_pix_top": random_utils.generate_array_uint32((4, 4096)),
+        "dq_border_ref_pix_bottom": random_utils.generate_array_uint32((4, 4096)),
     }
     raw.update(kwargs)
 
@@ -1142,15 +952,15 @@ def create_ramp_fit_output(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "slope": _random_array_float32(seg_shape, units=ru.electron / u.s),
-        "sigslope": _random_array_float32(seg_shape, units=ru.electron / u.s),
-        "yint": _random_array_float32(seg_shape, units=ru.electron),
-        "sigyint": _random_array_float32(seg_shape, units=ru.electron),
-        "pedestal": _random_array_float32(seg_shape[1:], units=ru.electron),
-        "weights": _random_array_float32(seg_shape),
-        "crmag": _random_array_float32(seg_shape, units=ru.electron),
-        "var_poisson": _random_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
-        "var_rnoise": _random_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
+        "slope": random_utils.generate_array_float32(seg_shape, units=ru.electron / u.s),
+        "sigslope": random_utils.generate_array_float32(seg_shape, units=ru.electron / u.s),
+        "yint": random_utils.generate_array_float32(seg_shape, units=ru.electron),
+        "sigyint": random_utils.generate_array_float32(seg_shape, units=ru.electron),
+        "pedestal": random_utils.generate_array_float32(seg_shape[1:], units=ru.electron),
+        "weights": random_utils.generate_array_float32(seg_shape),
+        "crmag": random_utils.generate_array_float32(seg_shape, units=ru.electron),
+        "var_poisson": random_utils.generate_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
+        "var_rnoise": random_utils.generate_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
     }
     raw.update(kwargs)
 
@@ -1194,7 +1004,7 @@ def create_associations(**kwargs):
 
     length = 7
 
-    exptypes = random.choices(["SCIENCE", "CALIBRATION", "ENGINEERING"], k=length)
+    exptypes = random_utils.generate_choices(["SCIENCE", "CALIBRATION", "ENGINEERING"], k=length)
     exposerr = ["null"] * length
     expname = ["file_" + str(x) + ".asdf" for x in range(length)]
 
@@ -1244,33 +1054,33 @@ def create_guidewindow(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "pedestal_frames": _random_array_uint16(seg_shape, units=ru.DN),
-        "signal_frames": _random_array_uint16(seg_shape, units=ru.DN),
-        "amp33": _random_array_uint16(seg_shape, units=ru.DN),
+        "pedestal_frames": random_utils.generate_array_uint16(seg_shape, units=ru.DN),
+        "signal_frames": random_utils.generate_array_uint16(seg_shape, units=ru.DN),
+        "amp33": random_utils.generate_array_uint16(seg_shape, units=ru.DN),
     }
     raw.update(kwargs)
 
-    raw["meta"]["file_creation_time"] = _random_astropy_time()
-    raw["meta"]["gw_start_time"] = _random_astropy_time()
-    raw["meta"]["gw_end_time"] = _random_astropy_time()
-    raw["meta"]["gw_function_start_time"] = _random_astropy_time()
-    raw["meta"]["gw_function_end_time"] = _random_astropy_time()
-    raw["meta"]["gw_frame_readout_time"] = _random_float()
-    raw["meta"]["pedestal_resultant_exp_time"] = _random_float()
-    raw["meta"]["signal_resultant_exp_time"] = _random_float()
-    raw["meta"]["gw_acq_number"] = _random_int()
+    raw["meta"]["file_creation_time"] = random_utils.generate_astropy_time()
+    raw["meta"]["gw_start_time"] = random_utils.generate_astropy_time()
+    raw["meta"]["gw_end_time"] = random_utils.generate_astropy_time()
+    raw["meta"]["gw_function_start_time"] = random_utils.generate_astropy_time()
+    raw["meta"]["gw_function_end_time"] = random_utils.generate_astropy_time()
+    raw["meta"]["gw_frame_readout_time"] = random_utils.generate_float()
+    raw["meta"]["pedestal_resultant_exp_time"] = random_utils.generate_float()
+    raw["meta"]["signal_resultant_exp_time"] = random_utils.generate_float()
+    raw["meta"]["gw_acq_number"] = random_utils.generate_int()
     raw["meta"]["gw_mode"] = "WIM-ACQ"
-    raw["meta"]["gw_window_xstart"] = _random_positive_int(4000)
-    raw["meta"]["gw_window_ystart"] = _random_positive_int(4000)
+    raw["meta"]["gw_window_xstart"] = random_utils.generate_positive_int(4000)
+    raw["meta"]["gw_window_ystart"] = random_utils.generate_positive_int(4000)
     raw["meta"]["gw_window_xstop"] = raw["meta"]["gw_window_xstart"] + 16
     raw["meta"]["gw_window_ystop"] = raw["meta"]["gw_window_ystart"] + 16
     raw["meta"]["gw_window_xsize"] = 16
     raw["meta"]["gw_window_ysize"] = 16
-    raw["meta"]["gw_acq_exec_stat"] = _random_string("Status ", 15)
+    raw["meta"]["gw_acq_exec_stat"] = random_utils.generate_string("Status ", 15)
 
-    raw["meta"]["gw_acq_exec_stat"] = _random_string("Status ", 15)
-    raw["meta"]["gw_function_end_time"] = _random_astropy_time()
-    raw["meta"]["gw_function_start_time"] = _random_astropy_time()
+    raw["meta"]["gw_acq_exec_stat"] = random_utils.generate_string("Status ", 15)
+    raw["meta"]["gw_function_end_time"] = random_utils.generate_astropy_time()
+    raw["meta"]["gw_function_start_time"] = random_utils.generate_astropy_time()
 
     return stnode.Guidewindow(raw)
 
@@ -1290,20 +1100,20 @@ def create_target(**kwargs):
     roman_datamodels.stnode.Target
     """
     raw = {
-        "catalog_name": _random_string("Catalog name ", 256),
-        "dec": _random_float(-90.0, 90.0),
-        "dec_uncertainty": _random_positive_float(),
-        "proper_motion_dec": _random_float(),
-        "proper_motion_epoch": _random_string_timestamp(),
-        "proper_motion_ra": _random_float(),
-        "proposer_dec": _random_float(-90.0, 90.0),
-        "proposer_name": _random_string("Proposer name ", 100),
-        "proposer_ra": _random_angle_degrees(),
-        "ra": _random_angle_degrees(),
-        "ra_uncertainty": _random_positive_float(),
-        "source_type": _random_choice("EXTENDED", "POINT", "UNKNOWN"),
-        "source_type_apt": _random_choice("EXTENDED", "POINT", "UNKNOWN"),
-        "type": _random_choice("FIXED", "MOVING", "GENERIC"),
+        "catalog_name": random_utils.generate_string("Catalog name ", 256),
+        "dec": random_utils.generate_float(-90.0, 90.0),
+        "dec_uncertainty": random_utils.generate_positive_float(),
+        "proper_motion_dec": random_utils.generate_float(),
+        "proper_motion_epoch": random_utils.generate_string_timestamp(),
+        "proper_motion_ra": random_utils.generate_float(),
+        "proposer_dec": random_utils.generate_float(-90.0, 90.0),
+        "proposer_name": random_utils.generate_string("Proposer name ", 100),
+        "proposer_ra": random_utils.generate_angle_degrees(),
+        "ra": random_utils.generate_angle_degrees(),
+        "ra_uncertainty": random_utils.generate_positive_float(),
+        "source_type": random_utils.generate_choice("EXTENDED", "POINT", "UNKNOWN"),
+        "source_type_apt": random_utils.generate_choice("EXTENDED", "POINT", "UNKNOWN"),
+        "type": random_utils.generate_choice("FIXED", "MOVING", "GENERIC"),
     }
     raw.update(kwargs)
 
@@ -1326,9 +1136,9 @@ def create_velocity_aberration(**kwargs):
     """
     raw = {
         # TODO: Select reasonable min and max values for these
-        "ra_offset": _random_float(),
-        "dec_offset": _random_float(),
-        "scale_factor": _random_float(),
+        "ra_offset": random_utils.generate_float(),
+        "dec_offset": random_utils.generate_float(),
+        "scale_factor": random_utils.generate_float(),
     }
     raw.update(kwargs)
 
@@ -1350,15 +1160,15 @@ def create_visit(**kwargs):
     roman_datamodels.stnode.Visit
     """
     raw = {
-        "engineering_quality": _random_choice("OK", "SUSPECT"),
-        "pointing_engdb_quality": _random_choice("CALCULATED", "PLANNED"),
-        "type": _random_string("Visit type ", 30),
-        "start_time": _random_astropy_time(),
-        "end_time": _random_astropy_time(),
-        "status": _random_string("Status ", 15),
-        "total_exposures": _random_positive_int(),
-        "internal_target": _random_bool(),
-        "target_of_opportunity": _random_bool(),
+        "engineering_quality": random_utils.generate_choice("OK", "SUSPECT"),
+        "pointing_engdb_quality": random_utils.generate_choice("CALCULATED", "PLANNED"),
+        "type": random_utils.generate_string("Visit type ", 30),
+        "start_time": random_utils.generate_astropy_time(),
+        "end_time": random_utils.generate_astropy_time(),
+        "status": random_utils.generate_string("Status ", 15),
+        "total_exposures": random_utils.generate_positive_int(),
+        "internal_target": random_utils.generate_bool(),
+        "target_of_opportunity": random_utils.generate_bool(),
     }
     raw.update(kwargs)
 
@@ -1380,14 +1190,14 @@ def create_wcsinfo(**kwargs):
     roman_datamodels.stnode.Wcsinfo
     """
     raw = {
-        "dec_ref": _random_float(-90.0, 90.0),
-        "ra_ref": _random_positive_float(360.0),
-        "roll_ref": _random_float(),
-        "s_region": _random_string("Spatial extent "),
-        "v2_ref": _random_float(),
-        "v3_ref": _random_float(),
-        "v3yangle": _random_float(),
-        "vparity": _random_int(),
+        "dec_ref": random_utils.generate_float(-90.0, 90.0),
+        "ra_ref": random_utils.generate_positive_float(360.0),
+        "roll_ref": random_utils.generate_float(),
+        "s_region": random_utils.generate_string("Spatial extent "),
+        "v2_ref": random_utils.generate_float(),
+        "v3_ref": random_utils.generate_float(),
+        "v3yangle": random_utils.generate_float(),
+        "vparity": random_utils.generate_int(),
     }
     raw.update(kwargs)
 
@@ -1427,22 +1237,22 @@ def create_wfi_image(**kwargs):
     """
 
     raw = {
-        "data": _random_array_float32((4088, 4088), units=ru.electron / u.s),
-        "dq": _random_array_uint32((4088, 4088)),
-        "err": _random_array_float32((4088, 4088), min=0.0, units=ru.electron / u.s),
+        "data": random_utils.generate_array_float32((4088, 4088), units=ru.electron / u.s),
+        "dq": random_utils.generate_array_uint32((4088, 4088)),
+        "err": random_utils.generate_array_float32((4088, 4088), min=0.0, units=ru.electron / u.s),
         "meta": create_meta(),
-        "var_flat": _random_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
-        "var_poisson": _random_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
-        "var_rnoise": _random_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
-        "amp33": _random_array_uint16((2, 4096, 128), units=ru.DN),
-        "border_ref_pix_right": _random_array_float32((2, 4096, 4), units=ru.DN),
-        "border_ref_pix_left": _random_array_float32((2, 4096, 4), units=ru.DN),
-        "border_ref_pix_top": _random_array_float32((2, 4, 4096), units=ru.DN),
-        "border_ref_pix_bottom": _random_array_float32((2, 4, 4096), units=ru.DN),
-        "dq_border_ref_pix_right": _random_array_uint32((4096, 4)),
-        "dq_border_ref_pix_left": _random_array_uint32((4096, 4)),
-        "dq_border_ref_pix_top": _random_array_uint32((4, 4096)),
-        "dq_border_ref_pix_bottom": _random_array_uint32((4, 4096)),
+        "var_flat": random_utils.generate_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
+        "var_poisson": random_utils.generate_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
+        "var_rnoise": random_utils.generate_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
+        "amp33": random_utils.generate_array_uint16((2, 4096, 128), units=ru.DN),
+        "border_ref_pix_right": random_utils.generate_array_float32((2, 4096, 4), units=ru.DN),
+        "border_ref_pix_left": random_utils.generate_array_float32((2, 4096, 4), units=ru.DN),
+        "border_ref_pix_top": random_utils.generate_array_float32((2, 4, 4096), units=ru.DN),
+        "border_ref_pix_bottom": random_utils.generate_array_float32((2, 4, 4096), units=ru.DN),
+        "dq_border_ref_pix_right": random_utils.generate_array_uint32((4096, 4)),
+        "dq_border_ref_pix_left": random_utils.generate_array_uint32((4096, 4)),
+        "dq_border_ref_pix_top": random_utils.generate_array_uint32((4, 4096)),
+        "dq_border_ref_pix_bottom": random_utils.generate_array_uint32((4, 4096)),
         "cal_logs": create_cal_logs(),
     }
     raw.update(kwargs)
@@ -1466,9 +1276,9 @@ def create_wfi_mode(**kwargs):
     roman_datamodels.stnode.WfiMode
     """
     raw = {
-        "detector": _random_detector(),
+        "detector": random_utils.generate_detector(),
         "name": "WFI",
-        "optical_element": _random_optical_element(),
+        "optical_element": random_utils.generate_optical_element(),
     }
     raw.update(kwargs)
 
@@ -1491,8 +1301,8 @@ def create_wfi_science_raw(**kwargs):
     """
     raw = {
         # TODO: What should this shape be?
-        "data": _random_array_uint16((2, 4096, 4096), units=ru.DN),
-        "amp33": _random_array_uint16((2, 4096, 128), units=ru.DN),
+        "data": random_utils.generate_array_uint16((2, 4096, 4096), units=ru.DN),
+        "amp33": random_utils.generate_array_uint16((2, 4096, 128), units=ru.DN),
         "meta": create_meta(),
     }
     raw.update(kwargs)
