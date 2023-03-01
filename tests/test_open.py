@@ -6,8 +6,8 @@ from astropy.io import fits
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
+from roman_datamodels import maker_utils as utils
 from roman_datamodels import units as ru
-from roman_datamodels.testing import utils
 
 
 def test_asdf_file_input():
