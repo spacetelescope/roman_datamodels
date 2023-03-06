@@ -24,7 +24,9 @@ from astropy.time import Time
 from . import stnode, validate
 from .extensions import DATAMODEL_EXTENSIONS
 
-if packaging.version.Version(asdf.__version__) < packaging.version.Version("3.0"):
+# .dev is included in the version comparison to allow for correct version
+# comparisons with development versions of asdf 3.0
+if packaging.version.Version(asdf.__version__) < packaging.version.Version("3.dev"):
     with warnings.catch_warnings():
         warnings.filterwarnings(
             "ignore",

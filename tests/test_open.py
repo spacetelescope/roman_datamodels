@@ -24,7 +24,7 @@ def test_asdf_file_input():
 
 
 @pytest.mark.skipif(
-    packaging.version.Version(asdf.__version__) >= packaging.version.Version("3.0"),
+    packaging.version.Version(asdf.__version__) >= packaging.version.Version("3.dev"),
     reason="asdf >= 3.0 has no AsdfInFits support",
 )
 def test_asdf_in_fits_error(tmp_path):
