@@ -86,11 +86,9 @@ def _check_value(value, schema, validator_context):
     Perform the actual validation.
     """
 
-    validator_resolver = validator_context.resolver
-
     temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
     temp_schema.update(schema)
-    validator = asdfschema.get_validator(temp_schema, validator_context, validator_callbacks, validator_resolver)
+    validator = asdfschema.get_validator(temp_schema, validator_context, validator_callbacks)
 
     validator.validate(value, _schema=temp_schema)
     validator_context.close()

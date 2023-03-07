@@ -1,5 +1,8 @@
+import warnings
+
 import asdf
 import numpy as np
+import packaging.version
 import pytest
 from astropy import units as u
 from astropy.io import fits
@@ -18,6 +21,34 @@ def test_asdf_file_input():
         assert model.meta.telescope == "ROMAN"
         model.close()
         # should the asdf file be closed by model.close()?
+
+
+@pytest.mark.skipif(
+    packaging.version.Version(asdf.__version__) >= packaging.version.Version("3.dev"),
+    reason="asdf >= 3.0 has no AsdfInFits support",
+)
+def test_asdf_in_fits_error(tmp_path):
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            category=asdf.exceptions.AsdfDeprecationWarning,
+            message=r"AsdfInFits has been deprecated.*",
+        )
+        from asdf.fits_embed import AsdfInFits
+    from astropy.io import fits
+
+    fn = tmp_path / "AsdfInFits.fits"
+
+    # generate an AsdfInFits file
+    hdulist = fits.HDUList()
+    tree = {"roman": []}
+    ff = AsdfInFits(hdulist, tree)
+    ff.write_to(fn, overwrite=True)
+
+    # attempt to open it with datamodels, verify error
+    with pytest.raises(TypeError, match=r"Roman datamodels does not accept FITS files or objects"):
+        with datamodels.open(fn):
+            pass
 
 
 def test_path_input(tmp_path):
