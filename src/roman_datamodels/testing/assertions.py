@@ -3,7 +3,7 @@ from asdf.tags.core import NDArrayType
 from astropy.modeling import Model
 from numpy.testing import assert_array_equal
 
-from ..stnode import TaggedListNode, TaggedObjectNode, TaggedScalarNode, Unit
+from ..stnode import TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 
 def assert_node_equal(node1, node2):
@@ -42,8 +42,6 @@ def assert_node_equal(node1, node2):
         value2 = node2.__class__.__bases__[0](node2)
 
         assert value1 == value2
-    elif isinstance(node1, Unit):
-        assert node1 == node2
     else:
         raise RuntimeError(f"Unhandled node class: {node1.__class__.__name__}")
 

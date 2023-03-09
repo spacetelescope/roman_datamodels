@@ -10,7 +10,6 @@ from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
-from roman_datamodels import units as ru
 
 
 def test_asdf_file_input():
@@ -83,7 +82,7 @@ def test_path_input(tmp_path):
 def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    data = u.Quantity(np.random.uniform(size=(1024, 1024)).astype(np.float32), ru.electron / u.s, dtype=np.float32)
+    data = u.Quantity(np.random.uniform(size=(1024, 1024)).astype(np.float32), u.electron / u.s, dtype=np.float32)
 
     with asdf.AsdfFile() as af:
         af.tree = {"roman": utils.mk_level2_image()}
@@ -118,10 +117,10 @@ def test_memmap(tmp_path):
             ),
             dtype=np.float32,
         ),
-        ru.electron / u.s,
+        u.electron / u.s,
         dtype=np.float32,
     )
-    new_value = u.Quantity(1.0, ru.electron / u.s, dtype=np.float32)
+    new_value = u.Quantity(1.0, u.electron / u.s, dtype=np.float32)
     new_data = data.copy()
     new_data[6, 19] = new_value
 
@@ -171,10 +170,10 @@ def test_no_memmap(tmp_path, kwargs):
             ),
             dtype=np.float32,
         ),
-        ru.electron / u.s,
+        u.electron / u.s,
         dtype=np.float32,
     )
-    new_value = u.Quantity(1.0, ru.electron / u.s, dtype=np.float32)
+    new_value = u.Quantity(1.0, u.electron / u.s, dtype=np.float32)
     new_data = data.copy()
     new_data[6, 19] = new_value
 
