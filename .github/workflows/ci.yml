@@ -16,108 +16,46 @@ on:
 
 
 jobs:
-  tox:
-    name: ${{ matrix.name }}
-    runs-on: ${{ matrix.runs-on }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Python 3.10
-            runs-on: ubuntu-latest
-            python-version: "3.10"
-            toxenv: py310
-          - name: Python 3.9
-            runs-on: ubuntu-latest
-            python-version: 3.9
-            toxenv: py39
-
-          - name: Python 3.8
-            runs-on: ubuntu-latest
-            python-version: 3.8
-            toxenv: py38
-
-          - name: Coverage
-            runs-on: ubuntu-latest
-            python-version: 3.8
-            toxenv: coverage
-
-          - name: Code style checks
-            runs-on: ubuntu-latest
-            python-version: 3.8
-            toxenv: style
-
-          - name: macOS
-            runs-on: macos-latest
-            python-version: 3.8
-            toxenv: py38
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install tox
-        run: |
-          python -m pip install --upgrade pip
-          pip install tox
-      - name: Run tox
-        run: tox -e ${{ matrix.toxenv }}
-      - name: Upload coverage to codecov
-        if: ${{ contains(matrix.toxenv,'cov') }}
-        uses: codecov/codecov-action@v2
-        with:
-          file: ./coverage.xml
-
-  test_rad_dev:
-    name: test latest commit of `rad`
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, macos-latest ]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.pythonLocation }}
-          key: test-rad-${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml', '**/setup.*') }}
-      - run: pip install -e ".[test]" pytest-xdist
-      - run: pip install git+https://github.com/spacetelescope/rad.git@main#egg=rad
-      - run: pip freeze
-      - run: pytest -n auto
-
-  test_older_numpy:
-    name: test Numpy ${{ matrix.numpy }} (Python ${{ matrix.python }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ ubuntu-latest ]
-        python: [ 3.8, 3.9, '3.10' ]
-        numpy: [ '1.18.*', '1.19.*', '1.20.*', '1.21.*', '1.22.*' ]
-        exclude:
-          - python: '3.10'
-            numpy: '1.18.*'
-          - python: '3.10'
-            numpy: '1.19.*'
-          - python: '3.10'
-            numpy: '1.20.*'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        id: python
-        with:
-          python-version: ${{ matrix.python }}
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.pythonLocation }}
-          key: test-numpy${{ matrix.numpy }}-${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml', '**/setup.*') }}
-      - run: pip install -e ".[test]" pytest-xdist
-      - run: pip install numpy==${{ matrix.numpy }}
-      - run: pip freeze
-      - run: pytest -n auto
+  check:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      envs: |
+        - linux: check-style
+        - linux: check-build
+        - linux: build-dist
+  test:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      envs: |
+        - linux: test-xdist
+          python-version: 3.8
+        - linux: test-xdist
+          python-version: 3.9
+        - linux: test-xdist
+          python-version: 3.10
+        - linux: test-xdist
+          python-version: 3.11
+        - macos: test-xdist
+          python-version: 3.11
+        - linux: test-xdist-cov
+          coverage: codecov
+  test_numpy:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      envs: |
+        - linux: test-numpy120-xdist
+          python-version: 3.8
+        - linux: test-numpy121-xdist
+          python-version: 3.8
+        - linux: test-numpy122-xdist
+          python-version: 3.8
+        - linux: test-numpy120-xdist
+          python-version: 3.9
+        - linux: test-numpy121-xdist
+          python-version: 3.9
+        - linux: test-numpy122-xdist
+          python-version: 3.9
+        - linux: test-numpy121-xdist
+          python-version: 3.10
+        - linux: test-numpy122-xdist
+          python-version: 3.10
