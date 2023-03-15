@@ -191,6 +191,20 @@ def mk_photometry():
     return phot
 
 
+def mk_source_detection():
+    """
+    Create a dummy Source Detection instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Photometry
+    """
+    sd = stnode.SourceDetection()
+    sd['tweakreg_catalog_name'] = 'filename_tweakreg_catalog.asdf'
+    return sd
+
+
 def mk_coordinates():
     """
     Create a dummy Coordinates instance with valid values for attributes
@@ -318,6 +332,7 @@ def mk_cal_step():
     calstep["jump"] = "INCOMPLETE"
     calstep["linearity"] = "INCOMPLETE"
     calstep["photom"] = "INCOMPLETE"
+    calstep["source_detection"] = "INCOMPLETE"
     calstep["ramp_fit"] = "INCOMPLETE"
     calstep["saturation"] = "INCOMPLETE"
 

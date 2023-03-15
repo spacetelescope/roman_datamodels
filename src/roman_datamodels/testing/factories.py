@@ -40,6 +40,7 @@ __all__ = [
     "create_pointing",
     "create_program",
     "create_ref_meta",
+    "create_source_detection",
     "create_target",
     "create_velocity_aberration",
     "create_visit",
@@ -96,6 +97,7 @@ def create_cal_step(**kwargs):
         "jump": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "linearity": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "photom": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
+        "source_detection": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "ramp_fit": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
         "saturation": random_utils.generate_choice("N/A", "COMPLETE", "SKIPPED", "INCOMPLETE"),
     }
@@ -964,6 +966,27 @@ def create_ramp_fit_output(**kwargs):
     raw.update(kwargs)
 
     return stnode.RampFitOutput(raw)
+
+def create_source_detection(**kwargs):
+    """
+    Create a dummy SourceDetection instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Photometry
+    """
+    raw = {
+        "tweakreg_catalog_name": 'filename_catalog.asdf',
+    }
+    raw.update(kwargs)
+
+    return stnode.SourceDetection(raw)
 
 
 def create_associations(**kwargs):
