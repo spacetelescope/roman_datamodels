@@ -201,7 +201,7 @@ def mk_source_detection():
     roman_datamodels.stnode.Photometry
     """
     sd = stnode.SourceDetection()
-    sd['tweakreg_catalog_name'] = 'filename_tweakreg_catalog.asdf'
+    sd["tweakreg_catalog_name"] = "filename_tweakreg_catalog.asdf"
     return sd
 
 

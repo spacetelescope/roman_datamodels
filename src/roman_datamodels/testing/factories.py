@@ -967,6 +967,7 @@ def create_ramp_fit_output(**kwargs):
 
     return stnode.RampFitOutput(raw)
 
+
 def create_source_detection(**kwargs):
     """
     Create a dummy SourceDetection instance with valid values for attributes
@@ -982,7 +983,7 @@ def create_source_detection(**kwargs):
     roman_datamodels.stnode.Photometry
     """
     raw = {
-        "tweakreg_catalog_name": 'filename_catalog.asdf',
+        "tweakreg_catalog_name": "filename_catalog.asdf",
     }
     raw.update(kwargs)
 
