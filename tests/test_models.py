@@ -239,7 +239,6 @@ def test_opening_guidewindow_ref(tmp_path):
 # Model Container tests
 @pytest.mark.set_up_list_of_l2_files_data(2, "asdf")
 def test_model_container_input_as_list_of_filepaths(set_up_list_of_l2_files):
-
     filepath_list = set_up_list_of_l2_files
     # provide filepath list as input to ModelContainer
     model_container = datamodels.ModelContainer(filepath_list)
@@ -270,7 +269,6 @@ def test_model_container_input_as_list_of_datamodels(tmp_path):
 
 @pytest.mark.set_up_list_of_l2_files_data(2, "asdf")
 def test_imagemodel_set_item(set_up_list_of_l2_files):
-
     filepath_list = set_up_list_of_l2_files
     # provide filepath list as input to ModelContainer
     model_container = datamodels.ModelContainer(filepath_list)

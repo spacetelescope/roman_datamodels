@@ -396,7 +396,6 @@ class ModelContainer(Sequence):
     """
 
     def __init__(self, init=None, iscopy=False, memmap=False, return_open=True, save_open=True):
-
         self._models = []
         self._iscopy = iscopy
         self._memmap = memmap

@@ -547,7 +547,6 @@ def get_available_memory_darwin(include_swap=True):
     vm_stats = psutil.virtual_memory()
     available = vm_stats.available
     if include_swap:
-
         # Attempt to determine amount of free disk space on the boot partition.
         try:
             swap = psutil.disk_usage("/private/var/vm").free
