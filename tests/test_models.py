@@ -64,17 +64,24 @@ def test_core_schema(tmp_path):
         af.tree = {"roman": wfi_image}
 
         # Test telescope name
-        af.tree["roman"].meta.telescope = "NOTROMAN"
         with pytest.raises(ValidationError):
+            # The error should be raised by the first statement,
+            # but a bug in asdf is preventing it.  Including both
+            # in the pytest.raises context will allow the test
+            # to pass both before and after the asdf bug is fixed.
+            af.tree["roman"].meta.telescope = "NOTROMAN"
             af.write_to(file_path)
+
         af.tree["roman"].meta["telescope"] = "NOTROMAN"
         with pytest.raises(ValidationError):
             af.write_to(file_path)
         af.tree["roman"].meta.telescope = "ROMAN"
 
         # Test origin name
-        af.tree["roman"].meta.origin = "NOTSTSCI"
         with pytest.raises(ValidationError):
+            # See note above for explanation of why both
+            # statements are included in the context here.
+            af.tree["roman"].meta.origin = "NOTSTSCI"
             af.write_to(file_path)
         af.tree["roman"].meta["origin"] = "NOTIPAC/SSC"
         with pytest.raises(ValidationError):
