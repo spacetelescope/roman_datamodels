@@ -5,6 +5,9 @@
 
 - Moved datamodel maker utilities and split random functions out to utility file. [#128]
 
+- Begin process of removing ``roman_datamodels.units`` for non-VOUnit support in favor
+  of non-VOUnit support coming directly via ``asdf-astropy``. [#131]
+
 
 0.14.1 (2023-01-31)
 ===================

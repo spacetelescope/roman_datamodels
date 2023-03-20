@@ -10,7 +10,6 @@ from astropy import units as u
 from astropy.modeling import models
 
 from roman_datamodels import random_utils
-from roman_datamodels import units as ru
 
 from .. import stnode
 
@@ -289,9 +288,9 @@ def create_dark_ref(**kwargs):
     roman_datamodels.stnode.DarkRef
     """
     raw = {
-        "data": random_utils.generate_array_float32((2, 4096, 4096), units=ru.DN),
+        "data": random_utils.generate_array_float32((2, 4096, 4096), units=u.DN),
         "dq": random_utils.generate_array_uint32(),
-        "err": random_utils.generate_array_float32((2, 4096, 4096), units=ru.DN),
+        "err": random_utils.generate_array_float32((2, 4096, 4096), units=u.DN),
         "meta": create_ref_meta(reftype="DARK"),
     }
     raw.update(kwargs)
@@ -339,7 +338,7 @@ def create_gain_ref(**kwargs):
     roman_datamodels.stnode.GainRef
     """
     raw = {
-        "data": random_utils.generate_array_float32((4096, 4096), units=ru.electron / ru.DN),
+        "data": random_utils.generate_array_float32((4096, 4096), units=u.electron / u.DN),
         "meta": create_ref_meta(reftype="GAIN"),
     }
     raw.update(kwargs)
@@ -393,8 +392,8 @@ def create_linearity_ref(**kwargs):
     }
     raw.update(kwargs)
 
-    raw["meta"]["input_units"] = ru.DN
-    raw["meta"]["output_units"] = ru.DN
+    raw["meta"]["input_units"] = u.DN
+    raw["meta"]["output_units"] = u.DN
 
     return stnode.LinearityRef(raw)
 
@@ -420,8 +419,8 @@ def create_inverse_linearity_ref(**kwargs):
     }
     raw.update(kwargs)
 
-    raw["meta"]["input_units"] = ru.DN
-    raw["meta"]["output_units"] = ru.DN
+    raw["meta"]["input_units"] = u.DN
+    raw["meta"]["output_units"] = u.DN
 
     return stnode.InverseLinearityRef(raw)
 
@@ -491,7 +490,7 @@ def create_readnoise_ref(**kwargs):
     roman_datamodels.stnode.ReadnoiseRef
     """
     raw = {
-        "data": random_utils.generate_array_float32((4096, 4096), units=ru.DN),
+        "data": random_utils.generate_array_float32((4096, 4096), units=u.DN),
         "meta": create_ref_meta(reftype="READNOISE"),
     }
     raw.update(kwargs)
@@ -515,7 +514,7 @@ def create_saturation_ref(**kwargs):
     roman_datamodels.stnode.SaturationRef
     """
     raw = {
-        "data": random_utils.generate_array_float32((4096, 4096), units=ru.DN),
+        "data": random_utils.generate_array_float32((4096, 4096), units=u.DN),
         "dq": random_utils.generate_array_uint32((4096, 4096)),
         "meta": create_ref_meta(reftype="SATURATION"),
     }
@@ -914,15 +913,15 @@ def create_ramp(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "data": random_utils.generate_array_float32((2, 4096, 4096), units=ru.electron),
+        "data": random_utils.generate_array_float32((2, 4096, 4096), units=u.electron),
         "pixeldq": random_utils.generate_array_uint32((4096, 4096)),
         "groupdq": random_utils.generate_array_uint8((2, 4096, 4096)),
-        "err": random_utils.generate_array_float32(size=(2, 4096, 4096), min=0.0, units=ru.electron),
-        "amp33": random_utils.generate_array_uint16((2, 4096, 128), units=ru.DN),
-        "border_ref_pix_right": random_utils.generate_array_float32((2, 4096, 4), units=ru.DN),
-        "border_ref_pix_left": random_utils.generate_array_float32((2, 4096, 4), units=ru.DN),
-        "border_ref_pix_top": random_utils.generate_array_float32((2, 4, 4096), units=ru.DN),
-        "border_ref_pix_bottom": random_utils.generate_array_float32((2, 4, 4096), units=ru.DN),
+        "err": random_utils.generate_array_float32(size=(2, 4096, 4096), min=0.0, units=u.electron),
+        "amp33": random_utils.generate_array_uint16((2, 4096, 128), units=u.DN),
+        "border_ref_pix_right": random_utils.generate_array_float32((2, 4096, 4), units=u.DN),
+        "border_ref_pix_left": random_utils.generate_array_float32((2, 4096, 4), units=u.DN),
+        "border_ref_pix_top": random_utils.generate_array_float32((2, 4, 4096), units=u.DN),
+        "border_ref_pix_bottom": random_utils.generate_array_float32((2, 4, 4096), units=u.DN),
         "dq_border_ref_pix_right": random_utils.generate_array_uint32((4096, 4)),
         "dq_border_ref_pix_left": random_utils.generate_array_uint32((4096, 4)),
         "dq_border_ref_pix_top": random_utils.generate_array_uint32((4, 4096)),
@@ -952,15 +951,15 @@ def create_ramp_fit_output(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "slope": random_utils.generate_array_float32(seg_shape, units=ru.electron / u.s),
-        "sigslope": random_utils.generate_array_float32(seg_shape, units=ru.electron / u.s),
-        "yint": random_utils.generate_array_float32(seg_shape, units=ru.electron),
-        "sigyint": random_utils.generate_array_float32(seg_shape, units=ru.electron),
-        "pedestal": random_utils.generate_array_float32(seg_shape[1:], units=ru.electron),
+        "slope": random_utils.generate_array_float32(seg_shape, units=u.electron / u.s),
+        "sigslope": random_utils.generate_array_float32(seg_shape, units=u.electron / u.s),
+        "yint": random_utils.generate_array_float32(seg_shape, units=u.electron),
+        "sigyint": random_utils.generate_array_float32(seg_shape, units=u.electron),
+        "pedestal": random_utils.generate_array_float32(seg_shape[1:], units=u.electron),
         "weights": random_utils.generate_array_float32(seg_shape),
-        "crmag": random_utils.generate_array_float32(seg_shape, units=ru.electron),
-        "var_poisson": random_utils.generate_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
-        "var_rnoise": random_utils.generate_array_float32(seg_shape, units=ru.electron**2 / u.s**2),
+        "crmag": random_utils.generate_array_float32(seg_shape, units=u.electron),
+        "var_poisson": random_utils.generate_array_float32(seg_shape, units=u.electron**2 / u.s**2),
+        "var_rnoise": random_utils.generate_array_float32(seg_shape, units=u.electron**2 / u.s**2),
     }
     raw.update(kwargs)
 
@@ -1054,9 +1053,9 @@ def create_guidewindow(**kwargs):
 
     raw = {
         "meta": create_meta(),
-        "pedestal_frames": random_utils.generate_array_uint16(seg_shape, units=ru.DN),
-        "signal_frames": random_utils.generate_array_uint16(seg_shape, units=ru.DN),
-        "amp33": random_utils.generate_array_uint16(seg_shape, units=ru.DN),
+        "pedestal_frames": random_utils.generate_array_uint16(seg_shape, units=u.DN),
+        "signal_frames": random_utils.generate_array_uint16(seg_shape, units=u.DN),
+        "amp33": random_utils.generate_array_uint16(seg_shape, units=u.DN),
     }
     raw.update(kwargs)
 
@@ -1237,18 +1236,18 @@ def create_wfi_image(**kwargs):
     """
 
     raw = {
-        "data": random_utils.generate_array_float32((4088, 4088), units=ru.electron / u.s),
+        "data": random_utils.generate_array_float32((4088, 4088), units=u.electron / u.s),
         "dq": random_utils.generate_array_uint32((4088, 4088)),
-        "err": random_utils.generate_array_float32((4088, 4088), min=0.0, units=ru.electron / u.s),
+        "err": random_utils.generate_array_float32((4088, 4088), min=0.0, units=u.electron / u.s),
         "meta": create_meta(),
-        "var_flat": random_utils.generate_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
-        "var_poisson": random_utils.generate_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
-        "var_rnoise": random_utils.generate_array_float32((4088, 4088), units=ru.electron**2 / u.s**2),
-        "amp33": random_utils.generate_array_uint16((2, 4096, 128), units=ru.DN),
-        "border_ref_pix_right": random_utils.generate_array_float32((2, 4096, 4), units=ru.DN),
-        "border_ref_pix_left": random_utils.generate_array_float32((2, 4096, 4), units=ru.DN),
-        "border_ref_pix_top": random_utils.generate_array_float32((2, 4, 4096), units=ru.DN),
-        "border_ref_pix_bottom": random_utils.generate_array_float32((2, 4, 4096), units=ru.DN),
+        "var_flat": random_utils.generate_array_float32((4088, 4088), units=u.electron**2 / u.s**2),
+        "var_poisson": random_utils.generate_array_float32((4088, 4088), units=u.electron**2 / u.s**2),
+        "var_rnoise": random_utils.generate_array_float32((4088, 4088), units=u.electron**2 / u.s**2),
+        "amp33": random_utils.generate_array_uint16((2, 4096, 128), units=u.DN),
+        "border_ref_pix_right": random_utils.generate_array_float32((2, 4096, 4), units=u.DN),
+        "border_ref_pix_left": random_utils.generate_array_float32((2, 4096, 4), units=u.DN),
+        "border_ref_pix_top": random_utils.generate_array_float32((2, 4, 4096), units=u.DN),
+        "border_ref_pix_bottom": random_utils.generate_array_float32((2, 4, 4096), units=u.DN),
         "dq_border_ref_pix_right": random_utils.generate_array_uint32((4096, 4)),
         "dq_border_ref_pix_left": random_utils.generate_array_uint32((4096, 4)),
         "dq_border_ref_pix_top": random_utils.generate_array_uint32((4, 4096)),
@@ -1301,8 +1300,8 @@ def create_wfi_science_raw(**kwargs):
     """
     raw = {
         # TODO: What should this shape be?
-        "data": random_utils.generate_array_uint16((2, 4096, 4096), units=ru.DN),
-        "amp33": random_utils.generate_array_uint16((2, 4096, 128), units=ru.DN),
+        "data": random_utils.generate_array_uint16((2, 4096, 4096), units=u.DN),
+        "amp33": random_utils.generate_array_uint16((2, 4096, 128), units=u.DN),
         "meta": create_meta(),
     }
     raw.update(kwargs)
@@ -1358,9 +1357,3 @@ def create_ref_file(**kwargs):
     raw.update(kwargs)
 
     return stnode.RefFile(raw)
-
-
-def create_unit(**kwargs):
-    import roman_datamodels.units as u
-
-    return u.DN

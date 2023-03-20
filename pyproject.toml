@@ -13,12 +13,12 @@ classifiers = [
 ]
 dependencies = [
     'asdf >=2.14.2',
-    'asdf-astropy >=0.3.0',
+    'asdf-astropy >=0.4.0',
     'gwcs >=0.18.1',
     'psutil >=5.7.2',
     'numpy',
     'astropy >=5.0.4',
-    'rad @git+https://github.com/spacetelescope/rad.git@main#egg=rad',
+    'rad @ git+https://github.com/spacetelescope/rad.git@main#egg=rad',
     'asdf-standard >=1.0.3',
 ]
 dynamic = ['version']

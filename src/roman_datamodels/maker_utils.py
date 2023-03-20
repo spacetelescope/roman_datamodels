@@ -7,7 +7,6 @@ from astropy import units as u
 from astropy.modeling import models
 
 from roman_datamodels import stnode
-from roman_datamodels import units as ru
 from roman_datamodels.random_utils import generate_positive_int, generate_string
 
 NONUM = -999999
@@ -455,10 +454,10 @@ def mk_level1_science_raw(shape=None, filepath=None):
     else:
         n_ints = shape[0]
 
-    wfi_science_raw["data"] = u.Quantity(np.zeros(shape, dtype=np.uint16), ru.DN, dtype=np.uint16)
+    wfi_science_raw["data"] = u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16)
 
     # add amp 33 ref pix
-    wfi_science_raw["amp33"] = u.Quantity(np.zeros((n_ints, 4096, 128), dtype=np.uint16), ru.DN, dtype=np.uint16)
+    wfi_science_raw["amp33"] = u.Quantity(np.zeros((n_ints, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -506,12 +505,10 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
         n_ints = 8
 
     # add border reference pixel arrays
-    wfi_image["border_ref_pix_left"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), ru.DN, dtype=np.float32)
-    wfi_image["border_ref_pix_right"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), ru.DN, dtype=np.float32)
-    wfi_image["border_ref_pix_top"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), ru.DN, dtype=np.float32)
-    wfi_image["border_ref_pix_bottom"] = u.Quantity(
-        np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), ru.DN, dtype=np.float32
-    )
+    wfi_image["border_ref_pix_left"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
+    wfi_image["border_ref_pix_right"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
+    wfi_image["border_ref_pix_top"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
+    wfi_image["border_ref_pix_bottom"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
 
     # and their dq arrays
     wfi_image["dq_border_ref_pix_left"] = np.zeros((shape[0] + 8, 4), dtype=np.uint32)
@@ -521,15 +518,15 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
 
     # add amp 33 ref pixel array
     amp33_size = (n_ints, 4096, 128)
-    wfi_image["amp33"] = u.Quantity(np.zeros(amp33_size, dtype=np.uint16), ru.DN, dtype=np.uint16)
+    wfi_image["amp33"] = u.Quantity(np.zeros(amp33_size, dtype=np.uint16), u.DN, dtype=np.uint16)
 
-    wfi_image["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron / u.s, dtype=np.float32)
+    wfi_image["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
     wfi_image["dq"] = np.zeros(shape, dtype=np.uint32)
-    wfi_image["err"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron / u.s, dtype=np.float32)
+    wfi_image["err"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
 
-    wfi_image["var_poisson"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron**2 / u.s**2, dtype=np.float32)
-    wfi_image["var_rnoise"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron**2 / u.s**2, dtype=np.float32)
-    wfi_image["var_flat"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron**2 / u.s**2, dtype=np.float32)
+    wfi_image["var_poisson"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+    wfi_image["var_rnoise"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+    wfi_image["var_flat"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
     wfi_image["cal_logs"] = mk_cal_logs()
 
     if filepath:
@@ -613,9 +610,9 @@ def mk_dark(shape=None, filepath=None):
     if not shape:
         shape = (2, 4096, 4096)
 
-    darkref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
+    darkref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
     darkref["dq"] = np.zeros(shape[1:], dtype=np.uint32)
-    darkref["err"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
+    darkref["err"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -685,7 +682,7 @@ def mk_gain(shape=None, filepath=None):
     if not shape:
         shape = (4096, 4096)
 
-    gainref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron / ru.DN, dtype=np.float32)
+    gainref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -755,8 +752,8 @@ def mk_linearity(shape=None, filepath=None):
     meta["reftype"] = "LINEARITY"
     linearityref["meta"] = meta
 
-    linearityref["meta"]["input_units"] = ru.DN
-    linearityref["meta"]["output_units"] = ru.DN
+    linearityref["meta"]["input_units"] = u.DN
+    linearityref["meta"]["output_units"] = u.DN
 
     if not shape:
         shape = (2, 4096, 4096)
@@ -795,8 +792,8 @@ def mk_inverse_linearity(shape=None, filepath=None):
     meta["reftype"] = "INVERSE_LINEARITY"
     inverselinearityref["meta"] = meta
 
-    inverselinearityref["meta"]["input_units"] = ru.DN
-    inverselinearityref["meta"]["output_units"] = ru.DN
+    inverselinearityref["meta"]["input_units"] = u.DN
+    inverselinearityref["meta"]["output_units"] = u.DN
 
     if not shape:
         shape = (2, 4096, 4096)
@@ -993,7 +990,7 @@ def mk_readnoise(shape=None, filepath=None):
     if not shape:
         shape = (4096, 4096)
 
-    readnoiseref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
+    readnoiseref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -1032,10 +1029,10 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
         shape = (8, 4096, 4096)
 
     # add border reference pixel arrays
-    ramp["border_ref_pix_left"] = u.Quantity(np.zeros((shape[0], shape[1], 4), dtype=np.float32), ru.DN, dtype=np.float32)
-    ramp["border_ref_pix_right"] = u.Quantity(np.zeros((shape[0], shape[1], 4), dtype=np.float32), ru.DN, dtype=np.float32)
-    ramp["border_ref_pix_top"] = u.Quantity(np.zeros((shape[0], 4, shape[2]), dtype=np.float32), ru.DN, dtype=np.float32)
-    ramp["border_ref_pix_bottom"] = u.Quantity(np.zeros((shape[0], 4, shape[2]), dtype=np.float32), ru.DN, dtype=np.float32)
+    ramp["border_ref_pix_left"] = u.Quantity(np.zeros((shape[0], shape[1], 4), dtype=np.float32), u.DN, dtype=np.float32)
+    ramp["border_ref_pix_right"] = u.Quantity(np.zeros((shape[0], shape[1], 4), dtype=np.float32), u.DN, dtype=np.float32)
+    ramp["border_ref_pix_top"] = u.Quantity(np.zeros((shape[0], 4, shape[2]), dtype=np.float32), u.DN, dtype=np.float32)
+    ramp["border_ref_pix_bottom"] = u.Quantity(np.zeros((shape[0], 4, shape[2]), dtype=np.float32), u.DN, dtype=np.float32)
 
     # and their dq arrays
     ramp["dq_border_ref_pix_left"] = np.zeros((shape[1], 4), dtype=np.uint32)
@@ -1044,12 +1041,12 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
     ramp["dq_border_ref_pix_bottom"] = np.zeros((4, shape[2]), dtype=np.uint32)
 
     # add amp 33 ref pixel array
-    ramp["amp33"] = u.Quantity(np.full(shape, 1.0, dtype=np.uint16), ru.DN, dtype=np.uint16)
+    ramp["amp33"] = u.Quantity(np.full(shape, 1.0, dtype=np.uint16), u.DN, dtype=np.uint16)
 
-    ramp["data"] = u.Quantity(np.full(shape, 1.0, dtype=np.float32), ru.DN, dtype=np.float32)
+    ramp["data"] = u.Quantity(np.full(shape, 1.0, dtype=np.float32), u.DN, dtype=np.float32)
     ramp["pixeldq"] = np.zeros(shape[1:], dtype=np.uint32)
     ramp["groupdq"] = np.zeros(shape, dtype=np.uint8)
-    ramp["err"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
+    ramp["err"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -1083,15 +1080,15 @@ def mk_rampfitoutput(shape=None, filepath=None):
     if not shape:
         shape = (8, 4096, 4096)
 
-    rampfitoutput["slope"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron / u.s, dtype=np.float32)
-    rampfitoutput["sigslope"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron / u.s, dtype=np.float32)
-    rampfitoutput["yint"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron, dtype=np.float32)
-    rampfitoutput["sigyint"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron, dtype=np.float32)
-    rampfitoutput["pedestal"] = u.Quantity(np.zeros(shape[1:], dtype=np.float32), ru.electron, dtype=np.float32)
+    rampfitoutput["slope"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
+    rampfitoutput["sigslope"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
+    rampfitoutput["yint"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron, dtype=np.float32)
+    rampfitoutput["sigyint"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron, dtype=np.float32)
+    rampfitoutput["pedestal"] = u.Quantity(np.zeros(shape[1:], dtype=np.float32), u.electron, dtype=np.float32)
     rampfitoutput["weights"] = np.zeros(shape, dtype=np.float32)
-    rampfitoutput["crmag"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron, dtype=np.float32)
-    rampfitoutput["var_poisson"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron**2 / u.s**2, dtype=np.float32)
-    rampfitoutput["var_rnoise"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.electron**2 / u.s**2, dtype=np.float32)
+    rampfitoutput["crmag"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron, dtype=np.float32)
+    rampfitoutput["var_poisson"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+    rampfitoutput["var_rnoise"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -1205,9 +1202,9 @@ def mk_guidewindow(shape=None, filepath=None):
     if not shape:
         shape = (2, 8, 16, 32, 32)
 
-    guidewindow["pedestal_frames"] = u.Quantity(np.zeros(shape, dtype=np.uint16), ru.DN, dtype=np.uint16)
-    guidewindow["signal_frames"] = u.Quantity(np.zeros(shape, dtype=np.uint16), ru.DN, dtype=np.uint16)
-    guidewindow["amp33"] = u.Quantity(np.zeros(shape, dtype=np.uint16), ru.DN, dtype=np.uint16)
+    guidewindow["pedestal_frames"] = u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16)
+    guidewindow["signal_frames"] = u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16)
+    guidewindow["amp33"] = u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -1244,7 +1241,7 @@ def mk_saturation(shape=None, filepath=None):
         shape = (4096, 4096)
 
     saturationref["dq"] = np.zeros(shape, dtype=np.uint32)
-    saturationref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), ru.DN, dtype=np.float32)
+    saturationref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
 
     if filepath:
         af = asdf.AsdfFile()
