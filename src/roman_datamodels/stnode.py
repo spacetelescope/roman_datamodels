@@ -112,12 +112,10 @@ def _get_schema_for_property(schema, attr):
 
 
 class DNode(UserDict):
-
     _tag = None
     _ctx = None
 
     def __init__(self, node=None, parent=None, name=None):
-
         if node is None:
             self.__dict__["_data"] = {}
         elif isinstance(node, dict):
@@ -246,7 +244,6 @@ class DNode(UserDict):
 
 
 class LNode(UserList):
-
     _tag = None
 
     def __init__(self, node=None):

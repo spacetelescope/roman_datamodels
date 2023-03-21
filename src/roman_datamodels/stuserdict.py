@@ -27,7 +27,6 @@ import _collections_abc
 
 
 class STUserDict(_collections_abc.MutableMapping):
-
     # Start by filling-out the abstract methods
     def __init__(*args, **kwargs):
         if not args:
