@@ -6,8 +6,8 @@ import math
 import random
 import secrets
 import sys
-from datetime import datetime
 import warnings
+from datetime import datetime
 
 import numpy as np
 from astropy import units as u
@@ -62,7 +62,7 @@ def generate_astropy_time(time_format="unix", ignore_erfa_warnings=True):
     if ignore_erfa_warnings:
         # catch and ignore erfa warnings:
         with warnings.catch_warnings():
-            warnings.simplefilter('ignore', ErfaWarning)
+            warnings.simplefilter("ignore", ErfaWarning)
             timeobj = Time(generate_utc_timestamp(), format="unix")
     else:
         timeobj = Time(generate_utc_timestamp(), format="unix")
