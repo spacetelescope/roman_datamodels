@@ -10,6 +10,8 @@
 
 - Suppress erfa warnings for randomly generated future times [#138]
 
+- update minimum version of ``numpy`` to ``1.20`` and add minimum dependency testing to CI [#114]
+
 0.14.1 (2023-01-31)
 ===================
 
