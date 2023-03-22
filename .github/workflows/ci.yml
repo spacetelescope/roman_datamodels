@@ -26,6 +26,8 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       envs: |
+        - linux: test-oldestdeps-cov-xdist
+          python-version: 3.8
         - linux: test-xdist
           python-version: 3.8
         - linux: test-xdist
@@ -39,23 +41,3 @@ jobs:
         - linux: test-rad-xdist
         - linux: test-cov-xdist
           coverage: codecov
-  test_numpy:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
-    with:
-      envs: |
-        - linux: test-numpy120-xdist
-          python-version: 3.8
-        - linux: test-numpy121-xdist
-          python-version: 3.8
-        - linux: test-numpy122-xdist
-          python-version: 3.8
-        - linux: test-numpy120-xdist
-          python-version: 3.9
-        - linux: test-numpy121-xdist
-          python-version: 3.9
-        - linux: test-numpy122-xdist
-          python-version: 3.9
-        - linux: test-numpy121-xdist
-          python-version: 3.10
-        - linux: test-numpy122-xdist
-          python-version: 3.10
