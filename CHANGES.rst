@@ -8,6 +8,7 @@
 - Begin process of removing ``roman_datamodels.units`` for non-VOUnit support in favor
   of non-VOUnit support coming directly via ``asdf-astropy``. [#131]
 
+- Suppress erfa warnings for randomly generated future times [#138]
 
 0.14.1 (2023-01-31)
 ===================

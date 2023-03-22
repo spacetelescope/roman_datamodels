@@ -6,11 +6,13 @@ import math
 import random
 import secrets
 import sys
+import warnings
 from datetime import datetime
 
 import numpy as np
 from astropy import units as u
 from astropy.time import Time
+from erfa.core import ErfaWarning
 
 
 def generate_float(min=None, max=None):
@@ -56,8 +58,14 @@ def generate_string_time():
     return datetime.utcfromtimestamp(generate_utc_timestamp()).strftime("%H:%M:%S.%f")[0:12]
 
 
-def generate_astropy_time(time_format="unix"):
-    timeobj = Time(generate_utc_timestamp(), format="unix")
+def generate_astropy_time(time_format="unix", ignore_erfa_warnings=True):
+    if ignore_erfa_warnings:
+        # catch and ignore erfa warnings:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", ErfaWarning)
+            timeobj = Time(generate_utc_timestamp(), format="unix")
+    else:
+        timeobj = Time(generate_utc_timestamp(), format="unix")
 
     if time_format == "unix":
         return timeobj
