@@ -276,6 +276,27 @@ def create_flat_ref(**kwargs):
     return stnode.FlatRef(raw)
 
 
+def create_ref_pix_ref(**kwargs):
+    """
+    Create a dummy RefPixRef instance with valid values for attributes
+    required by the schemas.
+
+    Returns
+    -------
+    roman_datamodels.stnode.RefPixRef
+    """
+
+    raw = {
+        "gamma": random_utils.generate_array_complex128(),
+        "zeta": random_utils.generate_array_complex128(),
+        "alpha": random_utils.generate_array_complex128(),
+        "meta": create_ref_meta(reftype="REFPIX"),
+    }
+    raw.update(kwargs)
+
+    return stnode.RefPixRef(raw)
+
+
 def create_dark_ref(**kwargs):
     """
     Create a dummy DarkRef instance with valid values for attributes

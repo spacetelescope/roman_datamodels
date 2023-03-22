@@ -138,6 +138,67 @@ def generate_array_float32(size=(4096, 4096), min=None, max=None, units=None, se
     return array
 
 
+def generate_array_complex128(size=(32, 286721), min=None, max=None, shape="square"):
+    """
+    Uniformly at random generate a complex array of the specified size.
+
+    Parameters
+    ----------
+    size: tuple
+        The size of the array to generate.
+
+    min: tuple (or None)
+        Min value for the sample axis.
+            - If None and shape is "square", then (-1.0, -1.0).
+            - If None and shape is "disk", then (0.0, 0.0).
+
+    max: tuple (or None)
+        Max value for the sample axis.
+            - If None and shape is "square", then (1.0, 1.0).
+            - If None and shape is "disk", then (1.0, 2pi).
+
+    shape: str
+        The type of sampling to use.  Options are:
+            - "square": Sample uniformly from a square.
+            - "disk": Sample uniformly from a disk.
+    """
+    if shape not in ["square", "disk"]:
+        raise ValueError(f"Invalid shape: {shape}")
+
+    if min is None:
+        if shape == "square":
+            min = (-1.0, -1.0)
+        elif shape == "disk":
+            min = (0.0, 0.0)
+
+    if max is None:
+        if shape == "square":
+            max = (1.0, 1.0)
+        elif shape == "disk":
+            max = (1.0, 2.0 * np.pi)
+
+    if len(min) != 2:
+        raise ValueError(f"Invalid min: {min}")
+
+    if len(max) != 2:
+        raise ValueError(f"Invalid max: {max}")
+
+    rng = np.random.default_rng()
+    if shape == "square":
+        # Generate two arrays of random numbers, one for the real part and one for the imaginary part.
+        x = rng.uniform(min[0], max[0], size=size)
+        y = rng.uniform(min[1], max[1], size=size)
+
+        return (x + 1.0j * y).astype(np.complex128)
+
+    elif shape == "disk":
+        # Generate two arrays of random numbers, one for the radius and one for the angle.
+        r = rng.uniform(min[0], max[0], size=size)
+        theta = rng.uniform(min[1], max[1], size=size)
+
+        return (r * np.exp(1.0j * theta)).astype(np.complex128)
+
+
 def generate_array_uint8(size=(4096, 4096), min=None, max=None, units=None, seed=None):
     if min is None:
         min = np.iinfo("uint8").min
