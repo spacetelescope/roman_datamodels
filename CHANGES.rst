@@ -12,6 +12,8 @@
 
 - update minimum version of ``numpy`` to ``1.20`` and add minimum dependency testing to CI [#114]
 
+- Use available tag schema if available during datamodels.validate [#140]
+
 0.14.1 (2023-01-31)
 ===================
 

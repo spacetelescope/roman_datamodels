@@ -33,7 +33,7 @@ def value_change(value, pass_invalid_values, strict_validation):
         if pass_invalid_values:
             update = True
         if strict_validation:
-            raise jsonschema.ValidationError(errmsg)
+            raise errmsg
         else:
             warnings.warn(errmsg, ValidationWarning)
     return update
@@ -61,7 +61,10 @@ def _check_value(value):
 
     validator_context = AsdfFile()
 
-    temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
+    if hasattr(value, "_schema"):
+        temp_schema = value._schema()
+    else:
+        temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
     validator = asdf_schema.get_validator(temp_schema, validator_context, validators=validator_callbacks)
 
     value = yamlutil.custom_tree_to_tagged_tree(value, validator_context)
