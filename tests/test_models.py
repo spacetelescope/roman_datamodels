@@ -750,3 +750,17 @@ def test_crds_parameters(tmp_path):
 
     crds_pars = ramp.get_crds_parameters()
     assert "roman.meta.exposure.start_time" in crds_pars
+
+
+def test_model_validate_without_save():
+    # regression test for rcal-538
+    img = utils.mk_level1_science_raw()
+    m = datamodels.ImageModel(img)
+
+    # invalidate pointing without using the
+    # data model/node api to avoid a validation
+    # failure here
+    m.meta["pointing"] = {}
+
+    with pytest.raises(ValidationError):
+        m.validate()
