@@ -276,9 +276,9 @@ def create_flat_ref(**kwargs):
     return stnode.FlatRef(raw)
 
 
-def create_ref_pix_ref(**kwargs):
+def create_refpix_ref(**kwargs):
     """
-    Create a dummy RefPixRef instance with valid values for attributes
+    Create a dummy RefpixRef instance with valid values for attributes
     required by the schemas.
 
     Returns
@@ -294,7 +294,7 @@ def create_ref_pix_ref(**kwargs):
     }
     raw.update(kwargs)
 
-    return stnode.RefPixRef(raw)
+    return stnode.RefpixRef(raw)
 
 
 def create_dark_ref(**kwargs):
