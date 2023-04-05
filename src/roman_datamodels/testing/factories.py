@@ -294,6 +294,9 @@ def create_refpix_ref(**kwargs):
     }
     raw.update(kwargs)
 
+    raw["meta"]["input_units"] = u.DN
+    raw["meta"]["output_units"] = u.DN
+
     return stnode.RefpixRef(raw)
 
 
