@@ -25,6 +25,7 @@ if sys.version_info < (3, 11):
 else:
     import tomllib
 
+
 def setup(app):
     try:
         app.add_css_file("stsci.css")
