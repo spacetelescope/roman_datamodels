@@ -14,7 +14,8 @@ def test_init():
     user_dict_1 = STUserDict(input_1)
     user_dict_2 = STUserDict(input_1, **input_2)
     user_dict_3 = STUserDict(**input_1)
-    user_dict_4 = STUserDict(dict=input_1)
+    with pytest.warns(DeprecationWarning, match=r"Passing 'dict' as keyword argument is deprecated"):
+        user_dict_4 = STUserDict(dict=input_1)
 
     with pytest.raises(TypeError):
         STUserDict(**input_3)
