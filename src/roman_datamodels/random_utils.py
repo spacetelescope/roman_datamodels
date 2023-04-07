@@ -115,8 +115,7 @@ def generate_array_float32(size=(4096, 4096), min=None, max=None, units=None):
     if max is None:
         max = np.finfo("float32").max
 
-    array = np.random.default_rng().random(size=size, dtype=np.float32)
-    array = min + max * array - min * array
+    array = np.random.default_rng().uniform(low=min, high=max, size=size).astype(np.float32)
     if units:
         array = u.Quantity(array, units, dtype=np.float32)
     return array
