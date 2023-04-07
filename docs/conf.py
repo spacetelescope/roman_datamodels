@@ -20,7 +20,7 @@ from pathlib import Path
 import sphinx
 import stsci_rtd_theme
 
-sys.version_info < (3, 11):
+if sys.version_info < (3, 11):
     import tomli as tomllib
 else:
     import tomllib
