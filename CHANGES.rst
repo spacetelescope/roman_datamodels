@@ -1,3 +1,9 @@
+0.15.0 (unreleased)
+===================
+
+- Remove use of deprecated ``pytest-openfiles`` ``pytest`` plugin. This has been replaced by
+  catching ``ResourceWarning`` s. [#142]
+
 0.14.2 (2023-03-31)
 ===================
 
