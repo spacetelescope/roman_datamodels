@@ -7,6 +7,7 @@ from roman_datamodels import filetype
 DATA_DIRECTORY = Path(__file__).parent / "data"
 
 
+@pytest.mark.filterwarnings("ignore:ERFA function.*")
 def test_filetype():
     file_1 = filetype.check(DATA_DIRECTORY / "empty.json")
     file_2 = filetype.check(DATA_DIRECTORY / "example_schema.json")

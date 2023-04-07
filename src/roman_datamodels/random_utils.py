@@ -59,20 +59,23 @@ def generate_string_time():
 
 
 def generate_astropy_time(time_format="unix", ignore_erfa_warnings=True):
+    def _gen_time():
+        timeobj = Time(generate_utc_timestamp(), format="unix")
+
+        if time_format == "unix":
+            return timeobj
+        else:
+            time_str = timeobj.to_value(format=time_format)
+            timeobj = Time(time_str, format=time_format)
+            return timeobj
+
     if ignore_erfa_warnings:
         # catch and ignore erfa warnings:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", ErfaWarning)
-            timeobj = Time(generate_utc_timestamp(), format="unix")
+            return _gen_time()
     else:
-        timeobj = Time(generate_utc_timestamp(), format="unix")
-
-    if time_format == "unix":
-        return timeobj
-    else:
-        time_str = timeobj.to_value(format=time_format)
-        timeobj = Time(time_str, format=time_format)
-        return timeobj
+        return _gen_time()
 
 
 def generate_int(min=None, max=None):

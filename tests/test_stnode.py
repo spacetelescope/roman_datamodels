@@ -41,6 +41,7 @@ def test_wfi_mode():
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.filterwarnings("ignore:ERFA function.*")
 def test_serialization(node_class, tmp_path):
     file_path = tmp_path / "test.asdf"
 
