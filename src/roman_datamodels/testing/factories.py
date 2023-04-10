@@ -362,7 +362,7 @@ def create_ipc_ref(**kwargs):
     -------
     roman_datamodels.stnode.IpcRef
     """
-    kernel = np.abs(random_utils.generate_array_float32((3, 3)))
+    kernel = random_utils.generate_array_float32((3, 3), min=0, max=1e5)
     kernel /= np.sum(kernel)
     raw = {
         "data": kernel,

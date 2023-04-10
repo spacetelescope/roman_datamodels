@@ -16,6 +16,7 @@ def test_factory_method_implemented(node_class):
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.filterwarnings("ignore:ERFA function.*")
 def test_instance_valid(node_class):
     """
     Confirm that a class's factory method creates an object that
