@@ -115,19 +115,30 @@ def test_generate_positive_int(max):
 
 
 @pytest.mark.parametrize("choices", [[1, 2, 3], ["a", "b", "c"], [1, "a", 2, "b", 3, "c"]])
-def test_generate_choice(choices):
-    value = random_utils.generate_choice(*choices)
-    assert value in choices
+@pytest.mark.parametrize("unpack", [True, False])
+def test_generate_choice(choices, unpack):
+    for _ in range(50):
+        if unpack:
+            value = random_utils.generate_choice(*choices)
+        else:
+            value = random_utils.generate_choice(choices)
+        assert value in choices
 
 
 @pytest.mark.parametrize("choices", [[1, 2, 3], ["a", "b", "c"], [1, "a", 2, "b", 3, "c"]])
 @pytest.mark.parametrize("size", [2, 3, 4, 5])
-def test_generate_choices(choices, size):
-    value = random_utils.generate_choices(*choices, k=size)
-    assert isinstance(value, list)
-    assert len(value) == size
-    for v in value:
-        assert v in choices
+@pytest.mark.parametrize("unpack", [True, False])
+def test_generate_choices(choices, size, unpack):
+    for _ in range(50):
+        if unpack:
+            value = random_utils.generate_choices(*choices, k=size)
+        else:
+            value = random_utils.generate_choices(choices, k=size)
+
+        assert isinstance(value, list)
+        assert len(value) == size
+        for v in value:
+            assert v in choices
 
 
 @pytest.mark.parametrize("prefix", ["", "this", "is", "a", "test"])
