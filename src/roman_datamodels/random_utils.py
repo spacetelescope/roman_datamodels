@@ -2,7 +2,7 @@
 Utility file containing random value generation routines.
 """
 
-import secrets
+import string
 import warnings
 from datetime import datetime
 
@@ -10,6 +10,8 @@ import numpy as np
 from astropy import units as u
 from astropy.time import Time
 from erfa.core import ErfaWarning
+
+_HEX_ALPHABET = np.array(list(string.hexdigits))
 
 
 def generate_float(min=None, max=None, seed=None):
@@ -106,13 +108,18 @@ def generate_choices(*args, seed=None, k=1, **kwargs):
     return [args[i] for i in indices]
 
 
-def generate_string(prefix="", max_length=None):
+def generate_string(prefix="", max_length=None, seed=None):
     if max_length is not None:
-        random_length = min(16, max_length - len(prefix))
+        size = 2 * min(16, max_length - len(prefix))
     else:
-        random_length = 16
+        size = 2 * 16
 
-    return prefix + secrets.token_hex(random_length)
+    if size > 0:
+        suffix = str(np.random.default_rng(seed).choice(_HEX_ALPHABET, size=size).view(f"U{size}")[0])
+    else:
+        suffix = ""
+
+    return prefix + suffix
 
 
 def generate_bool(seed=None):
