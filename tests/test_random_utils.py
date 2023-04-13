@@ -18,73 +18,93 @@ def _min_max(min, max):
 
 
 @pytest.mark.parametrize("min, max", [(None, None), (-1, 1), (-30, 10), (-5, 100), (-100, 1000)])
-def test_generate_float(min, max):
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_float(min, max, seed):
     t_min, t_max = _min_max(min, max)
 
-    value = random_utils.generate_float(min=min, max=max)
-    assert isinstance(value, float)
-    assert t_min <= value <= t_max
+    value = random_utils.generate_float(min=min, max=max, seed=seed)
+    for _ in range(50 if seed is None else 1):
+        assert isinstance(value, float)
+        assert t_min <= value <= t_max
 
 
 @pytest.mark.parametrize("max", [None, 1, 10, 100, 1000])
-def test_generate_positive_float(max):
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_positive_float(max, seed):
     t_min, t_max = _min_max(0, max)
 
-    value = random_utils.generate_positive_float(max=max)
-    assert isinstance(value, float)
-    assert t_min <= value <= t_max
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_positive_float(max=max, seed=seed)
+        assert isinstance(value, float)
+        assert t_min <= value <= t_max
 
 
-def test_generate_angle_radians():
-    value = random_utils.generate_angle_radians()
-    assert 0 <= value <= 2 * np.pi
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_angle_radians(seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_angle_radians(seed=seed)
+        assert 0 <= value <= 2 * np.pi
 
 
-def test_generate_angle_degrees():
-    value = random_utils.generate_angle_degrees()
-    assert 0 <= value <= 360
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_angle_degrees(seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_angle_degrees(seed=seed)
+        assert 0 <= value <= 360
 
 
-def test_generate_mjd_timestamp():
-    value = random_utils.generate_mjd_timestamp()
-    assert 58849 <= value <= 62502
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_mjd_timestamp(seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_mjd_timestamp(seed=seed)
+        assert 58849 <= value <= 62502
 
 
-def test_generate_utc_timestamp():
-    value = random_utils.generate_utc_timestamp()
-    assert 1577836800.0 <= value <= 1893456000.0
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_utc_timestamp(seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_utc_timestamp(seed=seed)
+        assert 1577836800.0 <= value <= 1893456000.0
 
 
-def test_genrate_string_timestamp():
-    value = random_utils.generate_string_timestamp()
-    assert isinstance(value, str)
-    assert len(value) == 23
-    pattern = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}")
-    assert pattern.match(value)
+@pytest.mark.parametrize("seed", [None, 42])
+def test_genrate_string_timestamp(seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_string_timestamp(seed=seed)
+        assert isinstance(value, str)
+        assert len(value) == 23
+        pattern = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}")
+        assert pattern.match(value)
 
 
-def test_generate_string_date():
-    value = random_utils.generate_string_date()
-    assert isinstance(value, str)
-    assert len(value) == 10
-    pattern = re.compile(r"\d{4}-\d{2}-\d{2}")
-    assert pattern.match(value)
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_string_date(seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_string_date(seed=seed)
+        assert isinstance(value, str)
+        assert len(value) == 10
+        pattern = re.compile(r"\d{4}-\d{2}-\d{2}")
+        assert pattern.match(value)
 
 
-def test_generate_string_time():
-    value = random_utils.generate_string_time()
-    assert isinstance(value, str)
-    assert len(value) == 12
-    pattern = re.compile(r"\d{2}:\d{2}:\d{2}.\d{3}")
-    assert pattern.match(value)
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_string_time(seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_string_time(seed=seed)
+        assert isinstance(value, str)
+        assert len(value) == 12
+        pattern = re.compile(r"\d{2}:\d{2}:\d{2}.\d{3}")
+        assert pattern.match(value)
 
 
 @pytest.mark.parametrize("time_format", ["unix", "isot"])
-def test_generate_astropy_time(time_format):
-    value = random_utils.generate_astropy_time(time_format=time_format)
-    assert isinstance(value, Time)
-    assert 1577836800.0 <= value.unix <= 1893456000.0
-    assert value.format == time_format
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_astropy_time(time_format, seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_astropy_time(time_format=time_format, seed=seed)
+        assert isinstance(value, Time)
+        assert 1577836800.0 <= value.unix <= 1893456000.0
+        assert value.format == time_format
 
 
 def _int_min_max(min, max):
@@ -97,43 +117,49 @@ def _int_min_max(min, max):
 
 
 @pytest.mark.parametrize("min, max", [(None, None), (-1, 1), (-30, 10), (-5, 100), (-100, 1000)])
-def test_generate_int(min, max):
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_int(min, max, seed):
     t_min, t_max = _int_min_max(min, max)
 
-    value = random_utils.generate_int(min=min, max=max)
-    assert isinstance(value, int)
-    assert t_min <= value <= t_max
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_int(min=min, max=max, seed=seed)
+        assert isinstance(value, int)
+        assert t_min <= value <= t_max
 
 
 @pytest.mark.parametrize("max", [None, 1, 10, 100, 1000])
-def test_generate_positive_int(max):
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_positive_int(max, seed):
     t_min, t_max = _int_min_max(0, max)
 
-    value = random_utils.generate_positive_int(max=max)
-    assert isinstance(value, int)
-    assert t_min <= value <= t_max
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_positive_int(max=max, seed=seed)
+        assert isinstance(value, int)
+        assert t_min <= value <= t_max
 
 
 @pytest.mark.parametrize("choices", [[1, 2, 3], ["a", "b", "c"], [1, "a", 2, "b", 3, "c"]])
 @pytest.mark.parametrize("unpack", [True, False])
-def test_generate_choice(choices, unpack):
-    for _ in range(50):
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_choice(choices, unpack, seed):
+    for _ in range(50 if seed is None else 1):
         if unpack:
-            value = random_utils.generate_choice(*choices)
+            value = random_utils.generate_choice(*choices, seed=seed)
         else:
-            value = random_utils.generate_choice(choices)
+            value = random_utils.generate_choice(choices, seed=seed)
         assert value in choices
 
 
 @pytest.mark.parametrize("choices", [[1, 2, 3], ["a", "b", "c"], [1, "a", 2, "b", 3, "c"]])
 @pytest.mark.parametrize("size", [2, 3, 4, 5])
 @pytest.mark.parametrize("unpack", [True, False])
-def test_generate_choices(choices, size, unpack):
-    for _ in range(50):
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_choices(choices, size, unpack, seed):
+    for _ in range(50 if seed is None else 1):
         if unpack:
-            value = random_utils.generate_choices(*choices, k=size)
+            value = random_utils.generate_choices(*choices, k=size, seed=seed)
         else:
-            value = random_utils.generate_choices(choices, k=size)
+            value = random_utils.generate_choices(choices, k=size, seed=seed)
 
         assert isinstance(value, list)
         assert len(value) == size
@@ -143,16 +169,19 @@ def test_generate_choices(choices, size, unpack):
 
 @pytest.mark.parametrize("prefix", ["", "this", "is", "a", "test"])
 @pytest.mark.parametrize("max_length", [None, 4, 5, 6, 7, 8, 9, 10])
-def test_generate_string(prefix, max_length):
-    value = random_utils.generate_string(prefix=prefix, max_length=max_length)
-    assert isinstance(value, str)
-    assert value.startswith(prefix)
-    assert len(value) <= (2 * max_length if max_length is not None else 32) + len(prefix)
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_string(prefix, max_length, seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_string(prefix=prefix, max_length=max_length, seed=seed)
+        assert isinstance(value, str)
+        assert value.startswith(prefix)
+        assert len(value) <= (2 * max_length if max_length is not None else 32) + len(prefix)
 
 
-def test_generate_bool():
-    for _ in range(100):
-        value = random_utils.generate_bool()
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_bool(seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_bool(seed=seed)
         assert isinstance(value, bool)
         assert value in [True, False]
 
@@ -169,10 +198,11 @@ def _float32_min_max(min, max):
 @pytest.mark.parametrize("size", [(4096, 4096), (2048, 2048), (1024, 1024), (512, 512), (256, 256)])
 @pytest.mark.parametrize("min, max", [(None, None), (-1, 1), (-30, 10), (-5, 100), (-100, 1000)])
 @pytest.mark.parametrize("units", [None, u.m, u.electron, u.DN])
-def test_generate_array_float32(size, min, max, units):
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_array_float32(size, min, max, units, seed):
     t_min, t_max = _float32_min_max(min, max)
 
-    value = random_utils.generate_array_float32(size=size, min=min, max=max, units=units)
+    value = random_utils.generate_array_float32(size=size, min=min, max=max, units=units, seed=seed)
     assert isinstance(value, np.ndarray)
     assert value.dtype == np.float32
     assert value.shape == size
@@ -199,10 +229,11 @@ def _uint8_min_max(min, max):
 @pytest.mark.parametrize("size", [(4096, 4096), (2048, 2048), (1024, 1024), (512, 512), (256, 256)])
 @pytest.mark.parametrize("min, max", [(None, None), (0, 1), (5, 10), (10, 100), (100, 255)])
 @pytest.mark.parametrize("units", [None, u.m, u.electron, u.DN])
-def test_generate_array_uint8(size, min, max, units):
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_array_uint8(size, min, max, units, seed):
     t_min, t_max = _uint8_min_max(min, max)
 
-    value = random_utils.generate_array_uint8(size=size, min=min, max=max, units=units)
+    value = random_utils.generate_array_uint8(size=size, min=min, max=max, units=units, seed=seed)
     assert isinstance(value, np.ndarray)
     assert value.dtype == np.uint8
     assert value.shape == size
@@ -229,10 +260,11 @@ def _uint16_min_max(min, max):
 @pytest.mark.parametrize("size", [(4096, 4096), (2048, 2048), (1024, 1024), (512, 512), (256, 256)])
 @pytest.mark.parametrize("min, max", [(None, None), (0, 1), (5, 10), (10, 100), (100, 1000)])
 @pytest.mark.parametrize("units", [None, u.m, u.electron, u.DN])
-def test_generate_array_uint16(size, min, max, units):
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_array_uint16(size, min, max, units, seed):
     t_min, t_max = _uint16_min_max(min, max)
 
-    value = random_utils.generate_array_uint16(size=size, min=min, max=max, units=units)
+    value = random_utils.generate_array_uint16(size=size, min=min, max=max, units=units, seed=seed)
     assert isinstance(value, np.ndarray)
     assert value.dtype == np.uint16
     assert value.shape == size
@@ -259,10 +291,11 @@ def _uint32_min_max(min, max):
 @pytest.mark.parametrize("size", [(4096, 4096), (2048, 2048), (1024, 1024), (512, 512), (256, 256)])
 @pytest.mark.parametrize("min, max", [(None, None), (0, 1), (5, 10), (10, 100), (100, 1000)])
 @pytest.mark.parametrize("units", [None, u.m, u.electron, u.DN])
-def test_generate_array_uint32(size, min, max, units):
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_array_uint32(size, min, max, units, seed):
     t_min, t_max = _uint32_min_max(min, max)
 
-    value = random_utils.generate_array_uint32(size=size, min=min, max=max, units=units)
+    value = random_utils.generate_array_uint32(size=size, min=min, max=max, units=units, seed=seed)
     assert isinstance(value, np.ndarray)
     assert value.dtype == np.uint32
     assert value.shape == size
@@ -277,7 +310,8 @@ def test_generate_array_uint32(size, min, max, units):
     assert (val <= t_max).all()
 
 
-def test_generate_exposure_type():
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_exposure_type(seed):
     t_values = [
         "WFI_DARK",
         "WFI_FLAT",
@@ -286,13 +320,14 @@ def test_generate_exposure_type():
         "WFI_PRISM",
         "WFI_WFSC",
     ]
-    for _ in range(100):
-        value = random_utils.generate_exposure_type()
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_exposure_type(seed=seed)
         assert isinstance(value, str)
         assert value in t_values
 
 
-def test_generate_detector():
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_detector(seed):
     t_values = [
         "WFI01",
         "WFI02",
@@ -313,13 +348,14 @@ def test_generate_detector():
         "WFI17",
         "WFI18",
     ]
-    for _ in range(100):
-        value = random_utils.generate_detector()
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_detector(seed=seed)
         assert isinstance(value, str)
         assert value in t_values
 
 
-def test_generate_optical_element():
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_optical_element(seed):
     t_values = [
         "F062",
         "F087",
@@ -333,15 +369,16 @@ def test_generate_optical_element():
         "PRISM",
         "DARK",
     ]
-    for _ in range(100):
-        value = random_utils.generate_optical_element()
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_optical_element(seed=seed)
         assert isinstance(value, str)
         assert value in t_values
 
 
-def test_generate_software_version():
-    for _ in range(100):
-        value = random_utils.generate_software_version()
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_software_version(seed):
+    for _ in range(50 if seed is None else 1):
+        value = random_utils.generate_software_version(seed=seed)
         assert isinstance(value, str)
         pattern = re.compile(r"([0-9]+)\.([0-9]+)\.([0-9]+)")
         assert pattern.match(value)
