@@ -1135,7 +1135,6 @@ def create_target(**kwargs):
         "ra": random_utils.generate_angle_degrees(),
         "ra_uncertainty": random_utils.generate_positive_float(),
         "source_type": random_utils.generate_choice("EXTENDED", "POINT", "UNKNOWN"),
-        "source_type_apt": random_utils.generate_choice("EXTENDED", "POINT", "UNKNOWN"),
         "type": random_utils.generate_choice("FIXED", "MOVING", "GENERIC"),
     }
     raw.update(kwargs)

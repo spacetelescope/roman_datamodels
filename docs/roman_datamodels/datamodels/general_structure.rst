@@ -449,7 +449,6 @@ of meta will consist of the same attributes with few variations between data fil
     │ │ ├─proper_motion_epoch (str): J2000 # Target proper motion epoch
     │ │ ├─proposer_ra (float): 84.675 # Proposer's target RA
     │ │ ├─proposer_dec (float): -69.1 # Proposer's target Dec
-    │ │ ├─source_type_apt (str): EXTENDED # Source type from APT (point/extended)
     │ │ └─source_type (str): EXTENDED # Source type used for calibration
     │ ├─telescope (str): ROMAN
     │ ├─velocity_aberration (VelocityAberration) # Velocity aberration correction information
