@@ -613,6 +613,7 @@ def open(init, memmap=False, target=None, **kwargs):
     -------
     `DataModel`
     """
+    file_to_close = None
     if target is not None:
         if not issubclass(target, DataModel):
             raise ValueError("Target must be a subclass of DataModel")
@@ -633,15 +634,20 @@ def open(init, memmap=False, target=None, **kwargs):
         try:
             kwargs["copy_arrays"] = not memmap
             asdffile = asdf.open(init, **kwargs)
+            file_to_close = asdffile
         except ValueError:
             raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
         if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
+            if file_to_close is not None:
+                file_to_close.close()
             raise TypeError("Roman datamodels does not accept FITS files or objects")
     modeltype = type(asdffile.tree["roman"])
     if modeltype in model_registry:
         rmodel = model_registry[modeltype](asdffile, **kwargs)
         if target is not None:
             if not issubclass(rmodel.__class__, target):
+                if file_to_close is not None:
+                    file_to_close.close()
                 raise ValueError("Referenced ASDF file model type is not subclass of target")
         else:
             return rmodel
