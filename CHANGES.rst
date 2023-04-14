@@ -4,6 +4,8 @@
 - Remove use of deprecated ``pytest-openfiles`` ``pytest`` plugin. This has been replaced by
   catching ``ResourceWarning`` s. [#142]
 
+- Add support for read pattern in data model makers and factories. [#154]
+
 0.14.2 (2023-03-31)
 ===================
 
