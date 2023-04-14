@@ -204,6 +204,7 @@ def create_exposure(**kwargs):
         "ma_table_name": random_utils.generate_string("MA table "),
         "ma_table_number": random_utils.generate_positive_int(max=998) + 1,
         "level0_compressed": True,
+        "read_pattern": [[1, 2, 3], [4], [5, 6]],
     }
     raw.update(kwargs)
 
