@@ -841,8 +841,6 @@ def create_pixelarea(**kwargs):
         "area": random_utils.generate_array_float32(min=0.0),
     }
     raw.update(kwargs)
-    raw["meta"] = {}
-    raw["meta"]["photometry"] = {"pixelarea_steradians": 0.3 * u.sr, "pixelarea_arcsecsq": 0.3 * u.arcsec**2}
 
     return stnode.Pixelarea(raw)
 
