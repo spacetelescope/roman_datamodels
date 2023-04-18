@@ -207,6 +207,14 @@ def test_opening_association_ref(tmp_path):
     assert isinstance(association, datamodels.AssociationsModel)
 
 
+# Exposure Test
+def test_read_pattern():
+    exposure = utils.mk_exposure()
+    assert exposure.read_pattern != [1, 2, 3, 4, 5, 6, 7, 8]
+    assert exposure.read_pattern == [[1], [2, 3], [4], [5, 6, 7, 8]]
+    assert (type(rp) == list for rp in exposure.read_pattern)
+
+
 # Guide Window tests
 def test_make_guidewindow():
     guidewindow = utils.mk_guidewindow(shape=(2, 8, 16, 32, 32))
