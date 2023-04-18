@@ -159,7 +159,6 @@ def mk_level2_image(filepath, outfilepath):
     targ["proper_motion_epoch"] = NOSTR
     targ["proposer_ra"] = NONUM
     targ["proposer_dec"] = NONUM
-    targ["source_type_apt"] = "POINT"  # qqqq
     targ["source_type"] = "POINT"  # qqqq
     for key in imeta["target"].keys():
         targ[key] = imeta["target"][key]

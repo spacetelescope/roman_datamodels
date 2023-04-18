@@ -4,6 +4,8 @@
 - Remove use of deprecated ``pytest-openfiles`` ``pytest`` plugin. This has been replaced by
   catching ``ResourceWarning`` s. [#142]
 
+- Remove ``source_type_apt`` from ``target-1.0.0`` related datamodels. [#152]
+
 0.14.2 (2023-03-31)
 ===================
 
