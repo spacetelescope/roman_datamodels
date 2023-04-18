@@ -25,12 +25,18 @@ if sys.version_info < (3, 11):
 else:
     import tomllib
 
+def patch_automodapi(app):
+    """Monkey-patch the automodapi extension to exclude imported members"""
+    from sphinx_automodapi import automodsumm
+    from sphinx_automodapi.utils import find_mod_objs
+    automodsumm.find_mod_objs = lambda *args: find_mod_objs(args[0], onlylocals=True)
 
 def setup(app):
     try:
         app.add_css_file("stsci.css")
     except AttributeError:
         app.add_stylesheet("stsci.css")
+    app.connect("builder-inited", patch_automodapi)
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
