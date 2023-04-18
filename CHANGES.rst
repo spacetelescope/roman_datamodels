@@ -10,6 +10,8 @@
 
 - Add Changelog checking CI. [#161]
 
+- Remove ``meta`` from ``pixelarea-1.0.0`` related datamodels. [#157]
+
 0.14.2 (2023-03-31)
 ===================
 
