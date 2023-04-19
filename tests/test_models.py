@@ -210,8 +210,9 @@ def test_opening_association_ref(tmp_path):
 # Exposure Test
 def test_read_pattern():
     exposure = utils.mk_exposure()
-    assert exposure.read_pattern != [1, 2, 3, 4, 5, 6, 7, 8]
-    assert exposure.read_pattern == [[1], [2, 3], [4], [5, 6, 7, 8]]
+    assert exposure.read_pattern != [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    assert len(exposure.read_pattern) == exposure.ngroups
+    assert exposure.read_pattern == [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]]
     assert (type(rp) == list for rp in exposure.read_pattern)
 
 
