@@ -8,6 +8,8 @@
 
 - Enable seeding for ``random_utils`` functions. [#148]
 
+- Add Changelog checking CI. [#161]
+
 0.14.2 (2023-03-31)
 ===================
 
