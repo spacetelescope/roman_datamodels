@@ -2,10 +2,7 @@
 Utility file containing random value generation routines.
 """
 
-import math
-import random
-import secrets
-import sys
+import string
 import warnings
 from datetime import datetime
 
@@ -14,53 +11,56 @@ from astropy import units as u
 from astropy.time import Time
 from erfa.core import ErfaWarning
 
+_HEX_ALPHABET = np.array(list(string.hexdigits))
 
-def generate_float(min=None, max=None):
+
+def generate_float(min=None, max=None, seed=None):
+    # Assume 32-bit range for now, 64-bit range tends to overflow
     if min is None:
-        min = sys.float_info.max * -1.0
+        min = -1e38
     if max is None:
-        max = sys.float_info.max
-    value = random.random()
-    return min + max * value - min * value
+        max = 1e38
+
+    return np.random.default_rng(seed).uniform(low=min, high=max)
 
 
-def generate_positive_float(max=None):
-    return generate_float(min=0.0, max=max)
+def generate_positive_float(max=None, seed=None):
+    return generate_float(min=0.0, max=max, seed=seed)
 
 
-def generate_angle_radians():
-    return generate_float(0.0, 2.0 * math.pi)
+def generate_angle_radians(seed=None):
+    return generate_float(0.0, 2.0 * np.pi, seed=seed)
 
 
-def generate_angle_degrees():
-    return generate_float(0.0, 360.0)
+def generate_angle_degrees(seed=None):
+    return generate_float(0.0, 360.0, seed=seed)
 
 
-def generate_mjd_timestamp():
+def generate_mjd_timestamp(seed=None):
     # Random timestamp between 2020-01-01 and 2030-01-01
-    return generate_float(58849.0, 62502.0)
+    return generate_float(58849.0, 62502.0, seed=seed)
 
 
-def generate_utc_timestamp():
+def generate_utc_timestamp(seed=None):
     # Random timestamp between 2020-01-01 and 2030-01-01
-    return generate_float(1577836800.0, 1893456000.0)
+    return generate_float(1577836800.0, 1893456000.0, seed=seed)
 
 
-def generate_string_timestamp():
-    return datetime.utcfromtimestamp(generate_utc_timestamp()).strftime("%Y-%m-%dT%H:%M:%S.%f")[0:23]
+def generate_string_timestamp(seed=None):
+    return datetime.utcfromtimestamp(generate_utc_timestamp(seed=seed)).strftime("%Y-%m-%dT%H:%M:%S.%f")[0:23]
 
 
-def generate_string_date():
-    return datetime.utcfromtimestamp(generate_utc_timestamp()).strftime("%Y-%m-%d")
+def generate_string_date(seed=None):
+    return datetime.utcfromtimestamp(generate_utc_timestamp(seed=seed)).strftime("%Y-%m-%d")
 
 
-def generate_string_time():
-    return datetime.utcfromtimestamp(generate_utc_timestamp()).strftime("%H:%M:%S.%f")[0:12]
+def generate_string_time(seed=None):
+    return datetime.utcfromtimestamp(generate_utc_timestamp(seed=seed)).strftime("%H:%M:%S.%f")[0:12]
 
 
-def generate_astropy_time(time_format="unix", ignore_erfa_warnings=True):
+def generate_astropy_time(time_format="unix", ignore_erfa_warnings=True, seed=None):
     def _gen_time():
-        timeobj = Time(generate_utc_timestamp(), format="unix")
+        timeobj = Time(generate_utc_timestamp(seed=seed), format="unix")
 
         if time_format == "unix":
             return timeobj
@@ -78,86 +78,100 @@ def generate_astropy_time(time_format="unix", ignore_erfa_warnings=True):
         return _gen_time()
 
 
-def generate_int(min=None, max=None):
+def generate_int(min=None, max=None, size=None, seed=None):
     # Assume 32-bit signed integers for now
     if min is None:
         min = -1 * 2**31
     if max is None:
         max = 2**31 - 1
-    return random.randint(min, max)
+
+    return np.random.default_rng(seed).integers(low=min, high=max, size=size, dtype=int)
 
 
-def generate_positive_int(max=None):
-    return generate_int(0, max)
+def generate_positive_int(max=None, size=None, seed=None):
+    return generate_int(0, max, size=size, seed=seed)
 
 
-def generate_choice(*args):
-    return random.choice(args)
+def generate_choice(*args, seed=None):
+    if len(args) == 1:
+        args = args[0]
+
+    index = generate_positive_int(max=len(args) - 1, seed=seed)
+    return args[index]
 
 
-def generate_choices(*args, **kwargs):
-    return random.choices(args, **kwargs)
+def generate_choices(*args, seed=None, k=1, **kwargs):
+    if len(args) == 1:
+        args = args[0]
+
+    indices = generate_positive_int(max=len(args) - 1, size=k, seed=seed).tolist()
+    return [args[i] for i in indices]
 
 
-def generate_string(prefix="", max_length=None):
+def generate_string(prefix="", max_length=None, seed=None):
     if max_length is not None:
-        random_length = min(16, max_length - len(prefix))
+        size = 2 * min(16, max_length - len(prefix))
     else:
-        random_length = 16
+        size = 2 * 16
 
-    return prefix + secrets.token_hex(random_length)
+    if size > 0:
+        suffix = str(np.random.default_rng(seed).choice(_HEX_ALPHABET, size=size).view(f"U{size}")[0])
+    else:
+        suffix = ""
+
+    return prefix + suffix
 
 
-def generate_bool():
-    return generate_choice(*[True, False])
+def generate_bool(seed=None):
+    return bool(generate_choice(*[True, False], seed=seed))
 
 
-def generate_array_float32(size=(4096, 4096), min=None, max=None, units=None):
+def generate_array_float32(size=(4096, 4096), min=None, max=None, units=None, seed=None):
     if min is None:
         min = np.finfo("float32").min
     if max is None:
         max = np.finfo("float32").max
 
-    array = np.random.default_rng().uniform(low=min, high=max, size=size).astype(np.float32)
+    array = np.random.default_rng(seed).uniform(low=min, high=max, size=size).astype(np.float32)
     if units:
         array = u.Quantity(array, units, dtype=np.float32)
     return array
 
 
-def generate_array_uint8(size=(4096, 4096), min=None, max=None, units=None):
+def generate_array_uint8(size=(4096, 4096), min=None, max=None, units=None, seed=None):
     if min is None:
         min = np.iinfo("uint8").min
     if max is None:
         max = np.iinfo("uint8").max
-    array = np.random.randint(min, high=max, size=size, dtype=np.uint8)
+    array = np.random.default_rng(seed).integers(low=min, high=max, size=size, dtype=np.uint8)
     if units:
         array = u.Quantity(array, units, dtype=np.uint8)
     return array
 
 
-def generate_array_uint16(size=(4096, 4096), min=None, max=None, units=None):
+def generate_array_uint16(size=(4096, 4096), min=None, max=None, units=None, seed=None):
     if min is None:
         min = np.iinfo("uint16").min
     if max is None:
         max = np.iinfo("uint16").max
-    array = np.random.randint(min, high=max, size=size, dtype=np.uint16)
+    array = np.random.default_rng(seed).integers(min, high=max, size=size, dtype=np.uint16)
     if units:
         array = u.Quantity(array, units, dtype=np.uint16)
     return array
 
 
-def generate_array_uint32(size=(4096, 4096), min=None, max=None, units=None):
+def generate_array_uint32(size=(4096, 4096), min=None, max=None, units=None, seed=None):
     if min is None:
         min = np.iinfo("uint32").min
     if max is None:
         max = np.iinfo("uint32").max
-    array = np.random.randint(min, high=max, size=size, dtype=np.uint32)
+    array = np.random.default_rng(seed).integers(min, high=max, size=size, dtype=np.uint32)
     if units:
         array = u.Quantity(array, units, dtype=np.uint32)
     return array
 
 
-def generate_exposure_type():
+def generate_exposure_type(seed=None):
     return generate_choice(
         "WFI_DARK",
         "WFI_FLAT",
@@ -165,10 +179,11 @@ def generate_exposure_type():
         "WFI_IMAGE",
         "WFI_PRISM",
         "WFI_WFSC",
+        seed=seed,
     )
 
 
-def generate_detector():
+def generate_detector(seed=None):
     return generate_choice(
         "WFI01",
         "WFI02",
@@ -188,10 +203,11 @@ def generate_detector():
         "WFI16",
         "WFI17",
         "WFI18",
+        seed=seed,
     )
 
 
-def generate_optical_element():
+def generate_optical_element(seed=None):
     return generate_choice(
         "F062",
         "F087",
@@ -204,12 +220,10 @@ def generate_optical_element():
         "GRISM",
         "PRISM",
         "DARK",
+        seed=seed,
     )
 
 
-def generate_software_version():
-    return "{}.{}.{}".format(
-        generate_positive_int(100),
-        generate_positive_int(100),
-        generate_positive_int(100),
-    )
+def generate_software_version(seed=None):
+    vals = generate_positive_int(100, size=3, seed=seed)
+    return f"{vals[0]}.{vals[1]}.{vals[2]}"

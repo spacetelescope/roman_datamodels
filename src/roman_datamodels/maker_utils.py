@@ -274,7 +274,6 @@ def mk_target():
     targ["proper_motion_epoch"] = NOSTR
     targ["proposer_ra"] = NONUM
     targ["proposer_dec"] = NONUM
-    targ["source_type_apt"] = "POINT"
     targ["source_type"] = "POINT"
     return targ
 

@@ -6,6 +6,13 @@
 
 - Add support for read pattern in data model makers and factories. [#154]
 
+- Remove ``source_type_apt`` from ``target-1.0.0`` related datamodels. [#152]
+
+- Enable seeding for ``random_utils`` functions. [#148]
+
+- Add Changelog checking CI. [#161]
+
+
 0.14.2 (2023-03-31)
 ===================
 
