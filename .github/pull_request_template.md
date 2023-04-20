@@ -10,4 +10,6 @@ This PR addresses ...
 
 **Checklist**
 - [ ] Added entry in `CHANGES.rst` under the corresponding subsection
+- [ ] updated relevant tests
+- [ ] updated relevant documentation
 - [ ] Passed romancal regression testing on Jenkins / PLWishMaster. Link: https://plwishmaster.stsci.edu:8081/job/RT/job/romancal/XXX/
