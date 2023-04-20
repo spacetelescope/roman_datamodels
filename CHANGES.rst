@@ -4,6 +4,8 @@
 - Remove use of deprecated ``pytest-openfiles`` ``pytest`` plugin. This has been replaced by
   catching ``ResourceWarning`` s. [#142]
 
+- Add support for read pattern in data model makers and factories. [#154]
+
 - Remove ``source_type_apt`` from ``target-1.0.0`` related datamodels. [#152]
 
 - Enable seeding for ``random_utils`` functions. [#148]

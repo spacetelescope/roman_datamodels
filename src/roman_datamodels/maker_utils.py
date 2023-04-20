@@ -59,6 +59,7 @@ def mk_exposure():
     exp["ma_table_name"] = NOSTR
     exp["ma_table_number"] = NONUM
     exp["level0_compressed"] = True
+    exp["read_pattern"] = [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]]
     return exp
 
 
