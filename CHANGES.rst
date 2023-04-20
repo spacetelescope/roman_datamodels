@@ -12,6 +12,7 @@
 
 - Add Changelog checking CI. [#161]
 
+- Add Pull Request Template. [#147]
 
 0.14.2 (2023-03-31)
 ===================
