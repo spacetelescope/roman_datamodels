@@ -28,7 +28,7 @@ else:
 
 def find_mod_objs_patched(*args, **kwargs):
     from sphinx_automodapi.utils import find_mod_objs
-    
+
     return find_mod_objs(args[0], onlylocals=True)
 
 
