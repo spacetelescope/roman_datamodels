@@ -439,7 +439,7 @@ def add_ref_common(meta):
     meta["reftype"] = ""
 
 
-def mk_level1_science_raw(shape=None, filepath=None):
+def mk_level1_science_raw(shape=(8, 4096, 4096), filepath=None):
     """
     Create a dummy level 1 ScienceRaw instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -463,16 +463,12 @@ def mk_level1_science_raw(shape=None, filepath=None):
     wfi_science_raw = stnode.WfiScienceRaw()
     wfi_science_raw["meta"] = meta
 
-    if not shape:
-        shape = (8, 4096, 4096)
-        n_ints = 8
-    else:
-        n_ints = shape[0]
+    n_groups = shape[0]
 
     wfi_science_raw["data"] = u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16)
 
     # add amp 33 ref pix
-    wfi_science_raw["amp33"] = u.Quantity(np.zeros((n_ints, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    wfi_science_raw["amp33"] = u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
 
     if filepath:
         af = asdf.AsdfFile()
@@ -482,7 +478,7 @@ def mk_level1_science_raw(shape=None, filepath=None):
         return wfi_science_raw
 
 
-def mk_level2_image(shape=None, n_ints=None, filepath=None):
+def mk_level2_image(shape=(4088, 4088), n_groups=8, filepath=None):
     """
     Create a dummy level 2 Image instance (or file) with arrays and valid values
     for attributes required by the schema.
@@ -498,9 +494,9 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
         the border reference pixel arrays will have (y, x) dimensions (14, 4)
         and (4, 14)). Default is 4088 x 4088.
 
-    n_ints : int
+    n_groups : int
         The level 2 file is flattened, but it contains arrays for the original
-        reference pixels which remain 3D. n_ints specifies what the z dimension
+        reference pixels which remain 3D. n_groups specifies what the z dimension
         of these arrays should be. Defaults to 8.
 
     filepath : str
@@ -514,16 +510,16 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
     meta["photometry"] = mk_photometry()
     wfi_image = stnode.WfiImage()
     wfi_image["meta"] = meta
-    if not shape:
-        shape = (4088, 4088)
-    if not n_ints:
-        n_ints = 8
 
     # add border reference pixel arrays
-    wfi_image["border_ref_pix_left"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
-    wfi_image["border_ref_pix_right"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
-    wfi_image["border_ref_pix_top"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
-    wfi_image["border_ref_pix_bottom"] = u.Quantity(np.zeros((n_ints, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
+    wfi_image["border_ref_pix_left"] = u.Quantity(np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
+    wfi_image["border_ref_pix_right"] = u.Quantity(
+        np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32
+    )
+    wfi_image["border_ref_pix_top"] = u.Quantity(np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
+    wfi_image["border_ref_pix_bottom"] = u.Quantity(
+        np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32
+    )
 
     # and their dq arrays
     wfi_image["dq_border_ref_pix_left"] = np.zeros((shape[0] + 8, 4), dtype=np.uint32)
@@ -532,7 +528,7 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
     wfi_image["dq_border_ref_pix_bottom"] = np.zeros((4, shape[1] + 8), dtype=np.uint32)
 
     # add amp 33 ref pixel array
-    amp33_size = (n_ints, 4096, 128)
+    amp33_size = (n_groups, 4096, 128)
     wfi_image["amp33"] = u.Quantity(np.zeros(amp33_size, dtype=np.uint16), u.DN, dtype=np.uint16)
 
     wfi_image["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
@@ -552,7 +548,7 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
         return wfi_image
 
 
-def mk_flat(shape=None, filepath=None):
+def mk_flat(shape=(4096, 4096), filepath=None):
     """
     Create a dummy Flat instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -575,9 +571,6 @@ def mk_flat(shape=None, filepath=None):
     meta["reftype"] = "FLAT"
     flatref["meta"] = meta
 
-    if not shape:
-        shape = (4096, 4096)
-
     flatref["data"] = np.zeros(shape, dtype=np.float32)
     flatref["dq"] = np.zeros(shape, dtype=np.uint32)
     flatref["err"] = np.zeros(shape, dtype=np.float32)
@@ -590,7 +583,7 @@ def mk_flat(shape=None, filepath=None):
         return flatref
 
 
-def mk_dark(shape=None, filepath=None):
+def mk_dark(shape=(2, 4096, 4096), filepath=None):
     """
     Create a dummy Dark Current instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -621,9 +614,6 @@ def mk_dark(shape=None, filepath=None):
     exposure["ma_table_name"] = NOSTR
     exposure["ma_table_number"] = NONUM
     darkref["meta"]["exposure"] = exposure
-
-    if not shape:
-        shape = (2, 4096, 4096)
 
     darkref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
     darkref["dq"] = np.zeros(shape[1:], dtype=np.uint32)
@@ -671,7 +661,7 @@ def mk_distortion(filepath=None):
         return distortionref
 
 
-def mk_gain(shape=None, filepath=None):
+def mk_gain(shape=(4096, 4096), filepath=None):
     """
     Create a dummy Gain instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -694,9 +684,6 @@ def mk_gain(shape=None, filepath=None):
     meta["reftype"] = "GAIN"
     gainref["meta"] = meta
 
-    if not shape:
-        shape = (4096, 4096)
-
     gainref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.DN, dtype=np.float32)
 
     if filepath:
@@ -707,7 +694,7 @@ def mk_gain(shape=None, filepath=None):
         return gainref
 
 
-def mk_ipc(shape=None, filepath=None):
+def mk_ipc(shape=(3, 3), filepath=None):
     """
     Create a dummy IPC instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -730,9 +717,6 @@ def mk_ipc(shape=None, filepath=None):
     meta["reftype"] = "IPC"
     ipcref["meta"] = meta
 
-    if not shape:
-        shape = (3, 3)
-
     ipcref["data"] = np.zeros(shape, dtype=np.float32)
     ipcref["data"][int(np.floor(shape[0] / 2))][int(np.floor(shape[1] / 2))] = 1.0
 
@@ -744,7 +728,7 @@ def mk_ipc(shape=None, filepath=None):
         return ipcref
 
 
-def mk_linearity(shape=None, filepath=None):
+def mk_linearity(shape=(2, 4096, 4096), filepath=None):
     """
     Create a dummy Linearity instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -770,9 +754,6 @@ def mk_linearity(shape=None, filepath=None):
     linearityref["meta"]["input_units"] = u.DN
     linearityref["meta"]["output_units"] = u.DN
 
-    if not shape:
-        shape = (2, 4096, 4096)
-
     linearityref["dq"] = np.zeros(shape[1:], dtype=np.uint32)
     linearityref["coeffs"] = np.zeros(shape, dtype=np.float32)
 
@@ -784,7 +765,7 @@ def mk_linearity(shape=None, filepath=None):
         return linearityref
 
 
-def mk_inverse_linearity(shape=None, filepath=None):
+def mk_inverse_linearity(shape=(2, 4096, 4096), filepath=None):
     """
     Create a dummy InverseLinearity instance (or file) with arrays and valid
     values for attributes required by the schema.
@@ -810,9 +791,6 @@ def mk_inverse_linearity(shape=None, filepath=None):
     inverselinearityref["meta"]["input_units"] = u.DN
     inverselinearityref["meta"]["output_units"] = u.DN
 
-    if not shape:
-        shape = (2, 4096, 4096)
-
     inverselinearityref["dq"] = np.zeros(shape[1:], dtype=np.uint32)
     inverselinearityref["coeffs"] = np.zeros(shape, dtype=np.float32)
 
@@ -824,7 +802,7 @@ def mk_inverse_linearity(shape=None, filepath=None):
         return inverselinearityref
 
 
-def mk_mask(shape=None, filepath=None):
+def mk_mask(shape=(4096, 4096), filepath=None):
     """
     Create a dummy Mask instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -847,9 +825,6 @@ def mk_mask(shape=None, filepath=None):
     meta["reftype"] = "MASK"
     maskref["meta"] = meta
 
-    if not shape:
-        shape = (4096, 4096)
-
     maskref["dq"] = np.zeros(shape, dtype=np.uint32)
 
     if filepath:
@@ -860,7 +835,7 @@ def mk_mask(shape=None, filepath=None):
         return maskref
 
 
-def mk_pixelarea(shape=None, filepath=None):
+def mk_pixelarea(shape=(4096, 4096), filepath=None):
     """
     Create a dummy Pixelarea instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -886,9 +861,6 @@ def mk_pixelarea(shape=None, filepath=None):
         "pixelarea_arcsecsq": float(NONUM) * u.arcsec**2,
     }
     pixelarearef["meta"] = meta
-
-    if not shape:
-        shape = (4096, 4096)
 
     pixelarearef["data"] = np.zeros(shape, dtype=np.float32)
 
@@ -975,7 +947,7 @@ def mk_wfi_img_photom(filepath=None):
         return wfi_img_photomref
 
 
-def mk_readnoise(shape=None, filepath=None):
+def mk_readnoise(shape=(4096, 4096), filepath=None):
     """
     Create a dummy Readnoise instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -1002,9 +974,6 @@ def mk_readnoise(shape=None, filepath=None):
     exposure["p_exptype"] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
     readnoiseref["meta"]["exposure"] = exposure
 
-    if not shape:
-        shape = (4096, 4096)
-
     readnoiseref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
 
     if filepath:
@@ -1015,7 +984,7 @@ def mk_readnoise(shape=None, filepath=None):
         return readnoiseref
 
 
-def mk_ramp(shape=None, n_ints=None, filepath=None):
+def mk_ramp(shape=(8, 4096, 4096), filepath=None):
     """
     Create a dummy Ramp instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -1023,11 +992,9 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
     Parameters
     ----------
     shape : tuple, int
-        (optional) Shape (y, x) of data array in the model (and its
+        (optional) Shape (z, y, x) of data array in the model (and its
         corresponding dq/err arrays). This specified size includes the
-        four-pixel border of reference pixels. Default is 4096 x 4096.
-
-    n_ints : int
+        four-pixel border of reference pixels. Default is 8 x 4096 x 4096.
 
     filepath : str
         (optional) File name and path to write model to.
@@ -1039,9 +1006,6 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
     meta = mk_common_meta()
     ramp = stnode.Ramp()
     ramp["meta"] = meta
-
-    if not shape:
-        shape = (8, 4096, 4096)
 
     # add border reference pixel arrays
     ramp["border_ref_pix_left"] = u.Quantity(np.zeros((shape[0], shape[1], 4), dtype=np.float32), u.DN, dtype=np.float32)
@@ -1071,7 +1035,7 @@ def mk_ramp(shape=None, n_ints=None, filepath=None):
         return ramp
 
 
-def mk_rampfitoutput(shape=None, filepath=None):
+def mk_rampfitoutput(shape=(8, 4096, 4096), filepath=None):
     """
     Create a dummy Rampfit Output instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -1092,9 +1056,6 @@ def mk_rampfitoutput(shape=None, filepath=None):
     rampfitoutput = stnode.RampFitOutput()
     rampfitoutput["meta"] = meta
 
-    if not shape:
-        shape = (8, 4096, 4096)
-
     rampfitoutput["slope"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
     rampfitoutput["sigslope"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
     rampfitoutput["yint"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron, dtype=np.float32)
@@ -1113,7 +1074,7 @@ def mk_rampfitoutput(shape=None, filepath=None):
         return rampfitoutput
 
 
-def mk_associations(shape=None, filepath=None):
+def mk_associations(shape=(2, 3, 1), filepath=None):
     """
     Create a dummy Association table instance (or file) with table and valid values for attributes
     required by the schema.
@@ -1147,9 +1108,6 @@ def mk_associations(shape=None, filepath=None):
     associations["asn_pool"] = "r00001_20200530t023154_pool"
     associations["target"] = 16
 
-    if not shape:
-        shape = (2, 3, 1)
-
     file_idx = 0
     associations["products"] = []
     for product_idx in range(len(shape)):
@@ -1170,7 +1128,7 @@ def mk_associations(shape=None, filepath=None):
         return associations
 
 
-def mk_guidewindow(shape=None, filepath=None):
+def mk_guidewindow(shape=(2, 8, 16, 32, 32), filepath=None):
     """
     Create a dummy Guidewindow instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -1214,9 +1172,6 @@ def mk_guidewindow(shape=None, filepath=None):
     guidewindow["meta"]["data_end"] = NONUM
     guidewindow["meta"]["gw_acq_exec_stat"] = generate_string("Status ", 15)
 
-    if not shape:
-        shape = (2, 8, 16, 32, 32)
-
     guidewindow["pedestal_frames"] = u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16)
     guidewindow["signal_frames"] = u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16)
     guidewindow["amp33"] = u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16)
@@ -1229,7 +1184,7 @@ def mk_guidewindow(shape=None, filepath=None):
         return guidewindow
 
 
-def mk_saturation(shape=None, filepath=None):
+def mk_saturation(shape=(4096, 4096), filepath=None):
     """
     Create a dummy Saturation instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -1252,9 +1207,6 @@ def mk_saturation(shape=None, filepath=None):
     meta["reftype"] = "SATURATION"
     saturationref["meta"] = meta
 
-    if not shape:
-        shape = (4096, 4096)
-
     saturationref["dq"] = np.zeros(shape, dtype=np.uint32)
     saturationref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
 
@@ -1266,7 +1218,7 @@ def mk_saturation(shape=None, filepath=None):
         return saturationref
 
 
-def mk_superbias(shape=None, filepath=None):
+def mk_superbias(shape=(4096, 4096), filepath=None):
     """
     Create a dummy Superbias instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -1288,9 +1240,6 @@ def mk_superbias(shape=None, filepath=None):
     superbiasref = stnode.SuperbiasRef()
     meta["reftype"] = "BIAS"
     superbiasref["meta"] = meta
-
-    if not shape:
-        shape = (4096, 4096)
 
     superbiasref["data"] = np.zeros(shape, dtype=np.float32)
     superbiasref["dq"] = np.zeros(shape, dtype=np.uint32)
