@@ -192,6 +192,25 @@ def mk_photometry():
     return phot
 
 
+def mk_resample():
+    """
+    Create a dummy Resample instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Photometry
+    """
+    res = stnode.Resample()
+    res["pixel_scale_ratio"] = NONUM
+    res["pixfrac"] = NONUM
+    res["pointings"] = -1 * NONUM
+    res["product_exposure_time"] = -1 * NONUM
+    res["weight_type"] = "exptime"
+
+    return res
+
+
 def mk_source_detection():
     """
     Create a dummy Source Detection instance with valid values for attributes
@@ -550,6 +569,53 @@ def mk_level2_image(shape=None, n_ints=None, filepath=None):
         af.write_to(filepath)
     else:
         return wfi_image
+
+
+def mk_level3_mosaic(shape=None, n_images=2, filepath=None):
+    """
+    Create a dummy level 3 Mosaic instance (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    shape : tuple, int
+        (optional) Shape (y, x) of data array in the model (and its
+        corresponding dq/err arrays). Default is 4088 x 4088.
+
+    n_images : int
+        Number of images used to create the level 3 image. Defaults to 2.
+
+    filepath : str
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.WfiMosaic
+    """
+    meta = mk_common_meta()
+    meta["photometry"] = mk_photometry()
+    meta["resample"] = mk_resample()
+    wfi_mosaic = stnode.WfiMosaic()
+    wfi_mosaic["meta"] = meta
+    if not shape:
+        shape = (4088, 4088)
+
+    wfi_mosaic["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
+    wfi_mosaic["err"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
+    wfi_mosaic["context"] = np.zeros((n_images,) + shape, dtype=np.uint32)
+    wfi_mosaic["weight"] = np.zeros(shape, dtype=np.float32)
+
+    wfi_mosaic["var_poisson"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+    wfi_mosaic["var_rnoise"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+    wfi_mosaic["var_flat"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+    wfi_mosaic["cal_logs"] = mk_cal_logs()
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {"roman": wfi_mosaic}
+        af.write_to(filepath)
+    else:
+        return wfi_mosaic
 
 
 def mk_flat(shape=None, filepath=None):

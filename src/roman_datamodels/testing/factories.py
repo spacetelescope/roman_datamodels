@@ -899,6 +899,32 @@ def create_program(**kwargs):
     return stnode.Program(raw)
 
 
+def create_resample(**kwargs):
+    """
+    Create a dummy Resample instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Resample
+    """
+    raw = {
+        "pixel_scale_ratio": random_utils.generate_positive_float(),
+        "pixfrac": random_utils.generate_positive_float(),
+        "pointings": random_utils.generate_positive_int(),
+        "product_exposure_time": random_utils.generate_positive_float(),
+        "weight_type": random_utils.generate_choice("exptime", "ivm"),
+    }
+    raw.update(kwargs)
+
+    return stnode.Resample(raw)
+
+
 def create_ramp(**kwargs):
     """
     Create a dummy Ramp instance with valid values for attributes
@@ -1306,6 +1332,39 @@ def create_wfi_mode(**kwargs):
     raw.update(kwargs)
 
     return stnode.WfiMode(raw)
+
+
+def create_wfi_mosaic(**kwargs):
+    """
+    Create a dummy WfiMosaic instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.WfiIMosaic
+    """
+
+    raw = {
+        "data": random_utils.generate_array_float32((4088, 4088), units=u.electron / u.s),
+        "err": random_utils.generate_array_float32((4088, 4088), min=0.0, units=u.electron / u.s),
+        "context": random_utils.generate_array_uint32((2, 4088, 4088)),
+        "weight": random_utils.generate_array_float32((4088, 4088)),
+        "var_poisson": random_utils.generate_array_float32((4088, 4088), units=u.electron**2 / u.s**2),
+        "var_rnoise": random_utils.generate_array_float32((4088, 4088), units=u.electron**2 / u.s**2),
+        "var_flat": random_utils.generate_array_float32((4088, 4088), units=u.electron**2 / u.s**2),
+        "cal_logs": create_cal_logs(),
+        "meta": create_meta(),
+    }
+    raw.update(kwargs)
+    raw["meta"]["photometry"] = create_photometry()
+    raw["meta"]["resample"] = create_resample()
+
+    return stnode.WfiMosaic(raw)
 
 
 def create_wfi_science_raw(**kwargs):
