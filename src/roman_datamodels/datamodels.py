@@ -405,7 +405,7 @@ class ModelContainer(Sequence):
         if init is None:
             # don't populate container
             pass
-        elif isinstance(init, list):
+        elif isinstance(init, (list, Sequence)):
             # only append list items to self._models if all items are either
             # strings (i.e. path to an ASDF file) or instances of DataModel
             is_all_string = all(isinstance(x, str) for x in init)
