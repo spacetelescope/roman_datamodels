@@ -14,6 +14,10 @@
 
 - Add Pull Request Template. [#147]
 
+- Add Level 3 MosaicModel and Resample stnodes, maker utils, factories, and tests. [#163]
+
+
+
 0.14.2 (2023-03-31)
 ===================
 
