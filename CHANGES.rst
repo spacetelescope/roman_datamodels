@@ -14,6 +14,9 @@
 
 - Add Pull Request Template. [#147]
 
+- Renamed n_ints to n_groups. Did some shape variable cleanup. [#165]
+
+
 0.14.2 (2023-03-31)
 ===================
 
