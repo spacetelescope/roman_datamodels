@@ -138,7 +138,7 @@ def generate_array_float32(size=(4096, 4096), min=None, max=None, units=None, se
     return array
 
 
-def generate_array_complex128(size=(32, 286721), min=None, max=None, shape="square"):
+def generate_array_complex128(size=(32, 286721), min=None, max=None, shape=None, seed=None):
     """
     Uniformly at random generate a complex array of the specified size.
 
@@ -162,6 +162,8 @@ def generate_array_complex128(size=(32, 286721), min=None, max=None, shape="squa
             - "square": Sample uniformly from a square.
             - "disk": Sample uniformly from a disk.
     """
+    shape = "square" if shape is None else shape
+
     if shape not in ["square", "disk"]:
         raise ValueError(f"Invalid shape: {shape}")
 
@@ -169,13 +171,13 @@ def generate_array_complex128(size=(32, 286721), min=None, max=None, shape="squa
         if shape == "square":
             min = (-1.0, -1.0)
         elif shape == "disk":
-            min = (0.0, 0.0)
+            min = (0.0, -np.pi)
 
     if max is None:
         if shape == "square":
             max = (1.0, 1.0)
         elif shape == "disk":
-            max = (1.0, 2.0 * np.pi)
+            max = (1.0, np.pi)
 
     if len(min) != 2:
         raise ValueError(f"Invalid min: {min}")
@@ -183,7 +185,7 @@ def generate_array_complex128(size=(32, 286721), min=None, max=None, shape="squa
     if len(max) != 2:
         raise ValueError(f"Invalid max: {max}")
 
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(seed)
     if shape == "square":
         # Generate two arrays of random numbers, one for the real part and one for the imaginary part.
         x = rng.uniform(min[0], max[0], size=size)
