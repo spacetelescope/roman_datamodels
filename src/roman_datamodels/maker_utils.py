@@ -1020,7 +1020,7 @@ def mk_ramp(shape=(8, 4096, 4096), filepath=None):
     ramp["dq_border_ref_pix_bottom"] = np.zeros((4, shape[2]), dtype=np.uint32)
 
     # add amp 33 ref pixel array
-    ramp["amp33"] = u.Quantity(np.full(shape, 1.0, dtype=np.uint16), u.DN, dtype=np.uint16)
+    ramp["amp33"] = u.Quantity(np.zeros((shape[0], shape[1], 128), dtype=np.uint16), u.DN, dtype=np.uint16)
 
     ramp["data"] = u.Quantity(np.full(shape, 1.0, dtype=np.float32), u.DN, dtype=np.float32)
     ramp["pixeldq"] = np.zeros(shape[1:], dtype=np.uint32)
