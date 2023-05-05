@@ -19,4 +19,4 @@ jobs:
           python-version: 3.11
         - macos: test-xdist
           python-version: 3.11
-         - linux: test-rad-xdist
+        - linux: test-rad-xdist
