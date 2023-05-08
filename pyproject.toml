@@ -72,7 +72,8 @@ filterwarnings = [
     # Sometimes turning ResourceWarnings into errors creates an unraisable exception
     #   e.g. when pyest catches another exception, this will block the turning of
     #        ResourceWarnings into errors
-    "error::pytest.PytestUnraisableExceptionWarning",
+    # Disabled until issue #150 is resolved.
+    # "error::pytest.PytestUnraisableExceptionWarning",
 ]
 
 [tool.coverage.run]
