@@ -1,0 +1,104 @@
+#ASDF 1.0.0
+#ASDF_STANDARD 1.5.0
+%YAML 1.1
+%TAG ! tag:stsci.edu:asdf/
+--- !core/asdf-1.1.0
+asdf_library: !core/software-1.0.0 {author: The ASDF Developers, homepage: 'http://github.com/asdf-format/asdf',
+  name: asdf, version: 2.15.0}
+history:
+  extensions:
+  - !core/extension_metadata-1.0.0
+    extension_class: asdf.extension.BuiltinExtension
+    software: !core/software-1.0.0 {name: asdf, version: 2.15.0}
+  - !core/extension_metadata-1.0.0
+    extension_class: asdf_astropy._manifest.CompoundManifestExtension
+    extension_uri: asdf://asdf-format.org/core/extensions/core-1.5.0
+    software: !core/software-1.0.0 {name: asdf-astropy, version: 0.4.0}
+  - !core/extension_metadata-1.0.0
+    extension_class: asdf.extension._manifest.ManifestExtension
+    extension_uri: asdf://stsci.edu/datamodels/roman/extensions/datamodels-1.0
+    software: !core/software-1.0.0 {name: roman-datamodels, version: 0.14.3.dev12+gc881363.d20230413}
+roman: !<asdf://stsci.edu/datamodels/roman/tags/reference_files/wfi_img_photom-1.0.0>
+  meta:
+    author: Reference author f46ee53F65bE3B55Ba0bDbf67bCbd8De
+    description: Reference description 62079dC00042520cE73E7eAcBBe974F7
+    exposure: {groupgap: 0, ma_table_name: MA table B55c9094ee0B9cf6AF5c011b6c042Ec0,
+      ma_table_number: 187, nframes: 8, ngroups: 6, type: WFI_IMAGE}
+    instrument: {detector: WFI04, name: WFI, optical_element: F087}
+    origin: STScI
+    pedigree: DUMMY
+    reftype: PHOTOM
+    telescope: !<asdf://stsci.edu/datamodels/roman/tags/telescope-1.0.0> ROMAN
+    useafter: !time/time-1.1.0 {format: unix, value: 1804743771.16757}
+  phot_table:
+    DARK:
+      photmjsr: null
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: null
+    F062:
+      photmjsr: 3.14
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 2.4572858451131752e-17}
+    F087:
+      photmjsr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 6.833941935101339e-16}
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 1.6036961953107142e-17}
+    F106:
+      photmjsr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 9.9716716997983e-16}
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 7.502946641921649e-17}
+    F129:
+      photmjsr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 4.977784146055488e-16}
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 1.4022253913703376e-18}
+    F146:
+      photmjsr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 7.334672809484418e-16}
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 4.437977942138037e-17}
+    F158:
+      photmjsr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 5.369448971885622e-16}
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 5.244145566292353e-17}
+    F184:
+      photmjsr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 6.388053606788101e-16}
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 7.094590616678888e-17}
+    F213:
+      photmjsr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 9.652254997869063e-16}
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 MJy.sr**-1,
+        value: 1.8385171380717958e-17}
+    GRISM:
+      photmjsr: null
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: null
+    PRISM:
+      photmjsr: null
+      pixelareasr: !unit/quantity-1.1.0 {datatype: float64, unit: !unit/unit-1.0.0 sr,
+        value: 1.0e-13}
+      uncertainty: null
+...

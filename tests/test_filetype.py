@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import asdf
 import pytest
 
 from roman_datamodels import filetype
@@ -33,3 +34,15 @@ def test_filetype():
 
     with pytest.raises(ValueError):
         filetype.check("test")
+
+
+def test_read_pattern_properties():
+    """
+    Regression test for reading pattern properties
+    """
+
+    from roman_datamodels.datamodels import open as rdm_open
+
+    # This file has been modified by hand to break the `photmjsr` value
+    with pytest.raises(asdf.ValidationError):
+        rdm_open(DATA_DIRECTORY / "photmjsm.asdf")

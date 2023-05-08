@@ -1,8 +1,9 @@
 import asdf
+import astropy.units as u
 import pytest
 
 from roman_datamodels import stnode
-from roman_datamodels.testing import assert_node_equal, create_node
+from roman_datamodels.testing import assert_node_equal, create_node, factories
 
 
 def test_generated_node_classes(manifest):
@@ -91,3 +92,18 @@ def test_schema_info():
             },
         }
     }
+
+
+def test_set_pattern_properties():
+    """
+    Regression test for `photmjsr` not being validated because it is a patternProperty
+    """
+
+    # This model uses the `photmjsr` patternProperty
+    mdl = factories.create_wfi_img_photom_ref()
+
+    with pytest.raises(asdf.ValidationError):
+        # This should be invalid because it is not a quantity
+        mdl.phot_table.F062.photmjsr = 3.14
+
+    mdl.phot_table.F062.photmjsr = 3.14 * (u.MJy / u.sr)
