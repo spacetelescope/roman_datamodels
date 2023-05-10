@@ -560,17 +560,16 @@ class ModelContainer(Iterable):
             self.close()
             raise
 
-        # Pull the whole association table into meta.asn_table
-        self.meta.asn_table = {}
-        self.merge_tree(self.meta.asn_table._instance, asn_data)
+        # Pull the whole association table into asn_table
+        self.merge_tree(self.asn_table, asn_data)
 
         if asn_file_path is not None:
             self.asn_table_name = op.basename(asn_file_path)
             self.asn_pool_name = asn_data["asn_pool"]
             for model in self:
                 try:
-                    model.meta.asn.table_name = self.asn_table_name
-                    model.meta.asn.pool_name = self.asn_pool_name
+                    model.meta.asn["table_name"] = self.asn_table_name
+                    model.meta.asn["pool_name"] = self.asn_pool_name
                 except AttributeError:
                     pass
 
@@ -652,8 +651,7 @@ class ModelContainer(Iterable):
     def to_association(self):
         pass
 
-    @property
-    def merge_tree(a, b):
+    def merge_tree(self, a, b):
         """
         Merge elements from tree `b` into tree `a`.
         """
