@@ -8,8 +8,10 @@ It is to be subclassed by the various types of data model variants for products
 """
 import copy
 import datetime
+import logging
 import os
-import os.path
+import os.path as op
+import re
 import sys
 import warnings
 from collections import OrderedDict
@@ -23,6 +25,7 @@ from astropy.time import Time
 
 from . import stnode, validate
 from .extensions import DATAMODEL_EXTENSIONS
+from .util import is_association
 
 # .dev is included in the version comparison to allow for correct version
 # comparisons with development versions of asdf 3.0
@@ -55,8 +58,14 @@ __all__ = [
     "SuperbiasRefModel",
     "SaturationRefModel",
     "WfiImgPhotomRefModel",
-    "open",
+    "get_datamodel",
 ]
+
+RECOGNIZED_MEMBER_FIELDS = ["tweakreg_catalog"]
+
+# Configure logging
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class DataModel:
@@ -149,16 +158,16 @@ class DataModel:
 
     def save(self, path, dir_path=None, *args, **kwargs):
         if callable(path):
-            path_head, path_tail = os.path.split(path(self.meta.filename))
+            path_head, path_tail = op.split(path(self.meta.filename))
         else:
-            path_head, path_tail = os.path.split(path)
-        base, ext = os.path.splitext(path_tail)
+            path_head, path_tail = op.split(path)
+        base, ext = op.splitext(path_tail)
         if isinstance(ext, bytes):
             ext = ext.decode(sys.getfilesystemencoding())
 
         if dir_path:
             path_head = dir_path
-        output_path = os.path.join(path_head, path_tail)
+        output_path = op.join(path_head, path_tail)
 
         # TODO: Support gzip-compressed fits
         if ext == ".asdf":
@@ -395,12 +404,27 @@ class ModelContainer(Sequence):
 
     """
 
-    def __init__(self, init=None, iscopy=False, memmap=False, return_open=True, save_open=True):
+    def __init__(
+        self,
+        init=None,
+        asn_exptypes=None,
+        asn_n_members=None,
+        iscopy=False,
+        memmap=False,
+        return_open=True,
+        save_open=True,
+    ):
         self._models = []
         self._iscopy = iscopy
         self._memmap = memmap
         self._return_open = return_open
         self._save_open = save_open
+
+        self.asn_exptypes = asn_exptypes
+        self.asn_n_members = asn_n_members
+        self.asn_table = {}
+        self.asn_table_name = None
+        self.asn_pool_name = None
 
         if init is None:
             # don't populate container
@@ -415,6 +439,11 @@ class ModelContainer(Sequence):
                 self._models.extend(init)
             else:
                 raise TypeError("Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
+        elif is_association(init):
+            self.from_asn(init)
+        elif isinstance(init, str):
+            init_from_asn = self.read_asn(init)
+            self.from_asn(init_from_asn, asn_file_path=init)
         else:
             raise TypeError("Input must be a list of either strings (full path to ASDF files) or Roman datamodels.")
 
@@ -424,7 +453,7 @@ class ModelContainer(Sequence):
     def __getitem__(self, index):
         m = self._models[index]
         if not isinstance(m, DataModel) and self._return_open:
-            m = open(m, memmap=self._memmap)
+            m = get_datamodel(m, memmap=self._memmap)
         return m
 
     def __setitem__(self, index, model):
@@ -433,8 +462,112 @@ class ModelContainer(Sequence):
     def __iter__(self):
         for model in self._models:
             if not isinstance(model, DataModel) and self._return_open:
-                model = open(model, memmap=self._memmap)
+                model = get_datamodel(model, memmap=self._memmap)
             yield model
+
+    def close(self):
+        if not self._iscopy:
+            if self._asdf is not None:
+                self._asdf.close()
+
+    @staticmethod
+    def read_asn(filepath):
+        """
+        Load fits files from a JWST association file.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to an association file.
+        """
+        # Prevent circular import:
+        from .associations import AssociationNotValidError, load_asn
+
+        filepath = op.abspath(op.expanduser(op.expandvars(filepath)))
+        try:
+            with open(filepath) as asn_file:
+                asn_data = load_asn(asn_file)
+        except AssociationNotValidError as e:
+            raise OSError("Cannot read ASN file.") from e
+        return asn_data
+
+    def from_asn(self, asn_data, asn_file_path=None):
+        """
+        Load fits files from a JWST association file.
+
+        Parameters
+        ----------
+        asn_data : ~jwst.associations.Association
+            An association dictionary
+
+        asn_file_path: str
+            Filepath of the association, if known.
+        """
+        # match the asn_exptypes to the exptype in the association and retain
+        # only those file that match, as a list, if asn_exptypes is set to none
+        # grab all the files
+        if self.asn_exptypes:
+            infiles = []
+            logger.debug(f"Filtering datasets based on allowed exptypes {self.asn_exptypes}:")
+            for member in asn_data["products"][0]["members"]:
+                if any([x for x in self.asn_exptypes if re.match(member["exptype"], x, re.IGNORECASE)]):
+                    infiles.append(member)
+                    logger.debug("Files accepted for processing {}:".format(member["expname"]))
+        else:
+            infiles = [member for member in asn_data["products"][0]["members"]]
+
+        if asn_file_path:
+            asn_dir = op.dirname(asn_file_path)
+        else:
+            asn_dir = ""
+
+        # Only handle the specified number of members.
+        if self.asn_n_members:
+            sublist = infiles[: self.asn_n_members]
+        else:
+            sublist = infiles
+        try:
+            for member in sublist:
+                filepath = op.join(asn_dir, member["expname"])
+                update_model = any(attr in member for attr in RECOGNIZED_MEMBER_FIELDS)
+                if update_model or self._save_open:
+                    m = get_datamodel(filepath, memmap=self._memmap)
+                    m.meta["asn"] = {"exptype": member["exptype"]}
+                    for attr, val in member.items():
+                        if attr in RECOGNIZED_MEMBER_FIELDS:
+                            if attr == "tweakreg_catalog":
+                                if val.strip():
+                                    val = op.join(asn_dir, val)
+                                else:
+                                    val = None
+
+                            setattr(m.meta, attr, val)
+
+                    if not self._save_open:
+                        m.save(filepath, overwrite=True)
+                        m.close()
+                else:
+                    m = filepath
+
+                self._models.append(m)
+
+        except OSError:
+            self.close()
+            raise
+
+        # Pull the whole association table into meta.asn_table
+        self.meta.asn_table = {}
+        self.merge_tree(self.meta.asn_table._instance, asn_data)
+
+        if asn_file_path is not None:
+            self.asn_table_name = op.basename(asn_file_path)
+            self.asn_pool_name = asn_data["asn_pool"]
+            for model in self:
+                try:
+                    model.meta.asn.table_name = self.asn_table_name
+                    model.meta.asn.pool_name = self.asn_pool_name
+                except AttributeError:
+                    pass
 
     def save(self, dir_path=None, *args, **kwargs):
         # use current path if dir_path is not provided
@@ -443,10 +576,10 @@ class ModelContainer(Sequence):
         output_suffix = "cal_twkreg"
         for model in self._models:
             filename = model.meta.filename
-            base, ext = os.path.splitext(filename)
+            base, ext = op.splitext(filename)
             base = base.replace("cal", output_suffix)
             output_filename = "".join([base, ext])
-            output_path = os.path.join(dir_path, output_filename)
+            output_path = op.join(dir_path, output_filename)
             # TODO: Support gzip-compressed fits
             if ext == ".asdf":
                 model.to_asdf(output_path, *args, **kwargs)
@@ -485,10 +618,10 @@ class ModelContainer(Sequence):
         for i, model in enumerate(self._models):
             params = []
 
-            model = model if isinstance(model, DataModel) else open(model)
+            model = model if isinstance(model, DataModel) else get_datamodel(model)
 
             if not self._save_open:
-                model = open(model, memmap=self._memmap)
+                model = get_datamodel(model, memmap=self._memmap)
 
             for param in unique_exposure_parameters:
                 params.append(str(getattr(model.meta.observation, param)))
@@ -513,6 +646,24 @@ class ModelContainer(Sequence):
     @property
     def to_association(self):
         pass
+
+    @property
+    def merge_tree(a, b):
+        """
+        Merge elements from tree `b` into tree `a`.
+        """
+
+        def recurse(a, b):
+            if isinstance(b, dict):
+                if not isinstance(a, dict):
+                    return copy.deepcopy(b)
+                for key, val in b.items():
+                    a[key] = recurse(a.get(key), val)
+                return a
+            return copy.deepcopy(b)
+
+        recurse(a, b)
+        return a
 
 
 class FlatRefModel(DataModel):
@@ -588,7 +739,7 @@ class WfiImgPhotomRefModel(DataModel):
     pass
 
 
-def open(init, memmap=False, target=None, **kwargs):
+def get_datamodel(init, memmap=False, target=None, **kwargs):
     """
     Data model factory function
 

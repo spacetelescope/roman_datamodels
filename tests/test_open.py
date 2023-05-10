@@ -16,7 +16,7 @@ def test_asdf_file_input():
     tree = utils.mk_level2_image()
     with asdf.AsdfFile() as af:
         af.tree = {"roman": tree}
-        model = datamodels.open(af)
+        model = datamodels.get_datamodel(af)
         assert model.meta.telescope == "ROMAN"
         model.close()
         # should the asdf file be closed by model.close()?
@@ -45,8 +45,11 @@ def test_asdf_in_fits_error(tmp_path):
     ff.write_to(fn, overwrite=True)
 
     # attempt to open it with datamodels, verify error
-    with pytest.raises(TypeError, match=r"Roman datamodels does not accept FITS files or objects"):
-        with datamodels.open(fn):
+    with pytest.raises(
+        TypeError,
+        match=r"Roman datamodels does not accept FITS files or objects",
+    ):
+        with datamodels.get_datamodel(fn):
             pass
 
 
@@ -58,7 +61,7 @@ def test_path_input(tmp_path):
         af.write_to(file_path)
 
     # Test with PurePath input:
-    with datamodels.open(file_path) as model:
+    with datamodels.get_datamodel(file_path) as model:
         assert model.meta.telescope == "ROMAN"
         af = model._asdf
 
@@ -67,7 +70,7 @@ def test_path_input(tmp_path):
     assert af._closed
 
     # Test with string input:
-    with datamodels.open(str(file_path)) as model:
+    with datamodels.get_datamodel(str(file_path)) as model:
         assert model.meta.telescope == "ROMAN"
         af = model._asdf
 
@@ -75,14 +78,18 @@ def test_path_input(tmp_path):
 
     # Appropriate error when file is missing:
     with pytest.raises(FileNotFoundError):
-        with datamodels.open(tmp_path / "missing.asdf"):
+        with datamodels.get_datamodel(tmp_path / "missing.asdf"):
             pass
 
 
 def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    data = u.Quantity(np.random.uniform(size=(1024, 1024)).astype(np.float32), u.electron / u.s, dtype=np.float32)
+    data = u.Quantity(
+        np.random.uniform(size=(1024, 1024)).astype(np.float32),
+        u.electron / u.s,
+        dtype=np.float32,
+    )
 
     with asdf.AsdfFile() as af:
         af.tree = {"roman": utils.mk_level2_image()}
@@ -90,8 +97,8 @@ def test_model_input(tmp_path):
         af.tree["roman"].data = data
         af.write_to(file_path)
 
-    original_model = datamodels.open(file_path)
-    reopened_model = datamodels.open(original_model)
+    original_model = datamodels.get_datamodel(file_path)
+    reopened_model = datamodels.get_datamodel(original_model)
 
     # It's essential that we get a new instance so that the original
     # model can be closed without impacting the new model.
@@ -105,7 +112,7 @@ def test_model_input(tmp_path):
 
 def test_invalid_input():
     with pytest.raises(TypeError):
-        datamodels.open(fits.HDUList())
+        datamodels.get_datamodel(fits.HDUList())
 
 
 def test_memmap(tmp_path):
@@ -134,7 +141,7 @@ def test_memmap(tmp_path):
     # Since quantities don't inherit from np.memmap we have to test they are effectively
     # memapped.
     # rw mode needed because we have to test the memmap by manipulating the data on disk.
-    with datamodels.open(file_path, memmap=True, mode="rw") as model:
+    with datamodels.get_datamodel(file_path, memmap=True, mode="rw") as model:
         # Test value before change
         assert (model.data == data).all()
         assert model.data[6, 19] != new_value
@@ -149,7 +156,7 @@ def test_memmap(tmp_path):
         assert (data != new_data).any()
 
     # Test that the file was modified without pushing an update to it
-    with datamodels.open(file_path, memmap=True, mode="rw") as model:
+    with datamodels.get_datamodel(file_path, memmap=True, mode="rw") as model:
         assert model.data[6, 19] == new_value
         assert (model.data == new_data).all()
 
@@ -187,7 +194,7 @@ def test_no_memmap(tmp_path, kwargs):
     # Since quantities don't inherit from np.memmap we have to test they are effectively
     # memapped.
     # rw mode needed because we have to test the memmap by manipulating the data on disk.
-    with datamodels.open(file_path, mode="rw", **kwargs) as model:
+    with datamodels.get_datamodel(file_path, mode="rw", **kwargs) as model:
         # Test value before change
         assert (model.data == data).all()
         assert model.data[6, 19] != new_value
@@ -202,6 +209,6 @@ def test_no_memmap(tmp_path, kwargs):
         assert (data != new_data).any()
 
     # Test that the file was modified without pushing an update to it
-    with datamodels.open(file_path, mode="rw", **kwargs) as model:
+    with datamodels.get_datamodel(file_path, mode="rw", **kwargs) as model:
         assert model.data[6, 19] != new_value
         assert (model.data == data).all()
