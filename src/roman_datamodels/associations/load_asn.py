@@ -4,7 +4,14 @@ from inspect import isclass
 from . import Association, AssociationRegistry
 
 
-def load_asn(serialized, format=None, first=True, validate=True, registry=AssociationRegistry, **kwargs):
+def load_asn(
+    serialized,
+    format=None,
+    first=True,
+    validate=True,
+    registry=AssociationRegistry,
+    **kwargs,
+):
     """Load an Association from a file or object
 
     Parameters
