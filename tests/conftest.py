@@ -28,7 +28,7 @@ def set_up_list_of_l2_files(tmp_path, request):
             result_list.append(str(filepath))
         elif type_of_returned_object == "datamodel":
             # parse ASDF file as RDM
-            datamodel = datamodels.open(str(filepath))
+            datamodel = datamodels.get_datamodel(str(filepath))
             # append datamodel to datamodel list
             result_list.append(datamodel)
 
@@ -36,4 +36,7 @@ def set_up_list_of_l2_files(tmp_path, request):
 
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "set_up_list_of_l2_files_data(number_of_files_to_create, type_of_returned_object): ")
+    config.addinivalue_line(
+        "markers",
+        "set_up_list_of_l2_files_data(number_of_files_to_create, type_of_returned_object): ",
+    )
