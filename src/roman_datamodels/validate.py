@@ -4,6 +4,7 @@ Functions that support validation of model changes
 
 import os
 import warnings
+from textwrap import dedent
 
 import jsonschema
 from asdf import AsdfFile
@@ -20,13 +21,52 @@ ROMAN_VALIDATE = "ROMAN_VALIDATE"
 ROMAN_STRICT_VALIDATION = "ROMAN_STRICT_VALIDATION"
 
 
+def validation_is_disabled():
+    MESSAGE = dedent(
+        """\
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            !!!! VALIDATION HAS BEEN DISABLED        !!!!!
+            !!!! THIS is EXTREMELY DANGEROUS AND MAY !!!!!
+            !!!! RESULT IN SITUATIONS WHERE DATA     !!!!!
+            !!!! CANNOT BE WRITTEN AND/OR READ!      !!!!!
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            We strongly suggest that you do not turn off
+            validation. If you do, you do so at your own
+            risk. YOU HAVE BEEN WARNED!
+
+            To turn validation back on, unsent the
+            environment variable ROMAN_VALIDATE or set it
+            to "true".
+        """
+    )
+    warnings.warn(MESSAGE, ValidationWarning)
+
+
 def will_validate():
     """
     Determine if validation is enabled.
     """
     var = os.getenv(ROMAN_VALIDATE)
 
-    return var is None or var.lower() in ["true", "yes", "1"]
+    if not (validate := var is None or var.lower() in ["true", "yes", "1"]):
+        validation_is_disabled()
+
+    return validate
+
+
+def strict_validation_is_disabled():
+    MESSAGE = dedent(
+        """\
+            Strict validation has been disabled. This may result
+            in validation errors arising when writing data.
+
+            To turn strict validation back on, unset the
+            environment variable ROMAN_STRICT_VALIDATION or set
+            it to "true".
+        """
+    )
+
+    warnings.warn(MESSAGE, ValidationWarning)
 
 
 def will_strict_validate():
@@ -35,7 +75,10 @@ def will_strict_validate():
     """
     var = os.getenv(ROMAN_STRICT_VALIDATION)
 
-    return var is None or var.lower() in ["true", "yes", "1"]
+    if not (validate := var is None or var.lower() in ["true", "yes", "1"]):
+        strict_validation_is_disabled()
+
+    return validate
 
 
 class ValidationWarning(Warning):
