@@ -2,6 +2,7 @@
 Functions that support validation of model changes
 """
 
+import os
 import warnings
 
 import jsonschema
@@ -14,6 +15,27 @@ __all__ = [
     "ValidationWarning",
     "value_change",
 ]
+
+ROMAN_VALIDATE = "ROMAN_VALIDATE"
+ROMAN_STRICT_VALIDATION = "ROMAN_STRICT_VALIDATION"
+
+
+def will_validate():
+    """
+    Determine if validation is enabled.
+    """
+    var = os.getenv(ROMAN_VALIDATE)
+
+    return var is None or var.lower() in ["true", "yes", "1"]
+
+
+def will_strict_validate():
+    """
+    Determine if strict validation is enabled.
+    """
+    var = os.getenv(ROMAN_STRICT_VALIDATION)
+
+    return var is None or var.lower() in ["true", "yes", "1"]
 
 
 class ValidationWarning(Warning):

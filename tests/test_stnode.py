@@ -1,8 +1,10 @@
+import os
+
 import asdf
 import astropy.units as u
 import pytest
 
-from roman_datamodels import stnode
+from roman_datamodels import stnode, validate
 from roman_datamodels.testing import assert_node_equal, create_node, factories
 
 
@@ -135,3 +137,63 @@ def test_set_pattern_properties():
     mdl.phot_table.F062.photmjsr = None
     mdl.phot_table.F062.uncertainty = None
     mdl.phot_table.F062.pixelareasr = None
+
+
+@pytest.fixture(scope="function", params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"])
+def env_var(request):
+    assert os.getenv(validate.ROMAN_VALIDATE) == "true"
+    os.environ[validate.ROMAN_VALIDATE] = request.param
+    yield request.param
+    os.environ[validate.ROMAN_VALIDATE] = "true"
+
+
+def test_will_validate(env_var):
+    # Test the fixture passed the value of the environment variable
+    assert os.getenv(validate.ROMAN_VALIDATE) == env_var
+
+    # Test the validate property
+    truth = env_var.lower() in ["true", "yes", "1"]
+    assert validate.will_validate() is truth
+
+    # Try all uppercase
+    os.environ[validate.ROMAN_VALIDATE] = env_var.upper()
+    assert validate.will_validate() is truth
+
+    # Try all lowercase
+    os.environ[validate.ROMAN_VALIDATE] = env_var.lower()
+    assert validate.will_validate() is truth
+
+    # Remove the environment variable to test the default value
+    del os.environ[validate.ROMAN_VALIDATE]
+    assert os.getenv(validate.ROMAN_VALIDATE) is None
+    assert validate.will_validate() is True
+
+
+@pytest.fixture(scope="function", params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"])
+def env_strict_var(request):
+    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) == "true"
+    os.environ[validate.ROMAN_STRICT_VALIDATION] = request.param
+    yield request.param
+    os.environ[validate.ROMAN_STRICT_VALIDATION] = "true"
+
+
+def test_will_strict_validate(env_strict_var):
+    # Test the fixture passed the value of the environment variable
+    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) == env_strict_var
+
+    # Test the validate property
+    truth = env_strict_var.lower() in ["true", "yes", "1"]
+    assert validate.will_strict_validate() is truth
+
+    # Try all uppercase
+    os.environ[validate.ROMAN_STRICT_VALIDATION] = env_strict_var.upper()
+    assert validate.will_strict_validate() is truth
+
+    # Try all lowercase
+    os.environ[validate.ROMAN_STRICT_VALIDATION] = env_strict_var.lower()
+    assert validate.will_strict_validate() is truth
+
+    # Remove the environment variable to test the default value
+    del os.environ[validate.ROMAN_STRICT_VALIDATION]
+    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) is None
+    assert validate.will_strict_validate() is True
