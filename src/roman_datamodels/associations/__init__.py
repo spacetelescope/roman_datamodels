@@ -27,3 +27,5 @@ from .lib.process_list import *  # noqa: F403, E402
 from .main import *  # noqa: F403, E402
 from .pool import *  # noqa: F403, E402
 from .registry import *  # noqa: F403, E402
+
+from .load_asn import load_asn  # noqa: F401, E402 isort: skip
