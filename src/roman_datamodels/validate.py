@@ -162,19 +162,30 @@ def nuke_validation():
     Context manager to temporarily turn all ASDF validation off.
     """
 
-    # Don't nuke validation if we will validate
+    # Don't nuke validation if we validation is enabled
     if will_validate():
         yield
         return
 
-    # NUKE VALIDATION
+    ########################### NUKE VALIDATION ###############################
+    # This is a horrible hack to disable validation, and is quite dangerous.  #
+    # Monkey patching like this is a bad idea, but it is the only way to      #
+    # cleanly turn off validation in ASDF, without refactoring large portions #
+    # of the ASDF code base. The ASDF package has no intention of supporting  #
+    # turning off validation for writing files as this is a bad idea. So,     #
+    # we are left with this.                                                  #
+    ###########################################################################
+
+    # Save validation function to restore it later
     validate = asdf_schema.validate
 
+    # Monkey patch validation with a function that does nothing
     def _no_validation_for_you(*args, **kwargs):
         pass
 
     asdf_schema.validate = _no_validation_for_you
+
     yield
 
-    # RESTORE VALIDATION
+    # Restore validation function upon exit of the context
     asdf_schema.validate = validate
