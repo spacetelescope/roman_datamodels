@@ -15,7 +15,7 @@ import re
 import sys
 import warnings
 from collections import OrderedDict
-from collections.abc import Sequence
+from collections.abc import Iterable
 from pathlib import PurePath
 
 import asdf
@@ -350,7 +350,7 @@ class GuidewindowModel(DataModel):
     pass
 
 
-class ModelContainer(Sequence):
+class ModelContainer(Iterable):
     """
     A container for holding DataModels.
 
@@ -433,7 +433,7 @@ class ModelContainer(Sequence):
         if init is None:
             # don't populate container
             pass
-        elif isinstance(init, list):
+        elif isinstance(init, Iterable):
             # only append list items to self._models if all items are either
             # strings (i.e. path to an ASDF file) or instances of DataModel
             is_all_string = all(isinstance(x, str) for x in init)

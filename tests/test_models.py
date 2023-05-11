@@ -789,3 +789,14 @@ def test_model_validate_without_save():
 
     with pytest.raises(ValidationError):
         m.validate()
+
+
+def test_modelcontainer_init():
+    img = utils.mk_level1_science_raw()
+    m = datamodels.ImageModel(img)
+    mc1 = datamodels.ModelContainer([m])
+
+    # initialize with an instance of ModelContainer
+    mc2 = datamodels.ModelContainer(mc1)
+
+    assert len(mc1) == len(mc2)
