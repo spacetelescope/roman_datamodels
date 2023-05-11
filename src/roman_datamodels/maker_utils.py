@@ -110,7 +110,7 @@ def mk_observation():
     obs = stnode.Observation()
     obs["obs_id"] = NOSTR
     obs["visit_id"] = NOSTR
-    obs["program"] = NONUM
+    obs["program"] = str(NONUM)
     obs["execution_plan"] = NONUM
     obs["pass"] = NONUM
     obs["segment"] = NONUM

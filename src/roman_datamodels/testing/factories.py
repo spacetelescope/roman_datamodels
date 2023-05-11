@@ -785,7 +785,7 @@ def create_observation(**kwargs):
         "observation": random_utils.generate_positive_int(),
         "observation_label": random_utils.generate_string("Observation label "),
         "pass": random_utils.generate_positive_int(),
-        "program": random_utils.generate_positive_int(),
+        "program": str(random_utils.generate_positive_int()),
         "segment": random_utils.generate_positive_int(),
         "survey": random_utils.generate_choice("HLS", "EMS", "SN", "N/A"),
         "template": random_utils.generate_string("Template ", 50),
