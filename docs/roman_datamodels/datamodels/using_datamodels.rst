@@ -94,3 +94,42 @@ page::
 	42
 	>>> dm2.meta.exposure_start_time_mjd
 	60000.0
+
+
+.. note::
+
+	All datamodels have built in validation against the defining schemas.
+	This means that if you try to assign a value that is not allowed according
+	to one of these schemas, you will get an error. This is a good thing!
+
+	If you are getting validation errors consult the corresponding schema in
+	``rad`` to se what is allowed. If you think the schema is wrong, or you
+	continue to have issues, please contact the Roman team for help.
+
+	As a method of last resort, if you wish to turn off validation, you can do
+	so by setting the environment variable ``ROMAN_VALIDATE`` to false. This is
+	not recommended!
+
+	.. code-block:: bash
+
+		export ROMAN_VALIDATE=false
+
+	To restore validation, set the environment variable to ``true`` or unset it.
+
+
+.. warning::
+
+	We strongly recommend against ever turning off validation. This can lead to
+	a variety of unrecoverable problems. Such as not being able to write out
+	your datamodel or not being able to read it back in. Or worse, the data in
+	the datamodel may not be compatible with operations intended to run on that
+	datamodel. The Roman team will not assist with fixing such problems which
+	occur when validation is turned off.
+
+	Use this feature at your own risk!
+
+	You have been warned!
+
+	If you are having problems due to validation errors, please contact the the
+	Roman team for help via raising a GitHub issue or sending us an email. We
+	will do our best to assist you.
