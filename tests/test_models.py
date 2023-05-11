@@ -34,7 +34,7 @@ def set_up_list_of_l2_files(tmp_path, request):
             result_list.append(str(filepath))
         elif type_of_returned_object == "datamodel":
             # parse ASDF file as RDM
-            datamodel = datamodels.open(str(filepath))
+            datamodel = datamodels.roman_open(str(filepath))
             # append datamodel to datamodel list
             result_list.append(datamodel)
 
@@ -100,10 +100,10 @@ def test_core_schema(tmp_path):
     with open(file_path, "wb") as fp:
         fp.write(newcontents)
     with pytest.raises(ValidationError):
-        with datamodels.open(file_path) as model:
+        with datamodels.roman_open(file_path) as model:
             pass
     asdf.get_config().validate_on_read = False
-    with datamodels.open(file_path) as model:
+    with datamodels.roman_open(file_path) as model:
         assert model.meta.telescope == "XOMAN"
     asdf.get_config().validate_on_read = True
 
@@ -131,7 +131,7 @@ def test_opening_ramp_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testramp.asdf"
     utils.mk_ramp(filepath=file_path)
-    ramp = datamodels.open(file_path)
+    ramp = datamodels.roman_open(file_path)
     assert ramp.meta.instrument.optical_element == "F062"
     assert isinstance(ramp, datamodels.RampModel)
 
@@ -204,7 +204,7 @@ def test_opening_association_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testassociations.asdf"
     utils.mk_associations(filepath=file_path)
-    association = datamodels.open(file_path)
+    association = datamodels.roman_open(file_path)
     assert association.program == 1
     assert isinstance(association, datamodels.AssociationsModel)
 
@@ -242,7 +242,7 @@ def test_opening_guidewindow_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testguidewindow.asdf"
     utils.mk_guidewindow(filepath=file_path)
-    guidewindow = datamodels.open(file_path)
+    guidewindow = datamodels.roman_open(file_path)
     assert guidewindow.meta.gw_mode == "WIM-ACQ"
     assert isinstance(guidewindow, datamodels.GuidewindowModel)
 
@@ -267,7 +267,7 @@ def test_model_container_input_as_list_of_datamodels(tmp_path):
         # create L2 file using filepath
         utils.mk_level2_image(filepath=filepath)
         # parse ASDF file as RDM
-        datamodel = datamodels.open(str(filepath))
+        datamodel = datamodels.roman_open(str(filepath))
         # append datamodel to datamodel list
         datamodel_list.append(datamodel)
 
@@ -333,7 +333,7 @@ def test_opening_flat_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testflat.asdf"
     utils.mk_flat(filepath=file_path)
-    flat = datamodels.open(file_path)
+    flat = datamodels.roman_open(file_path)
     assert flat.meta.instrument.optical_element == "F158"
     assert isinstance(flat, datamodels.FlatRefModel)
 
@@ -358,7 +358,7 @@ def test_flat_model(tmp_path):
         af.write_to(file_path)
 
         # Test that asdf file opens properly
-        with datamodels.open(file_path) as model:
+        with datamodels.roman_open(file_path) as model:
             with warnings.catch_warnings():
                 model.validate()
 
@@ -385,7 +385,7 @@ def test_opening_dark_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testdark.asdf"
     utils.mk_dark(filepath=file_path)
-    dark = datamodels.open(file_path)
+    dark = datamodels.roman_open(file_path)
     assert dark.meta.instrument.optical_element == "F158"
     assert isinstance(dark, datamodels.DarkRefModel)
 
@@ -407,7 +407,7 @@ def test_opening_distortion_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testdistortion.asdf"
     utils.mk_distortion(filepath=file_path)
-    distortion = datamodels.open(file_path)
+    distortion = datamodels.roman_open(file_path)
     assert distortion.meta.instrument.optical_element == "F158"
     assert isinstance(distortion, datamodels.DistortionRefModel)
 
@@ -428,7 +428,7 @@ def test_opening_gain_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testgain.asdf"
     utils.mk_gain(filepath=file_path)
-    gain = datamodels.open(file_path)
+    gain = datamodels.roman_open(file_path)
     assert gain.meta.instrument.optical_element == "F158"
     assert isinstance(gain, datamodels.GainRefModel)
 
@@ -450,7 +450,7 @@ def test_opening_ipc_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testipc.asdf"
     utils.mk_ipc(filepath=file_path)
-    ipc = datamodels.open(file_path)
+    ipc = datamodels.roman_open(file_path)
     assert ipc.data[1, 1] == 1.0
     assert np.sum(ipc.data) == 1.0
     assert ipc.meta.instrument.optical_element == "F158"
@@ -473,7 +473,7 @@ def test_opening_linearity_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testlinearity.asdf"
     utils.mk_linearity(filepath=file_path)
-    linearity = datamodels.open(file_path)
+    linearity = datamodels.roman_open(file_path)
     assert linearity.meta.instrument.optical_element == "F158"
     assert isinstance(linearity, datamodels.LinearityRefModel)
 
@@ -494,7 +494,7 @@ def test_opening_inverse_linearity_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testlinearity.asdf"
     utils.mk_inverse_linearity(filepath=file_path)
-    inverselinearity = datamodels.open(file_path)
+    inverselinearity = datamodels.roman_open(file_path)
     assert inverselinearity.meta.instrument.optical_element == "F158"
     assert isinstance(inverselinearity, datamodels.InverseLinearityRefModel)
 
@@ -514,7 +514,7 @@ def test_opening_mask_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testmask.asdf"
     utils.mk_mask(filepath=file_path)
-    mask = datamodels.open(file_path)
+    mask = datamodels.roman_open(file_path)
     assert mask.meta.instrument.optical_element == "F158"
     assert isinstance(mask, datamodels.MaskRefModel)
 
@@ -536,7 +536,7 @@ def test_opening_pixelarea_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testpixelarea.asdf"
     utils.mk_pixelarea(filepath=file_path)
-    pixelarea = datamodels.open(file_path)
+    pixelarea = datamodels.roman_open(file_path)
     assert pixelarea.meta.instrument.optical_element == "F158"
     assert isinstance(pixelarea, datamodels.PixelareaRefModel)
 
@@ -557,7 +557,7 @@ def test_opening_readnoise_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testreadnoise.asdf"
     utils.mk_readnoise(filepath=file_path)
-    readnoise = datamodels.open(file_path)
+    readnoise = datamodels.roman_open(file_path)
     assert readnoise.meta.instrument.optical_element == "F158"
     assert isinstance(readnoise, datamodels.ReadnoiseRefModel)
 
@@ -566,14 +566,14 @@ def test_add_model_attribute(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testreadnoise.asdf"
     utils.mk_readnoise(filepath=file_path)
-    readnoise = datamodels.open(file_path)
+    readnoise = datamodels.roman_open(file_path)
     readnoise["new_attribute"] = 77
     assert readnoise.new_attribute == 77
     with pytest.raises(ValueError):
         readnoise["_underscore"] = "bad"
     file_path2 = tmp_path / "testreadnoise2.asdf"
     readnoise.save(file_path2)
-    readnoise2 = datamodels.open(file_path2)
+    readnoise2 = datamodels.roman_open(file_path2)
     assert readnoise2.new_attribute == 77
     readnoise2.new_attribute = 88
     assert readnoise2.new_attribute == 88
@@ -598,7 +598,7 @@ def test_opening_saturation_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testsaturation.asdf"
     utils.mk_saturation(filepath=file_path)
-    saturation = datamodels.open(file_path)
+    saturation = datamodels.roman_open(file_path)
     assert saturation.meta.instrument.optical_element == "F158"
     assert isinstance(saturation, datamodels.SaturationRefModel)
 
@@ -621,7 +621,7 @@ def test_opening_superbias_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testsuperbias.asdf"
     utils.mk_superbias(filepath=file_path)
-    superbias = datamodels.open(file_path)
+    superbias = datamodels.roman_open(file_path)
     assert superbias.meta.instrument.optical_element == "F158"
     assert isinstance(superbias, datamodels.SuperbiasRefModel)
 
@@ -656,7 +656,7 @@ def test_opening_wfi_img_photom_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testwfi_img_photom.asdf"
     utils.mk_wfi_img_photom(filepath=file_path)
-    wfi_img_photom = datamodels.open(file_path)
+    wfi_img_photom = datamodels.roman_open(file_path)
 
     assert wfi_img_photom.meta.instrument.optical_element == "F158"
     assert isinstance(wfi_img_photom, datamodels.WfiImgPhotomRefModel)
@@ -678,7 +678,7 @@ def test_opening_level1_science_raw(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testwfi_science_raw.asdf"
     utils.mk_level1_science_raw(filepath=file_path)
-    wfi_science_raw = datamodels.open(file_path)
+    wfi_science_raw = datamodels.roman_open(file_path)
 
     assert wfi_science_raw.meta.instrument.optical_element == "F062"
     assert isinstance(wfi_science_raw, datamodels.ScienceRawModel)
@@ -709,7 +709,7 @@ def test_opening_level2_image(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testwfi_image.asdf"
     utils.mk_level2_image(filepath=file_path)
-    wfi_image = datamodels.open(file_path)
+    wfi_image = datamodels.roman_open(file_path)
 
     assert wfi_image.meta.instrument.optical_element == "F062"
     assert isinstance(wfi_image, datamodels.ImageModel)
@@ -752,7 +752,7 @@ def test_datamodel_info_search(capsys):
     wfi_science_raw = utils.mk_level1_science_raw()
     af = asdf.AsdfFile()
     af.tree = {"roman": wfi_science_raw}
-    dm = datamodels.open(af)
+    dm = datamodels.roman_open(af)
     dm.info(max_rows=200)
     captured = capsys.readouterr()
     assert "optical_element" in captured.out
@@ -765,7 +765,7 @@ def test_datamodel_schema_info():
     wfi_science_raw = utils.mk_level1_science_raw()
     af = asdf.AsdfFile()
     af.tree = {"roman": wfi_science_raw}
-    dm = datamodels.open(af)
+    dm = datamodels.roman_open(af)
 
     info = dm.schema_info("archive_catalog")
     assert info["roman"]["meta"]["aperture"] == {
@@ -788,13 +788,13 @@ def test_crds_parameters(tmp_path):
     # CRDS uses meta.exposure.start_time to compare to USEAFTER
     file_path = tmp_path / "testwfi_image.asdf"
     utils.mk_level2_image(filepath=file_path)
-    wfi_image = datamodels.open(file_path)
+    wfi_image = datamodels.roman_open(file_path)
 
     crds_pars = wfi_image.get_crds_parameters()
     assert "roman.meta.exposure.start_time" in crds_pars
 
     utils.mk_ramp(filepath=file_path)
-    ramp = datamodels.open(file_path)
+    ramp = datamodels.roman_open(file_path)
 
     crds_pars = ramp.get_crds_parameters()
     assert "roman.meta.exposure.start_time" in crds_pars

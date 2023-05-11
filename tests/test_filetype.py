@@ -41,7 +41,7 @@ def test_read_pattern_properties():
     Regression test for reading pattern properties
     """
 
-    from roman_datamodels.datamodels import open as rdm_open
+    from roman_datamodels.datamodels import roman_open as rdm_open
 
     # This file has been modified by hand to break the `photmjsr` value
     with pytest.raises(asdf.ValidationError):
