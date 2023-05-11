@@ -7,6 +7,10 @@
 
 - Refactor the ``maker_utils`` to be easier to maintain and test. [#193]
 
+- Rename ``open`` in the ``datamodels`` module to ``roman_open`` to avoid
+  shadowing the builtin ``open`` function, while preserving ``roman_datamodels.open``
+  in the main namespace. [#176]
+  
 0.15.0 (2023-05-15)
 ===================
 
@@ -39,6 +43,7 @@
 - Add support for model containers constructed from ``Iterable`` [#164]
 
 - drop support for Python 3.8 [#155]
+
 
 
 0.14.2 (2023-03-31)
