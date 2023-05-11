@@ -34,7 +34,7 @@ if packaging.version.Version(asdf.__version__) < packaging.version.Version("3.de
             category=asdf.exceptions.AsdfDeprecationWarning,
             message=r"AsdfInFits has been deprecated.*",
         )
-        from asdf.fits_embed import AsdfInFits
+        from asdf.fits_embed import AsdfInFits  # type: ignore
 else:
     AsdfInFits = None
 

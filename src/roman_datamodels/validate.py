@@ -7,11 +7,11 @@ import warnings
 from contextlib import contextmanager
 from textwrap import dedent
 
-import jsonschema
-from asdf import AsdfFile
-from asdf import schema as asdf_schema
-from asdf import yamlutil
-from asdf.util import HashableDict
+import jsonschema  # type: ignore
+from asdf import AsdfFile  # type: ignore
+from asdf import yamlutil  # type: ignore
+from asdf import schema as asdf_schema  # type: ignore
+from asdf.util import HashableDict  # type: ignore
 
 __all__ = [
     "ValidationWarning",

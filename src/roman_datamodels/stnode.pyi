@@ -1,12 +1,12 @@
 import typing as T
 
 if T.TYPE_CHECKING:
-    from astropy.modeling import Model
-    from astropy.time import Time
-    from astropy.units import Quantity, Unit
-    from numpy import ndarray
+    from astropy.modeling import Model  # type: ignore
+    from astropy.time import Time  # type: ignore
+    from astropy.units import Quantity, Unit  # type: ignore
+    from numpy import ndarray  # type: ignore
 
-    from roman_datamodels import stnode
+    from roman_datamodels import stnode  # type: ignore
 
 class FileDate(stnode.TaggedScalarNode, Time):
     pass
@@ -432,7 +432,7 @@ class _PixelareaRefMeta(_Common):
     photometry: _PixelareaRefPhotometry
     instrument: _Instrument
 
-class PixelAreaRef(stnode.TaggedObjectNode):
+class PixelareaRef(stnode.TaggedObjectNode):
     meta: _PixelareaRefMeta
     data: ndarray
 
