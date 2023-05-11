@@ -58,8 +58,12 @@ __all__ = [
     "SuperbiasRefModel",
     "SaturationRefModel",
     "WfiImgPhotomRefModel",
-    "get_datamodel",
+    "open",
 ]
+
+# prevent MRO issues when reading an
+# ASN file in a "with open(filename)" block
+_builtin_open = open
 
 RECOGNIZED_MEMBER_FIELDS = ["tweakreg_catalog"]
 
@@ -458,7 +462,7 @@ class ModelContainer(Iterable):
     def __getitem__(self, index):
         m = self._models[index]
         if not isinstance(m, DataModel) and self._return_open:
-            m = get_datamodel(m, memmap=self._memmap)
+            m = open(m, memmap=self._memmap)
         return m
 
     def __setitem__(self, index, model):
@@ -467,7 +471,7 @@ class ModelContainer(Iterable):
     def __iter__(self):
         for model in self._models:
             if not isinstance(model, DataModel) and self._return_open:
-                model = get_datamodel(model, memmap=self._memmap)
+                model = open(model, memmap=self._memmap)
             yield model
 
     def close(self):
@@ -490,7 +494,7 @@ class ModelContainer(Iterable):
 
         filepath = op.abspath(op.expanduser(op.expandvars(filepath)))
         try:
-            with open(filepath) as asn_file:
+            with _builtin_open(filepath) as asn_file:
                 asn_data = load_asn(asn_file)
         except AssociationNotValidError as e:
             raise OSError("Cannot read ASN file.") from e
@@ -536,7 +540,7 @@ class ModelContainer(Iterable):
                 filepath = op.join(asn_dir, member["expname"])
                 update_model = any(attr in member for attr in RECOGNIZED_MEMBER_FIELDS)
                 if update_model or self._save_open:
-                    m = get_datamodel(filepath, memmap=self._memmap)
+                    m = open(filepath, memmap=self._memmap)
                     m.meta["asn"] = {"exptype": member["exptype"]}
                     for attr, val in member.items():
                         if attr in RECOGNIZED_MEMBER_FIELDS:
@@ -622,10 +626,10 @@ class ModelContainer(Iterable):
         for i, model in enumerate(self._models):
             params = []
 
-            model = model if isinstance(model, DataModel) else get_datamodel(model)
+            model = model if isinstance(model, DataModel) else open(model)
 
             if not self._save_open:
-                model = get_datamodel(model, memmap=self._memmap)
+                model = open(model, memmap=self._memmap)
 
             for param in unique_exposure_parameters:
                 params.append(str(getattr(model.meta.observation, param)))
@@ -742,7 +746,7 @@ class WfiImgPhotomRefModel(DataModel):
     pass
 
 
-def get_datamodel(init, memmap=False, target=None, **kwargs):
+def open(init, memmap=False, target=None, **kwargs):
     """
     Data model factory function
 
