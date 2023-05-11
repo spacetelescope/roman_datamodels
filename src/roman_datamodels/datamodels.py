@@ -56,7 +56,7 @@ __all__ = [
     "SuperbiasRefModel",
     "SaturationRefModel",
     "WfiImgPhotomRefModel",
-    "open",
+    "roman_open",
 ]
 
 
@@ -435,7 +435,7 @@ class ModelContainer(Iterable):
     def __getitem__(self, index):
         m = self._models[index]
         if not isinstance(m, DataModel) and self._return_open:
-            m = open(m, memmap=self._memmap)
+            m = roman_open(m, memmap=self._memmap)
         return m
 
     def __setitem__(self, index, model):
@@ -444,7 +444,7 @@ class ModelContainer(Iterable):
     def __iter__(self):
         for model in self._models:
             if not isinstance(model, DataModel) and self._return_open:
-                model = open(model, memmap=self._memmap)
+                model = roman_open(model, memmap=self._memmap)
             yield model
 
     def save(self, dir_path=None, *args, **kwargs):
@@ -496,10 +496,10 @@ class ModelContainer(Iterable):
         for i, model in enumerate(self._models):
             params = []
 
-            model = model if isinstance(model, DataModel) else open(model)
+            model = model if isinstance(model, DataModel) else roman_open(model)
 
             if not self._save_open:
-                model = open(model, memmap=self._memmap)
+                model = roman_open(model, memmap=self._memmap)
 
             for param in unique_exposure_parameters:
                 params.append(str(getattr(model.meta.observation, param)))
@@ -599,7 +599,7 @@ class WfiImgPhotomRefModel(DataModel):
     pass
 
 
-def open(init, memmap=False, target=None, **kwargs):
+def roman_open(init, memmap=False, target=None, **kwargs):
     """
     Data model factory function
 
