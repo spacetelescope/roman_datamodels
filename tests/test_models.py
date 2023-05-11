@@ -748,19 +748,13 @@ def test_datamodel_schema_info():
     assert info["roman"]["meta"]["aperture"] == {
         "name": {
             "archive_catalog": (
-                {
-                    "datatype": "nvarchar(40)",
-                    "destination": ["ScienceCommon.aperture_name"],
-                },
+                {"datatype": "nvarchar(40)", "destination": ["ScienceCommon.aperture_name", "GuideWindow.aperture_name"]},
                 dm.meta.aperture.name,
             ),
         },
         "position_angle": {
             "archive_catalog": (
-                {
-                    "datatype": "float",
-                    "destination": ["ScienceCommon.position_angle"],
-                },
+                {"datatype": "float", "destination": ["ScienceCommon.position_angle", "GuideWindow.position_angle"]},
                 30.0,
             )
         },

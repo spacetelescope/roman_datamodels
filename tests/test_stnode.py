@@ -71,10 +71,23 @@ def test_schema_info():
     info = af.schema_info("archive_catalog")
     assert info == {
         "wfimode": {
-            "detector": {"archive_catalog": ({"datatype": "nvarchar(10)", "destination": ["ScienceCommon.detector"]}, "WFI18")},
-            "name": {"archive_catalog": ({"datatype": "nvarchar(5)", "destination": ["ScienceCommon.instrument_name"]}, "WFI")},
+            "detector": {
+                "archive_catalog": (
+                    {"datatype": "nvarchar(10)", "destination": ["ScienceCommon.detector", "GuideWindow.detector"]},
+                    "WFI18",
+                )
+            },
+            "name": {
+                "archive_catalog": (
+                    {"datatype": "nvarchar(5)", "destination": ["ScienceCommon.instrument_name", "GuideWindow.instrument_name"]},
+                    "WFI",
+                )
+            },
             "optical_element": {
-                "archive_catalog": ({"datatype": "nvarchar(20)", "destination": ["ScienceCommon.optical_element"]}, "GRISM")
+                "archive_catalog": (
+                    {"datatype": "nvarchar(20)", "destination": ["ScienceCommon.optical_element", "GuideWindow.optical_element"]},
+                    "GRISM",
+                )
             },
         }
     }
