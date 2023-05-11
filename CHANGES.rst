@@ -22,6 +22,8 @@
 
 - Bugfix for ``photmjsr`` not being able to be set or validated properly. [#170]
 
+- Add support for model containers constructed from ``Iterable`` [#164]
+
 
 0.14.2 (2023-03-31)
 ===================
