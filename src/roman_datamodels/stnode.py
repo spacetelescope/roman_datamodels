@@ -48,9 +48,6 @@ validate = True
 strict_validation = True
 
 
-_UNIT_NODE_TAGS = ["asdf://stsci.edu/datamodels/roman/tags/unit-1.0.0"]
-
-
 def set_validate(value):
     global validate
     validate = bool(value)
@@ -491,21 +488,6 @@ class TaggedScalarNodeConverter(Converter):
         return _SCALAR_NODE_CLASSES_BY_TAG[tag](node)
 
 
-class UnitConverter(Converter):
-    tags = _UNIT_NODE_TAGS
-    types = []
-
-    def to_yaml_tree(self, obj, tag, ctx):
-        msg = "Converting to rad unit tags is no longer suppoerted. Support is now native to asdf-astropy."
-        raise NotImplementedError(msg)
-
-    def from_yaml_tree(self, node, tag, ctx):
-        from asdf_astropy.converters.unit import UnitConverter as AstropyUnitConverter
-
-        # rad unit tags are being replaced by the non-vounit tags in asdf-astropy
-        return AstropyUnitConverter().from_yaml_tree(node, "tag:astropy.org:astropy/units/unit-1.0.0", ctx)
-
-
 _DATAMODELS_MANIFEST_PATH = importlib_resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
 _DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
 
@@ -551,8 +533,6 @@ for tag in _DATAMODELS_MANIFEST["tags"]:
         _LIST_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
     elif tag["tag_uri"] in _SCALAR_NODE_CLASSES_BY_TAG:
         _SCALAR_NODE_CLASSES_BY_TAG[tag["tag_uri"]].__doc__ = docstring
-    elif tag["tag_uri"] in _UNIT_NODE_TAGS:
-        pass
     else:
         _class_from_tag(tag, docstring)
 
