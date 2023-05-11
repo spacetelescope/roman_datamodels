@@ -10,13 +10,12 @@ def test_generated_node_classes(manifest):
         class_name = stnode._class_name_from_tag_uri(tag["tag_uri"])
         node_class = getattr(stnode, class_name)
 
-        assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode, stnode.Unit))
-        if not issubclass(node_class, stnode.Unit):
-            assert node_class._tag == tag["tag_uri"]
-            assert tag["description"] in node_class.__doc__
-            assert tag["tag_uri"] in node_class.__doc__
-            assert node_class.__module__ == stnode.__name__
-            assert node_class.__name__ in stnode.__all__
+        assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode))
+        assert node_class._tag == tag["tag_uri"]
+        assert tag["description"] in node_class.__doc__
+        assert tag["tag_uri"] in node_class.__doc__
+        assert node_class.__module__ == stnode.__name__
+        assert node_class.__name__ in stnode.__all__
 
 
 def test_wfi_mode():
@@ -72,10 +71,23 @@ def test_schema_info():
     info = af.schema_info("archive_catalog")
     assert info == {
         "wfimode": {
-            "detector": {"archive_catalog": ({"datatype": "nvarchar(10)", "destination": ["ScienceCommon.detector"]}, "WFI18")},
-            "name": {"archive_catalog": ({"datatype": "nvarchar(5)", "destination": ["ScienceCommon.instrument_name"]}, "WFI")},
+            "detector": {
+                "archive_catalog": (
+                    {"datatype": "nvarchar(10)", "destination": ["ScienceCommon.detector", "GuideWindow.detector"]},
+                    "WFI18",
+                )
+            },
+            "name": {
+                "archive_catalog": (
+                    {"datatype": "nvarchar(5)", "destination": ["ScienceCommon.instrument_name", "GuideWindow.instrument_name"]},
+                    "WFI",
+                )
+            },
             "optical_element": {
-                "archive_catalog": ({"datatype": "nvarchar(20)", "destination": ["ScienceCommon.optical_element"]}, "GRISM")
+                "archive_catalog": (
+                    {"datatype": "nvarchar(20)", "destination": ["ScienceCommon.optical_element", "GuideWindow.optical_element"]},
+                    "GRISM",
+                )
             },
         }
     }

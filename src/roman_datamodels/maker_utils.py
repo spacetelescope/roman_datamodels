@@ -393,6 +393,9 @@ def mk_guidestar():
     guide["gs_mag"] = NONUM
     guide["gs_umag"] = NONUM
     guide["gw_fgs_mode"] = "WSM-ACQ-2"
+    guide["gw_science_file_source"] = NOSTR
+    guide["gs_id"] = NOSTR
+    guide["gs_catalog_version"] = NOSTR
     guide["data_start"] = NONUM
     guide["data_end"] = NONUM
     guide["gs_ctd_x"] = NONUM

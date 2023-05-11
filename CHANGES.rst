@@ -20,6 +20,8 @@
 
 - Bugfix for the ``amp33`` shape in ``mk_ramp``. [#166]
 
+- Remove the deprecated ``roman_datamodels.units`` module. [#172]
+
 
 0.14.2 (2023-03-31)
 ===================
