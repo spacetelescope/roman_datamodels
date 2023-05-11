@@ -4,6 +4,7 @@ Functions that support validation of model changes
 
 import os
 import warnings
+from contextlib import contextmanager
 from textwrap import dedent
 
 import jsonschema
@@ -153,3 +154,27 @@ def _error_message(path, error):
     errfmt = "While validating {} the following error occurred:\n{}"
     errmsg = errfmt.format(name, error)
     return errmsg
+
+
+@contextmanager
+def nuke_validation():
+    """
+    Context manager to temporarily turn all ASDF validation off.
+    """
+
+    # Don't nuke validation if we will validate
+    if will_validate():
+        yield
+        return
+
+    # NUKE VALIDATION
+    validate = asdf_schema.validate
+
+    def _no_validation_for_you(*args, **kwargs):
+        pass
+
+    asdf_schema.validate = _no_validation_for_you
+    yield
+
+    # RESTORE VALIDATION
+    asdf_schema.validate = validate
