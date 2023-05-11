@@ -20,6 +20,8 @@
 
 - Remove the deprecated ``roman_datamodels.units`` module. [#172]
 
+- Bugfix for ``photmjsr`` not being able to be set or validated properly. [#170]
+
 
 0.14.2 (2023-03-31)
 ===================
