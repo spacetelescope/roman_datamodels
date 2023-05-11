@@ -25,12 +25,12 @@ ROMAN_STRICT_VALIDATION = "ROMAN_STRICT_VALIDATION"
 def validation_is_disabled():
     MESSAGE = dedent(
         """\
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!! VALIDATION HAS BEEN DISABLED        !!!!!
-            !!!! THIS is EXTREMELY DANGEROUS AND MAY !!!!!
-            !!!! RESULT IN SITUATIONS WHERE DATA     !!!!!
-            !!!! CANNOT BE WRITTEN AND/OR READ!      !!!!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            !!!! VALIDATION HAS BEEN DISABLED GLOBALLY !!!!!
+            !!!! THIS is EXTREMELY DANGEROUS AND MAY   !!!!!
+            !!!! RESULT IN SITUATIONS WHERE DATA       !!!!!
+            !!!! CANNOT BE WRITTEN AND/OR READ!        !!!!!
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             We strongly suggest that you do not turn off
             validation. If you do, you do so at your own
             risk. YOU HAVE BEEN WARNED!
