@@ -431,15 +431,16 @@ class ModelContainer(Iterable):
         self.asn_pool_name = None
 
         try:
-            init = Path(init)
+            if len(init):
+                init = Path(init)
         except TypeError:
             if init is None:
                 # don't populate container
                 pass
             elif isinstance(init, Iterable):
                 # only append list items to self._models if all items are either
-                # strings (i.e. path to an ASDF file) or instances of DataModel
-                is_all_string = all(isinstance(x, str) for x in init)
+                # strings (i.e. path to an ASDF file), Path objects, or instances of DataModel
+                is_all_string = all(isinstance(x, (str, Path)) for x in init)
                 is_all_roman_datamodels = all(isinstance(x, DataModel) for x in init)
 
                 if is_all_string or is_all_roman_datamodels:
