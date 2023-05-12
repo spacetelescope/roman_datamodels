@@ -25,10 +25,7 @@ from astropy.units import Unit  # noqa: F401
 from .stuserdict import STUserDict as UserDict
 from .validate import ValidationWarning, _check_type, _error_message
 
-if sys.version_info < (3, 9):
-    import importlib_resources
-else:
-    import importlib.resources as importlib_resources
+import importlib.resources
 
 
 __all__ = [
