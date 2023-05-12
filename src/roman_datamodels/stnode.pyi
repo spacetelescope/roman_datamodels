@@ -47,7 +47,7 @@ class Aperture(stnode.TaggedObjectNode):
     position_angle: float
     shape: str
 
-class Calstep(stnode.TaggedObjectNode):
+class CalStep(stnode.TaggedObjectNode):
     assign_wcs: str
     flat_field: str
     dark: str
@@ -229,7 +229,7 @@ class Wcsinfo(stnode.TaggedObjectNode):
 
 class _Common(_Basic):
     aperture: Aperture
-    cal_step: Calstep
+    cal_step: CalStep
     coordinates: Coordinates
     ephemeris: Ephemeris
     exposure: Exposure
