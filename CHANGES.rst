@@ -1,6 +1,8 @@
 0.15.0 (unreleased)
 ===================
 
+- Updates the maker utilities for guide windows to include gw_science_file_source  [#179]
+
 - Remove use of deprecated ``pytest-openfiles`` ``pytest`` plugin. This has been replaced by
   catching ``ResourceWarning`` s. [#142]
 
@@ -21,6 +23,12 @@
 - Bugfix for the ``amp33`` shape in ``mk_ramp``. [#166]
 
 - Remove the deprecated ``roman_datamodels.units`` module. [#172]
+
+- Bugfix for ``photmjsr`` not being able to be set or validated properly. [#170]
+
+- Add ability to turn off data validation via an environment variable. [#173]
+- Add support for model containers constructed from ``Iterable`` [#164]
+
 
 
 0.14.2 (2023-03-31)

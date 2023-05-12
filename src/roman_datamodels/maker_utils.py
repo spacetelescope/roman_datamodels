@@ -110,7 +110,7 @@ def mk_observation():
     obs = stnode.Observation()
     obs["obs_id"] = NOSTR
     obs["visit_id"] = NOSTR
-    obs["program"] = NONUM
+    obs["program"] = str(NONUM)
     obs["execution_plan"] = NONUM
     obs["pass"] = NONUM
     obs["segment"] = NONUM
@@ -1227,6 +1227,7 @@ def mk_guidewindow(shape=(2, 8, 16, 32, 32), filepath=None):
     guidewindow["meta"]["pedestal_resultant_exp_time"] = NONUM
     guidewindow["meta"]["signal_resultant_exp_time"] = NONUM
     guidewindow["meta"]["gw_acq_number"] = NONUM
+    guidewindow["meta"]["gw_science_file_source"] = NOSTR
     guidewindow["meta"]["gw_mode"] = "WIM-ACQ"
     guidewindow["meta"]["gw_window_xstart"] = NONUM
     guidewindow["meta"]["gw_window_ystart"] = NONUM

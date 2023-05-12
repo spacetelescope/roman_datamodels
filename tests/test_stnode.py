@@ -1,8 +1,12 @@
+import os
+from contextlib import nullcontext
+
 import asdf
+import astropy.units as u
 import pytest
 
-from roman_datamodels import stnode
-from roman_datamodels.testing import assert_node_equal, create_node
+from roman_datamodels import datamodels, stnode, validate
+from roman_datamodels.testing import assert_node_equal, create_node, factories
 
 
 def test_generated_node_classes(manifest):
@@ -91,3 +95,170 @@ def test_schema_info():
             },
         }
     }
+
+
+def test_set_pattern_properties():
+    """
+    Regression test for patternProperties not being validated
+    """
+
+    # This model uses includes a patternProperty
+    mdl = factories.create_wfi_img_photom_ref()
+
+    # This should be invalid because it is not a quantity
+    with pytest.raises(asdf.ValidationError):
+        mdl.phot_table.F062.photmjsr = 3.14
+    with pytest.raises(asdf.ValidationError):
+        mdl.phot_table.F062.uncertainty = 3.14
+    with pytest.raises(asdf.ValidationError):
+        mdl.phot_table.F062.pixelareasr = 3.14
+
+    # This is invalid be cause it is not a scalar
+    with pytest.raises(asdf.ValidationError):
+        mdl.phot_table.F062.photmjsr = [37.0] * (u.MJy / u.sr)
+    with pytest.raises(asdf.ValidationError):
+        mdl.phot_table.F062.uncertainty = [37.0] * (u.MJy / u.sr)
+    with pytest.raises(asdf.ValidationError):
+        mdl.phot_table.F062.pixelareasr = [37.0] * u.sr
+
+    # This should be invalid because it has the wrong unit
+    with pytest.raises(asdf.ValidationError):
+        mdl.phot_table.F062.photmjsr = 3.14 * u.m
+    with pytest.raises(asdf.ValidationError):
+        mdl.phot_table.F062.uncertainty = 3.14 * u.m
+    with pytest.raises(asdf.ValidationError):
+        mdl.phot_table.F062.pixelareasr = 3.14 * u.m
+
+    # Test some valid values (including the rest of the patternProperties)
+    mdl.phot_table.F062.photmjsr = 3.14 * (u.MJy / u.sr)
+    mdl.phot_table.F062.uncertainty = 0.1 * (u.MJy / u.sr)
+    mdl.phot_table.F062.pixelareasr = 37.0 * u.sr
+
+    # Test it can be None (including the rest of the patternProperties)
+    mdl.phot_table.F062.photmjsr = None
+    mdl.phot_table.F062.uncertainty = None
+    mdl.phot_table.F062.pixelareasr = None
+
+
+@pytest.fixture(scope="function", params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"])
+def env_var(request):
+    assert os.getenv(validate.ROMAN_VALIDATE) == "true"
+    os.environ[validate.ROMAN_VALIDATE] = request.param
+    yield request.param, request.param.lower() in ["true", "yes", "1"]
+    os.environ[validate.ROMAN_VALIDATE] = "true"
+
+
+def test_will_validate(env_var):
+    # Test the fixture passed the value of the environment variable
+    value = env_var[0]
+    assert os.getenv(validate.ROMAN_VALIDATE) == value
+
+    # Test the validate property
+    truth = env_var[1]
+    context = nullcontext() if truth else pytest.warns(validate.ValidationWarning)
+
+    with context:
+        assert validate.will_validate() is truth
+
+    # Try all uppercase
+    os.environ[validate.ROMAN_VALIDATE] = value.upper()
+    with context:
+        assert validate.will_validate() is truth
+
+    # Try all lowercase
+    os.environ[validate.ROMAN_VALIDATE] = value.lower()
+    with context:
+        assert validate.will_validate() is truth
+
+    # Remove the environment variable to test the default value
+    del os.environ[validate.ROMAN_VALIDATE]
+    assert os.getenv(validate.ROMAN_VALIDATE) is None
+    assert validate.will_validate() is True
+
+
+def test_nuke_validation(env_var, tmp_path):
+    context = pytest.raises(asdf.ValidationError) if env_var[1] else pytest.warns(validate.ValidationWarning)
+
+    # Create a broken DNode object
+    mdl = factories.create_wfi_img_photom_ref()
+    mdl["phot_table"] = "THIS IS NOT VALID"
+    with context:
+        datamodels.WfiImgPhotomRefModel(mdl)
+
+    # __setattr__ a broken value
+    mdl = factories.create_wfi_img_photom_ref()
+    with context:
+        mdl.phot_table = "THIS IS NOT VALID"
+
+    # Break model without outside validation
+    with nullcontext() if env_var[1] else pytest.warns(validate.ValidationWarning):
+        mdl = datamodels.WfiImgPhotomRefModel(factories.create_wfi_img_photom_ref())
+    mdl._instance["phot_table"] = "THIS IS NOT VALID"
+
+    # Broken can be written to file
+    broken_save = tmp_path / "broken_save.asdf"
+    with context:
+        mdl.save(broken_save)
+    assert os.path.isfile(broken_save) is not env_var[1]
+
+    broken_to_asdf = tmp_path / "broken_to_asdf.asdf"
+    with context:
+        mdl.to_asdf(broken_to_asdf)
+    assert os.path.isfile(broken_to_asdf) is not env_var[1]
+
+    # Create a broken file for reading if needed
+    if env_var[1]:
+        os.environ[validate.ROMAN_VALIDATE] = "false"
+        with pytest.warns(validate.ValidationWarning):
+            mdl.save(broken_save)
+            mdl.to_asdf(broken_to_asdf)
+        os.environ[validate.ROMAN_VALIDATE] = env_var[0]
+
+    # Read broken files with datamodel object
+    with context:
+        datamodels.WfiImgPhotomRefModel(broken_save)
+    with context:
+        datamodels.WfiImgPhotomRefModel(broken_to_asdf)
+
+    # True to read broken files with rdm.open
+    with context:
+        with datamodels.open(broken_save):
+            pass
+    with context:
+        with datamodels.open(broken_to_asdf):
+            pass
+
+
+@pytest.fixture(scope="function", params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"])
+def env_strict_var(request):
+    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) == "true"
+    os.environ[validate.ROMAN_STRICT_VALIDATION] = request.param
+    yield request.param
+    os.environ[validate.ROMAN_STRICT_VALIDATION] = "true"
+
+
+def test_will_strict_validate(env_strict_var):
+    # Test the fixture passed the value of the environment variable
+    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) == env_strict_var
+
+    # Test the validate property
+    truth = env_strict_var.lower() in ["true", "yes", "1"]
+    context = nullcontext() if truth else pytest.warns(validate.ValidationWarning)
+
+    with context:
+        assert validate.will_strict_validate() is truth
+
+    # Try all uppercase
+    os.environ[validate.ROMAN_STRICT_VALIDATION] = env_strict_var.upper()
+    with context:
+        assert validate.will_strict_validate() is truth
+
+    # Try all lowercase
+    os.environ[validate.ROMAN_STRICT_VALIDATION] = env_strict_var.lower()
+    with context:
+        assert validate.will_strict_validate() is truth
+
+    # Remove the environment variable to test the default value
+    del os.environ[validate.ROMAN_STRICT_VALIDATION]
+    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) is None
+    assert validate.will_strict_validate() is True

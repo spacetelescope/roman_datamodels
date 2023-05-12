@@ -3,6 +3,7 @@ Proof of concept of using tags with the data model framework
 """
 
 import datetime
+import re
 import sys
 import warnings
 from abc import ABCMeta
@@ -22,7 +23,7 @@ from astropy.time import Time
 from astropy.units import Unit  # noqa: F401
 
 from .stuserdict import STUserDict as UserDict
-from .validate import ValidationWarning, _check_type, _error_message
+from .validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
 
 if sys.version_info < (3, 9):
     import importlib_resources
@@ -31,7 +32,6 @@ else:
 
 
 __all__ = [
-    "set_validate",
     "WfiMode",
     "NODE_CLASSES",
     "CalLogs",
@@ -42,15 +42,6 @@ __all__ = [
     "TaggedListNode",
     "TaggedScalarNode",
 ]
-
-
-validate = True
-strict_validation = True
-
-
-def set_validate(value):
-    global validate
-    validate = bool(value)
 
 
 validator_callbacks = HashableDict(asdfschema.YAML_VALIDATORS)
@@ -93,11 +84,20 @@ def _check_value(value, schema, validator_context):
 
 def _validate(attr, instance, schema, ctx):
     tagged_tree = yamlutil.custom_tree_to_tagged_tree(instance, ctx)
-    return _value_change(attr, tagged_tree, schema, False, strict_validation, ctx)
+    return _value_change(attr, tagged_tree, schema, False, will_strict_validate(), ctx)
 
 
 def _get_schema_for_property(schema, attr):
+    # Check if attr is a property
     subschema = schema.get("properties", {}).get(attr, None)
+
+    # Check if attr is a pattern property
+    props = schema.get("patternProperties", {})
+    for key, value in props.items():
+        if re.match(key, attr):
+            subschema = value
+            break
+
     if subschema is not None:
         return subschema
     for combiner in ["allOf", "anyOf"]:
@@ -105,6 +105,7 @@ def _get_schema_for_property(schema, attr):
             subsubschema = _get_schema_for_property(subschema, attr)
             if subsubschema != {}:
                 return subsubschema
+
     return {}
 
 
@@ -123,11 +124,6 @@ class DNode(UserDict):
         self._schema_uri = None
         self._parent = parent
         self._name = name
-        # else:
-        #     self.data = node.data
-
-    # def __iter__(self):
-    #     return NodeIterator(self)
 
     @property
     def ctx(self):
@@ -167,24 +163,10 @@ class DNode(UserDict):
         if key[0] != "_":
             value = self._convert_to_scalar(key, value)
             if key in self._data:
-                if validate:
-                    self._schema()
-                    schema = self._x_schema.get("properties")
-                    if schema is None:
-                        # See if the key is in one of the combiners.
-                        # This implementation is not completely general
-                        # A more robust one would potentially handle nested
-                        # references, though that is probably unlikely
-                        # in practical cases.
-                        for combiner in ["allOf", "anyOf"]:
-                            for subschema in self._x_schema.get(combiner, []):
-                                subsubschema = _get_schema_for_property(subschema, key)
-                                if subsubschema != {}:
-                                    schema = subsubschema
-                                    break
-                    else:
-                        schema = schema.get(key, None)
-                    if schema is None or _validate(key, value, schema, self.ctx):
+                if will_validate():
+                    schema = _get_schema_for_property(self._schema(), key)
+
+                    if schema == {} or _validate(key, value, schema, self.ctx):
                         self._data[key] = value
                 self.__dict__["_data"][key] = value
             else:
@@ -228,6 +210,8 @@ class DNode(UserDict):
             # Extract the subschema corresponding to this node.
             subschema = _get_schema_for_property(parent_schema, self._name)
             self._x_schema = subschema
+
+        return self._x_schema
 
     def __asdf_traverse__(self):
         return dict(self)

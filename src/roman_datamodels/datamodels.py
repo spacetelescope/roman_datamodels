@@ -13,7 +13,7 @@ import os.path
 import sys
 import warnings
 from collections import OrderedDict
-from collections.abc import Sequence
+from collections.abc import Iterable
 from pathlib import PurePath
 
 import asdf
@@ -85,9 +85,10 @@ class DataModel:
             self._asdf = asdffile
             self._instance = asdffile.tree["roman"]
         elif isinstance(init, stnode.TaggedObjectNode):
-            self._instance = init
-            asdffile = asdf.AsdfFile()
-            asdffile.tree = {"roman": init}
+            with validate.nuke_validation():
+                self._instance = init
+                asdffile = asdf.AsdfFile()
+                asdffile.tree = {"roman": init}
         else:
             raise OSError("Argument does not appear to be an ASDF file or TaggedObjectNode.")
         self._asdf = asdffile
@@ -169,18 +170,18 @@ class DataModel:
         return output_path
 
     def open_asdf(self, init=None, **kwargs):
-        if isinstance(init, str):
-            asdffile = asdf.open(init)
-        else:
-            asdffile = asdf.AsdfFile(init)
-        return asdffile
+        with validate.nuke_validation():
+            if isinstance(init, str):
+                asdffile = asdf.open(init)
+            else:
+                asdffile = asdf.AsdfFile(init)
+            return asdffile
 
     def to_asdf(self, init, *args, **kwargs):
-        # self.on_save(init)
-
-        asdffile = self.open_asdf(**kwargs)
-        asdffile.tree = {"roman": self._instance}
-        asdffile.write_to(init, *args, **kwargs)
+        with validate.nuke_validation():
+            asdffile = self.open_asdf(**kwargs)
+            asdffile.tree = {"roman": self._instance}
+            asdffile.write_to(init, *args, **kwargs)
 
     def get_primary_array_name(self):
         """
@@ -341,7 +342,7 @@ class GuidewindowModel(DataModel):
     pass
 
 
-class ModelContainer(Sequence):
+class ModelContainer(Iterable):
     """
     A container for holding DataModels.
 
@@ -409,7 +410,7 @@ class ModelContainer(Sequence):
         if init is None:
             # don't populate container
             pass
-        elif isinstance(init, list):
+        elif isinstance(init, Iterable):
             # only append list items to self._models if all items are either
             # strings (i.e. path to an ASDF file) or instances of DataModel
             is_all_string = all(isinstance(x, str) for x in init)
@@ -617,46 +618,47 @@ def open(init, memmap=False, target=None, **kwargs):
     -------
     `DataModel`
     """
-    file_to_close = None
-    if target is not None:
-        if not issubclass(target, DataModel):
-            raise ValueError("Target must be a subclass of DataModel")
-    # Temp fix to catch JWST args before being passed to asdf open
-    if "asn_n_members" in kwargs:
-        del kwargs["asn_n_members"]
-    if isinstance(init, asdf.AsdfFile):
-        asdffile = init
-    elif isinstance(init, DataModel):
+    with validate.nuke_validation():
+        file_to_close = None
         if target is not None:
-            if not isinstance(init, target):
-                raise ValueError("First argument is not an instance of target")
-            else:
-                return init
-        # Copy the object so it knows not to close here
-        return init.copy()
-    else:
-        try:
-            kwargs["copy_arrays"] = not memmap
-            asdffile = asdf.open(init, **kwargs)
-            file_to_close = asdffile
-        except ValueError:
-            raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
-        if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
-            if file_to_close is not None:
-                file_to_close.close()
-            raise TypeError("Roman datamodels does not accept FITS files or objects")
-    modeltype = type(asdffile.tree["roman"])
-    if modeltype in model_registry:
-        rmodel = model_registry[modeltype](asdffile, **kwargs)
-        if target is not None:
-            if not issubclass(rmodel.__class__, target):
+            if not issubclass(target, DataModel):
+                raise ValueError("Target must be a subclass of DataModel")
+        # Temp fix to catch JWST args before being passed to asdf open
+        if "asn_n_members" in kwargs:
+            del kwargs["asn_n_members"]
+        if isinstance(init, asdf.AsdfFile):
+            asdffile = init
+        elif isinstance(init, DataModel):
+            if target is not None:
+                if not isinstance(init, target):
+                    raise ValueError("First argument is not an instance of target")
+                else:
+                    return init
+            # Copy the object so it knows not to close here
+            return init.copy()
+        else:
+            try:
+                kwargs["copy_arrays"] = not memmap
+                asdffile = asdf.open(init, **kwargs)
+                file_to_close = asdffile
+            except ValueError:
+                raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
+            if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
                 if file_to_close is not None:
                     file_to_close.close()
-                raise ValueError("Referenced ASDF file model type is not subclass of target")
+                raise TypeError("Roman datamodels does not accept FITS files or objects")
+        modeltype = type(asdffile.tree["roman"])
+        if modeltype in model_registry:
+            rmodel = model_registry[modeltype](asdffile, **kwargs)
+            if target is not None:
+                if not issubclass(rmodel.__class__, target):
+                    if file_to_close is not None:
+                        file_to_close.close()
+                    raise ValueError("Referenced ASDF file model type is not subclass of target")
+            else:
+                return rmodel
         else:
-            return rmodel
-    else:
-        return DataModel(asdffile, **kwargs)
+            return DataModel(asdffile, **kwargs)
 
 
 model_registry = {
