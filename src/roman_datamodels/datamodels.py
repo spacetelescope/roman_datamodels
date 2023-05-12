@@ -180,7 +180,11 @@ class DataModel:
 
     def open_asdf(self, init=None, **kwargs):
         with validate.nuke_validation():
-            return asdf.open(init) if isinstance(init, str) else asdf.AsdfFile(init)
+            if isinstance(init, str):
+                asdffile = asdf.open(init)
+            else:
+                asdffile = asdf.AsdfFile(init)
+            return asdffile
 
     def to_asdf(self, init, *args, **kwargs):
         with validate.nuke_validation():
@@ -769,22 +773,24 @@ def open(init, memmap=False, target=None, **kwargs):
                 kwargs["copy_arrays"] = not memmap
                 asdffile = asdf.open(init, **kwargs)
                 file_to_close = asdffile
-            except ValueError as e:
-                raise TypeError("Open requires a filepath, file-like object, or Roman datamodel") from e
+            except ValueError:
+                raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
             if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
                 if file_to_close is not None:
                     file_to_close.close()
                 raise TypeError("Roman datamodels does not accept FITS files or objects")
         modeltype = type(asdffile.tree["roman"])
-        if modeltype not in model_registry:
+        if modeltype in model_registry:
+            rmodel = model_registry[modeltype](asdffile, **kwargs)
+            if target is not None:
+                if not issubclass(rmodel.__class__, target):
+                    if file_to_close is not None:
+                        file_to_close.close()
+                    raise ValueError("Referenced ASDF file model type is not subclass of target")
+            else:
+                return rmodel
+        else:
             return DataModel(asdffile, **kwargs)
-        rmodel = model_registry[modeltype](asdffile, **kwargs)
-        if target is None:
-            return rmodel
-        if not issubclass(rmodel.__class__, target):
-            if file_to_close is not None:
-                file_to_close.close()
-            raise ValueError("Referenced ASDF file model type is not subclass of target")
 
 
 model_registry = {
