@@ -1,6 +1,8 @@
 0.15.0 (unreleased)
 ===================
 
+- Updates the maker utilities for guide windows to include gw_science_file_source  [#179]
+
 - Remove use of deprecated ``pytest-openfiles`` ``pytest`` plugin. This has been replaced by
   catching ``ResourceWarning`` s. [#142]
 
