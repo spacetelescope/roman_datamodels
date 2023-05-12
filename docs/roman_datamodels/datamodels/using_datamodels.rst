@@ -128,7 +128,6 @@ page::
 
 	Use this feature at your own risk!
 
-	You have been warned!
 
 	If you are having problems due to validation errors, please contact the the
 	Roman team for help via raising a GitHub issue or sending us an email. We
