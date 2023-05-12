@@ -16,7 +16,7 @@ import sys
 import warnings
 from collections import OrderedDict
 from collections.abc import Iterable
-from pathlib import PurePath
+from pathlib import Path, PurePath
 
 import asdf
 import numpy as np
@@ -435,26 +435,30 @@ class ModelContainer(Iterable):
         self.asn_table_name = None
         self.asn_pool_name = None
 
-        if init is None:
-            # don't populate container
-            pass
-        elif isinstance(init, Iterable):
-            # only append list items to self._models if all items are either
-            # strings (i.e. path to an ASDF file) or instances of DataModel
-            is_all_string = all(isinstance(x, str) for x in init)
-            is_all_roman_datamodels = all(isinstance(x, DataModel) for x in init)
+        try:
+            init = Path(init)
+        except TypeError:
+            if init is None:
+                # don't populate container
+                pass
+            elif isinstance(init, Iterable):
+                # only append list items to self._models if all items are either
+                # strings (i.e. path to an ASDF file) or instances of DataModel
+                is_all_string = all(isinstance(x, str) for x in init)
+                is_all_roman_datamodels = all(isinstance(x, DataModel) for x in init)
 
-            if is_all_string or is_all_roman_datamodels:
-                self._models.extend(init)
-            else:
-                raise TypeError("Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
-        elif is_association(init):
-            self.from_asn(init)
-        elif isinstance(init, str):
-            init_from_asn = self.read_asn(init)
-            self.from_asn(init_from_asn, asn_file_path=init)
+                if is_all_string or is_all_roman_datamodels:
+                    self._models.extend(init)
+                else:
+                    raise TypeError("Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
         else:
-            raise TypeError("Input must be a list of either strings (full path to ASDF files) or Roman datamodels.")
+            if is_association(init):
+                self.from_asn(init)
+            elif isinstance(init, Path):
+                init_from_asn = self.read_asn(init)
+                self.from_asn(init_from_asn, asn_file_path=init)
+            else:
+                raise TypeError("Input must be a list of either strings (full path to ASDF files) or Roman datamodels.")
 
     def __len__(self):
         return len(self._models)
