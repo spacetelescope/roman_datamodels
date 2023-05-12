@@ -1096,6 +1096,7 @@ def create_guidewindow(**kwargs):
     raw["meta"]["pedestal_resultant_exp_time"] = random_utils.generate_float()
     raw["meta"]["signal_resultant_exp_time"] = random_utils.generate_float()
     raw["meta"]["gw_acq_number"] = random_utils.generate_int()
+    raw["meta"]["gw_science_file_source"] = "filename"
     raw["meta"]["gw_mode"] = "WIM-ACQ"
     raw["meta"]["gw_window_xstart"] = random_utils.generate_positive_int(4000)
     raw["meta"]["gw_window_ystart"] = random_utils.generate_positive_int(4000)
