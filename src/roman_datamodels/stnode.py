@@ -4,7 +4,6 @@ Proof of concept of using tags with the data model framework
 
 import datetime
 import re
-import sys
 import warnings
 from abc import ABCMeta
 from collections import UserList
@@ -24,9 +23,6 @@ from astropy.units import Unit  # noqa: F401
 
 from .stuserdict import STUserDict as UserDict
 from .validate import ValidationWarning, _check_type, _error_message
-
-import importlib.resources
-
 
 __all__ = [
     "set_validate",
