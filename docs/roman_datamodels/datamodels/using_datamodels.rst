@@ -108,7 +108,8 @@ page::
 
 	As a method of last resort, if you wish to turn off validation, you can do
 	so by setting the environment variable ``ROMAN_VALIDATE`` to false. This is
-	not recommended!
+	not recommended! Moreover, this feature will be explicitly removed when the
+	datamodels stabilize.
 
 	.. code-block:: bash
 
@@ -128,7 +129,6 @@ page::
 
 	Use this feature at your own risk!
 
-
 	If you are having problems due to validation errors, please contact the the
-	Roman team for help via raising a GitHub issue or sending us an email. We
-	will do our best to assist you.
+	Roman team for help via raising a GitHub issue. We will do our best to assist
+	you.
