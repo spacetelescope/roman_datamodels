@@ -16,6 +16,8 @@
 
 - Add Pull Request Template. [#147]
 
+- Add Level 3 MosaicModel and Resample stnodes, maker utils, factories, and tests. [#163]
+
 - Renamed n_ints to n_groups. Did some shape variable cleanup. [#165]
 
 - Bugfix for the ``amp33`` shape in ``mk_ramp``. [#166]
