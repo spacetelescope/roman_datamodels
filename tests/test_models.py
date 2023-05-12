@@ -725,6 +725,39 @@ def test_opening_level2_image(tmp_path):
     assert isinstance(wfi_image, datamodels.ImageModel)
 
 
+# WFI Level 3 Mosaic tests
+def test_level3_mosaic():
+    wfi_mosaic = utils.mk_level3_mosaic()
+
+    assert wfi_mosaic.data.dtype == np.float32
+    assert wfi_mosaic.data.unit == u.electron / u.s
+
+    assert wfi_mosaic.err.dtype == np.float32
+    assert wfi_mosaic.err.unit == u.electron / u.s
+    assert wfi_mosaic.context.dtype == np.uint32
+    assert wfi_mosaic.weight.dtype == np.float32
+    assert wfi_mosaic.var_poisson.dtype == np.float32
+    assert wfi_mosaic.var_poisson.unit == u.electron**2 / u.s**2
+    assert wfi_mosaic.var_rnoise.dtype == np.float32
+    assert wfi_mosaic.var_rnoise.unit == u.electron**2 / u.s**2
+    assert wfi_mosaic.var_flat.dtype == np.float32
+    assert type(wfi_mosaic.cal_logs[0]) == str
+
+    # Test validation
+    wfi_mosaic_model = datamodels.MosaicModel(wfi_mosaic)
+    assert wfi_mosaic_model.validate() is None
+
+
+def test_opening_level3_mosaic(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / "testwfi_mosaic.asdf"
+    utils.mk_level3_mosaic(filepath=file_path)
+    wfi_mosaic = datamodels.open(file_path)
+
+    assert wfi_mosaic.meta.instrument.optical_element == "F062"
+    assert isinstance(wfi_mosaic, datamodels.MosaicModel)
+
+
 def test_datamodel_info_search(capsys):
     wfi_science_raw = utils.mk_level1_science_raw()
     af = asdf.AsdfFile()

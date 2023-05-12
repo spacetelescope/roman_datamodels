@@ -317,6 +317,10 @@ class DataModel:
         return self._asdf.schema_info(*args, **kwargs)
 
 
+class MosaicModel(DataModel):
+    pass
+
+
 class ImageModel(DataModel):
     pass
 
@@ -791,6 +795,7 @@ def open(init, memmap=False, target=None, **kwargs):
 
 
 model_registry = {
+    stnode.WfiMosaic: MosaicModel,
     stnode.WfiImage: ImageModel,
     stnode.WfiScienceRaw: ScienceRawModel,
     stnode.Ramp: RampModel,
