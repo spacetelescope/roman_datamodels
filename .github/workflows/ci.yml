@@ -36,6 +36,10 @@ jobs:
           python-version: 3.11
         - macos: test-xdist
           python-version: 3.11
-        - linux: test-rad-xdist
         - linux: test-cov-xdist
           coverage: codecov
+  test_upstream:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      envs: |
+        - linux: test-rad-xdist
