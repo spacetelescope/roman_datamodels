@@ -23,7 +23,7 @@ from astropy.time import Time
 from astropy.units import Unit  # noqa: F401
 
 from .stuserdict import STUserDict as UserDict
-from .validate import ValidationWarning, _check_type, _error_message
+from .validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
 
 if sys.version_info < (3, 9):
     import importlib_resources
@@ -32,7 +32,6 @@ else:
 
 
 __all__ = [
-    "set_validate",
     "WfiMode",
     "NODE_CLASSES",
     "CalLogs",
@@ -43,15 +42,6 @@ __all__ = [
     "TaggedListNode",
     "TaggedScalarNode",
 ]
-
-
-validate = True
-strict_validation = True
-
-
-def set_validate(value):
-    global validate
-    validate = bool(value)
 
 
 validator_callbacks = HashableDict(asdfschema.YAML_VALIDATORS)
@@ -94,7 +84,7 @@ def _check_value(value, schema, validator_context):
 
 def _validate(attr, instance, schema, ctx):
     tagged_tree = yamlutil.custom_tree_to_tagged_tree(instance, ctx)
-    return _value_change(attr, tagged_tree, schema, False, strict_validation, ctx)
+    return _value_change(attr, tagged_tree, schema, False, will_strict_validate(), ctx)
 
 
 def _get_schema_for_property(schema, attr):
@@ -173,7 +163,7 @@ class DNode(UserDict):
         if key[0] != "_":
             value = self._convert_to_scalar(key, value)
             if key in self._data:
-                if validate:
+                if will_validate():
                     schema = _get_schema_for_property(self._schema(), key)
 
                     if schema == {} or _validate(key, value, schema, self.ctx):

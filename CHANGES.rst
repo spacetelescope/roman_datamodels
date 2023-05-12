@@ -24,7 +24,9 @@
 
 - Bugfix for ``photmjsr`` not being able to be set or validated properly. [#170]
 
+- Add ability to turn off data validation via an environment variable. [#173]
 - Add support for model containers constructed from ``Iterable`` [#164]
+
 
 
 0.14.2 (2023-03-31)

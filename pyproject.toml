@@ -31,6 +31,7 @@ test = [
     'pytest >=6.0.0',
     'pytest-doctestplus',
     'pytest-doctestplus >=0.10.0',
+    'pytest-env >= 0.8'
 ]
 aws = [
     'stsci-aws-utils >= 0.1.2',
@@ -77,6 +78,10 @@ filterwarnings = [
     #        ResourceWarnings into errors
     # Disabled until issue #150 is resolved.
     # "error::pytest.PytestUnraisableExceptionWarning",
+]
+env = [
+    "ROMAN_VALIDATE=true",
+    "ROMAN_STRICT_VALIDATION=true",
 ]
 
 [tool.coverage.run]
