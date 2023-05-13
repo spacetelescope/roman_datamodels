@@ -8,6 +8,7 @@ import re
 import warnings
 from abc import ABCMeta
 from collections import UserList
+from collections.abc import Iterable, Mapping
 
 import asdf
 import asdf.schema as asdfschema
@@ -110,8 +111,8 @@ class DNode(UserDict):
     def __init__(self, node=None, parent=None, name=None):
         if node is None:
             self.__dict__["_data"] = {}
-        elif isinstance(node, dict):
-            self.__dict__["_data"] = node
+        elif isinstance(node, Mapping):
+            self.__dict__["_data"] = dict(node)
         else:
             raise ValueError("Initializer only accepts dicts")
         self._x_schema = None
@@ -224,8 +225,8 @@ class LNode(UserList):
     def __init__(self, node=None):
         if node is None:
             self.data = []
-        elif isinstance(node, list):
-            self.data = node
+        elif isinstance(node, Iterable):
+            self.data = list(node)
         else:
             raise ValueError("Initializer only accepts lists")
         # else:
