@@ -31,6 +31,9 @@ class _ndarray_uint32(ndarray):
 class _ndarray_uint32_2D(_ndarray_uint32):
     pass
 
+class _ndarray_uint32_3D(_ndarray_uint32):
+    pass
+
 class _ndarray_float32(ndarray):
     pass
 
@@ -441,6 +444,7 @@ class _GuidewindowMeta(_Common):
     pedestal_resultant_exp_time: float
     signal_resultant_exp_time: float
     gw_acq_number: int
+    gw_science_file_source: str
     gw_mode: _GwMode
     gw_window_xstart: int
     gw_window_ystart: int
@@ -482,6 +486,15 @@ class RampFitOutput(stnode.TaggedObjectNode):
     crmag: _Quantity_float32_electron_3D
     var_poisson: _Quantity_float32_electron2_s2_3D
     var_rnoise: _Quantity_float32_electron2_s2_3D
+
+_ResampleWeightType = T.Literal["exptime", "ivm"]
+
+class Resample(stnode.TaggedObjectNode):
+    pixel_scale_ratio: float
+    pixfrac: float
+    pointings: int
+    product_exposure_time: int
+    weight_type: _ResampleWeightType
 
 class WfiScienceRaw(stnode.TaggedObjectNode):
     meta: _Common
@@ -530,6 +543,21 @@ class WfiImage(stnode.TaggedObjectNode):
     dq_border_ref_pix_right: _ndarray_uint32_2D
     dq_border_ref_pix_top: _ndarray_uint32_2D
     dq_border_ref_pix_bottom: _ndarray_uint32_2D
+    cal_logs: CalLogs
+
+class _WfiMosiacMeta(_Common):
+    photometry: Photometry
+    resample: Resample
+
+class WfiMosaic(stnode.TaggedObjectNode):
+    meta: _WfiMosiacMeta
+    data: _Quantity_float32_electron_s_2D
+    err: _Quantity_float32_electron_s_2D
+    context: _ndarray_uint32_3D
+    weight: _ndarray_float32_2D
+    var_poisson: _Quantity_float32_electron2_s2_2D
+    var_rnoise: _Quantity_float32_electron2_s2_2D
+    var_flat: _Quantity_float32_electron2_s2_2D
     cal_logs: CalLogs
 
 _p_exptype = T.Literal[

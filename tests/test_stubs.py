@@ -414,6 +414,11 @@ def _p_exptype(seed=None):
     return f"{'|'.join(components)}|"
 
 
+def _ResampleWeightType(seed=None):
+    choice = ["exptime", "ivm"]
+    return random_utils.generate_choice(choice, seed=seed)
+
+
 def _single_choice(choice, seed=None):
     return choice
 
@@ -436,6 +441,7 @@ BASE_TYPE_CREATE = {
     "_ndarray_uint16_2D": (lambda x: random_utils.generate_array_uint16(seed=x, size=DQ_SHAPE)),
     "_ndarray_uint16_3D": (lambda x: random_utils.generate_array_uint16(seed=x, size=DATA_SHAPE)),
     "_ndarray_uint32_2D": (lambda x: random_utils.generate_array_uint32(seed=x, size=DQ_SHAPE)),
+    "_ndarray_uint32_3D": (lambda x: random_utils.generate_array_uint32(seed=x, size=DATA_SHAPE)),
     "_ndarray_float32_2D": (lambda x: random_utils.generate_array_float32(seed=x, size=DQ_SHAPE)),
     "_ndarray_float32_3D": (lambda x: random_utils.generate_array_float32(seed=x, size=DATA_SHAPE)),
     "_Quantity_uint16_DN_3D": (lambda x: random_utils.generate_array_uint16(seed=x, size=DATA_SHAPE, units=u.DN)),
@@ -469,6 +475,7 @@ BASE_TYPE_CREATE = {
     "_ObservationSurvey": (lambda x: _ObservationSurvey(seed=x)),
     "_Pedigree": (lambda x: _Pedigree(seed=x)),
     "_PointingEngdbQuality": (lambda x: _PointingEngdbQuality(seed=x)),
+    "_ResampleWeightType": (lambda x: _ResampleWeightType(seed=x)),
     "_TargetSourceType": (lambda x: _TargetSourceType(seed=x)),
     "_TargetType": (lambda x: _TargetType(seed=x)),
     "_WfiDetector": (lambda x: _WfiDetector(seed=x)),
