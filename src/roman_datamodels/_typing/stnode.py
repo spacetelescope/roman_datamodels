@@ -1,1 +1,1 @@
-stnode.pyi
+../stnode.pyi
