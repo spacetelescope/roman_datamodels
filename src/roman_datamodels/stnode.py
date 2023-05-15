@@ -346,7 +346,7 @@ class TaggedScalarNodeMeta(ABCMeta):
                 if self._tag in _SCALAR_NODE_CLASSES_BY_TAG:
                     raise RuntimeError(f"TaggedScalarNode class for tag '{self._tag}' has been defined twice")
                 _SCALAR_NODE_CLASSES_BY_TAG[self._tag] = self
-                _SCALAR_NODE_CLASSES_BY_KEY[_scalar_tag_to_key] = self
+                _SCALAR_NODE_CLASSES_BY_KEY[_scalar_tag_to_key(self._tag)] = self
 
 
 class TaggedScalarNode(metaclass=TaggedScalarNodeMeta):

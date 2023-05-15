@@ -48,16 +48,16 @@ with stnode.registration_off():
         position_angle: float
 
     class CalStep(stnode.TaggedObjectNode):
-        assign_wcs: enums.CalStep
-        flat_field: enums.CalStep
-        dark: enums.CalStep
-        dq_init: enums.CalStep
-        jump: enums.CalStep
-        linearity: enums.CalStep
-        photom: enums.CalStep
-        source_detection: enums.CalStep
-        ramp_fit: enums.CalStep
-        saturation: enums.CalStep
+        assign_wcs: enums.CalStepValues
+        flat_field: enums.CalStepValues
+        dark: enums.CalStepValues
+        dq_init: enums.CalStepValues
+        jump: enums.CalStepValues
+        linearity: enums.CalStepValues
+        photom: enums.CalStepValues
+        source_detection: enums.CalStepValues
+        ramp_fit: enums.CalStepValues
+        saturation: enums.CalStepValues
 
     class Coordinates(stnode.TaggedObjectNode):
         reference_frame: enums.ReferenceFrame
@@ -138,7 +138,7 @@ with stnode.registration_off():
         gw_window_ysize: int
 
     class WfiMode(stnode.TaggedObjectNode):
-        name: enums.WfiMode
+        name: enums.WfiModeNames
         detector: enums.WfiDetector
         optical_element: enums.WfiOpticalElement
 
@@ -376,7 +376,7 @@ with stnode.registration_off():
         ma_table_number: int
 
     class _Instrument(stnode.DNode):
-        name: enums.WfiMode
+        name: enums.WfiModeNames
         detector: enums.WfiDetector
         optical_element: enums.WfiOpticalElement
 

@@ -36,7 +36,7 @@ class ApertureName(StrEnum):
     WFI_CEN = "WFI_CEN"
 
 
-class CalStep(StrEnum):
+class CalStepValues(StrEnum):
     NA = "N/A"  # `N/A` is not a valid python name, so we use NA instead
     COMPLETE = "COMPLETE"
     SKIPPED = "SKIPPED"
@@ -71,7 +71,7 @@ class GuidewindowMode(StrEnum):
     DEFOCUSED_LARGE = "DEFOCUSED-LARGE"
 
 
-class WfiMode(StrEnum):
+class WfiModeNames(StrEnum):
     WFI = "WFI"
 
 
