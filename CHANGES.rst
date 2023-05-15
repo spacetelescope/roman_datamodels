@@ -29,6 +29,7 @@
 - Add ability to turn off data validation via an environment variable. [#173]
 - Add support for model containers constructed from ``Iterable`` [#164]
 
+- drop support for Python 3.8 [#155]
 
 
 0.14.2 (2023-03-31)

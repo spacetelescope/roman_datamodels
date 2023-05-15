@@ -3,8 +3,8 @@ Proof of concept of using tags with the data model framework
 """
 
 import datetime
+import importlib.resources
 import re
-import sys
 import warnings
 from abc import ABCMeta
 from collections import UserList
@@ -24,12 +24,6 @@ from astropy.units import Unit  # noqa: F401
 
 from .stuserdict import STUserDict as UserDict
 from .validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
-
-if sys.version_info < (3, 9):
-    import importlib_resources
-else:
-    import importlib.resources as importlib_resources
-
 
 __all__ = [
     "WfiMode",
@@ -472,7 +466,7 @@ class TaggedScalarNodeConverter(Converter):
         return _SCALAR_NODE_CLASSES_BY_TAG[tag](node)
 
 
-_DATAMODELS_MANIFEST_PATH = importlib_resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
+_DATAMODELS_MANIFEST_PATH = importlib.resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
 _DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
 
 
