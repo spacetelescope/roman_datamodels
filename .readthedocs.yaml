@@ -11,6 +11,14 @@ sphinx:
   configuration: docs/conf.py
   fail_on_warning: true
 
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "mambaforge-4.10"
+
+conda:
+  environment: docs/rtd_environment.yaml
+
 # Optionally set the version of Python and requirements required to build your docs
 build:
   os: ubuntu-22.04
