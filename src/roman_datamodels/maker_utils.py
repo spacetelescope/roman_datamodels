@@ -110,7 +110,7 @@ def mk_observation():
     obs = stnode.Observation()
     obs["obs_id"] = NOSTR
     obs["visit_id"] = NOSTR
-    obs["program"] = NONUM
+    obs["program"] = str(NONUM)
     obs["execution_plan"] = NONUM
     obs["pass"] = NONUM
     obs["segment"] = NONUM
@@ -190,6 +190,25 @@ def mk_photometry():
     phot["conversion_microjanskys_uncertainty"] = NONUM * u.uJy / u.sr
     phot["conversion_megajanskys_uncertainty"] = NONUM * u.MJy / u.sr
     return phot
+
+
+def mk_resample():
+    """
+    Create a dummy Resample instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Photometry
+    """
+    res = stnode.Resample()
+    res["pixel_scale_ratio"] = NONUM
+    res["pixfrac"] = NONUM
+    res["pointings"] = -1 * NONUM
+    res["product_exposure_time"] = -1 * NONUM
+    res["weight_type"] = "exptime"
+
+    return res
 
 
 def mk_source_detection():
@@ -549,6 +568,53 @@ def mk_level2_image(shape=(4088, 4088), n_groups=8, filepath=None):
         af.write_to(filepath)
     else:
         return wfi_image
+
+
+def mk_level3_mosaic(shape=None, n_images=2, filepath=None):
+    """
+    Create a dummy level 3 Mosaic instance (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    shape : tuple, int
+        (optional) Shape (y, x) of data array in the model (and its
+        corresponding dq/err arrays). Default is 4088 x 4088.
+
+    n_images : int
+        Number of images used to create the level 3 image. Defaults to 2.
+
+    filepath : str
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.WfiMosaic
+    """
+    meta = mk_common_meta()
+    meta["photometry"] = mk_photometry()
+    meta["resample"] = mk_resample()
+    wfi_mosaic = stnode.WfiMosaic()
+    wfi_mosaic["meta"] = meta
+    if not shape:
+        shape = (4088, 4088)
+
+    wfi_mosaic["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
+    wfi_mosaic["err"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32)
+    wfi_mosaic["context"] = np.zeros((n_images,) + shape, dtype=np.uint32)
+    wfi_mosaic["weight"] = np.zeros(shape, dtype=np.float32)
+
+    wfi_mosaic["var_poisson"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+    wfi_mosaic["var_rnoise"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+    wfi_mosaic["var_flat"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+    wfi_mosaic["cal_logs"] = mk_cal_logs()
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {"roman": wfi_mosaic}
+        af.write_to(filepath)
+    else:
+        return wfi_mosaic
 
 
 def mk_flat(shape=(4096, 4096), filepath=None):
@@ -1161,6 +1227,7 @@ def mk_guidewindow(shape=(2, 8, 16, 32, 32), filepath=None):
     guidewindow["meta"]["pedestal_resultant_exp_time"] = NONUM
     guidewindow["meta"]["signal_resultant_exp_time"] = NONUM
     guidewindow["meta"]["gw_acq_number"] = NONUM
+    guidewindow["meta"]["gw_science_file_source"] = NOSTR
     guidewindow["meta"]["gw_mode"] = "WIM-ACQ"
     guidewindow["meta"]["gw_window_xstart"] = NONUM
     guidewindow["meta"]["gw_window_ystart"] = NONUM

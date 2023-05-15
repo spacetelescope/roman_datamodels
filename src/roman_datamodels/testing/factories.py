@@ -653,7 +653,6 @@ def create_guidestar(**kwargs):
         "gs_ura": random_utils.generate_positive_float(),
         "gw_id": random_utils.generate_string("ID ", 20),
         "gw_fgs_mode": "WSM-ACQ-2",
-        "gw_science_file_source": random_utils.generate_string("r", 20) + ".asdf",
         "gs_id": random_utils.generate_string("GS ", 20),
         "gs_catalog_version": random_utils.generate_string("GSC", 20),
         "gw_window_xsize": 16,
@@ -785,7 +784,7 @@ def create_observation(**kwargs):
         "observation": random_utils.generate_positive_int(),
         "observation_label": random_utils.generate_string("Observation label "),
         "pass": random_utils.generate_positive_int(),
-        "program": random_utils.generate_positive_int(),
+        "program": str(random_utils.generate_positive_int()),
         "segment": random_utils.generate_positive_int(),
         "survey": random_utils.generate_choice("HLS", "EMS", "SN", "N/A"),
         "template": random_utils.generate_string("Template ", 50),
@@ -900,6 +899,32 @@ def create_program(**kwargs):
     raw.update(kwargs)
 
     return stnode.Program(raw)
+
+
+def create_resample(**kwargs):
+    """
+    Create a dummy Resample instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Resample
+    """
+    raw = {
+        "pixel_scale_ratio": random_utils.generate_positive_float(),
+        "pixfrac": random_utils.generate_positive_float(),
+        "pointings": random_utils.generate_positive_int(),
+        "product_exposure_time": random_utils.generate_positive_float(),
+        "weight_type": random_utils.generate_choice("exptime", "ivm"),
+    }
+    raw.update(kwargs)
+
+    return stnode.Resample(raw)
 
 
 def create_ramp(**kwargs):
@@ -1096,6 +1121,7 @@ def create_guidewindow(**kwargs):
     raw["meta"]["pedestal_resultant_exp_time"] = random_utils.generate_float()
     raw["meta"]["signal_resultant_exp_time"] = random_utils.generate_float()
     raw["meta"]["gw_acq_number"] = random_utils.generate_int()
+    raw["meta"]["gw_science_file_source"] = "filename"
     raw["meta"]["gw_mode"] = "WIM-ACQ"
     raw["meta"]["gw_window_xstart"] = random_utils.generate_positive_int(4000)
     raw["meta"]["gw_window_ystart"] = random_utils.generate_positive_int(4000)
@@ -1309,6 +1335,39 @@ def create_wfi_mode(**kwargs):
     raw.update(kwargs)
 
     return stnode.WfiMode(raw)
+
+
+def create_wfi_mosaic(**kwargs):
+    """
+    Create a dummy WfiMosaic instance with valid values for attributes
+    required by the schema.
+
+    Parameters
+    ----------
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    roman_datamodels.stnode.WfiIMosaic
+    """
+
+    raw = {
+        "data": random_utils.generate_array_float32((4088, 4088), units=u.electron / u.s),
+        "err": random_utils.generate_array_float32((4088, 4088), min=0.0, units=u.electron / u.s),
+        "context": random_utils.generate_array_uint32((2, 4088, 4088)),
+        "weight": random_utils.generate_array_float32((4088, 4088)),
+        "var_poisson": random_utils.generate_array_float32((4088, 4088), units=u.electron**2 / u.s**2),
+        "var_rnoise": random_utils.generate_array_float32((4088, 4088), units=u.electron**2 / u.s**2),
+        "var_flat": random_utils.generate_array_float32((4088, 4088), units=u.electron**2 / u.s**2),
+        "cal_logs": create_cal_logs(),
+        "meta": create_meta(),
+    }
+    raw.update(kwargs)
+    raw["meta"]["photometry"] = create_photometry()
+    raw["meta"]["resample"] = create_resample()
+
+    return stnode.WfiMosaic(raw)
 
 
 def create_wfi_science_raw(**kwargs):

@@ -1,6 +1,8 @@
 0.15.0 (unreleased)
 ===================
 
+- Updates the maker utilities for guide windows to include gw_science_file_source  [#179]
+
 - Remove use of deprecated ``pytest-openfiles`` ``pytest`` plugin. This has been replaced by
   catching ``ResourceWarning`` s. [#142]
 
@@ -14,6 +16,8 @@
 
 - Add Pull Request Template. [#147]
 
+- Add Level 3 MosaicModel and Resample stnodes, maker utils, factories, and tests. [#163]
+
 - Renamed n_ints to n_groups. Did some shape variable cleanup. [#165]
 
 - Bugfix for the ``amp33`` shape in ``mk_ramp``. [#166]
@@ -22,9 +26,11 @@
 
 - Bugfix for ``photmjsr`` not being able to be set or validated properly. [#170]
 
+- Add ability to turn off data validation via an environment variable. [#173]
 - Add support for model containers constructed from ``Iterable`` [#164]
 
 - drop support for Python 3.8 [#155]
+
 
 0.14.2 (2023-03-31)
 ===================
