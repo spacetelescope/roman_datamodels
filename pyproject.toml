@@ -18,10 +18,7 @@ dependencies = [
     'psutil >=5.7.2',
     'numpy >=1.20',
     'astropy >=5.0.4',
-    # 'rad >=0.14.2',
-    # Use dev version of `rad` until 0.14.2+ is released
-    # 'rad @ git+https://github.com/spacetelescope/rad.git@main',
-    "rad @ git+https://github.com/spacetelescope/rad.git@d95148813bb26460544a218317fdb05fe8c1cd29",
+    'rad >=0.15.0',
     'asdf-standard >=1.0.3',
 ]
 dynamic = ['version']
