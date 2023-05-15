@@ -3,6 +3,7 @@ Proof of concept of using tags with the data model framework
 """
 
 import datetime
+import importlib.resources
 import re
 import warnings
 from abc import ABCMeta
@@ -465,7 +466,7 @@ class TaggedScalarNodeConverter(Converter):
         return _SCALAR_NODE_CLASSES_BY_TAG[tag](node)
 
 
-_DATAMODELS_MANIFEST_PATH = importlib_resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
+_DATAMODELS_MANIFEST_PATH = importlib.resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
 _DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
 
 
