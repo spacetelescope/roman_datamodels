@@ -1,4 +1,4 @@
-0.15.0 (unreleased)
+0.15.0 (2023-05-15)
 ===================
 
 - Updates the maker utilities for guide windows to include gw_science_file_source  [#179]
