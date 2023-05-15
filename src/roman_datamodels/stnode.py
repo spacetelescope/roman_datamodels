@@ -9,6 +9,7 @@ import warnings
 from abc import ABCMeta
 from collections import UserList
 from collections.abc import Iterable, Mapping
+from contextlib import contextmanager
 
 import asdf
 import asdf.schema as asdfschema
@@ -37,6 +38,20 @@ __all__ = [
     "TaggedListNode",
     "TaggedScalarNode",
 ]
+
+META_REGISTER = True
+
+
+@contextmanager
+def registration_off():
+    """
+    Context manager to turn off registration of classes.
+    """
+
+    global META_REGISTER
+    META_REGISTER = False
+    yield
+    META_REGISTER = True
 
 
 validator_callbacks = HashableDict(asdfschema.YAML_VALIDATORS)
@@ -257,9 +272,10 @@ class TaggedObjectNodeMeta(ABCMeta):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.__name__ != "TaggedObjectNode":
-            if self._tag in _OBJECT_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(f"TaggedObjectNode class for tag '{self._tag}' has been defined twice")
-            _OBJECT_NODE_CLASSES_BY_TAG[self._tag] = self
+            if META_REGISTER:
+                if self._tag in _OBJECT_NODE_CLASSES_BY_TAG:
+                    raise RuntimeError(f"TaggedObjectNode class for tag '{self._tag}' has been defined twice")
+                _OBJECT_NODE_CLASSES_BY_TAG[self._tag] = self
 
 
 class TaggedObjectNode(DNode, metaclass=TaggedObjectNodeMeta):
@@ -297,9 +313,10 @@ class TaggedListNodeMeta(ABCMeta):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.__name__ != "TaggedListNode":
-            if self._tag in _LIST_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(f"TaggedListNode class for tag '{self._tag}' has been defined twice")
-            _LIST_NODE_CLASSES_BY_TAG[self._tag] = self
+            if META_REGISTER:
+                if self._tag in _LIST_NODE_CLASSES_BY_TAG:
+                    raise RuntimeError(f"TaggedListNode class for tag '{self._tag}' has been defined twice")
+                _LIST_NODE_CLASSES_BY_TAG[self._tag] = self
 
 
 class TaggedListNode(LNode, metaclass=TaggedListNodeMeta):
@@ -325,10 +342,11 @@ class TaggedScalarNodeMeta(ABCMeta):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.__name__ != "TaggedScalarNode":
-            if self._tag in _SCALAR_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(f"TaggedScalarNode class for tag '{self._tag}' has been defined twice")
-            _SCALAR_NODE_CLASSES_BY_TAG[self._tag] = self
-            _SCALAR_NODE_CLASSES_BY_KEY[_scalar_tag_to_key(self._tag)] = self
+            if META_REGISTER:
+                if self._tag in _SCALAR_NODE_CLASSES_BY_TAG:
+                    raise RuntimeError(f"TaggedScalarNode class for tag '{self._tag}' has been defined twice")
+                _SCALAR_NODE_CLASSES_BY_TAG[self._tag] = self
+                _SCALAR_NODE_CLASSES_BY_KEY[_scalar_tag_to_key] = self
 
 
 class TaggedScalarNode(metaclass=TaggedScalarNodeMeta):
