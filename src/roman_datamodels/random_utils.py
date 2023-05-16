@@ -229,36 +229,3 @@ def generate_software_version(seed=None):
     return f"{vals[0]}.{vals[1]}.{vals[2]}"
 
 
-def generate_read_pattern(seed=None):
-    rng = np.random.default_rng(seed)
-
-    length = rng.integers(16, 512, endpoint=True)
-
-    base_list = np.zeros(length, dtype=int)
-    choices = [True, False]
-
-    # Organize groups
-    group = 1
-    for index in range(length):
-        if rng.choice(choices):
-            group += 1
-
-        base_list[index] = group
-
-    # Randomly omit
-    for index in range(length):
-        if rng.choice(choices):
-            base_list[index] = 0
-
-    read_pattern = {}
-    for index in range(length):
-        group = base_list[index]
-        if group == 0:
-            continue
-
-        if group not in read_pattern:
-            read_pattern[group] = []
-
-        read_pattern[group].append(index)
-
-    return [read_pattern[key] for key in sorted(read_pattern.keys())]

@@ -126,7 +126,7 @@ class DNode(UserDict):
     def __init__(self, node=None, parent=None, name=None):
         if node is None:
             self.__dict__["_data"] = {}
-        elif isinstance(node, Mapping):
+        elif isinstance(node, dict):
             self.__dict__["_data"] = node
         else:
             raise ValueError("Initializer only accepts dicts")
@@ -240,7 +240,7 @@ class LNode(UserList):
     def __init__(self, node=None):
         if node is None:
             self.data = []
-        elif isinstance(node, Iterable):
+        elif isinstance(node, list):
             self.data = node
         else:
             raise ValueError("Initializer only accepts lists")
@@ -423,7 +423,7 @@ class TaggedObjectNodeConverter(Converter):
         return obj.tag
 
     def to_yaml_tree(self, obj, tag, ctx):
-        return dict(obj._data)
+        return obj._data
 
     def from_yaml_tree(self, node, tag, ctx):
         return _OBJECT_NODE_CLASSES_BY_TAG[tag](node)

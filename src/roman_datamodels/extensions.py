@@ -1,4 +1,4 @@
-from asdf.extension import ManifestExtension  # type: ignore
+from asdf.extension import ManifestExtension
 
 from .stnode import TaggedListNodeConverter, TaggedObjectNodeConverter, TaggedScalarNodeConverter
 
