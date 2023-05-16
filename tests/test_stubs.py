@@ -26,6 +26,7 @@ def _tag_object(tree):
 
 
 def test_check_names():
+    """test that all the tagged schemas have a corresponding node and stub"""
     schemas = set(SCHEMAS.keys())
     nodes = set(maker.NODE_CLASSES_BY_NAME.keys())
     stubs = set(maker.STUB_CLASSES_BY_NAME.keys())
@@ -34,11 +35,48 @@ def test_check_names():
     assert schemas.issubset(stubs), f"Missing stubs for {schemas - stubs}"
 
 
+def test_enum_names():
+    """
+    test the enum class names only overlap with the stubs when the class name matches
+        a tagged scalar class.
+    """
+    enums = set(maker.ENUM_CLASSES_BY_NAME.keys())
+    stubs = set(maker.STUB_CLASSES_BY_NAME.keys())
+    scalar = set(maker.SCALAR_CLASSES_BY_NAME.keys())
+
+    assert enums.intersection(stubs).issubset(scalar)
+
+
 @pytest.mark.parametrize("name", SCHEMAS.keys())
-def test_stub(name):
+def test_stub_is_valid(name):
+    """
+    Test generating an object from the stub for each tagged schema and then
+        validating it against the schema.
+    """
     # Create the object from stub multiple times to make sure it works
     # this is because it is randomly generated and may follow different
     # creation paths each time
     for _ in range(NUM_ITERATIONS):
         tree = _tag_object(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name]))
         asdf.schema.validate(tree, schema=SCHEMAS[name])
+
+
+@pytest.mark.parametrize(
+    "stub", [maker.STUB_CLASSES_BY_NAME[c.__name__] for c in stnode.NODE_CLASSES if issubclass(c, stnode.TaggedObjectNode)]
+)
+def test_no_extra_stub_fields(stub, manifest):
+    instance = maker.create_stub(stub)
+    instance_keys = set(instance.keys())
+
+    schema_uri = next(t["schema_uri"] for t in manifest["tags"] if t["tag_uri"] == instance.tag)
+    schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
+
+    schema_keys = set()
+    subschemas = [schema]
+    if "allOf" in schema:
+        subschemas.extend(schema["allOf"])
+    for subschema in subschemas:
+        schema_keys.update(subschema.get("properties", {}).keys())
+
+    diff = instance_keys - schema_keys
+    assert len(diff) == 0, "Factory instance has extra keys: " + ", ".join(diff)

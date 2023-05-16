@@ -112,7 +112,6 @@ with stnode.registration_off():
     class Guidestar(stnode.TaggedObjectNode):
         gw_id: str
         gw_fgs_mode: enums.GuidewindowMode
-        gw_science_file_source: str
         gs_id: str
         gs_catalog_version: str
         gs_ra: float
