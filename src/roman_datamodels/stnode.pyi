@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Annotated
+
 import astropy.units as u
 import numpy as np
 from astropy.modeling import Model  # type: ignore
@@ -268,15 +270,15 @@ with stnode.registration_off():
 
     class Guidewindow(stnode.TaggedObjectNode):
         meta: _GuidewindowMeta
-        pedestal_frames: base.Quantity[np.ndarray[1, np.uint16], u.DN]
-        signal_frames: base.Quantity[np.ndarray[1, np.uint16], u.DN]
-        amp33: base.Quantity[np.ndarray[1, np.uint16], u.DN]
+        pedestal_frames: base.Quantity[np.ndarray[5, np.uint16], u.DN]
+        signal_frames: base.Quantity[np.ndarray[5, np.uint16], u.DN]
+        amp33: base.Quantity[np.ndarray[5, np.uint16], u.DN]
 
     class Ramp(stnode.TaggedObjectNode):
         meta: _Common
         data: base.Quantity[np.ndarray[3, np.float32], u.electron]
         pixeldq: np.ndarray[2, np.uint16]
-        groupdq: np.ndarray[2, np.uint8]
+        groupdq: np.ndarray[3, np.uint8]
         err: base.Quantity[np.ndarray[3, np.float32], u.electron]
         amp33: base.Quantity[np.ndarray[3, np.uint16], u.DN]
         border_ref_pix_left: base.Quantity[np.ndarray[3, np.float32], u.DN]
@@ -286,7 +288,7 @@ with stnode.registration_off():
         dq_border_ref_pix_left: np.ndarray[2, np.uint16]
         dq_border_ref_pix_right: np.ndarray[2, np.uint16]
         dq_border_ref_pix_top: np.ndarray[2, np.uint16]
-        dq_border_ref_pix_left: np.ndarray[2, np.uint16]
+        dq_border_ref_pix_bottom: np.ndarray[2, np.uint16]
 
     class RampFitOutput(stnode.TaggedObjectNode):
         meta: _Common
@@ -343,10 +345,10 @@ with stnode.registration_off():
         border_ref_pix_right: base.Quantity[np.ndarray[3, np.float32], u.DN]
         border_ref_pix_top: base.Quantity[np.ndarray[3, np.float32], u.DN]
         border_ref_pix_bottom: base.Quantity[np.ndarray[3, np.float32], u.DN]
-        dq_border_ref_pix_left: np.ndarray[3, np.uint32]
-        dq_border_ref_pix_right: np.ndarray[3, np.uint32]
-        dq_border_ref_pix_top: np.ndarray[3, np.uint32]
-        dq_border_ref_pix_bottom: np.ndarray[3, np.uint32]
+        dq_border_ref_pix_left: np.ndarray[2, np.uint32]
+        dq_border_ref_pix_right: np.ndarray[2, np.uint32]
+        dq_border_ref_pix_top: np.ndarray[2, np.uint32]
+        dq_border_ref_pix_bottom: np.ndarray[2, np.uint32]
         cal_logs: CalLogs
 
     class _WfiMosiacMeta(_Common):
@@ -366,7 +368,7 @@ with stnode.registration_off():
 
     class _RefExposureType(stnode.DNode):
         type: enums.ExposureType
-        p_exptype: enums.ExposureType
+        p_exptype: Annotated[enums.ExposureType, "|"]
 
     class _DarkExposure(_RefExposureType):
         ngroups: int
@@ -397,7 +399,7 @@ with stnode.registration_off():
     class DarkRef(stnode.TaggedObjectNode):
         meta: _DarkRefMeta
         data: base.Quantity[np.ndarray[3, np.float32], u.DN]
-        dq: base.Quantity[np.ndarray[2, np.uint32], u.DN]
+        dq: np.ndarray[2, np.uint32]
         err: base.Quantity[np.ndarray[3, np.float32], u.DN]
 
     class _DistortionRefMeta(_RefCommon):
@@ -442,7 +444,7 @@ with stnode.registration_off():
 
     class IpcRef(stnode.TaggedObjectNode):
         meta: _IpcRefMeta
-        data: np.ndarray[3, np.float32]
+        data: np.ndarray[2, np.float32]
 
     class _LinearityRefMeta(_RefCommon):
         reftype: enums.LinearityRefType
