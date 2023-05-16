@@ -57,15 +57,18 @@ def test_stub_is_valid(name):
     # this is because it is randomly generated and may follow different
     # creation paths each time
     for _ in range(NUM_ITERATIONS):
-        tree = _tag_object(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name]))
+        tree = _tag_object(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=True))
         asdf.schema.validate(tree, schema=SCHEMAS[name])
+
+    tree = _tag_object(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=False))
+    asdf.schema.validate(tree, schema=SCHEMAS[name])
 
 
 @pytest.mark.parametrize(
     "stub", [maker.STUB_CLASSES_BY_NAME[c.__name__] for c in stnode.NODE_CLASSES if issubclass(c, stnode.TaggedObjectNode)]
 )
 def test_no_extra_stub_fields(stub, manifest):
-    instance = maker.create_stub(stub)
+    instance = maker.create_stub(stub, random=False)
     instance_keys = set(instance.keys())
 
     schema_uri = next(t["schema_uri"] for t in manifest["tags"] if t["tag_uri"] == instance.tag)
