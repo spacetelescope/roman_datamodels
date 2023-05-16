@@ -1,5 +1,11 @@
-import asdf
+import sys
+
 import pytest
+
+if sys.version_info < (3, 10):
+    pytest.skip("Type stubs require Python 3.10+", allow_module_level=True)
+
+import asdf
 
 from roman_datamodels import stnode
 from roman_datamodels._typing import maker

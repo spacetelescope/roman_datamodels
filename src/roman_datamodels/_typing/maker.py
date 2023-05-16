@@ -8,6 +8,9 @@ import warnings
 from pathlib import Path
 from typing import get_args, get_type_hints
 
+if sys.version_info < (3, 10):
+    raise ImportError("Python 3.10+ is required to use the typing module features")
+
 # This try/except is to recover from pytest screwing with paths when running,
 # meaning the symbolic link from `stnode.pyi` to `_stnode.py` is lost. This
 # block is an attempt to recover from that, or any other similar issues.
