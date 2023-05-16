@@ -8,6 +8,14 @@ import warnings
 from pathlib import Path
 from typing import get_args, get_type_hints
 
+# This try/except is to recover from pytest screwing with paths when running,
+# meaning the symbolic link from `stnode.pyi` to `_stnode.py` is lost. This
+# block is an attempt to recover from that, or any other similar issues.
+#
+# The reason why `_stnode.py` exists is that Python will not load at runtime
+# any `.pyi` files, even though `.pyi` files have to be valid python. So we
+# trick Python into playing nice. The symbolic link is there so we have one
+# version of they type stubs file, not two.
 try:
     import _stnode as stubs
 except ModuleNotFoundError:
