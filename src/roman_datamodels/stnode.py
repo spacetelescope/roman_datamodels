@@ -8,7 +8,6 @@ import re
 import warnings
 from abc import ABCMeta
 from collections import UserList
-from collections.abc import Iterable, Mapping
 from contextlib import contextmanager
 
 import asdf

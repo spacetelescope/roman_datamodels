@@ -227,5 +227,3 @@ def generate_optical_element(seed=None):
 def generate_software_version(seed=None):
     vals = generate_positive_int(100, size=3, seed=seed)
     return f"{vals[0]}.{vals[1]}.{vals[2]}"
-
-

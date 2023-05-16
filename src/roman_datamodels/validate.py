@@ -9,8 +9,8 @@ from textwrap import dedent
 
 import jsonschema
 from asdf import AsdfFile
-from asdf import yamlutil
 from asdf import schema as asdf_schema
+from asdf import yamlutil
 from asdf.util import HashableDict
 
 __all__ = [
