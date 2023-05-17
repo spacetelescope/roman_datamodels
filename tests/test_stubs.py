@@ -54,19 +54,19 @@ def validate_node(node):
         af.validate()
 
 
-# @pytest.mark.parametrize("name", SCHEMAS.keys())
-# def test_stub_is_valid(name):
-#     """
-#     Test generating an object from the stub for each tagged schema and then
-#         validating it against the schema.
-#     """
-#     # Create the object from stub multiple times to make sure it works
-#     # this is because it is randomly generated and may follow different
-#     # creation paths each time
-#     for _ in range(NUM_ITERATIONS):
-#         validate_node(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=True))
+@pytest.mark.parametrize("name", SCHEMAS.keys())
+def test_stub_is_valid(name):
+    """
+    Test generating an object from the stub for each tagged schema and then
+        validating it against the schema.
+    """
+    # Create the object from stub multiple times to make sure it works
+    # this is because it is randomly generated and may follow different
+    # creation paths each time
+    # for _ in range(NUM_ITERATIONS):
+    #     validate_node(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=True))
 
-#     validate_node(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=False))
+    validate_node(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=False))
 
 
 @pytest.mark.parametrize(
