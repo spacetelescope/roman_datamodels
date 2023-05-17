@@ -10,8 +10,6 @@ import asdf
 from roman_datamodels import stnode
 from roman_datamodels._typing import maker
 
-NUM_ITERATIONS = 3
-
 
 def _get_schema(tag):
     schema_uri = asdf.AsdfFile().extension_manager.get_tag_definition(tag["tag_uri"]).schema_uris[0]
@@ -63,9 +61,8 @@ def test_stub_is_valid(name):
     # Create the object from stub multiple times to make sure it works
     # this is because it is randomly generated and may follow different
     # creation paths each time
-    # for _ in range(NUM_ITERATIONS):
-    #     validate_node(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=True))
 
+    validate_node(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=True))
     validate_node(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=False))
 
 
