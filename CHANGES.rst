@@ -7,6 +7,9 @@
 
 - Refactor the ``maker_utils`` to be easier to maintain and test. [#193]
 
+- Add type stubs for ``stnode`` to aid in documenting the dynamic classes for
+  users and IDE tooling. [#181]
+
 0.15.0 (2023-05-15)
 ===================
 
