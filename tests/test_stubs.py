@@ -26,11 +26,6 @@ def _get_name(tag):
 SCHEMAS = {_get_name(tag): _get_schema(tag) for tag in stnode._DATAMODELS_MANIFEST["tags"]}
 
 
-def _tag_object(tree):
-    ctx = asdf.AsdfFile()
-    return asdf.yamlutil.custom_tree_to_tagged_tree(tree, ctx)
-
-
 def test_check_names():
     """test that all the tagged schemas have a corresponding node and stub"""
     schemas = set(SCHEMAS.keys())
@@ -53,6 +48,12 @@ def test_enum_names():
     assert enums.intersection(stubs).issubset(scalar)
 
 
+def validate_node(node):
+    with asdf.AsdfFile() as af:
+        af["node"] = node
+        af.validate()
+
+
 @pytest.mark.parametrize("name", SCHEMAS.keys())
 def test_stub_is_valid(name):
     """
@@ -63,11 +64,9 @@ def test_stub_is_valid(name):
     # this is because it is randomly generated and may follow different
     # creation paths each time
     for _ in range(NUM_ITERATIONS):
-        tree = _tag_object(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=True))
-        asdf.schema.validate(tree, schema=SCHEMAS[name])
+        validate_node(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=True))
 
-    tree = _tag_object(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=False))
-    asdf.schema.validate(tree, schema=SCHEMAS[name])
+    validate_node(maker.create_stub(maker.STUB_CLASSES_BY_NAME[name], random=False))
 
 
 @pytest.mark.parametrize(
