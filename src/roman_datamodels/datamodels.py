@@ -6,6 +6,8 @@ keep consistency with the JWST data model version.
 
 It is to be subclassed by the various types of data model variants for products
 """
+
+import contextlib
 import copy
 import datetime
 import logging
@@ -113,15 +115,11 @@ class DataModel:
         if "roman" not in asdffile_instance.tree:
             raise ValueError('ASDF file does not have expected "roman" attribute')
         topnode = asdffile_instance.tree["roman"]
-        if model_registry[topnode.__class__] != self.__class__:
-            return False
-        return True
+        return model_registry[topnode.__class__] == self.__class__
 
     @property
     def schema_uri(self):
-        # Determine the schema corresponding to this model's tag
-        schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uri
-        return schema_uri
+        return next(t for t in DATAMODEL_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uri
 
     def close(self):
         if not self._iscopy:
@@ -151,12 +149,10 @@ class DataModel:
             instance = copy.deepcopy(source._instance, memo=memo)
             target._asdf = source._asdf.copy()
             target._instance = instance
-            target._iscopy = True
         else:
             target._asdf = source._asdf
             target._instance = source._instance
-            target._iscopy = True
-
+        target._iscopy = True
         target._files_to_close = []
         target._shape = source._shape
         target._ctx = target
@@ -184,11 +180,7 @@ class DataModel:
 
     def open_asdf(self, init=None, **kwargs):
         with validate.nuke_validation():
-            if isinstance(init, str):
-                asdffile = asdf.open(init)
-            else:
-                asdffile = asdf.AsdfFile(init)
-            return asdffile
+            return asdf.open(init) if isinstance(init, str) else asdf.AsdfFile(init)
 
     def to_asdf(self, init, *args, **kwargs):
         with validate.nuke_validation():
@@ -203,11 +195,7 @@ class DataModel:
         This is intended to be overridden in the subclasses if the
         primary array's name is not "data".
         """
-        if hasattr(self, "data"):
-            primary_array_name = "data"
-        else:
-            primary_array_name = ""
-        return primary_array_name
+        return "data" if hasattr(self, "data") else ""
 
     @property
     def override_handle(self):
@@ -215,7 +203,7 @@ class DataModel:
         would normally be used.
         """
         # Arbitrary choice to look something like crds://
-        return "override://" + self.__class__.__name__
+        return f"override://{self.__class__.__name__}"
 
     @property
     def shape(self):
@@ -265,9 +253,9 @@ class DataModel:
             return val
 
         if include_arrays:
-            return {"roman." + key: convert_val(val) for (key, val) in self.items()}
+            return {f"roman.{key}": convert_val(val) for (key, val) in self.items()}
         else:
-            return {"roman." + key: convert_val(val) for (key, val) in self.items() if not isinstance(val, np.ndarray)}
+            return {f"roman.{key}": convert_val(val) for (key, val) in self.items() if not isinstance(val, np.ndarray)}
 
     def items(self):
         """
@@ -303,12 +291,11 @@ class DataModel:
         -------
         dict
         """
-        crds_header = {
+        return {
             key: val
             for key, val in self.to_flat_dict(include_arrays=False).items()
             if isinstance(val, (str, int, float, complex, bool))
         }
-        return crds_header
 
     def validate(self):
         """
@@ -434,7 +421,7 @@ class ModelContainer(Iterable):
         try:
             if len(init):
                 init = Path(init)
-        except TypeError:
+        except TypeError as e:
             if init is None:
                 # don't populate container
                 pass
@@ -447,7 +434,7 @@ class ModelContainer(Iterable):
                 if is_all_string or is_all_roman_datamodels:
                     self._models.extend(init)
                 else:
-                    raise TypeError("Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
+                    raise TypeError("Input must be a list of strings (full path to ASDF files) or Roman datamodels.") from e
         else:
             if is_association(init):
                 self.from_asn(init)
@@ -520,22 +507,15 @@ class ModelContainer(Iterable):
             infiles = []
             logger.debug(f"Filtering datasets based on allowed exptypes {self.asn_exptypes}:")
             for member in asn_data["products"][0]["members"]:
-                if any([x for x in self.asn_exptypes if re.match(member["exptype"], x, re.IGNORECASE)]):
+                if any(x for x in self.asn_exptypes if re.match(member["exptype"], x, re.IGNORECASE)):
                     infiles.append(member)
-                    logger.debug("Files accepted for processing {}:".format(member["expname"]))
+                    logger.debug(f'Files accepted for processing {member["expname"]}:')
         else:
-            infiles = [member for member in asn_data["products"][0]["members"]]
+            infiles = list(asn_data["products"][0]["members"])
 
-        if asn_file_path:
-            asn_dir = op.dirname(asn_file_path)
-        else:
-            asn_dir = ""
-
+        asn_dir = op.dirname(asn_file_path) if asn_file_path else ""
         # Only handle the specified number of members.
-        if self.asn_n_members:
-            sublist = infiles[: self.asn_n_members]
-        else:
-            sublist = infiles
+        sublist = infiles[: self.asn_n_members] if self.asn_n_members else infiles
         try:
             for member in sublist:
                 filepath = op.join(asn_dir, member["expname"])
@@ -546,11 +526,7 @@ class ModelContainer(Iterable):
                     for attr, val in member.items():
                         if attr in RECOGNIZED_MEMBER_FIELDS:
                             if attr == "tweakreg_catalog":
-                                if val.strip():
-                                    val = op.join(asn_dir, val)
-                                else:
-                                    val = None
-
+                                val = op.join(asn_dir, val) if val.strip() else None
                             setattr(m.meta, attr, val)
 
                     if not self._save_open:
@@ -572,11 +548,9 @@ class ModelContainer(Iterable):
             self.asn_table_name = op.basename(asn_file_path)
             self.asn_pool_name = asn_data["asn_pool"]
             for model in self:
-                try:
+                with contextlib.suppress(AttributeError):
                     model.meta.asn["table_name"] = self.asn_table_name
                     model.meta.asn["pool_name"] = self.asn_pool_name
-                except AttributeError:
-                    pass
 
     def save(self, dir_path=None, *args, **kwargs):
         # use current path if dir_path is not provided
@@ -625,15 +599,12 @@ class ModelContainer(Iterable):
 
         group_dict = OrderedDict()
         for i, model in enumerate(self._models):
-            params = []
-
             model = model if isinstance(model, DataModel) else open(model)
 
             if not self._save_open:
                 model = open(model, memmap=self._memmap)
 
-            for param in unique_exposure_parameters:
-                params.append(str(getattr(model.meta.observation, param)))
+            params = [str(getattr(model.meta.observation, param)) for param in unique_exposure_parameters]
             try:
                 group_id = "roman" + "_".join(["".join(params[:3]), "".join(params[3:6]), params[6]])
                 model.meta["group_id"] = group_id
@@ -795,24 +766,22 @@ def open(init, memmap=False, target=None, **kwargs):
                 kwargs["copy_arrays"] = not memmap
                 asdffile = asdf.open(init, **kwargs)
                 file_to_close = asdffile
-            except ValueError:
-                raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
+            except ValueError as e:
+                raise TypeError("Open requires a filepath, file-like object, or Roman datamodel") from e
             if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
                 if file_to_close is not None:
                     file_to_close.close()
                 raise TypeError("Roman datamodels does not accept FITS files or objects")
         modeltype = type(asdffile.tree["roman"])
-        if modeltype in model_registry:
-            rmodel = model_registry[modeltype](asdffile, **kwargs)
-            if target is not None:
-                if not issubclass(rmodel.__class__, target):
-                    if file_to_close is not None:
-                        file_to_close.close()
-                    raise ValueError("Referenced ASDF file model type is not subclass of target")
-            else:
-                return rmodel
-        else:
+        if modeltype not in model_registry:
             return DataModel(asdffile, **kwargs)
+        rmodel = model_registry[modeltype](asdffile, **kwargs)
+        if target is None:
+            return rmodel
+        if not issubclass(rmodel.__class__, target):
+            if file_to_close is not None:
+                file_to_close.close()
+            raise ValueError("Referenced ASDF file model type is not subclass of target")
 
 
 model_registry = {
