@@ -1,4 +1,4 @@
-0.15.0 (unreleased)
+0.15.0 (2023-05-15)
 ===================
 
 - Updates the maker utilities for guide windows to include gw_science_file_source  [#179]
@@ -29,6 +29,7 @@
 - Add ability to turn off data validation via an environment variable. [#173]
 - Add support for model containers constructed from ``Iterable`` [#164]
 
+- drop support for Python 3.8 [#155]
 
 
 0.14.2 (2023-03-31)

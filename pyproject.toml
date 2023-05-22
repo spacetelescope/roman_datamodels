@@ -2,7 +2,7 @@
 name = 'roman_datamodels'
 description = 'data models supporting calibration of the Nancy Grace Roman Space Telescope'
 readme = 'README.md'
-requires-python = '>=3.8'
+requires-python = '>=3.9'
 license = { file = 'LICENSE' }
 authors = [{ name = 'STScI', email = 'help@stsci.edu' }]
 classifiers = [
@@ -18,9 +18,7 @@ dependencies = [
     'psutil >=5.7.2',
     'numpy >=1.20',
     'astropy >=5.0.4',
-    # 'rad >=0.14.2',
-    # Use dev version of `rad` until 0.14.2+ is released
-    'rad @ git+https://github.com/spacetelescope/rad.git@main',
+    'rad >=0.15.0',
     'asdf-standard >=1.0.3',
 ]
 dynamic = ['version']
