@@ -378,37 +378,38 @@ class ModelContainer(Iterable):
     --------
     To load a list of ASDF files into a `ModelContainer`:
 
-        >>> container = ModelContainer(
-                [
-                    "/path/to/file1.asdf",
-                    "/path/to/file2.asdf",
-                    ...,
-                    "/path/to/fileN.asdf"
-                ]
-            )
+    >>> container = ModelContainer(
+    ...     [
+    ...         "/path/to/file1.asdf",
+    ...         "/path/to/file2.asdf",
+    ...         ...,
+    ...         "/path/to/fileN.asdf"
+    ...     ]
+    ... )
 
     To load a list of open Roman DataModels into a `ModelContainer`:
 
-        >>> import roman_datamodels.datamodels as rdm
-        >>> data_list = [
-                    "/path/to/file1.asdf",
-                    "/path/to/file2.asdf",
-                    ...,
-                    "/path/to/fileN.asdf"
-                ]
-        >>> datamodels_list = [rdm.open(x) for x in data_list]
-        >>> container = ModelContainer(datamodels_list)
+    >>> import roman_datamodels.datamodels as rdm
+    >>> data_list = [
+    ...         "/path/to/file1.asdf",
+    ...         "/path/to/file2.asdf",
+    ...         ...,
+    ...         "/path/to/fileN.asdf"
+    ...     ]
+    >>> datamodels_list = [rdm.open(x) for x in data_list]
+    >>> container = ModelContainer(datamodels_list)
 
     To load an ASN file into a `ModelContainer`:
 
-        >>> asn_file = "/path/to/asn_file.json"
-        >>> container = ModelContainer(asn_file)
+    >>> asn_file = "/path/to/asn_file.json"
+    >>> container = ModelContainer(asn_file)
 
     In any of the cases above, the content of each file in a `ModelContainer` can
     be accessed by iterating over its elements. For example, to print out the filename
     of each file, we can run:
-        >>> for model in container:
-        ...     print(model.meta.filename)
+
+    >>> for model in container:
+    ...     print(model.meta.filename)
 
 
     Notes
@@ -467,7 +468,9 @@ class ModelContainer(Iterable):
                 if is_all_string or is_all_roman_datamodels:
                     self._models.extend(init)
                 else:
-                    raise TypeError("Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
+                    raise TypeError(
+                        "Input must be an ASN file or a list of either strings (full path to ASDF files) or Roman datamodels."
+                    )
         else:
             if is_association(init):
                 self.from_asn(init)
@@ -475,7 +478,9 @@ class ModelContainer(Iterable):
                 init_from_asn = self.read_asn(init)
                 self.from_asn(init_from_asn, asn_file_path=init)
             else:
-                raise TypeError("Input must be a list of either strings (full path to ASDF files) or Roman datamodels.")
+                raise TypeError(
+                    "Input must be an ASN file or a list of either strings (full path to ASDF files) or Roman datamodels."
+                )
 
     def __len__(self):
         return len(self._models)
@@ -527,8 +532,8 @@ class ModelContainer(Iterable):
 
         Parameters
         ----------
-        asn_data : ~roman_datamodels.associations.Association
-            An association dictionary
+        asn_data
+            A ``roman_datamodels.associations.Association`` association dictionary
 
         asn_file_path: str
             Filepath of the association, if known.
@@ -612,13 +617,19 @@ class ModelContainer(Iterable):
         same group ID, which allows grouping by exposure.  The following
         metadata is used for grouping:
 
-            - `meta.observation.program`;
-            - `meta.observation.observation`;
-            - `meta.observation.visit`;
-            - `meta.observation.visit_file_group`;
-            - `meta.observation.visit_file_sequence`;
-            - `meta.observation.visit_file_activity`;
-            - `meta.observation.exposure`.
+            ``meta.observation.program``;
+
+            ``meta.observation.observation``;
+
+            ``meta.observation.visit``;
+
+            ``meta.observation.visit_file_group``;
+
+            ``meta.observation.visit_file_sequence``;
+
+            ``meta.observation.visit_file_activity``;
+
+            ``meta.observation.exposure``.
         """
         unique_exposure_parameters = [
             "program",
@@ -662,7 +673,7 @@ class ModelContainer(Iterable):
 
     def merge_tree(self, a, b):
         """
-        Merge elements from tree `b` into tree `a`.
+        Merge elements from tree ``b`` into tree ``a``.
         """
 
         def recurse(a, b):
