@@ -60,6 +60,7 @@ __all__ = [
     "SuperbiasRefModel",
     "SaturationRefModel",
     "WfiImgPhotomRefModel",
+    "ModelContainer",
     "open",
 ]
 
@@ -356,14 +357,9 @@ class ModelContainer(Iterable):
 
     Parameters
     ----------
-    init : file path, list of DataModels or path to ASDF files, or None
-
-        - file path: initialize from an association table
-
-        - list: a list of either datamodels or full path to ASDF files (as string)
-
-        - None: initializes an empty `ModelContainer` instance, to which
-          DataModels can be added via the ``append()`` method.
+    init : path to an ASN file, list of either DataModels or path to ASDF files, or `None`
+        If `None`, then an empty `ModelContainer` instance is initialized, to which
+        DataModels can later be added via the ``append()`` method.
 
     iscopy : bool
         Presume this model is a copy. Members will not be closed
@@ -380,9 +376,39 @@ class ModelContainer(Iterable):
 
     Examples
     --------
-    >>> container = ModelContainer(['file1.asdf', 'file2.asdf', ..., 'fileN.asdf'])
-    >>> for model in container:
-    ...     print(model.meta.filename)
+    To load a list of ASDF files into a `ModelContainer`:
+
+        >>> container = ModelContainer(
+                [
+                    "/path/to/file1.asdf",
+                    "/path/to/file2.asdf",
+                    ...,
+                    "/path/to/fileN.asdf"
+                ]
+            )
+
+    To load a list of open Roman DataModels into a `ModelContainer`:
+
+        >>> import roman_datamodels.datamodels as rdm
+        >>> data_list = [
+                    "/path/to/file1.asdf",
+                    "/path/to/file2.asdf",
+                    ...,
+                    "/path/to/fileN.asdf"
+                ]
+        >>> datamodels_list = [rdm.open(x) for x in data_list]
+        >>> container = ModelContainer(datamodels_list)
+
+    To load an ASN file into a `ModelContainer`:
+
+        >>> asn_file = "/path/to/asn_file.json"
+        >>> container = ModelContainer(asn_file)
+
+    In any of the cases above, the content of each file in a `ModelContainer` can
+    be accessed by iterating over its elements. For example, to print out the filename
+    of each file, we can run:
+        >>> for model in container:
+        ...     print(model.meta.filename)
 
 
     Notes
@@ -400,7 +426,7 @@ class ModelContainer(Iterable):
         during processing.
 
         .. warning:: Input files will be updated in-place with new ``meta`` attribute
-        values when ASN table's members contain additional attributes.
+            values when ASN table's members contain additional attributes.
 
     """
 
@@ -441,7 +467,7 @@ class ModelContainer(Iterable):
                 if is_all_string or is_all_roman_datamodels:
                     self._models.extend(init)
                 else:
-                    raise TypeError("Input must be a list of strings (full path to ASDF files) or Roman datamodels.") from e
+                    raise TypeError("Input must be a list of strings (full path to ASDF files) or Roman datamodels.")
         else:
             if is_association(init):
                 self.from_asn(init)
@@ -477,7 +503,7 @@ class ModelContainer(Iterable):
     @staticmethod
     def read_asn(filepath):
         """
-        Load fits files from a JWST association file.
+        Load fits files from a Roman association file.
 
         Parameters
         ----------
@@ -497,11 +523,11 @@ class ModelContainer(Iterable):
 
     def from_asn(self, asn_data, asn_file_path=None):
         """
-        Load fits files from a JWST association file.
+        Load fits files from a Roman association file.
 
         Parameters
         ----------
-        asn_data : ~jwst.associations.Association
+        asn_data : ~roman_datamodels.associations.Association
             An association dictionary
 
         asn_file_path: str
@@ -580,19 +606,19 @@ class ModelContainer(Iterable):
     def models_grouped(self):
         """
         Returns a list of a list of datamodels grouped by exposure.
-        Assign an ID grouping by exposure.
+        An ID is assigned to each group.
 
         Data from different detectors of the same exposure will have the
-        same group id, which allows grouping by exposure.  The following
+        same group ID, which allows grouping by exposure.  The following
         metadata is used for grouping:
 
-        meta.observation.program
-        meta.observation.observation
-        meta.observation.visit
-        meta.observation.visit_file_group
-        meta.observation.visit_file_sequence
-        meta.observation.visit_file_activity
-        meta.observation.exposure
+            - `meta.observation.program`;
+            - `meta.observation.observation`;
+            - `meta.observation.visit`;
+            - `meta.observation.visit_file_group`;
+            - `meta.observation.visit_file_sequence`;
+            - `meta.observation.visit_file_activity`;
+            - `meta.observation.exposure`.
         """
         unique_exposure_parameters = [
             "program",
