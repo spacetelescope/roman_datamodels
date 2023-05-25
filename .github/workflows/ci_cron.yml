@@ -11,10 +11,7 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
     with:
       envs: |
-        - macos: test-py39
-          python-version: 3.9
-        - macos: test-py310
-          python-version: 3.10
-        - macos: test-py311
-          python-version: 3.11
-        - linux: test-devdeps
+        - macos: py39
+        - macos: py310
+        - macos: py311
+        - linux: devdeps
