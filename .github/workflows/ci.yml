@@ -25,20 +25,15 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       envs: |
-        - linux: test-py39-oldestdeps-cov
-          python-version: 3.9
-        - linux: test-py39
-          python-version: 3.9
-        - linux: test-py310
-          python-version: 3.10
-        - linux: test-py311
-          python-version: 3.11
-        - macos: test-py311
-          python-version: 3.11
-        - linux: test-cov
+        - linux: py39-oldestdeps-cov
+        - linux: py39
+        - linux: py310
+        - linux: py311
+        - macos: py311
+        - linux: cov
           coverage: codecov
   test_upstream:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       envs: |
-        - linux: test-rad
+        - linux: rad
