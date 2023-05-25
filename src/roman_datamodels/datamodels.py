@@ -24,6 +24,7 @@ import asdf
 import numpy as np
 import packaging.version
 from astropy.time import Time
+from romancal.associations import AssociationNotValidError, load_asn
 
 from . import stnode, validate
 from .extensions import DATAMODEL_EXTENSIONS
@@ -516,7 +517,7 @@ class ModelContainer(Iterable):
             The path to an association file.
         """
         # Prevent circular import:
-        from .associations import AssociationNotValidError, load_asn
+        # from .associations import AssociationNotValidError, load_asn
 
         filepath = op.abspath(op.expanduser(op.expandvars(filepath)))
         try:
@@ -794,7 +795,7 @@ def open(init, memmap=False, target=None, **kwargs):
     init : str, `DataModel`, `asdf.AsdfFile`
         May be any one of the following types:
             - `asdf.AsdfFile` instance
-            - string indicating the path to an ASDF file
+            - string indicating the path to an ASDF or ASN file
             - `DataModel` Roman data model instance
     memmap : bool
         Open ASDF file binary data using memmap (default: False)
@@ -812,9 +813,8 @@ def open(init, memmap=False, target=None, **kwargs):
     """
     with validate.nuke_validation():
         file_to_close = None
-        if target is not None:
-            if not issubclass(target, DataModel):
-                raise ValueError("Target must be a subclass of DataModel")
+        if target is not None and not issubclass(target, DataModel):
+            raise ValueError("Target must be a subclass of DataModel")
         # Temp fix to catch JWST args before being passed to asdf open
         if "asn_n_members" in kwargs:
             del kwargs["asn_n_members"]
@@ -828,29 +828,32 @@ def open(init, memmap=False, target=None, **kwargs):
                     return init
             # Copy the object so it knows not to close here
             return init.copy()
-        else:
-            try:
+        elif isinstance(init, str):
+            # get filename extension
+            ext = Path(init).suffix.strip(".")
+            if ext == "asdf":
                 kwargs["copy_arrays"] = not memmap
                 asdffile = asdf.open(init, **kwargs)
                 file_to_close = asdffile
-            except ValueError:
-                raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
-            if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
-                if file_to_close is not None:
-                    file_to_close.close()
-                raise TypeError("Roman datamodels does not accept FITS files or objects")
-        modeltype = type(asdffile.tree["roman"])
-        if modeltype in model_registry:
-            rmodel = model_registry[modeltype](asdffile, **kwargs)
-            if target is not None:
-                if not issubclass(rmodel.__class__, target):
+                if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
                     if file_to_close is not None:
                         file_to_close.close()
-                    raise ValueError("Referenced ASDF file model type is not subclass of target")
+                    raise TypeError("Roman datamodels does not accept FITS files or objects")
+            elif ext == "json":
+                return ModelContainer(init, **kwargs)
             else:
-                return rmodel
-        else:
+                raise ValueError("Open requires a filepath, file-like object, or Roman datamodel")
+
+        modeltype = type(asdffile.tree["roman"])
+        if modeltype not in model_registry:
             return DataModel(asdffile, **kwargs)
+        rmodel = model_registry[modeltype](asdffile, **kwargs)
+        if target is None:
+            return rmodel
+        if not issubclass(rmodel.__class__, target):
+            if file_to_close is not None:
+                file_to_close.close()
+            raise ValueError("Referenced ASDF file model type is not subclass of target")
 
 
 model_registry = {
