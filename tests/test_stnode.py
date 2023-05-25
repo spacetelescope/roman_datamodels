@@ -222,10 +222,10 @@ def test_nuke_validation(env_var, tmp_path):
 
     # True to read broken files with rdm.open
     with context:
-        with datamodels.open(broken_save):
+        with datamodels.roman_open(broken_save):
             pass
     with context:
-        with datamodels.open(broken_to_asdf):
+        with datamodels.roman_open(broken_to_asdf):
             pass
 
 

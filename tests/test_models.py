@@ -742,7 +742,7 @@ def test_opening_level3_mosaic(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testwfi_mosaic.asdf"
     utils.mk_level3_mosaic(filepath=file_path)
-    wfi_mosaic = datamodels.open(file_path)
+    wfi_mosaic = datamodels.roman_open(file_path)
 
     assert wfi_mosaic.meta.instrument.optical_element == "F062"
     assert isinstance(wfi_mosaic, datamodels.MosaicModel)
