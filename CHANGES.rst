@@ -10,7 +10,7 @@
 - Rename ``open`` in the ``datamodels`` module to ``roman_open`` to avoid
   shadowing the builtin ``open`` function, while preserving ``roman_datamodels.open``
   in the main namespace. [#176]
-  
+
 0.15.0 (2023-05-15)
 ===================
 
