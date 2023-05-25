@@ -4,17 +4,23 @@ on:
   schedule:
     # Weekly Monday 6AM build
     - cron: "0 0 * * 1"
+  pull_request:
+    # We also want this workflow triggered if the `Weekly CI` label is
+    # added or present when PR is updated
+    types:
+      - synchronize
+      - labeled
+  push:
+    tags: "*"
   workflow_dispatch:
 
 jobs:
   test:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
+    if: (github.repository == 'spacetelescope/roman_datamodels' && (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'Weekly CI')))
     with:
       envs: |
-        - macos: test-py39
-          python-version: 3.9
-        - macos: test-py310
-          python-version: 3.10
-        - macos: test-py311
-          python-version: 3.11
-        - linux: test-devdeps
+        - macos: py39
+        - macos: py310
+        - macos: py311
+        - linux: devdeps
