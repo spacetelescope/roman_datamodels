@@ -13,6 +13,9 @@
 
 - Add ``maker_utils`` for all the datamodels. [#198]
 
+- Update ``roman_datamodels`` to support the new reference file for the
+  reference pixel correction. [#190]
+
 0.15.0 (2023-05-15)
 ===================
 
