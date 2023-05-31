@@ -342,8 +342,7 @@ def test_flat_model(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
 
-    meta = {}
-    utils.add_ref_common(meta)
+    meta = utils.mk_ref_common()
     meta["reftype"] = "FLAT"
     flatref = stnode.FlatRef()
     flatref["meta"] = meta
