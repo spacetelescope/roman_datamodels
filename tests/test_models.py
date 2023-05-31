@@ -138,7 +138,7 @@ def test_opening_ramp_ref(tmp_path):
 
 # RampFitOutput tests
 def test_make_rampfitoutput():
-    rampfitoutput = utils.mk_rampfitoutput(shape=(2, 20, 20))
+    rampfitoutput = utils.mk_ramp_fit_output(shape=(2, 20, 20))
 
     assert rampfitoutput.meta.exposure.type == "WFI_IMAGE"
     assert rampfitoutput.slope.dtype == np.float32
@@ -169,7 +169,7 @@ def test_make_rampfitoutput():
 def test_opening_rampfitoutput_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testrampfitoutput.asdf"
-    utils.mk_rampfitoutput(filepath=file_path)
+    utils.mk_ramp_fit_output(filepath=file_path)
     rampfitoutput = datamodels.open(file_path)
     assert rampfitoutput.meta.instrument.optical_element == "F062"
     assert isinstance(rampfitoutput, datamodels.RampFitOutputModel)

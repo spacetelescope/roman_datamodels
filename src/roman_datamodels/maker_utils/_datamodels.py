@@ -318,6 +318,8 @@ def mk_ramp_fit_output(shape=(8, 4096, 4096), filepath=None):
 def mk_rampfitoutput(**kwargs):
     warnings.warn("mk_rampfitoutput is deprecated. Use mk_rampfit_output instead.", DeprecationWarning)
 
+    return mk_ramp_fit_output(**kwargs)
+
 
 def mk_associations(shape=(2, 3, 1), filepath=None):
     """

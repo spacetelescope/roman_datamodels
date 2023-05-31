@@ -1,34 +1,28 @@
 import asdf
 import numpy as np
-from astropy import time
 from astropy import units as u
 from astropy.modeling import models
 
 from roman_datamodels import stnode
 
 from ._base import NONUM, NOSTR
+from ._common_meta import mk_ref_common
 
-
-def mk_ref_common():
-    """
-    Create dummy metadata for reference file instances.
-
-    Returns
-    -------
-    dict (follows reference_file/ref_common-1.0.0 schema)
-    """
-    meta = {}
-    instrument = {"name": "WFI", "detector": "WFI01", "optical_element": "F158"}
-    meta["telescope"] = "ROMAN"
-    meta["instrument"] = instrument
-    meta["origin"] = "STSCI"
-    meta["pedigree"] = "GROUND"
-    meta["author"] = "test system"
-    meta["description"] = "blah blah blah"
-    meta["useafter"] = time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
-    meta["reftype"] = ""
-
-    return meta
+__all__ = [
+    "mk_flat",
+    "mk_dark",
+    "mk_distortion",
+    "mk_gain",
+    "mk_ipc",
+    "mk_linearity",
+    "mk_inverse_linearity",
+    "mk_mask",
+    "mk_pixelarea",
+    "mk_wfi_img_photom",
+    "mk_readnoise",
+    "mk_saturation",
+    "mk_superbias",
+]
 
 
 def mk_flat(shape=(4096, 4096), filepath=None):

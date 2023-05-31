@@ -410,3 +410,25 @@ def mk_common_meta():
     meta["wcsinfo"] = mk_wcsinfo()
 
     return meta
+
+
+def mk_ref_common():
+    """
+    Create dummy metadata for reference file instances.
+
+    Returns
+    -------
+    dict (follows reference_file/ref_common-1.0.0 schema)
+    """
+    meta = {}
+    instrument = {"name": "WFI", "detector": "WFI01", "optical_element": "F158"}
+    meta["telescope"] = "ROMAN"
+    meta["instrument"] = instrument
+    meta["origin"] = "STSCI"
+    meta["pedigree"] = "GROUND"
+    meta["author"] = "test system"
+    meta["description"] = "blah blah blah"
+    meta["useafter"] = time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    meta["reftype"] = ""
+
+    return meta

@@ -2,6 +2,7 @@ import asdf
 import pytest
 
 from roman_datamodels import maker_utils, stnode
+from roman_datamodels.maker_utils import _ref_files as ref_files
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
@@ -41,3 +42,37 @@ def test_no_extra_fields(node_class, manifest):
 
     diff = instance_keys - schema_keys
     assert len(diff) == 0, "Dummy instance has extra keys: " + ", ".join(diff)
+
+
+@pytest.mark.parametrize("name", [c.__name__ for c in stnode.NODE_CLASSES if c.__name__.endswith("Ref")])
+def test_ref_files_all(name):
+    """
+    Meta test to confirm that the __all__ in _ref_files.py has an entry for every ref file maker.
+    """
+    from roman_datamodels.testing.factories import _camel_case_to_snake_case
+
+    method_name = "mk_" + _camel_case_to_snake_case(name)
+    assert method_name[:-4] in ref_files.__all__
+
+
+@pytest.mark.parametrize("util", ref_files.__all__)
+def test_make_ref_tests(util):
+    """
+    Meta test to confirm that correct tests exist for each maker utility.
+    """
+    from . import test_models as tests
+
+    name = util[3:]
+
+    assert hasattr(tests, f"test_make_{name}")
+    assert hasattr(tests, f"test_opening_{name}_ref")
+
+
+def test_deprecated():
+    """
+    mk_rampfitoutput has been deprecated because its name is inconsistent with the other
+    maker utilities.  Confirm that it raises a DeprecationWarning.
+    """
+
+    with pytest.warns(DeprecationWarning):
+        maker_utils.mk_rampfitoutput()
