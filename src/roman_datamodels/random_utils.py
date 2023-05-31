@@ -150,12 +150,12 @@ def generate_array_complex128(size=(32, 286721), min=None, max=None, shape=None,
     min: tuple (or None)
         Min value for the sample axis.
             - If None and shape is "square", then (-1.0, -1.0).
-            - If None and shape is "disk", then (0.0, 0.0).
+            - If None and shape is "disk", then (0.0, -pi).
 
     max: tuple (or None)
         Max value for the sample axis.
             - If None and shape is "square", then (1.0, 1.0).
-            - If None and shape is "disk", then (1.0, 2pi).
+            - If None and shape is "disk", then (1.0, pi).
 
     shape: str
         The type of sampling to use.  Options are:
