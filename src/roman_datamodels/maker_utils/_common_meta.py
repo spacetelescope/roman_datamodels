@@ -28,7 +28,6 @@ def mk_exposure():
     exp["start_time_tdb"] = NONUM
     exp["mid_time_tdb"] = NONUM
     exp["end_time_tdb"] = NONUM
-    exp["start_time_eng"] = NOSTR
     exp["ngroups"] = 6
     exp["nframes"] = 8
     exp["data_problem"] = False
@@ -36,20 +35,13 @@ def mk_exposure():
     exp["gain_factor"] = NONUM
     exp["integration_time"] = NONUM
     exp["elapsed_exposure_time"] = NONUM
-    exp["nints"] = NONUM
-    exp["integration_start"] = NONUM
-    exp["integration_end"] = NONUM
     exp["frame_divisor"] = NONUM
     exp["groupgap"] = 0
-    exp["nsamples"] = NONUM
-    exp["sample_time"] = NONUM
     exp["frame_time"] = NONUM
     exp["group_time"] = NONUM
     exp["exposure_time"] = NONUM
     exp["effective_exposure_time"] = NONUM
     exp["duration"] = NONUM
-    exp["nresets_at_start"] = NONUM
-    exp["datamode"] = NONUM
     exp["ma_table_name"] = NOSTR
     exp["ma_table_number"] = NONUM
     exp["level0_compressed"] = True
@@ -345,7 +337,6 @@ def mk_guidestar():
     guide["gs_mag"] = NONUM
     guide["gs_umag"] = NONUM
     guide["gw_fgs_mode"] = "WSM-ACQ-2"
-    guide["gw_science_file_source"] = NOSTR
     guide["gs_id"] = NOSTR
     guide["gs_catalog_version"] = NOSTR
     guide["data_start"] = NONUM

@@ -1,3 +1,4 @@
+import warnings
 from random import choices
 
 import asdf
@@ -275,7 +276,7 @@ def mk_ramp(shape=(8, 4096, 4096), filepath=None):
         return ramp
 
 
-def mk_rampfitoutput(shape=(8, 4096, 4096), filepath=None):
+def mk_ramp_fit_output(shape=(8, 4096, 4096), filepath=None):
     """
     Create a dummy Rampfit Output instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -312,6 +313,10 @@ def mk_rampfitoutput(shape=(8, 4096, 4096), filepath=None):
         af.write_to(filepath)
     else:
         return rampfitoutput
+
+
+def mk_rampfitoutput(**kwargs):
+    warnings.warn("mk_rampfitoutput is deprecated. Use mk_rampfit_output instead.", DeprecationWarning)
 
 
 def mk_associations(shape=(2, 3, 1), filepath=None):
