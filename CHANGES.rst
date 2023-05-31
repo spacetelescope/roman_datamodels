@@ -1,3 +1,8 @@
+0.15.1 (unreleased)
+===================
+
+- ModelContainer is now compliant with stpipe's AbstractDataModel. [#192]
+
 0.15.0 (2023-05-15)
 ===================
 
