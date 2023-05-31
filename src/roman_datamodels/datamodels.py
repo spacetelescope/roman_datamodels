@@ -519,6 +519,29 @@ class ModelContainer(Iterable):
     def to_association(self):
         pass
 
+    @property
+    def crds_observatory(self):
+        """
+        Get the CRDS observatory for this container.  Used when selecting
+        step/pipeline parameter files when the container is a pipeline input.
+
+        Returns
+        -------
+        str
+        """
+        return DataModel().crds_observatory
+
+    @property
+    def get_crds_parameters(self):
+        """
+        Get parameters used by CRDS to select references for this model.
+
+        Returns
+        -------
+        dict
+        """
+        return DataModel().get_crds_parameters()
+
 
 class FlatRefModel(DataModel):
     pass
