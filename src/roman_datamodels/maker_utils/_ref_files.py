@@ -22,6 +22,7 @@ __all__ = [
     "mk_readnoise",
     "mk_saturation",
     "mk_superbias",
+    "mk_refpix",
 ]
 
 
@@ -515,3 +516,51 @@ def mk_superbias(shape=(4096, 4096), filepath=None):
         af.write_to(filepath)
     else:
         return superbiasref
+
+
+def mk_refpix(shape=(32, 286721), filepath=None):
+    """
+    Create a dummy Refpix instance (or file) with arrays and valid values for attributes
+    required by the schema.
+
+    Note the default shape is intrinically connected to the FFT combined with specifics
+    of the detector:
+        - 32: is the number of detector channels (amp33 is a non-observation channel).
+        - 286721 is more complex:
+            There are 128 columns of the detector per channel, and for time read alignment
+            purposes, these columns are padded by 12 additional columns. That is 140 columns
+            per row. There are 4096 rows per channel. Each channel is then flattened into a
+            1D array of 140 * 4096 = 573440 elements. Since the length is even the FFT of
+            this array will be of length (573440 / 2) + 1 = 286721.
+    Also, note the FFT gives a complex value and we are carrying full numerical precision
+    which means it is a complex128.
+
+    Parameters
+    ----------
+    shape
+        (optional) Shape of arrays in the model.
+
+    filepath
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.RefPixRef
+    """
+    meta = mk_ref_common()
+    refpix = stnode.RefpixRef()
+    meta["reftype"] = "REFPIX"
+    meta["input_units"] = u.DN
+    meta["output_units"] = u.DN
+    refpix["meta"] = meta
+
+    refpix["gamma"] = np.zeros(shape, dtype=np.complex128)
+    refpix["zeta"] = np.zeros(shape, dtype=np.complex128)
+    refpix["alpha"] = np.zeros(shape, dtype=np.complex128)
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {"roman": refpix}
+        af.write_to(filepath)
+    else:
+        return refpix
