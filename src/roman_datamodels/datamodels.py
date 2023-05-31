@@ -812,6 +812,8 @@ def open(init, memmap=False, target=None, **kwargs):
     `DataModel`
     """
     with validate.nuke_validation():
+        if isinstance(init, Path):
+            init = str(init)
         file_to_close = None
         if target is not None and not issubclass(target, DataModel):
             raise ValueError("Target must be a subclass of DataModel")
@@ -822,27 +824,35 @@ def open(init, memmap=False, target=None, **kwargs):
             asdffile = init
         elif isinstance(init, DataModel):
             if target is not None:
-                if not isinstance(init, target):
-                    raise ValueError("First argument is not an instance of target")
-                else:
+                if isinstance(init, target):
                     return init
+                else:
+                    raise ValueError("First argument is not an instance of target")
             # Copy the object so it knows not to close here
             return init.copy()
         elif isinstance(init, str):
-            # get filename extension
+            # supported files: ASDF and JSON
             ext = Path(init).suffix.strip(".")
             if ext == "asdf":
                 kwargs["copy_arrays"] = not memmap
                 asdffile = asdf.open(init, **kwargs)
                 file_to_close = asdffile
+            elif ext == "json":
+                return ModelContainer(init, **kwargs)
+            else:
+                # unsupported files
+                try:
+                    kwargs["copy_arrays"] = not memmap
+                    asdffile = asdf.open(init, **kwargs)
+                    file_to_close = asdffile
+                except ValueError as e:
+                    raise TypeError("Open requires a filepath, file-like object, or Roman datamodel") from e
                 if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
                     if file_to_close is not None:
                         file_to_close.close()
                     raise TypeError("Roman datamodels does not accept FITS files or objects")
-            elif ext == "json":
-                return ModelContainer(init, **kwargs)
-            else:
-                raise ValueError("Open requires a filepath, file-like object, or Roman datamodel")
+        else:
+            raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
 
         modeltype = type(asdffile.tree["roman"])
         if modeltype not in model_registry:
