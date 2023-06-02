@@ -828,8 +828,8 @@ def test_modelcontainer_init():
 
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
-@pytest.mark.parametrize("node", datamodels.model_registry.keys())
-@pytest.mark.parametrize("correct, model", datamodels.model_registry.items())
+@pytest.mark.parametrize("node", datamodels.MODEL_REGISTRY.keys())
+@pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
 def test_model_only_init_with_correct_node(node, correct, model):
     """
     Datamodels should only be initializable with the correct node in the model_registry.

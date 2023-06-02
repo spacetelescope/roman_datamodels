@@ -76,3 +76,15 @@ def test_deprecated():
 
     with pytest.warns(DeprecationWarning):
         maker_utils.mk_rampfitoutput()
+
+
+@pytest.mark.parametrize("model_class", [mdl for mdl in maker_utils.NODE_REGISTRY])
+def test_datamodel_maker(model_class):
+    """
+    Test that the datamodel maker utility creates a valid datamodel.
+    """
+
+    model = maker_utils.mk_datamodel(model_class)
+
+    assert isinstance(model, model_class)
+    model.validate()
