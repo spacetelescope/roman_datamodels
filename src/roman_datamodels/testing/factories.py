@@ -418,7 +418,7 @@ def create_inverse_linearity_ref(**kwargs):
     raw = {
         "coeffs": random_utils.generate_array_float32((2, 4096, 4096)),
         "dq": random_utils.generate_array_uint32((4096, 4096)),
-        "meta": create_ref_meta(reftype="INVERSE_LINEARITY"),
+        "meta": create_ref_meta(reftype="INVERSE-LINEARITY"),
     }
     raw.update(kwargs)
 
