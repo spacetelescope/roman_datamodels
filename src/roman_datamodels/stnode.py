@@ -226,10 +226,10 @@ class LNode(UserList):
             self.data = []
         elif isinstance(node, list):
             self.data = node
+        elif isinstance(node, self.__class__):
+            self.data = node.data
         else:
             raise ValueError("Initializer only accepts lists")
-        # else:
-        #     self.data = node.data
 
     def __getitem__(self, index):
         value = self.data[index]
@@ -357,6 +357,11 @@ class TaggedScalarNode(metaclass=TaggedScalarNodeMeta):
         schema_uri = tag_def.schema_uris[0]
         schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
         return schema
+
+    def copy(self):
+        import copy
+
+        return copy.copy(self)
 
 
 class WfiMode(TaggedObjectNode):
