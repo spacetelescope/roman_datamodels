@@ -8,6 +8,7 @@ import re
 import warnings
 from abc import ABCMeta
 from collections import UserList
+from collections.abc import MutableMapping
 
 import asdf
 import asdf.schema as asdfschema
@@ -22,7 +23,6 @@ from asdf.util import HashableDict
 from astropy.time import Time
 from astropy.units import Unit  # noqa: F401
 
-from .stuserdict import STUserDict as UserDict
 from .validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
 
 __all__ = [
@@ -103,7 +103,7 @@ def _get_schema_for_property(schema, attr):
     return {}
 
 
-class DNode(UserDict):
+class DNode(MutableMapping):
     _tag = None
     _ctx = None
 
@@ -210,12 +210,34 @@ class DNode(UserDict):
     def __asdf_traverse__(self):
         return dict(self)
 
+    def __len__(self):
+        return len(self._data)
+
+    def __getitem__(self, key):
+        if key in self._data:
+            return self._data[key]
+
+        raise KeyError(f"No such key ({key}) found in node")
+
     def __setitem__(self, key, value):
         value = self._convert_to_scalar(key, value)
         if isinstance(value, dict):
             for sub_key, sub_value in value.items():
                 value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
-        super().__setitem__(key, value)
+        self._data[key] = value
+
+    def __delitem__(self, key):
+        del self._data[key]
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def copy(self):
+        instance = self.__class__.__new__(self.__class__)
+        instance.__dict__.update(self.__dict__.copy())
+        instance.__dict__["_data"] = self.__dict__["_data"].copy()
+
+        return instance
 
 
 class LNode(UserList):
