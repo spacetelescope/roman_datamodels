@@ -61,9 +61,9 @@ def test_ref_files_all(name):
     """
     Meta test to confirm that the __all__ in _ref_files.py has an entry for every ref file maker.
     """
-    from roman_datamodels.testing.factories import _camel_case_to_snake_case
+    from roman_datamodels.maker_utils import _camel_case_to_snake_case
 
-    method_name = "mk_" + _camel_case_to_snake_case(name)
+    method_name = f"mk_{_camel_case_to_snake_case(name)}"
     assert method_name[:-4] in ref_files.__all__
 
 
@@ -72,7 +72,7 @@ def test_make_datamodel_tests(node_class):
     """
     Meta test to confirm that correct tests exist for each datamodel maker utility.
     """
-    from roman_datamodels.testing.factories import _camel_case_to_snake_case
+    from roman_datamodels.maker_utils import _camel_case_to_snake_case
 
     from . import test_models as tests
 
