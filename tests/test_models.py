@@ -1,4 +1,5 @@
 import warnings
+from contextlib import nullcontext
 
 import asdf
 import numpy as np
@@ -11,6 +12,7 @@ from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
+from roman_datamodels.testing import create_node
 
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
@@ -822,3 +824,18 @@ def test_modelcontainer_init():
     mc2 = datamodels.ModelContainer(mc1)
 
     assert len(mc1) == len(mc2)
+
+
+@pytest.mark.filterwarnings("ignore:ERFA function.*")
+@pytest.mark.parametrize("node", datamodels.model_registry.keys())
+@pytest.mark.parametrize("correct, model", datamodels.model_registry.items())
+def test_model_only_init_with_correct_node(node, correct, model):
+    """
+    Datamodels should only be initializable with the correct node in the model_registry.
+
+    This checks that it can be initiallized with the correct node, and that it cannot be
+    with any other node.
+    """
+    img = create_node(node)
+    with nullcontext() if node is correct else pytest.raises(ValueError):
+        model(img)
