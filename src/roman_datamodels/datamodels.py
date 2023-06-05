@@ -85,6 +85,9 @@ class DataModel:
             self._asdf = asdffile
             self._instance = asdffile.tree["roman"]
         elif isinstance(init, stnode.TaggedObjectNode):
+            if not isinstance(self, model_registry.get(init.__class__)):
+                expected = {mdl: node for node, mdl in model_registry.items()}[self.__class__].__name__
+                raise ValueError(f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}")
             with validate.nuke_validation():
                 self._instance = init
                 asdffile = asdf.AsdfFile()
