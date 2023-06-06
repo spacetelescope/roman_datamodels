@@ -7,6 +7,8 @@
 
 - Refactor the ``maker_utils`` to be easier to maintain and test. [#193]
 
+- Remove the ``STUserDict`` class and fix bugs in ``stnode`` related to ``copy``. [#191]
+
 0.15.0 (2023-05-15)
 ===================
 
