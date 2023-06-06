@@ -86,8 +86,8 @@ class DataModel:
             self._asdf = asdffile
             self._instance = asdffile.tree["roman"]
         elif isinstance(init, stnode.TaggedObjectNode):
-            if not isinstance(self, model_registry.get(init.__class__)):
-                expected = {mdl: node for node, mdl in model_registry.items()}[self.__class__].__name__
+            if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
+                expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
                 raise ValidationError(
                     f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
                 )
@@ -106,7 +106,7 @@ class DataModel:
         if "roman" not in asdffile_instance.tree:
             raise ValueError('ASDF file does not have expected "roman" attribute')
         topnode = asdffile_instance.tree["roman"]
-        if model_registry[topnode.__class__] != self.__class__:
+        if MODEL_REGISTRY[topnode.__class__] != self.__class__:
             return False
         return True
 
@@ -690,8 +690,8 @@ def open(init, memmap=False, target=None, **kwargs):
                     file_to_close.close()
                 raise TypeError("Roman datamodels does not accept FITS files or objects")
         modeltype = type(asdffile.tree["roman"])
-        if modeltype in model_registry:
-            rmodel = model_registry[modeltype](asdffile, **kwargs)
+        if modeltype in MODEL_REGISTRY:
+            rmodel = MODEL_REGISTRY[modeltype](asdffile, **kwargs)
             if target is not None:
                 if not issubclass(rmodel.__class__, target):
                     if file_to_close is not None:
@@ -703,7 +703,7 @@ def open(init, memmap=False, target=None, **kwargs):
             return DataModel(asdffile, **kwargs)
 
 
-model_registry = {
+MODEL_REGISTRY = {
     stnode.WfiMosaic: MosaicModel,
     stnode.WfiImage: ImageModel,
     stnode.WfiScienceRaw: ScienceRawModel,

@@ -1,3 +1,5 @@
+from roman_datamodels.datamodels import MODEL_REGISTRY as _MODEL_REGISTRY  # Hide from public API
+
 from ._basic_meta import *  # noqa: F403
 from ._common_meta import *  # noqa: F403
 from ._datamodels import *  # noqa: F403
@@ -10,8 +12,26 @@ SPECIAL_MAKERS = {
     "WfiMosaic": "mk_level3_mosaic",
 }
 
+# This is static at runtime, so we might as well compute it once
+NODE_REGISTRY = {mdl: node for node, mdl in _MODEL_REGISTRY.items()}
+
 
 def mk_node(node_class, **kwargs):
+    """
+    Create a dummy node of the specified class with valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    node_class : type
+        Node class (from stnode).
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    `roman_datamodels.stnode.TaggedObjectNode`
+    """
     from roman_datamodels.testing.factories import _camel_case_to_snake_case
 
     if node_class.__name__ in SPECIAL_MAKERS:
@@ -26,3 +46,22 @@ def mk_node(node_class, **kwargs):
         if method_name not in globals():
             raise ValueError(f"Maker utility: {method_name} not implemented for class {node_class.__name__}")
     return globals()[method_name](**kwargs)
+
+
+def mk_datamodel(model_class, **kwargs):
+    """
+    Create a dummy datamodel of the specified class with valid values
+    for all attributes required by the schema.
+
+    Parameters
+    ----------
+    model_class : type
+        One of the datamodel subclasses from datamodel
+    **kwargs
+        Additional or overridden attributes.
+
+    Returns
+    -------
+    `roman_datamodels.datamodels.Datamodel`
+    """
+    return model_class(mk_node(NODE_REGISTRY[model_class], **kwargs))

@@ -52,7 +52,7 @@ def iter_subclasses(model_class, include_base_model=True):
 
 
 def test_model_schemas():
-    dmodels = datamodels.model_registry.keys()
+    dmodels = datamodels.MODEL_REGISTRY.keys()
     for model in dmodels:
         schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags if t._tag_uri == model._tag).schema_uris[0]
         asdf.schema.load_schema(schema_uri)
@@ -828,8 +828,8 @@ def test_modelcontainer_init():
 
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
-@pytest.mark.parametrize("node", datamodels.model_registry.keys())
-@pytest.mark.parametrize("correct, model", datamodels.model_registry.items())
+@pytest.mark.parametrize("node", datamodels.MODEL_REGISTRY.keys())
+@pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
 def test_model_only_init_with_correct_node(node, correct, model):
     """
     Datamodels should only be initializable with the correct node in the model_registry.
