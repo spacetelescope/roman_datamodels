@@ -854,7 +854,7 @@ def mk_inverse_linearity(shape=(2, 4096, 4096), filepath=None):
     meta = {}
     add_ref_common(meta)
     inverselinearityref = stnode.InverseLinearityRef()
-    meta["reftype"] = "INVERSE_LINEARITY"
+    meta["reftype"] = "INVERSELINEARITY"
     inverselinearityref["meta"] = meta
 
     inverselinearityref["meta"]["input_units"] = u.DN

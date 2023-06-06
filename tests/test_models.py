@@ -417,7 +417,7 @@ def test_opening_linearity_ref(tmp_path):
 # InverseLinearity tests
 def test_make_inverse_linearity():
     inverselinearity = utils.mk_inverse_linearity(shape=(2, 20, 20))
-    assert inverselinearity.meta.reftype == "INVERSE_LINEARITY"
+    assert inverselinearity.meta.reftype == "INVERSELINEARITY"
     assert inverselinearity.coeffs.dtype == np.float32
     assert inverselinearity.dq.dtype == np.uint32
 

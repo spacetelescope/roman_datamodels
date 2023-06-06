@@ -1,3 +1,8 @@
+0.16.0 (unreleased)
+===================
+
+- Update the ``reftype`` for ``InverseLinearityRev``. [#195]
+
 0.15.0 (2023-05-15)
 ===================
 
