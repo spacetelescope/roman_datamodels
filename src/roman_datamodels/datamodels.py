@@ -20,6 +20,7 @@ import asdf
 import numpy as np
 import packaging.version
 from astropy.time import Time
+from jsonschema import ValidationError
 
 from . import stnode, validate
 from .extensions import DATAMODEL_EXTENSIONS
@@ -87,7 +88,9 @@ class DataModel:
         elif isinstance(init, stnode.TaggedObjectNode):
             if not isinstance(self, model_registry.get(init.__class__)):
                 expected = {mdl: node for node, mdl in model_registry.items()}[self.__class__].__name__
-                raise ValueError(f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}")
+                raise ValidationError(
+                    f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
+                )
             with validate.nuke_validation():
                 self._instance = init
                 asdffile = asdf.AsdfFile()

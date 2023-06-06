@@ -837,5 +837,5 @@ def test_model_only_init_with_correct_node(node, correct, model):
     with any other node.
     """
     img = create_node(node)
-    with nullcontext() if node is correct else pytest.raises(ValueError):
+    with nullcontext() if node is correct else pytest.raises(ValidationError):
         model(img)
