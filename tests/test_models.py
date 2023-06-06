@@ -1,4 +1,5 @@
 import warnings
+from contextlib import nullcontext
 
 import asdf
 import numpy as np
@@ -11,6 +12,7 @@ from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
+from roman_datamodels.testing import create_node
 
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
@@ -378,7 +380,7 @@ def test_make_ipc():
     assert np.sum(ipc.data) == 1.0
 
     # Test validation
-    ipc_model = datamodels.GainRefModel(ipc)
+    ipc_model = datamodels.IpcRefModel(ipc)
     assert ipc_model.validate() is None
 
 
@@ -750,7 +752,7 @@ def test_crds_parameters(tmp_path):
 
 def test_model_validate_without_save():
     # regression test for rcal-538
-    img = utils.mk_level1_science_raw()
+    img = utils.mk_level2_image()
     m = datamodels.ImageModel(img)
 
     # invalidate pointing without using the

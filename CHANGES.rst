@@ -3,6 +3,8 @@
 
 - Update the ``reftype`` for ``InverseLinearityRev``. [#195]
 
+- Bugfix for initializing ``Datamodel`` objects from the incorrect ``stnode`` classes. [#200]
+
 0.15.0 (2023-05-15)
 ===================
 
