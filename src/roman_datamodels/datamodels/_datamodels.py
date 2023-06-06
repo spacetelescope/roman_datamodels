@@ -6,6 +6,8 @@ keep consistency with the JWST data model version.
 
 It is to be subclassed by the various types of data model variants for products
 """
+
+import abc
 import copy
 import datetime
 import os
@@ -51,23 +53,40 @@ __all__ = [
     "MaskRefModel",
     "PixelareaRefModel",
     "ReadnoiseRefModel",
+    "RefpixRefModel",
     "SuperbiasRefModel",
     "SaturationRefModel",
     "WfiImgPhotomRefModel",
     "AssociationsModel",
-    "ModelContainer",
     "IpcRefModel",
     "InverseLinearityRefModel",
     "MosaicModel",
     "open",
-    "model_registry",
+    "MODEL_REGISTRY",
 ]
 
+MODEL_REGISTRY = {}
 
-class DataModel:
+
+class DataModel(abc.ABC):
     """Base class for all top level datamodels"""
 
     crds_observatory = "roman"
+
+    @abc.abstractproperty
+    def _node_type(self):
+        pass
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+        if not issubclass(cls._node_type, stnode.TaggedObjectNode):
+            raise ValueError("Subclass must be a TaggedObjectNode subclass")
+
+        if cls._node_type in MODEL_REGISTRY:
+            raise ValueError(f"Duplicate model type {cls._node_type}")
+
+        MODEL_REGISTRY[cls._node_type] = cls
 
     def __init__(self, init=None, **kwargs):
         self._iscopy = False
@@ -327,18 +346,20 @@ class DataModel:
 
 
 class MosaicModel(DataModel):
-    pass
+    _node_type = stnode.WfiMosaic
 
 
 class ImageModel(DataModel):
-    pass
+    _node_type = stnode.WfiImage
 
 
 class ScienceRawModel(DataModel):
-    pass
+    _node_type = stnode.WfiScienceRaw
 
 
 class RampModel(DataModel):
+    _node_type = stnode.Ramp
+
     @classmethod
     def from_science_raw(cls, model):
         """
@@ -376,11 +397,12 @@ class RampModel(DataModel):
 
 
 class RampFitOutputModel(DataModel):
-    pass
+    _node_type = stnode.RampFitOutput
 
 
 class AssociationsModel(DataModel):
     # Need an init to allow instantiation from a JSON file
+    _node_type = stnode.Associations
 
     @classmethod
     def is_association(cls, asn_data):
@@ -394,30 +416,32 @@ class AssociationsModel(DataModel):
 
 
 class GuidewindowModel(DataModel):
-    pass
+    _node_type = stnode.Guidewindow
 
 
 class FlatRefModel(DataModel):
-    pass
+    _node_type = stnode.FlatRef
 
 
 class DarkRefModel(DataModel):
-    pass
+    _node_type = stnode.DarkRef
 
 
 class DistortionRefModel(DataModel):
-    pass
+    _node_type = stnode.DistortionRef
 
 
 class GainRefModel(DataModel):
-    pass
+    _node_type = stnode.GainRef
 
 
 class IpcRefModel(DataModel):
-    pass
+    _node_type = stnode.IpcRef
 
 
 class LinearityRefModel(DataModel):
+    _node_type = stnode.LinearityRef
+
     def get_primary_array_name(self):
         """
         Returns the name "primary" array for this model, which
@@ -429,6 +453,8 @@ class LinearityRefModel(DataModel):
 
 
 class InverseLinearityRefModel(DataModel):
+    _node_type = stnode.InverseLinearityRef
+
     def get_primary_array_name(self):
         """
         Returns the name "primary" array for this model, which
@@ -440,6 +466,8 @@ class InverseLinearityRefModel(DataModel):
 
 
 class MaskRefModel(DataModel):
+    _node_type = stnode.MaskRef
+
     def get_primary_array_name(self):
         """
         Returns the name "primary" array for this model, which
@@ -451,27 +479,27 @@ class MaskRefModel(DataModel):
 
 
 class PixelareaRefModel(DataModel):
-    pass
+    _node_type = stnode.PixelareaRef
 
 
 class ReadnoiseRefModel(DataModel):
-    pass
+    _node_type = stnode.ReadnoiseRef
 
 
 class SuperbiasRefModel(DataModel):
-    pass
+    _node_type = stnode.SuperbiasRef
 
 
 class SaturationRefModel(DataModel):
-    pass
+    _node_type = stnode.SaturationRef
 
 
 class WfiImgPhotomRefModel(DataModel):
-    pass
+    _node_type = stnode.WfiImgPhotomRef
 
 
 class RefpixRefModel(DataModel):
-    pass
+    _node_type = stnode.RefpixRef
 
 
 def open(init, memmap=False, target=None, **kwargs):
@@ -540,28 +568,3 @@ def open(init, memmap=False, target=None, **kwargs):
                 return rmodel
         else:
             return DataModel(asdffile, **kwargs)
-
-
-MODEL_REGISTRY = {
-    stnode.WfiMosaic: MosaicModel,
-    stnode.WfiImage: ImageModel,
-    stnode.WfiScienceRaw: ScienceRawModel,
-    stnode.Ramp: RampModel,
-    stnode.RampFitOutput: RampFitOutputModel,
-    stnode.Associations: AssociationsModel,
-    stnode.Guidewindow: GuidewindowModel,
-    stnode.FlatRef: FlatRefModel,
-    stnode.DarkRef: DarkRefModel,
-    stnode.DistortionRef: DistortionRefModel,
-    stnode.GainRef: GainRefModel,
-    stnode.IpcRef: IpcRefModel,
-    stnode.LinearityRef: LinearityRefModel,
-    stnode.InverseLinearityRef: InverseLinearityRefModel,
-    stnode.MaskRef: MaskRefModel,
-    stnode.PixelareaRef: PixelareaRefModel,
-    stnode.ReadnoiseRef: ReadnoiseRefModel,
-    stnode.SaturationRef: SaturationRefModel,
-    stnode.SuperbiasRef: SuperbiasRefModel,
-    stnode.WfiImgPhotomRef: WfiImgPhotomRefModel,
-    stnode.RefpixRef: RefpixRefModel,
-}
