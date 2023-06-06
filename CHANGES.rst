@@ -5,6 +5,8 @@
 
 - Bugfix for initializing ``Datamodel`` objects from the incorrect ``stnode`` classes. [#200]
 
+- Refactor the ``maker_utils`` to be easier to maintain and test. [#193]
+
 0.15.0 (2023-05-15)
 ===================
 
