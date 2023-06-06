@@ -31,12 +31,19 @@ class DataModel(abc.ABC):
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
 
+        # Allow for sub-registry classes to be defined
+        if cls.__name__.startswith("_"):
+            return
+
+        # Check the node_type is a tagged object node
         if not issubclass(cls._node_type, stnode.TaggedObjectNode):
             raise ValueError("Subclass must be a TaggedObjectNode subclass")
 
+        # Check for duplicates
         if cls._node_type in MODEL_REGISTRY:
             raise ValueError(f"Duplicate model type {cls._node_type}")
 
+        # Add to registry
         MODEL_REGISTRY[cls._node_type] = cls
 
     def __init__(self, init=None, **kwargs):

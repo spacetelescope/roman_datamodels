@@ -13,44 +13,37 @@ from roman_datamodels import stnode
 
 from ._core import DataModel
 
-__all__ = [
-    "ImageModel",
-    "ScienceRawModel",
-    "RampModel",
-    "RampFitOutputModel",
-    "GuidewindowModel",
-    "FlatRefModel",
-    "DarkRefModel",
-    "DistortionRefModel",
-    "GainRefModel",
-    "LinearityRefModel",
-    "MaskRefModel",
-    "PixelareaRefModel",
-    "ReadnoiseRefModel",
-    "RefpixRefModel",
-    "SuperbiasRefModel",
-    "SaturationRefModel",
-    "WfiImgPhotomRefModel",
-    "AssociationsModel",
-    "IpcRefModel",
-    "InverseLinearityRefModel",
-    "MosaicModel",
-]
+__all__ = []
 
 
-class MosaicModel(DataModel):
+class _DataModel(DataModel):
+    """
+    Exists only to populate the __all__ for this file automatically
+        This is something which is easily missed, but is important for the automatic
+        documentation generation to work properly.
+    """
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if cls.__name__ in __all__:
+            raise ValueError(f"Duplicate model type {cls.__name__}")
+
+        __all__.append(cls.__name__)
+
+
+class MosaicModel(_DataModel):
     _node_type = stnode.WfiMosaic
 
 
-class ImageModel(DataModel):
+class ImageModel(_DataModel):
     _node_type = stnode.WfiImage
 
 
-class ScienceRawModel(DataModel):
+class ScienceRawModel(_DataModel):
     _node_type = stnode.WfiScienceRaw
 
 
-class RampModel(DataModel):
+class RampModel(_DataModel):
     _node_type = stnode.Ramp
 
     @classmethod
@@ -89,11 +82,11 @@ class RampModel(DataModel):
         raise ValueError("Input model must be a ScienceRawModel or RampModel")
 
 
-class RampFitOutputModel(DataModel):
+class RampFitOutputModel(_DataModel):
     _node_type = stnode.RampFitOutput
 
 
-class AssociationsModel(DataModel):
+class AssociationsModel(_DataModel):
     # Need an init to allow instantiation from a JSON file
     _node_type = stnode.Associations
 
@@ -108,31 +101,31 @@ class AssociationsModel(DataModel):
         return False
 
 
-class GuidewindowModel(DataModel):
+class GuidewindowModel(_DataModel):
     _node_type = stnode.Guidewindow
 
 
-class FlatRefModel(DataModel):
+class FlatRefModel(_DataModel):
     _node_type = stnode.FlatRef
 
 
-class DarkRefModel(DataModel):
+class DarkRefModel(_DataModel):
     _node_type = stnode.DarkRef
 
 
-class DistortionRefModel(DataModel):
+class DistortionRefModel(_DataModel):
     _node_type = stnode.DistortionRef
 
 
-class GainRefModel(DataModel):
+class GainRefModel(_DataModel):
     _node_type = stnode.GainRef
 
 
-class IpcRefModel(DataModel):
+class IpcRefModel(_DataModel):
     _node_type = stnode.IpcRef
 
 
-class LinearityRefModel(DataModel):
+class LinearityRefModel(_DataModel):
     _node_type = stnode.LinearityRef
 
     def get_primary_array_name(self):
@@ -145,7 +138,7 @@ class LinearityRefModel(DataModel):
         return "coeffs"
 
 
-class InverseLinearityRefModel(DataModel):
+class InverseLinearityRefModel(_DataModel):
     _node_type = stnode.InverseLinearityRef
 
     def get_primary_array_name(self):
@@ -158,7 +151,7 @@ class InverseLinearityRefModel(DataModel):
         return "coeffs"
 
 
-class MaskRefModel(DataModel):
+class MaskRefModel(_DataModel):
     _node_type = stnode.MaskRef
 
     def get_primary_array_name(self):
@@ -171,25 +164,25 @@ class MaskRefModel(DataModel):
         return "dq"
 
 
-class PixelareaRefModel(DataModel):
+class PixelareaRefModel(_DataModel):
     _node_type = stnode.PixelareaRef
 
 
-class ReadnoiseRefModel(DataModel):
+class ReadnoiseRefModel(_DataModel):
     _node_type = stnode.ReadnoiseRef
 
 
-class SuperbiasRefModel(DataModel):
+class SuperbiasRefModel(_DataModel):
     _node_type = stnode.SuperbiasRef
 
 
-class SaturationRefModel(DataModel):
+class SaturationRefModel(_DataModel):
     _node_type = stnode.SaturationRef
 
 
-class WfiImgPhotomRefModel(DataModel):
+class WfiImgPhotomRefModel(_DataModel):
     _node_type = stnode.WfiImgPhotomRef
 
 
-class RefpixRefModel(DataModel):
+class RefpixRefModel(_DataModel):
     _node_type = stnode.RefpixRef
