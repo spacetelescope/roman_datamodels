@@ -1,4 +1,5 @@
 import warnings
+from contextlib import nullcontext
 
 import asdf
 import numpy as np
@@ -11,6 +12,7 @@ from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
+from roman_datamodels.testing import create_node
 
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
@@ -441,7 +443,7 @@ def test_make_ipc():
     assert np.sum(ipc.data) == 1.0
 
     # Test validation
-    ipc_model = datamodels.GainRefModel(ipc)
+    ipc_model = datamodels.IpcRefModel(ipc)
     assert ipc_model.validate() is None
 
 
@@ -801,7 +803,7 @@ def test_crds_parameters(tmp_path):
 
 def test_model_validate_without_save():
     # regression test for rcal-538
-    img = utils.mk_level1_science_raw()
+    img = utils.mk_level2_image()
     m = datamodels.ImageModel(img)
 
     # invalidate pointing without using the
@@ -814,7 +816,7 @@ def test_model_validate_without_save():
 
 
 def test_modelcontainer_init():
-    img = utils.mk_level1_science_raw()
+    img = utils.mk_level2_image()
     m = datamodels.ImageModel(img)
     mc1 = datamodels.ModelContainer([m])
 
@@ -822,3 +824,18 @@ def test_modelcontainer_init():
     mc2 = datamodels.ModelContainer(mc1)
 
     assert len(mc1) == len(mc2)
+
+
+@pytest.mark.filterwarnings("ignore:ERFA function.*")
+@pytest.mark.parametrize("node", datamodels.model_registry.keys())
+@pytest.mark.parametrize("correct, model", datamodels.model_registry.items())
+def test_model_only_init_with_correct_node(node, correct, model):
+    """
+    Datamodels should only be initializable with the correct node in the model_registry.
+
+    This checks that it can be initiallized with the correct node, and that it cannot be
+    with any other node.
+    """
+    img = create_node(node)
+    with nullcontext() if node is correct else pytest.raises(ValidationError):
+        model(img)
