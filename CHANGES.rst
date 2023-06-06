@@ -9,6 +9,8 @@
 
 - Remove the ``STUserDict`` class and fix bugs in ``stnode`` related to ``copy``. [#191]
 
+- Add constructor for ``RampModel`` from the ``ScienceRawModel``. [#202]
+
 0.15.0 (2023-05-15)
 ===================
 

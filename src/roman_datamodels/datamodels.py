@@ -236,6 +236,9 @@ class DataModel:
         else:
             self._instance._data[key] = value
 
+    def __iter__(self):
+        return iter(self._instance)
+
     def to_flat_dict(self, include_arrays=True):
         """
         Returns a dictionary of all of the model items as a flat dictionary.
@@ -332,7 +335,40 @@ class ScienceRawModel(DataModel):
 
 
 class RampModel(DataModel):
-    pass
+    @classmethod
+    def from_science_raw(cls, model):
+        """
+        Construct a RampModel from a ScienceRawModel
+
+        Parameters
+        ----------
+        model : ScienceRawModel or RampModel
+            The input science raw model (a RampModel will also work)
+        """
+
+        if isinstance(model, cls):
+            return model
+
+        if isinstance(model, ScienceRawModel):
+            from roman_datamodels.maker_utils import mk_ramp
+
+            instance = mk_ramp(model.shape)
+
+            # Copy input_model contents into RampModel
+            for key in model:
+                # If a dictionary (like meta), overwrite entries (but keep
+                # required dummy entries that may not be in input_model)
+                if isinstance(instance[key], dict):
+                    instance[key].update(getattr(model, key))
+                elif isinstance(instance[key], np.ndarray):
+                    # Cast input ndarray as RampModel dtype
+                    instance[key] = getattr(model, key).astype(instance[key].dtype)
+                else:
+                    instance[key] = getattr(model, key)
+
+            return cls(instance)
+
+        raise ValueError("Input model must be a ScienceRawModel or RampModel")
 
 
 class RampFitOutputModel(DataModel):
