@@ -11,6 +11,8 @@
 
 - Add constructor for ``RampModel`` from the ``ScienceRawModel``. [#202]
 
+- Add ``maker_utils`` for all the datamodels. [#198]
+
 0.15.0 (2023-05-15)
 ===================
 

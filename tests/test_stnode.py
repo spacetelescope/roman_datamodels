@@ -38,11 +38,11 @@ def test_copy(node_class):
         assert_node_is_copy(node, node_copy, deepcopy=True)
 
 
-@pytest.mark.parametrize("node_class", datamodels.model_registry.keys())
+@pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
 def test_deepcopy_model(node_class):
     node = create_node(node_class)
-    model = datamodels.model_registry[node_class](node)
+    model = datamodels.MODEL_REGISTRY[node_class](node)
     model_copy = model.copy()
 
     # There is no assert equal for models, but the data inside is what we care about.

@@ -28,7 +28,7 @@ def iter_subclasses(model_class, include_base_model=True):
 
 
 def test_model_schemas():
-    dmodels = datamodels.model_registry.keys()
+    dmodels = datamodels.MODEL_REGISTRY.keys()
     for model in dmodels:
         schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags if t._tag_uri == model._tag).schema_uris[0]
         asdf.schema.load_schema(schema_uri)
