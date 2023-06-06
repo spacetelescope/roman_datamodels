@@ -20,8 +20,8 @@ import packaging.version
 from astropy.time import Time
 from jsonschema import ValidationError
 
-from . import stnode, validate
-from .extensions import DATAMODEL_EXTENSIONS
+from roman_datamodels import stnode, validate
+from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 
 # .dev is included in the version comparison to allow for correct version
 # comparisons with development versions of asdf 3.0
@@ -54,7 +54,13 @@ __all__ = [
     "SuperbiasRefModel",
     "SaturationRefModel",
     "WfiImgPhotomRefModel",
+    "AssociationsModel",
+    "ModelContainer",
+    "IpcRefModel",
+    "InverseLinearityRefModel",
+    "MosaicModel",
     "open",
+    "model_registry",
 ]
 
 
