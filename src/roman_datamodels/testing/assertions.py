@@ -3,7 +3,7 @@ from asdf.tags.core import NDArrayType
 from astropy.modeling import Model
 from numpy.testing import assert_array_equal
 
-from ..stnode import TaggedListNode, TaggedObjectNode, TaggedScalarNode
+from ..stnode import DNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 
 def assert_node_equal(node1, node2):
@@ -26,7 +26,7 @@ def assert_node_equal(node1, node2):
     __tracebackhide__ = True
 
     assert node1.__class__ is node2.__class__
-    if isinstance(node1, TaggedObjectNode):
+    if isinstance(node1, DNode):
         assert set(node1.keys()) == set(node2.keys())
 
         for key, value1 in node1.items():

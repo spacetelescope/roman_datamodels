@@ -7,12 +7,14 @@ import pytest
 from astropy import units as u
 from astropy.modeling import Model
 from jsonschema import ValidationError
+from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 from roman_datamodels.testing import create_node
+from roman_datamodels.testing.assertions import assert_node_equal
 
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
