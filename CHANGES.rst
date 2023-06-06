@@ -24,6 +24,8 @@
 
 - Refactor the ``maker_utils`` API so that it is uniform across all tests. [#207]
 
+- Remove the ``testing.factories`` module. [#197]
+
 0.15.0 (2023-05-15)
 ===================
 
