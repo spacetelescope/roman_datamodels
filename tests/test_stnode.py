@@ -6,7 +6,7 @@ import astropy.units as u
 import pytest
 
 from roman_datamodels import datamodels, stnode, validate
-from roman_datamodels.testing import assert_node_equal, create_node, factories
+from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, create_node, factories, wraps_hashable
 
 
 def test_generated_node_classes(manifest):
@@ -20,6 +20,35 @@ def test_generated_node_classes(manifest):
         assert tag["tag_uri"] in node_class.__doc__
         assert node_class.__module__ == stnode.__name__
         assert node_class.__name__ in stnode.__all__
+
+
+@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+def test_copy(node_class):
+    """Demonstrate nodes can copy themselves, but don't always deepcopy."""
+    node = create_node(node_class)
+    node_copy = node.copy()
+
+    # Assert the copy is shallow:
+    assert_node_is_copy(node, node_copy, deepcopy=False)
+
+    # If the node only wraps hashable values, then it should "deepcopy" itself because
+    # the immutable values cannot actually be copied. In the case, where there is an
+    # unhashable value, then the node should not deepcopy itself.
+    with nullcontext() if wraps_hashable(node) else pytest.raises(AssertionError):
+        assert_node_is_copy(node, node_copy, deepcopy=True)
+
+
+@pytest.mark.parametrize("node_class", datamodels.model_registry.keys())
+@pytest.mark.filterwarnings("ignore:ERFA function.*")
+def test_deepcopy_model(node_class):
+    node = create_node(node_class)
+    model = datamodels.model_registry[node_class](node)
+    model_copy = model.copy()
+
+    # There is no assert equal for models, but the data inside is what we care about.
+    # this is stored under the _instance attribute. We can assert those instances are
+    # deep copies of each other.
+    assert_node_is_copy(model._instance, model_copy._instance, deepcopy=True)
 
 
 def test_wfi_mode():
