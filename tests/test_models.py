@@ -7,12 +7,14 @@ import pytest
 from astropy import units as u
 from astropy.modeling import Model
 from jsonschema import ValidationError
+from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 from roman_datamodels.testing import create_node
+from roman_datamodels.testing.assertions import assert_node_equal
 
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
@@ -838,3 +840,23 @@ def test_model_only_init_with_correct_node(node, correct, model):
     img = create_node(node)
     with nullcontext() if node is correct else pytest.raises(ValidationError):
         model(img)
+
+
+def test_ramp_from_science_raw():
+    raw = datamodels.ScienceRawModel(utils.mk_level1_science_raw())
+
+    ramp = datamodels.RampModel.from_science_raw(raw)
+    for key in ramp:
+        if not hasattr(raw, key):
+            continue
+
+        ramp_value = getattr(ramp, key)
+        raw_value = getattr(raw, key)
+        if isinstance(ramp_value, np.ndarray):
+            assert_array_equal(ramp_value, raw_value.astype(ramp_value.dtype))
+
+        elif isinstance(ramp_value, stnode.DNode):
+            assert_node_equal(ramp_value, raw_value)
+
+        else:
+            raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")
