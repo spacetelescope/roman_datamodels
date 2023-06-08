@@ -1,6 +1,6 @@
 0.16.0 (unreleased)
 ===================
-- Remove ``ModelContainer`` from ``roman_datamodels.datamodels``.
+- Remove ``ModelContainer`` from ``roman_datamodels.datamodels``. [#204]
 
 - Update the ``reftype`` for ``InverseLinearityRev``. [#195]
 
