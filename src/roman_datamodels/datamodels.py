@@ -455,6 +455,10 @@ class WfiImgPhotomRefModel(DataModel):
     pass
 
 
+class RefpixRefModel(DataModel):
+    pass
+
+
 def open(init, memmap=False, target=None, **kwargs):
     """
     Data model factory function
@@ -544,4 +548,5 @@ MODEL_REGISTRY = {
     stnode.SaturationRef: SaturationRefModel,
     stnode.SuperbiasRef: SuperbiasRefModel,
     stnode.WfiImgPhotomRef: WfiImgPhotomRefModel,
+    stnode.RefpixRef: RefpixRefModel,
 }

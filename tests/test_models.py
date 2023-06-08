@@ -565,6 +565,32 @@ def test_opening_superbias_ref(tmp_path):
     assert isinstance(superbias, datamodels.SuperbiasRefModel)
 
 
+# Refpix tests
+def test_make_refpix():
+    refpix = utils.mk_refpix(shape=(20, 20))
+    assert refpix.meta.reftype == "REFPIX"
+
+    assert refpix.gamma.dtype == np.complex128
+    assert refpix.zeta.dtype == np.complex128
+    assert refpix.alpha.dtype == np.complex128
+
+    assert refpix.gamma.shape == (20, 20)
+    assert refpix.zeta.shape == (20, 20)
+    assert refpix.alpha.shape == (20, 20)
+
+    assert refpix.meta.input_units == u.DN
+    assert refpix.meta.output_units == u.DN
+
+
+def test_opening_refpix_ref(tmp_path):
+    # First make test reference file
+    file_path = tmp_path / "testrefpix.asdf"
+    utils.mk_refpix(filepath=file_path)
+    refpix = datamodels.open(file_path)
+    assert refpix.meta.instrument.optical_element == "F158"
+    assert isinstance(refpix, datamodels.RefpixRefModel)
+
+
 # WFI Photom tests
 def test_make_wfi_img_photom():
     wfi_img_photom = utils.mk_wfi_img_photom()
