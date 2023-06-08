@@ -217,6 +217,67 @@ def test_generate_array_float32(size, min, max, units, seed):
     assert (val <= t_max).all()
 
 
+def _complex128_min_max(min, max, shape):
+    if min is None:
+        if shape == "square":
+            min = (-1.0, -1.0)
+        elif shape == "disk":
+            min = (0.0, -np.pi)
+
+    if max is None:
+        if shape == "square":
+            max = (1.0, 1.0)
+        elif shape == "disk":
+            max = (1.0, np.pi)
+
+    return min, max
+
+
+@pytest.mark.parametrize("size", [(4096, 4096), (2048, 2048), (1024, 1024), (512, 512), (256, 256)])
+@pytest.mark.parametrize(
+    "min, max, shape",
+    [(None, None, "square"), ((-10, 10), (-10, 10), "square"), (None, None, "disk"), ((0, -np.pi / 2), (0, np.pi / 2), "disk")],
+)
+@pytest.mark.parametrize("seed", [None, 42])
+def test_generate_array_complex128(size, min, max, shape, seed):
+    t_min, t_max = _complex128_min_max(min, max, shape)
+
+    value = random_utils.generate_array_complex128(size=size, min=min, max=max, shape=shape, seed=seed)
+    assert isinstance(value, np.ndarray)
+    assert value.dtype == np.complex128
+    assert value.shape == size
+
+    if shape == "square":
+        x = np.real(value)
+        y = np.imag(value)
+
+        assert (t_min[0] <= x).all()
+        assert (t_min[1] <= y).all()
+        assert (x <= t_max[0]).all()
+        assert (y <= t_max[1]).all()
+    else:
+        r = np.abs(value)
+        theta = np.angle(value)
+
+        assert (t_min[0] <= r).all()
+        assert (t_min[1] <= theta).all()
+        assert (r <= t_max[0]).all()
+        assert (theta <= t_max[1]).all()
+
+
+@pytest.mark.parametrize("min, max, shape", [(None, None, "foo"), ((-10,), None, None), (None, (10,), None)])
+def test_generate_array_complex128_err(min, max, shape):
+    if shape is not None:
+        with pytest.raises(ValueError, match=r"Invalid shape: foo"):
+            random_utils.generate_array_complex128(min=min, max=max, shape=shape)
+    elif min is not None:
+        with pytest.raises(ValueError, match=r"Invalid min: \(-10,\)"):
+            random_utils.generate_array_complex128(min=min, max=max, shape=shape)
+    else:
+        with pytest.raises(ValueError, match=r"Invalid max: \(10,\)"):
+            random_utils.generate_array_complex128(min=min, max=max, shape=shape)
+
+
 def _uint8_min_max(min, max):
     if min is None:
         min = np.iinfo("uint8").min
