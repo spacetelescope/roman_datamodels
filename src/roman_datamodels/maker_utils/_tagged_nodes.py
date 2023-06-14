@@ -5,7 +5,7 @@ from roman_datamodels import stnode
 from ._base import NONUM
 
 
-def mk_photometry():
+def mk_photometry(**kwargs):
     """
     Create a dummy Photometry instance with valid values for attributes
     required by the schema. Utilized by the model maker utilities below.
@@ -15,17 +15,17 @@ def mk_photometry():
     roman_datamodels.stnode.Photometry
     """
     phot = stnode.Photometry()
-    phot["conversion_microjanskys"] = NONUM * u.uJy / u.sr
-    phot["conversion_megajanskys"] = NONUM * u.MJy / u.sr
-    phot["pixelarea_steradians"] = NONUM * u.sr
-    phot["pixelarea_arcsecsq"] = NONUM * u.arcsec**2
-    phot["conversion_microjanskys_uncertainty"] = NONUM * u.uJy / u.sr
-    phot["conversion_megajanskys_uncertainty"] = NONUM * u.MJy / u.sr
+    phot["conversion_microjanskys"] = kwargs.get("conversion_microjanskys", NONUM * u.uJy / u.sr)
+    phot["conversion_megajanskys"] = kwargs.get("conversion_megajanskys", NONUM * u.MJy / u.sr)
+    phot["pixelarea_steradians"] = kwargs.get("pixelarea_steradians", NONUM * u.sr)
+    phot["pixelarea_arcsecsq"] = kwargs.get("pixelarea_arcsecsq", NONUM * u.arcsec**2)
+    phot["conversion_microjanskys_uncertainty"] = kwargs.get("conversion_microjanskys_muncertainty", NONUM * u.uJy / u.sr)
+    phot["conversion_megajanskys_uncertainty"] = kwargs.get("conversion_megajanskys_uncertainty", NONUM * u.MJy / u.sr)
 
     return phot
 
 
-def mk_cal_logs():
+def mk_cal_logs(**kwargs):
     """
     Create a dummy CalLogs instance with valid values for attributes
     required by the schema.
@@ -42,7 +42,7 @@ def mk_cal_logs():
     )
 
 
-def mk_resample():
+def mk_resample(**kwargs):
     """
     Create a dummy Resample instance with valid values for attributes
     required by the schema. Utilized by the model maker utilities below.
@@ -52,10 +52,10 @@ def mk_resample():
     roman_datamodels.stnode.Resample
     """
     res = stnode.Resample()
-    res["pixel_scale_ratio"] = NONUM
-    res["pixfrac"] = NONUM
-    res["pointings"] = -1 * NONUM
-    res["product_exposure_time"] = -1 * NONUM
-    res["weight_type"] = "exptime"
+    res["pixel_scale_ratio"] = kwargs.get("pixel_scale_ratio", NONUM)
+    res["pixfrac"] = kwargs.get("pixfrac", NONUM)
+    res["pointings"] = kwargs.get("pointings", -1 * NONUM)
+    res["product_exposure_time"] = kwargs.get("product_exposure_time", -1 * NONUM)
+    res["weight_type"] = kwargs.get("weight_type", "exptime")
 
     return res
