@@ -43,6 +43,10 @@ class ScienceRawModel(_DataModel):
     _node_type = stnode.WfiScienceRaw
 
 
+class MsosStackModel(_DataModel):
+    _node_type = stnode.MsosStack
+
+
 class RampModel(_DataModel):
     _node_type = stnode.Ramp
 
