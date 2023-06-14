@@ -492,6 +492,22 @@ def mk_guidewindow_meta(**kwargs):
     return meta
 
 
+def mk_msos_stack_meta(**kwargs):
+    """
+    Create a dummy common metadata dictionary with valid values for attributes and add
+    the additional msos_stack metadata
+
+    Returns
+    -------
+    dict (defined by the common-1.0.0 schema with additional guidewindow metadata)
+    """
+
+    meta = mk_common_meta(**kwargs)
+    meta["image_list"] = kwargs.get("image_list", NOSTR)
+
+    return meta
+
+
 def mk_ref_common(reftype_, **kwargs):
     """
     Create dummy metadata for reference file instances.

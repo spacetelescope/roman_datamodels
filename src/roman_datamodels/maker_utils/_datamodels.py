@@ -8,7 +8,7 @@ from astropy import units as u
 from roman_datamodels import stnode
 
 from ._base import MESSAGE
-from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_photometry_meta, mk_resample_meta
+from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_msos_stack_meta, mk_photometry_meta, mk_resample_meta
 from ._tagged_nodes import mk_cal_logs
 
 
@@ -200,6 +200,45 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
         af.write_to(filepath)
     else:
         return wfi_mosaic
+
+
+def mk_msos_stack(*, shape=(4096, 4096), filepath=None, **kwargs):
+    """
+    Create a dummy Level 3 MSOS stack instance (or file) with arrays and valid values
+
+    Parameters
+    ----------
+    shape : tuple, int
+        (optional) Shape (z, y, x) of data array in the model (and its
+        corresponding dq/err arrays). This specified size includes the
+        four-pixel border of reference pixels. Default is 8 x 4096 x 4096.
+
+    filepath : str
+        (optional) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.MsosStack
+    """
+    if len(shape) > 2:
+        shape = shape[1:3]
+
+        warnings.warn(f"{MESSAGE} assuming the the first two entries are y, x. The remaining is thrown out!", UserWarning)
+
+    msos_stack = stnode.MsosStack()
+    msos_stack["meta"] = mk_msos_stack_meta(**kwargs.get("meta", {}))
+
+    msos_stack["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float64))
+    msos_stack["uncertainty"] = kwargs.get("uncertainty", np.zeros(shape, dtype=np.float64))
+    msos_stack["mask"] = kwargs.get("mask", np.zeros(shape, dtype=np.uint8))
+    msos_stack["coverage"] = kwargs.get("coverage", np.zeros(shape, dtype=np.uint8))
+
+    if filepath:
+        af = asdf.AsdfFile()
+        af.tree = {"roman": msos_stack}
+        af.write_to(filepath)
+    else:
+        return msos_stack
 
 
 def mk_ramp(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
