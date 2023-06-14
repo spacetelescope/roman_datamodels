@@ -492,7 +492,7 @@ def mk_guidewindow_meta(**kwargs):
     return meta
 
 
-def mk_ref_common(reftype="", **kwargs):
+def mk_ref_common(reftype_, **kwargs):
     """
     Create dummy metadata for reference file instances.
 
@@ -508,7 +508,7 @@ def mk_ref_common(reftype="", **kwargs):
     meta["author"] = kwargs.get("author", "test system")
     meta["description"] = kwargs.get("description", "blah blah blah")
     meta["useafter"] = kwargs.get("useafter", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    meta["reftype"] = kwargs.get("reftype", reftype)
+    meta["reftype"] = kwargs.get("reftype", reftype_)
 
     return meta
 
@@ -593,7 +593,7 @@ def mk_ref_pixelarea_meta(**kwargs):
     return meta
 
 
-def mk_ref_units_dn_meta(reftype, **kwargs):
+def mk_ref_units_dn_meta(reftype_, **kwargs):
     """
     Create dummy metadata for reference file instances which specify DN as input/output units.
 
@@ -601,7 +601,7 @@ def mk_ref_units_dn_meta(reftype, **kwargs):
     -------
     dict (follows reference_file/ref_common-1.0.0 schema + DN input/output metadata)
     """
-    meta = mk_ref_common(reftype, **kwargs)
+    meta = mk_ref_common(reftype_, **kwargs)
 
     meta["input_units"] = kwargs.get("input_units", u.DN)
     meta["output_units"] = kwargs.get("output_units", u.DN)

@@ -1,7 +1,7 @@
 import asdf
 import pytest
 
-from roman_datamodels import maker_utils, stnode
+from roman_datamodels import datamodels, maker_utils, stnode
 from roman_datamodels.maker_utils import _ref_files as ref_files
 
 
@@ -55,16 +55,22 @@ def test_ref_files_all(name):
     assert method_name[:-4] in ref_files.__all__
 
 
-@pytest.mark.parametrize("util", ref_files.__all__)
-def test_make_ref_tests(util):
+@pytest.mark.parametrize("util", [c.__name__ for c in datamodels.MODEL_REGISTRY])
+def test_make_datamodel_tests(util):
     """
-    Meta test to confirm that correct tests exist for each maker utility.
+    Meta test to confirm that correct tests exist for each datamodel maker utility.
     """
+    from roman_datamodels.testing.factories import _camel_case_to_snake_case
+
     from . import test_models as tests
 
-    name = util[3:]
+    name = maker_utils.SPECIAL_MAKERS.get(util, _camel_case_to_snake_case(util))
+    if name.startswith("mk_"):
+        name = name[3:]
+    if name.endswith("_ref"):
+        name = name[:-4]
 
-    assert hasattr(tests, f"test_make_{name}")
+    assert hasattr(tests, f"test_make_{name}"), name
     assert hasattr(tests, f"test_opening_{name}_ref")
 
 

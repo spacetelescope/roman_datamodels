@@ -115,7 +115,7 @@ def test_opening_ramp_ref(tmp_path):
 
 
 # RampFitOutput tests
-def test_make_rampfitoutput():
+def test_make_ramp_fit_output():
     rampfitoutput = utils.mk_ramp_fit_output(shape=(2, 20, 20))
 
     assert rampfitoutput.meta.exposure.type == "WFI_IMAGE"
@@ -144,7 +144,7 @@ def test_make_rampfitoutput():
     assert rampfitoutput_model.validate() is None
 
 
-def test_opening_rampfitoutput_ref(tmp_path):
+def test_opening_ramp_fit_output_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testrampfitoutput.asdf"
     utils.mk_ramp_fit_output(filepath=file_path)
@@ -153,8 +153,8 @@ def test_opening_rampfitoutput_ref(tmp_path):
     assert isinstance(rampfitoutput, datamodels.RampFitOutputModel)
 
 
-# Association tests
-def test_make_association():
+# Associations tests
+def test_make_associations():
     member_shapes = (3, 8, 5, 2)
     association = utils.mk_associations(shape=member_shapes)
 
@@ -182,7 +182,7 @@ def test_make_association():
     assert association_model.validate() is None
 
 
-def test_opening_association_ref(tmp_path):
+def test_opening_associations_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testassociations.asdf"
     utils.mk_associations(filepath=file_path)
@@ -646,7 +646,7 @@ def test_opening_wfi_img_photom_ref(tmp_path):
 
 
 # WFI Level 1 Science Raw tests
-def test_level1_science_raw():
+def test_make_level1_science_raw():
     wfi_science_raw = utils.mk_level1_science_raw()
 
     assert wfi_science_raw.data.dtype == np.uint16
@@ -657,7 +657,7 @@ def test_level1_science_raw():
     assert wfi_science_raw_model.validate() is None
 
 
-def test_opening_level1_science_raw(tmp_path):
+def test_opening_level1_science_raw_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testwfi_science_raw.asdf"
     utils.mk_level1_science_raw(filepath=file_path)
@@ -668,7 +668,7 @@ def test_opening_level1_science_raw(tmp_path):
 
 
 # WFI Level 2 Image tests
-def test_level2_image():
+def test_make_level2_image():
     wfi_image = utils.mk_level2_image()
 
     assert wfi_image.data.dtype == np.float32
@@ -688,7 +688,7 @@ def test_level2_image():
     assert wfi_image_model.validate() is None
 
 
-def test_opening_level2_image(tmp_path):
+def test_opening_level2_image_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testwfi_image.asdf"
     utils.mk_level2_image(filepath=file_path)
@@ -699,7 +699,7 @@ def test_opening_level2_image(tmp_path):
 
 
 # WFI Level 3 Mosaic tests
-def test_level3_mosaic():
+def test_make_level3_mosaic():
     wfi_mosaic = utils.mk_level3_mosaic()
 
     assert wfi_mosaic.data.dtype == np.float32
@@ -721,7 +721,7 @@ def test_level3_mosaic():
     assert wfi_mosaic_model.validate() is None
 
 
-def test_opening_level3_mosaic(tmp_path):
+def test_opening_level3_mosaic_ref(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testwfi_mosaic.asdf"
     utils.mk_level3_mosaic(filepath=file_path)
