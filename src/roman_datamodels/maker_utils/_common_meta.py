@@ -1,10 +1,11 @@
 from astropy import time
 
 from roman_datamodels import stnode
-from roman_datamodels.random_utils import generate_positive_int
+from roman_datamodels.random_utils import generate_positive_int, generate_string
 
 from ._base import NONUM, NOSTR
 from ._basic_meta import mk_basic_meta
+from ._tagged_nodes import mk_photometry, mk_resample
 
 
 def mk_exposure(**kwargs):
@@ -391,7 +392,7 @@ def mk_common_meta(**kwargs):
     -------
     dict (defined by the common-1.0.0 schema)
     """
-    meta = mk_basic_meta()
+    meta = mk_basic_meta(**kwargs)
     meta["aperture"] = mk_aperture(**kwargs.get("aperture", {}))
     meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
@@ -407,6 +408,85 @@ def mk_common_meta(**kwargs):
     meta["velocity_aberration"] = mk_velocity_aberration(**kwargs.get("velocity_aberration", {}))
     meta["visit"] = mk_visit(**kwargs.get("visit", {}))
     meta["wcsinfo"] = mk_wcsinfo(**kwargs.get("wcsinfo", {}))
+
+    return meta
+
+
+def mk_photometry_meta(**kwargs):
+    """
+    Create a dummy common metadata dictionary with valid values for attributes and add
+    the additional photometry metadata
+
+    Returns
+    -------
+    dict (defined by the common-1.0.0 schema with additional photometry metadata)
+    """
+
+    meta = mk_common_meta(**kwargs)
+    meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
+
+    return meta
+
+
+def mk_resample_meta(**kwargs):
+    """
+    Create a dummy common metadata dictionary with valid values for attributes and add
+    the additional photometry AND resample metadata
+
+    Returns
+    -------
+    dict (defined by the common-1.0.0 schema with additional photometry and resample metadata)
+    """
+
+    meta = mk_photometry_meta(**kwargs)
+    meta["resample"] = mk_resample(**kwargs.get("resample", {}))
+
+    return meta
+
+
+def mk_guidewindow_meta(**kwargs):
+    """
+    Create a dummy common metadata dictionary with valid values for attributes and add
+    the additional guidewindow metadata
+
+    Returns
+    -------
+    dict (defined by the common-1.0.0 schema with additional guidewindow metadata)
+    """
+
+    meta = mk_common_meta(**kwargs)
+
+    meta["file_creation_time"] = kwargs.get("file_creation_time", time.Time("2020-01-01T20:00:00.0", format="isot", scale="utc"))
+    meta["gw_start_time"] = kwargs.get("gw_start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
+    meta["gw_end_time"] = kwargs.get("gw_end_time", time.Time("2020-01-01T10:00:00.0", format="isot", scale="utc"))
+    meta["gw_function_start_time"] = kwargs.get(
+        "gw_function_start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
+    meta["gw_function_end_time"] = kwargs.get(
+        "gw_function_end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
+    meta["gw_frame_readout_time"] = kwargs.get("gw_frame_readout_time", NONUM)
+    meta["pedestal_resultant_exp_time"] = kwargs.get("pedestal_resultant_exp_time", NONUM)
+    meta["signal_resultant_exp_time"] = kwargs.get("signal_resultant_exp_time", NONUM)
+    meta["gw_acq_number"] = kwargs.get("gw_acq_number", NONUM)
+    meta["gw_science_file_source"] = kwargs.get("gw_science_file_source", NOSTR)
+    meta["gw_mode"] = kwargs.get("gw_mode", "WIM-ACQ")
+    meta["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
+    meta["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
+    meta["gw_window_xstop"] = kwargs.get("gw_window_xstop", meta["gw_window_xstart"] + 170)
+    meta["gw_window_ystop"] = kwargs.get("gw_window_ystop", meta["gw_window_ystart"] + 24)
+    meta["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
+    meta["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
+
+    meta["gw_function_start_time"] = kwargs.get(
+        "gw_function_start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
+    meta["gw_function_end_time"] = kwargs.get(
+        "gw_function_end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
+    meta["data_start"] = kwargs.get("data_start", NONUM)
+    meta["data_end"] = kwargs.get("data_end", NONUM)
+    meta["gw_acq_exec_stat"] = kwargs.get("gw_acq_exec_stat", generate_string("Status ", 15))
 
     return meta
 

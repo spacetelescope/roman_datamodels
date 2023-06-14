@@ -25,23 +25,6 @@ def mk_photometry(**kwargs):
     return phot
 
 
-def mk_cal_logs(**kwargs):
-    """
-    Create a dummy CalLogs instance with valid values for attributes
-    required by the schema.
-
-    Returns
-    -------
-    roman_datamodels.stnode.CalLogs
-    """
-    return stnode.CalLogs(
-        [
-            "2021-11-15T09:15:07.12Z :: FlatFieldStep :: INFO :: Completed",
-            "2021-11-15T10:22.55.55Z :: RampFittingStep :: WARNING :: Wow, lots of Cosmic Rays detected",
-        ]
-    )
-
-
 def mk_resample(**kwargs):
     """
     Create a dummy Resample instance with valid values for attributes
@@ -59,3 +42,23 @@ def mk_resample(**kwargs):
     res["weight_type"] = kwargs.get("weight_type", "exptime")
 
     return res
+
+
+def mk_cal_logs(**kwargs):
+    """
+    Create a dummy CalLogs instance with valid values for attributes
+    required by the schema.
+
+    Returns
+    -------
+    roman_datamodels.stnode.CalLogs
+    """
+    return stnode.CalLogs(
+        kwargs.get(
+            "cal_logs",
+            [
+                "2021-11-15T09:15:07.12Z :: FlatFieldStep :: INFO :: Completed",
+                "2021-11-15T10:22.55.55Z :: RampFittingStep :: WARNING :: Wow, lots of Cosmic Rays detected",
+            ],
+        )
+    )
