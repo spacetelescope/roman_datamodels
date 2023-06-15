@@ -38,7 +38,7 @@ def test_core_schema(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
 
-    wfi_image = utils.mk_level2_image(shape=(10, 10))
+    wfi_image = utils.mk_level2_image(shape=(8, 8))
     with asdf.AsdfFile() as af:
         af.tree = {"roman": wfi_image}
 
@@ -87,16 +87,16 @@ def test_core_schema(tmp_path):
 
 # RampFitOutput tests
 def test_make_ramp():
-    ramp = utils.mk_ramp(shape=(2, 20, 20))
+    ramp = utils.mk_ramp(shape=(2, 8, 8))
 
     assert ramp.meta.exposure.type == "WFI_IMAGE"
     assert ramp.data.dtype == np.float32
     assert ramp.data.unit == u.DN
     assert ramp.pixeldq.dtype == np.uint32
-    assert ramp.pixeldq.shape == (20, 20)
+    assert ramp.pixeldq.shape == (8, 8)
     assert ramp.groupdq.dtype == np.uint8
     assert ramp.err.dtype == np.float32
-    assert ramp.err.shape == (2, 20, 20)
+    assert ramp.err.shape == (2, 8, 8)
     assert ramp.err.unit == u.DN
 
     # Test validation
@@ -115,7 +115,7 @@ def test_opening_ramp_ref(tmp_path):
 
 # RampFitOutput tests
 def test_make_ramp_fit_output():
-    rampfitoutput = utils.mk_ramp_fit_output(shape=(2, 20, 20))
+    rampfitoutput = utils.mk_ramp_fit_output(shape=(2, 8, 8))
 
     assert rampfitoutput.meta.exposure.type == "WFI_IMAGE"
     assert rampfitoutput.slope.dtype == np.float32
@@ -135,8 +135,8 @@ def test_make_ramp_fit_output():
     assert rampfitoutput.var_poisson.unit == u.electron**2 / u.s**2
     assert rampfitoutput.var_rnoise.dtype == np.float32
     assert rampfitoutput.var_rnoise.unit == u.electron**2 / u.s**2
-    assert rampfitoutput.var_poisson.shape == (2, 20, 20)
-    assert rampfitoutput.pedestal.shape == (20, 20)
+    assert rampfitoutput.var_poisson.shape == (2, 8, 8)
+    assert rampfitoutput.pedestal.shape == (8, 8)
 
     # Test validation
     rampfitoutput_model = datamodels.RampFitOutputModel(rampfitoutput)
@@ -226,7 +226,7 @@ def test_read_pattern():
 
 # Guide Window tests
 def test_make_guidewindow():
-    guidewindow = utils.mk_guidewindow(shape=(2, 8, 16, 32, 32))
+    guidewindow = utils.mk_guidewindow(shape=(2, 2, 2, 2, 2))
 
     assert guidewindow.meta.exposure.type == "WFI_IMAGE"
     assert guidewindow.pedestal_frames.dtype == np.uint16
@@ -235,9 +235,9 @@ def test_make_guidewindow():
     assert guidewindow.signal_frames.unit == u.DN
     assert guidewindow.amp33.dtype == np.uint16
     assert guidewindow.amp33.unit == u.DN
-    assert guidewindow.pedestal_frames.shape == (2, 8, 16, 32, 32)
-    assert guidewindow.signal_frames.shape == (2, 8, 16, 32, 32)
-    assert guidewindow.amp33.shape == (2, 8, 16, 32, 32)
+    assert guidewindow.pedestal_frames.shape == (2, 2, 2, 2, 2)
+    assert guidewindow.signal_frames.shape == (2, 2, 2, 2, 2)
+    assert guidewindow.amp33.shape == (2, 2, 2, 2, 2)
 
     # Test validation
     guidewindow_model = datamodels.GuidewindowModel(guidewindow)
@@ -273,11 +273,11 @@ def test_reference_file_model_base(tmp_path):
 
 # Flat tests
 def test_make_flat():
-    flat = utils.mk_flat(shape=(20, 20))
+    flat = utils.mk_flat(shape=(8, 8))
     assert flat.meta.reftype == "FLAT"
     assert flat.data.dtype == np.float32
     assert flat.dq.dtype == np.uint32
-    assert flat.dq.shape == (20, 20)
+    assert flat.dq.shape == (8, 8)
     assert flat.err.dtype == np.float32
 
     # Test validation
@@ -323,11 +323,11 @@ def test_flat_model(tmp_path):
 
 # Dark Current tests
 def test_make_dark():
-    dark = utils.mk_dark(shape=(3, 20, 20))
+    dark = utils.mk_dark(shape=(2, 8, 8))
     assert dark.meta.reftype == "DARK"
     assert dark.data.dtype == np.float32
     assert dark.dq.dtype == np.uint32
-    assert dark.dq.shape == (20, 20)
+    assert dark.dq.shape == (8, 8)
     assert dark.err.dtype == np.float32
     assert dark.data.unit == u.DN
 
@@ -369,7 +369,7 @@ def test_opening_distortion_ref(tmp_path):
 
 # Gain tests
 def test_make_gain():
-    gain = utils.mk_gain(shape=(20, 20))
+    gain = utils.mk_gain(shape=(8, 8))
     assert gain.meta.reftype == "GAIN"
     assert gain.data.dtype == np.float32
     assert gain.data.unit == u.electron / u.DN
@@ -414,7 +414,7 @@ def test_opening_ipc_ref(tmp_path):
 
 # Linearity tests
 def test_make_linearity():
-    linearity = utils.mk_linearity(shape=(2, 20, 20))
+    linearity = utils.mk_linearity(shape=(2, 8, 8))
     assert linearity.meta.reftype == "LINEARITY"
     assert linearity.coeffs.dtype == np.float32
     assert linearity.dq.dtype == np.uint32
@@ -435,7 +435,7 @@ def test_opening_linearity_ref(tmp_path):
 
 # InverseLinearity tests
 def test_make_inverse_linearity():
-    inverselinearity = utils.mk_inverse_linearity(shape=(2, 20, 20))
+    inverselinearity = utils.mk_inverse_linearity(shape=(2, 8, 8))
     assert inverselinearity.meta.reftype == "INVERSELINEARITY"
     assert inverselinearity.coeffs.dtype == np.float32
     assert inverselinearity.dq.dtype == np.uint32
@@ -456,7 +456,7 @@ def test_opening_inverse_linearity_ref(tmp_path):
 
 # Mask tests
 def test_make_mask():
-    mask = utils.mk_mask(shape=(20, 20))
+    mask = utils.mk_mask(shape=(8, 8))
     assert mask.meta.reftype == "MASK"
     assert mask.dq.dtype == np.uint32
 
@@ -476,7 +476,7 @@ def test_opening_mask_ref(tmp_path):
 
 # Pixel Area tests
 def test_make_pixelarea():
-    pixearea = utils.mk_pixelarea(shape=(20, 20))
+    pixearea = utils.mk_pixelarea(shape=(8, 8))
     assert pixearea.meta.reftype == "AREA"
     assert type(pixearea.meta.photometry.pixelarea_steradians) == u.Quantity
     assert type(pixearea.meta.photometry.pixelarea_arcsecsq) == u.Quantity
@@ -498,7 +498,7 @@ def test_opening_pixelarea_ref(tmp_path):
 
 # Read Noise tests
 def test_make_readnoise():
-    readnoise = utils.mk_readnoise(shape=(20, 20))
+    readnoise = utils.mk_readnoise(shape=(8, 8))
     assert readnoise.meta.reftype == "READNOISE"
     assert readnoise.data.dtype == np.float32
     assert readnoise.data.unit == u.DN
@@ -538,7 +538,7 @@ def test_add_model_attribute(tmp_path):
 
 # Saturation tests
 def test_make_saturation():
-    saturation = utils.mk_saturation(shape=(20, 20))
+    saturation = utils.mk_saturation(shape=(8, 8))
     assert saturation.meta.reftype == "SATURATION"
     assert saturation.dq.dtype == np.uint32
     assert saturation.data.dtype == np.float32
@@ -560,12 +560,12 @@ def test_opening_saturation_ref(tmp_path):
 
 # Super Bias tests
 def test_make_superbias():
-    superbias = utils.mk_superbias(shape=(20, 20))
+    superbias = utils.mk_superbias(shape=(8, 8))
     assert superbias.meta.reftype == "BIAS"
     assert superbias.data.dtype == np.float32
     assert superbias.err.dtype == np.float32
     assert superbias.dq.dtype == np.uint32
-    assert superbias.dq.shape == (20, 20)
+    assert superbias.dq.shape == (8, 8)
 
     # Test validation
     superbias_model = datamodels.SuperbiasRefModel(superbias)
@@ -583,16 +583,16 @@ def test_opening_superbias_ref(tmp_path):
 
 # Refpix tests
 def test_make_refpix():
-    refpix = utils.mk_refpix(shape=(20, 20))
+    refpix = utils.mk_refpix(shape=(8, 8))
     assert refpix.meta.reftype == "REFPIX"
 
     assert refpix.gamma.dtype == np.complex128
     assert refpix.zeta.dtype == np.complex128
     assert refpix.alpha.dtype == np.complex128
 
-    assert refpix.gamma.shape == (20, 20)
-    assert refpix.zeta.shape == (20, 20)
-    assert refpix.alpha.shape == (20, 20)
+    assert refpix.gamma.shape == (8, 8)
+    assert refpix.zeta.shape == (8, 8)
+    assert refpix.alpha.shape == (8, 8)
 
     assert refpix.meta.input_units == u.DN
     assert refpix.meta.output_units == u.DN
@@ -645,7 +645,7 @@ def test_opening_wfi_img_photom_ref(tmp_path):
 
 # WFI Level 1 Science Raw tests
 def test_make_level1_science_raw():
-    wfi_science_raw = utils.mk_level1_science_raw()
+    wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
 
     assert wfi_science_raw.data.dtype == np.uint16
     assert wfi_science_raw.data.unit == u.DN
@@ -667,7 +667,7 @@ def test_opening_level1_science_raw_ref(tmp_path):
 
 # WFI Level 2 Image tests
 def test_make_level2_image():
-    wfi_image = utils.mk_level2_image()
+    wfi_image = utils.mk_level2_image(shape=(8, 8))
 
     assert wfi_image.data.dtype == np.float32
     assert wfi_image.data.unit == u.electron / u.s
@@ -698,7 +698,7 @@ def test_opening_level2_image_ref(tmp_path):
 
 # WFI Level 3 Mosaic tests
 def test_make_level3_mosaic():
-    wfi_mosaic = utils.mk_level3_mosaic()
+    wfi_mosaic = utils.mk_level3_mosaic(shape=(8, 8))
 
     assert wfi_mosaic.data.dtype == np.float32
     assert wfi_mosaic.data.unit == u.electron / u.s
@@ -730,7 +730,7 @@ def test_opening_level3_mosaic_ref(tmp_path):
 
 
 def test_datamodel_info_search(capsys):
-    wfi_science_raw = utils.mk_level1_science_raw()
+    wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
     af = asdf.AsdfFile()
     af.tree = {"roman": wfi_science_raw}
     dm = datamodels.open(af)
@@ -743,7 +743,7 @@ def test_datamodel_info_search(capsys):
 
 
 def test_datamodel_schema_info():
-    wfi_science_raw = utils.mk_level1_science_raw()
+    wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
     af = asdf.AsdfFile()
     af.tree = {"roman": wfi_science_raw}
     dm = datamodels.open(af)
@@ -795,7 +795,7 @@ def test_crds_parameters(tmp_path):
 
 def test_model_validate_without_save():
     # regression test for rcal-538
-    img = utils.mk_level2_image()
+    img = utils.mk_level2_image(shape=(8, 8))
     m = datamodels.ImageModel(img)
 
     # invalidate pointing without using the
@@ -810,19 +810,21 @@ def test_model_validate_without_save():
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
 @pytest.mark.parametrize("node", datamodels.MODEL_REGISTRY.keys())
 @pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_model_only_init_with_correct_node(node, correct, model):
     """
     Datamodels should only be initializable with the correct node in the model_registry.
     This checks that it can be initiallized with the correct node, and that it cannot be
     with any other node.
     """
-    img = utils.mk_node(node)
+    img = utils.mk_node(node, shape=(2, 8, 8))
     with nullcontext() if node is correct else pytest.raises(ValidationError):
         model(img)
 
 
 def test_ramp_from_science_raw():
-    raw = datamodels.ScienceRawModel(utils.mk_level1_science_raw())
+    raw = datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8)))
 
     ramp = datamodels.RampModel.from_science_raw(raw)
     for key in ramp:
