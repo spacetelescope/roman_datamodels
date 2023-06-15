@@ -15,25 +15,31 @@ from roman_datamodels.testing import assert_node_equal
 def test_maker_utility_implemented(node_class):
     """
     Confirm that a subclass of TaggedObjectNode has a maker utility.
+
+    (note: will be using full defaults for this one)
     """
     instance = maker_utils.mk_node(node_class)
     assert isinstance(instance, node_class)
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_instance_valid(node_class):
     """
     Confirm that a class's maker utility creates an object that
     is valid against its schema.
     """
     with asdf.AsdfFile() as af:
-        af["node"] = maker_utils.mk_node(node_class)
+        af["node"] = maker_utils.mk_node(node_class, shape=(8, 8, 8))
         af.validate()
 
 
 @pytest.mark.parametrize("node_class", [c for c in stnode.NODE_CLASSES if issubclass(c, stnode.TaggedObjectNode)])
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_no_extra_fields(node_class, manifest):
-    instance = maker_utils.mk_node(node_class)
+    instance = maker_utils.mk_node(node_class, shape=(8, 8, 8))
     instance_keys = set(instance.keys())
 
     schema_uri = next(t["schema_uri"] for t in manifest["tags"] if t["tag_uri"] == instance.tag)
@@ -88,22 +94,26 @@ def test_deprecated():
     """
 
     with pytest.warns(DeprecationWarning):
-        maker_utils.mk_rampfitoutput()
+        maker_utils.mk_rampfitoutput(shape=(8, 8, 8))
 
 
 @pytest.mark.parametrize("model_class", [mdl for mdl in maker_utils.NODE_REGISTRY])
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_datamodel_maker(model_class):
     """
     Test that the datamodel maker utility creates a valid datamodel.
     """
 
-    model = maker_utils.mk_datamodel(model_class)
+    model = maker_utils.mk_datamodel(model_class, shape=(8, 8, 8))
 
     assert isinstance(model, model_class)
     model.validate()
 
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_override_data(node_class):
     """
     Test that we can override data in any maker, all makers are part included in some datamodel,
@@ -163,7 +173,7 @@ def test_override_data(node_class):
             return mutate_value(node)
 
     # Create a node then mutate it.
-    node = maker_utils.mk_node(node_class)
+    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
     kwargs = mutate_node(node)
 
     # Create a new node using the recorded mutation data. Then check it is equal to the mutated object.

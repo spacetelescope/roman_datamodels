@@ -1,3 +1,5 @@
+import warnings
+
 import asdf
 import numpy as np
 from astropy import units as u
@@ -5,6 +7,7 @@ from astropy.modeling import models
 
 from roman_datamodels import stnode
 
+from ._base import MESSAGE
 from ._common_meta import (
     mk_ref_common,
     mk_ref_dark_meta,
@@ -41,6 +44,7 @@ def mk_flat(*, shape=(4096, 4096), filepath=None, **kwargs):
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
@@ -49,6 +53,11 @@ def mk_flat(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.FlatRef
     """
+    if len(shape) > 2:
+        shape = shape[:2]
+
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
     flatref = stnode.FlatRef()
     flatref["meta"] = mk_ref_common("FLAT", **kwargs.get("meta", {}))
 
@@ -81,6 +90,10 @@ def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.DarkRef
     """
+    if len(shape) != 3:
+        shape = (2, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+
     darkref = stnode.DarkRef()
     darkref["meta"] = mk_ref_dark_meta(**kwargs.get("meta", {}))
 
@@ -135,6 +148,7 @@ def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
@@ -143,6 +157,11 @@ def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.GainRef
     """
+    if len(shape) > 2:
+        shape = shape[:2]
+
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
     gainref = stnode.GainRef()
     gainref["meta"] = mk_ref_common("GAIN", **kwargs.get("meta", {}))
 
@@ -165,6 +184,7 @@ def mk_ipc(*, shape=(3, 3), filepath=None, **kwargs):
     ----------
     shape
         (optional, keyword-only) Shape of array in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
@@ -173,6 +193,11 @@ def mk_ipc(*, shape=(3, 3), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.IpcRef
     """
+    if len(shape) > 2:
+        shape = shape[:2]
+
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
     ipcref = stnode.IpcRef()
     ipcref["meta"] = mk_ref_common("IPC", **kwargs.get("meta", {}))
 
@@ -207,6 +232,10 @@ def mk_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.LinearityRef
     """
+    if len(shape) != 3:
+        shape = (2, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+
     linearityref = stnode.LinearityRef()
     linearityref["meta"] = mk_ref_units_dn_meta("LINEARITY", **kwargs.get("meta", {}))
 
@@ -238,6 +267,10 @@ def mk_inverse_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.InverseLinearityRef
     """
+    if len(shape) != 3:
+        shape = (2, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+
     inverselinearityref = stnode.InverseLinearityRef()
     inverselinearityref["meta"] = mk_ref_units_dn_meta("INVERSELINEARITY", **kwargs.get("meta", {}))
 
@@ -261,6 +294,7 @@ def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
@@ -269,6 +303,11 @@ def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.MaskRef
     """
+    if len(shape) > 2:
+        shape = shape[:2]
+
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
     maskref = stnode.MaskRef()
     maskref["meta"] = mk_ref_common("MASK", **kwargs.get("meta", {}))
 
@@ -291,6 +330,7 @@ def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
@@ -299,6 +339,11 @@ def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.PixelareaRef
     """
+    if len(shape) > 2:
+        shape = shape[:2]
+
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
     pixelarearef = stnode.PixelareaRef()
     pixelarearef["meta"] = mk_ref_pixelarea_meta(**kwargs.get("meta", {}))
 
@@ -377,6 +422,7 @@ def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
@@ -385,6 +431,11 @@ def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.ReadnoiseRef
     """
+    if len(shape) > 2:
+        shape = shape[:2]
+
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
     readnoiseref = stnode.ReadnoiseRef()
     readnoiseref["meta"] = mk_ref_readnoise_meta(**kwargs.get("meta", {}))
 
@@ -407,6 +458,7 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
@@ -415,6 +467,11 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.SaturationRef
     """
+    if len(shape) > 2:
+        shape = shape[:2]
+
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
     saturationref = stnode.SaturationRef()
     saturationref["meta"] = mk_ref_common("SATURATION", **kwargs.get("meta", {}))
 
@@ -438,6 +495,7 @@ def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
@@ -446,6 +504,11 @@ def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.SuperbiasRef
     """
+    if len(shape) > 2:
+        shape = shape[:2]
+
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
     superbiasref = stnode.SuperbiasRef()
     superbiasref["meta"] = mk_ref_common("BIAS", **kwargs.get("meta", {}))
 
@@ -484,6 +547,7 @@ def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
@@ -492,6 +556,11 @@ def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.RefPixRef
     """
+    if len(shape) > 2:
+        shape = shape[:2]
+
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
     refpix = stnode.RefpixRef()
     refpix["meta"] = mk_ref_units_dn_meta("REFPIX", **kwargs.get("meta", {}))
 

@@ -23,9 +23,11 @@ def test_generated_node_classes(manifest):
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_copy(node_class):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
-    node = maker_utils.mk_node(node_class)
+    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
     node_copy = node.copy()
 
     # Assert the copy is shallow:
@@ -40,8 +42,10 @@ def test_copy(node_class):
 
 @pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_deepcopy_model(node_class):
-    node = maker_utils.mk_node(node_class)
+    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
     model = datamodels.MODEL_REGISTRY[node_class](node)
     model_copy = model.copy()
 
@@ -74,10 +78,12 @@ def test_wfi_mode():
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_serialization(node_class, tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    node = maker_utils.mk_node(node_class)
+    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
     with asdf.AsdfFile() as af:
         af["node"] = node
         af.write_to(file_path)

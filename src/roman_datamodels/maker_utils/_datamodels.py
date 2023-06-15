@@ -7,6 +7,7 @@ from astropy import units as u
 
 from roman_datamodels import stnode
 
+from ._base import MESSAGE
 from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_photometry_meta, mk_resample_meta
 from ._tagged_nodes import mk_cal_logs
 
@@ -32,6 +33,10 @@ def mk_level1_science_raw(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.WfiScienceRaw
     """
+    if len(shape) != 3:
+        shape = (8, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
+
     wfi_science_raw = stnode.WfiScienceRaw()
     wfi_science_raw["meta"] = mk_common_meta(**kwargs.get("meta", {}))
 
@@ -67,6 +72,8 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
         contain the original border reference pixels (i.e if shape = (10, 10),
         the border reference pixel arrays will have (y, x) dimensions (14, 4)
         and (4, 14)). Default is 4088 x 4088.
+        If shape is a tuple of length 3, the first element is assumed to be the
+        n_groups and will override any settings there.
 
     n_groups : int
         (optional, keyword-only) The level 2 file is flattened, but it contains
@@ -80,6 +87,14 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.WfiImage
     """
+    if len(shape) > 2:
+        shape = shape[1:3]
+        n_groups = shape[0]
+
+        warnings.warn(
+            f"{MESSAGE} assuming the first entry is n_groups followed by y, x. The remaining is thrown out!", UserWarning
+        )
+
     wfi_image = stnode.WfiImage()
     wfi_image["meta"] = mk_photometry_meta(**kwargs.get("meta", {}))
 
@@ -139,6 +154,8 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
     shape : tuple, int
         (optional, keyword-only) Shape (y, x) of data array in the model (and
         its corresponding dq/err arrays). Default is 4088 x 4088.
+        If shape is a tuple of length 3, the first element is assumed to be
+        n_images and will override the n_images parameter.
 
     n_images : int
         Number of images used to create the level 3 image. Defaults to 2.
@@ -150,6 +167,14 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
     -------
     roman_datamodels.stnode.WfiMosaic
     """
+    if len(shape) > 2:
+        shape = shape[1:3]
+        n_images = shape[0]
+
+        warnings.warn(
+            f"{MESSAGE} assuming the first entry is n_images followed by y, x. The remaining is thrown out!", UserWarning
+        )
+
     wfi_mosaic = stnode.WfiMosaic()
     wfi_mosaic["meta"] = mk_resample_meta(**kwargs.get("meta", {}))
 
@@ -196,6 +221,10 @@ def mk_ramp(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.Ramp
     """
+    if len(shape) != 3:
+        shape = (8, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
+
     ramp = stnode.Ramp()
     ramp["meta"] = mk_common_meta(**kwargs.get("meta", {}))
 
@@ -252,6 +281,10 @@ def mk_ramp_fit_output(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.RampFitOutput
     """
+    if len(shape) != 3:
+        shape = (8, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
+
     rampfitoutput = stnode.RampFitOutput()
     rampfitoutput["meta"] = mk_common_meta(**kwargs.get("meta", {}))
 
@@ -368,6 +401,10 @@ def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.Guidewindow
     """
+    if len(shape) != 5:
+        shape = (2, 8, 16, 32, 32)
+        warnings.warn("Input shape must be 5D. Defaulting to (2, 8, 16, 32, 32)")
+
     guidewindow = stnode.Guidewindow()
     guidewindow["meta"] = mk_guidewindow_meta(**kwargs.get("meta", {}))
 
