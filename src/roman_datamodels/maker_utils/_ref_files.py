@@ -211,7 +211,7 @@ def mk_linearity(shape=(2, 4096, 4096), filepath=None, **kwargs):
     linearityref["meta"] = mk_ref_units_dn_meta("LINEARITY", **kwargs.get("meta", {}))
 
     linearityref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
-    linearityref["coeffs"] = kwargs.get("dq", np.zeros(shape, dtype=np.float32))
+    linearityref["coeffs"] = kwargs.get("coeffs", np.zeros(shape, dtype=np.float32))
 
     if filepath:
         af = asdf.AsdfFile()
