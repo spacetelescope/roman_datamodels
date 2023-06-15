@@ -5,8 +5,8 @@ import asdf
 import astropy.units as u
 import pytest
 
-from roman_datamodels import datamodels, stnode, validate
-from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, create_node, factories, wraps_hashable
+from roman_datamodels import datamodels, maker_utils, stnode, validate
+from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 
 def test_generated_node_classes(manifest):
@@ -25,7 +25,7 @@ def test_generated_node_classes(manifest):
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 def test_copy(node_class):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
-    node = create_node(node_class)
+    node = maker_utils.mk_node(node_class)
     node_copy = node.copy()
 
     # Assert the copy is shallow:
@@ -41,7 +41,7 @@ def test_copy(node_class):
 @pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
 def test_deepcopy_model(node_class):
-    node = create_node(node_class)
+    node = maker_utils.mk_node(node_class)
     model = datamodels.MODEL_REGISTRY[node_class](node)
     model_copy = model.copy()
 
@@ -77,7 +77,7 @@ def test_wfi_mode():
 def test_serialization(node_class, tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    node = create_node(node_class)
+    node = maker_utils.mk_node(node_class)
     with asdf.AsdfFile() as af:
         af["node"] = node
         af.write_to(file_path)
@@ -132,7 +132,7 @@ def test_set_pattern_properties():
     """
 
     # This model uses includes a patternProperty
-    mdl = factories.create_wfi_img_photom_ref()
+    mdl = maker_utils.mk_wfi_img_photom()
 
     # This should be invalid because it is not a quantity
     with pytest.raises(asdf.ValidationError):
@@ -209,19 +209,19 @@ def test_nuke_validation(env_var, tmp_path):
     context = pytest.raises(asdf.ValidationError) if env_var[1] else pytest.warns(validate.ValidationWarning)
 
     # Create a broken DNode object
-    mdl = factories.create_wfi_img_photom_ref()
+    mdl = maker_utils.mk_wfi_img_photom()
     mdl["phot_table"] = "THIS IS NOT VALID"
     with context:
         datamodels.WfiImgPhotomRefModel(mdl)
 
     # __setattr__ a broken value
-    mdl = factories.create_wfi_img_photom_ref()
+    mdl = maker_utils.mk_wfi_img_photom()
     with context:
         mdl.phot_table = "THIS IS NOT VALID"
 
     # Break model without outside validation
     with nullcontext() if env_var[1] else pytest.warns(validate.ValidationWarning):
-        mdl = datamodels.WfiImgPhotomRefModel(factories.create_wfi_img_photom_ref())
+        mdl = datamodels.WfiImgPhotomRefModel(maker_utils.mk_wfi_img_photom())
     mdl._instance["phot_table"] = "THIS IS NOT VALID"
 
     # Broken can be written to file

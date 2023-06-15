@@ -13,8 +13,7 @@ from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode
 from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
-from roman_datamodels.testing import create_node
-from roman_datamodels.testing.assertions import assert_node_equal
+from roman_datamodels.testing import assert_node_equal
 
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
@@ -30,7 +29,7 @@ def iter_subclasses(model_class, include_base_model=True):
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
 @pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
 def test_model_schemas(node, model):
-    instance = model(create_node(node))
+    instance = model(utils.mk_node(node))
     asdf.schema.load_schema(instance.schema_uri)
 
 
@@ -817,7 +816,7 @@ def test_model_only_init_with_correct_node(node, correct, model):
     This checks that it can be initiallized with the correct node, and that it cannot be
     with any other node.
     """
-    img = create_node(node)
+    img = utils.mk_node(node)
     with nullcontext() if node is correct else pytest.raises(ValidationError):
         model(img)
 
