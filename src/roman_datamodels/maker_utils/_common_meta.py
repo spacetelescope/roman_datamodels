@@ -1,4 +1,5 @@
 from astropy import time
+from astropy import units as u
 
 from roman_datamodels import stnode
 from roman_datamodels.random_utils import generate_positive_int, generate_string
@@ -491,7 +492,7 @@ def mk_guidewindow_meta(**kwargs):
     return meta
 
 
-def mk_ref_common(**kwargs):
+def mk_ref_common(reftype="", **kwargs):
     """
     Create dummy metadata for reference file instances.
 
@@ -507,6 +508,116 @@ def mk_ref_common(**kwargs):
     meta["author"] = kwargs.get("author", "test system")
     meta["description"] = kwargs.get("description", "blah blah blah")
     meta["useafter"] = kwargs.get("useafter", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    meta["reftype"] = kwargs.get("reftype", "")
+    meta["reftype"] = kwargs.get("reftype", reftype)
+
+    return meta
+
+
+def _mk_ref_exposure(**kwargs):
+    """
+    Create the general exposure meta data
+    """
+    exposure = {}
+    exposure["type"] = kwargs.get("type", "WFI_IMAGE")
+    exposure["p_exptype"] = kwargs.get("p_exptype", "WFI_IMAGE|WFI_GRISM|WFI_PRISM|")
+
+    return exposure
+
+
+def _mk_ref_dark_exposure(**kwargs):
+    """
+    Create the dark exposure meta data
+    """
+    exposure = _mk_ref_exposure(**kwargs)
+    exposure["ngroups"] = kwargs.get("ngroups", 6)
+    exposure["nframes"] = kwargs.get("nframes", 8)
+    exposure["groupgap"] = kwargs.get("groupgap", 0)
+    exposure["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
+    exposure["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
+
+    return exposure
+
+
+def mk_ref_dark_meta(**kwargs):
+    """
+    Create dummy metadata for dark reference file instances.
+
+    Returns
+    -------
+    dict (follows reference_file/ref_common-1.0.0 schema + dark reference file metadata)
+    """
+    meta = mk_ref_common("DARK", **kwargs)
+    meta["exposure"] = _mk_ref_dark_exposure(**kwargs.get("exposure", {}))
+
+    return meta
+
+
+def mk_ref_distoriton_meta(**kwargs):
+    """
+    Create dummy metadata for distortion reference file instances.
+
+    Returns
+    -------
+    dict (follows reference_file/ref_common-1.0.0 schema + distortion reference file metadata)
+    """
+    meta = mk_ref_common("DISTORTION", **kwargs)
+
+    meta["input_units"] = kwargs.get("input_units", u.pixel)
+    meta["output_units"] = kwargs.get("output_units", u.arcsec)
+
+    return meta
+
+
+def _mk_ref_photometry_meta(**kwargs):
+    """
+    Create the photometry meta data for pixelarea reference files
+    """
+    meta = {}
+    meta["pixelarea_steradians"] = kwargs.get("pixelarea_steradians", float(NONUM) * u.sr)
+    meta["pixelarea_arcsecsq"] = kwargs.get("pixelarea_arcsecsq", float(NONUM) * u.arcsec**2)
+
+    return meta
+
+
+def mk_ref_pixelarea_meta(**kwargs):
+    """
+    Create dummy metadata for pixelarea reference file instances.
+
+    Returns
+    -------
+    dict (follows reference_file/ref_common-1.0.0 schema + pixelarea reference file metadata)
+    """
+    meta = mk_ref_common("AREA", **kwargs)
+    meta["photometry"] = _mk_ref_photometry_meta(**kwargs.get("photometry", {}))
+
+    return meta
+
+
+def mk_ref_units_dn_meta(reftype, **kwargs):
+    """
+    Create dummy metadata for reference file instances which specify DN as input/output units.
+
+    Returns
+    -------
+    dict (follows reference_file/ref_common-1.0.0 schema + DN input/output metadata)
+    """
+    meta = mk_ref_common(reftype, **kwargs)
+
+    meta["input_units"] = kwargs.get("input_units", u.DN)
+    meta["output_units"] = kwargs.get("output_units", u.DN)
+
+    return meta
+
+
+def mk_ref_readnoise_meta(**kwargs):
+    """
+    Create dummy metadata for readnoise reference file instances.
+
+    Returns
+    -------
+    dict (follows reference_file/ref_common-1.0.0 schema + readnoise reference file metadata)
+    """
+    meta = mk_ref_common("READNOISE", **kwargs)
+    meta["exposure"] = _mk_ref_exposure(**kwargs.get("exposure", {}))
 
     return meta
