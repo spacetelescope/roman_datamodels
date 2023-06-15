@@ -64,7 +64,7 @@ def mk_wfi_mode(**kwargs):
     mode = stnode.WfiMode()
     mode["name"] = kwargs.get("name", "WFI")
     mode["detector"] = kwargs.get("detector", "WFI01")
-    mode["optical_element"] = kwargs.get("optical_element", "F062")
+    mode["optical_element"] = kwargs.get("optical_element", "F158")
 
     return mode
 

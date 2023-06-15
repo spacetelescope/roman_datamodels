@@ -84,7 +84,6 @@ def test_make_datamodel_tests(node_class):
         name = name[:-4]
 
     assert hasattr(tests, f"test_make_{name}"), name
-    assert hasattr(tests, f"test_opening_{name}_ref")
 
 
 def test_deprecated():

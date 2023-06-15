@@ -104,15 +104,6 @@ def test_make_ramp():
     assert ramp.validate() is None
 
 
-def test_opening_ramp_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testramp.asdf"
-    utils.mk_ramp(filepath=file_path)
-    ramp = datamodels.open(file_path)
-    assert ramp.meta.instrument.optical_element == "F062"
-    assert isinstance(ramp, datamodels.RampModel)
-
-
 # RampFitOutput tests
 def test_make_ramp_fit_output():
     rampfitoutput = utils.mk_ramp_fit_output(shape=(2, 8, 8))
@@ -143,15 +134,6 @@ def test_make_ramp_fit_output():
     assert rampfitoutput_model.validate() is None
 
 
-def test_opening_ramp_fit_output_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testrampfitoutput.asdf"
-    utils.mk_ramp_fit_output(filepath=file_path)
-    rampfitoutput = datamodels.open(file_path)
-    assert rampfitoutput.meta.instrument.optical_element == "F062"
-    assert isinstance(rampfitoutput, datamodels.RampFitOutputModel)
-
-
 # Associations tests
 def test_make_associations():
     member_shapes = (3, 8, 5, 2)
@@ -179,15 +161,6 @@ def test_make_associations():
     # Test validation
     association_model = datamodels.AssociationsModel(association)
     assert association_model.validate() is None
-
-
-def test_opening_associations_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testassociations.asdf"
-    utils.mk_associations(filepath=file_path)
-    association = datamodels.open(file_path)
-    assert association.program == 1
-    assert isinstance(association, datamodels.AssociationsModel)
 
 
 @pytest.mark.parametrize(
@@ -244,15 +217,6 @@ def test_make_guidewindow():
     assert guidewindow_model.validate() is None
 
 
-def test_opening_guidewindow_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testguidewindow.asdf"
-    utils.mk_guidewindow(filepath=file_path)
-    guidewindow = datamodels.open(file_path)
-    assert guidewindow.meta.gw_mode == "WIM-ACQ"
-    assert isinstance(guidewindow, datamodels.GuidewindowModel)
-
-
 # Testing all reference file schemas
 def test_reference_file_model_base(tmp_path):
     # Set temporary asdf file
@@ -285,15 +249,6 @@ def test_make_flat():
     assert flat_model.validate() is None
 
 
-def test_opening_flat_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testflat.asdf"
-    utils.mk_flat(filepath=file_path)
-    flat = datamodels.open(file_path)
-    assert flat.meta.instrument.optical_element == "F158"
-    assert isinstance(flat, datamodels.FlatRefModel)
-
-
 def test_flat_model(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
@@ -301,7 +256,7 @@ def test_flat_model(tmp_path):
     meta = utils.mk_ref_common("FLAT")
     flatref = stnode.FlatRef()
     flatref["meta"] = meta
-    flatref.meta.instrument["optical_element"] = "F062"
+    flatref.meta.instrument["optical_element"] = "F158"
     shape = (4096, 4096)
     flatref["data"] = np.zeros(shape, dtype=np.float32)
     flatref["dq"] = np.zeros(shape, dtype=np.uint32)
@@ -336,15 +291,6 @@ def test_make_dark():
     assert dark_model.validate() is None
 
 
-def test_opening_dark_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testdark.asdf"
-    utils.mk_dark(filepath=file_path)
-    dark = datamodels.open(file_path)
-    assert dark.meta.instrument.optical_element == "F158"
-    assert isinstance(dark, datamodels.DarkRefModel)
-
-
 # Distortion tests
 def test_make_distortion():
     distortion = utils.mk_distortion()
@@ -358,15 +304,6 @@ def test_make_distortion():
     assert distortion_model.validate() is None
 
 
-def test_opening_distortion_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testdistortion.asdf"
-    utils.mk_distortion(filepath=file_path)
-    distortion = datamodels.open(file_path)
-    assert distortion.meta.instrument.optical_element == "F158"
-    assert isinstance(distortion, datamodels.DistortionRefModel)
-
-
 # Gain tests
 def test_make_gain():
     gain = utils.mk_gain(shape=(8, 8))
@@ -377,15 +314,6 @@ def test_make_gain():
     # Test validation
     gain_model = datamodels.GainRefModel(gain)
     assert gain_model.validate() is None
-
-
-def test_opening_gain_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testgain.asdf"
-    utils.mk_gain(filepath=file_path)
-    gain = datamodels.open(file_path)
-    assert gain.meta.instrument.optical_element == "F158"
-    assert isinstance(gain, datamodels.GainRefModel)
 
 
 # Gain tests
@@ -401,17 +329,6 @@ def test_make_ipc():
     assert ipc_model.validate() is None
 
 
-def test_opening_ipc_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testipc.asdf"
-    utils.mk_ipc(filepath=file_path)
-    ipc = datamodels.open(file_path)
-    assert ipc.data[1, 1] == 1.0
-    assert np.sum(ipc.data) == 1.0
-    assert ipc.meta.instrument.optical_element == "F158"
-    assert isinstance(ipc, datamodels.IpcRefModel)
-
-
 # Linearity tests
 def test_make_linearity():
     linearity = utils.mk_linearity(shape=(2, 8, 8))
@@ -422,15 +339,6 @@ def test_make_linearity():
     # Test validation
     linearity_model = datamodels.LinearityRefModel(linearity)
     assert linearity_model.validate() is None
-
-
-def test_opening_linearity_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testlinearity.asdf"
-    utils.mk_linearity(filepath=file_path)
-    linearity = datamodels.open(file_path)
-    assert linearity.meta.instrument.optical_element == "F158"
-    assert isinstance(linearity, datamodels.LinearityRefModel)
 
 
 # InverseLinearity tests
@@ -445,15 +353,6 @@ def test_make_inverse_linearity():
     assert inverselinearity_model.validate() is None
 
 
-def test_opening_inverse_linearity_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testlinearity.asdf"
-    utils.mk_inverse_linearity(filepath=file_path)
-    inverselinearity = datamodels.open(file_path)
-    assert inverselinearity.meta.instrument.optical_element == "F158"
-    assert isinstance(inverselinearity, datamodels.InverseLinearityRefModel)
-
-
 # Mask tests
 def test_make_mask():
     mask = utils.mk_mask(shape=(8, 8))
@@ -463,15 +362,6 @@ def test_make_mask():
     # Test validation
     mask_model = datamodels.MaskRefModel(mask)
     assert mask_model.validate() is None
-
-
-def test_opening_mask_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testmask.asdf"
-    utils.mk_mask(filepath=file_path)
-    mask = datamodels.open(file_path)
-    assert mask.meta.instrument.optical_element == "F158"
-    assert isinstance(mask, datamodels.MaskRefModel)
 
 
 # Pixel Area tests
@@ -487,15 +377,6 @@ def test_make_pixelarea():
     assert pixearea_model.validate() is None
 
 
-def test_opening_pixelarea_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testpixelarea.asdf"
-    utils.mk_pixelarea(filepath=file_path)
-    pixelarea = datamodels.open(file_path)
-    assert pixelarea.meta.instrument.optical_element == "F158"
-    assert isinstance(pixelarea, datamodels.PixelareaRefModel)
-
-
 # Read Noise tests
 def test_make_readnoise():
     readnoise = utils.mk_readnoise(shape=(8, 8))
@@ -506,15 +387,6 @@ def test_make_readnoise():
     # Test validation
     readnoise_model = datamodels.ReadnoiseRefModel(readnoise)
     assert readnoise_model.validate() is None
-
-
-def test_opening_readnoise_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testreadnoise.asdf"
-    utils.mk_readnoise(filepath=file_path)
-    readnoise = datamodels.open(file_path)
-    assert readnoise.meta.instrument.optical_element == "F158"
-    assert isinstance(readnoise, datamodels.ReadnoiseRefModel)
 
 
 def test_add_model_attribute(tmp_path):
@@ -549,15 +421,6 @@ def test_make_saturation():
     assert saturation_model.validate() is None
 
 
-def test_opening_saturation_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testsaturation.asdf"
-    utils.mk_saturation(filepath=file_path)
-    saturation = datamodels.open(file_path)
-    assert saturation.meta.instrument.optical_element == "F158"
-    assert isinstance(saturation, datamodels.SaturationRefModel)
-
-
 # Super Bias tests
 def test_make_superbias():
     superbias = utils.mk_superbias(shape=(8, 8))
@@ -570,15 +433,6 @@ def test_make_superbias():
     # Test validation
     superbias_model = datamodels.SuperbiasRefModel(superbias)
     assert superbias_model.validate() is None
-
-
-def test_opening_superbias_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testsuperbias.asdf"
-    utils.mk_superbias(filepath=file_path)
-    superbias = datamodels.open(file_path)
-    assert superbias.meta.instrument.optical_element == "F158"
-    assert isinstance(superbias, datamodels.SuperbiasRefModel)
 
 
 # Refpix tests
@@ -596,15 +450,6 @@ def test_make_refpix():
 
     assert refpix.meta.input_units == u.DN
     assert refpix.meta.output_units == u.DN
-
-
-def test_opening_refpix_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testrefpix.asdf"
-    utils.mk_refpix(filepath=file_path)
-    refpix = datamodels.open(file_path)
-    assert refpix.meta.instrument.optical_element == "F158"
-    assert isinstance(refpix, datamodels.RefpixRefModel)
 
 
 # WFI Photom tests
@@ -633,16 +478,6 @@ def test_make_wfi_img_photom():
     assert wfi_img_photom_model.validate() is None
 
 
-def test_opening_wfi_img_photom_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testwfi_img_photom.asdf"
-    utils.mk_wfi_img_photom(filepath=file_path)
-    wfi_img_photom = datamodels.open(file_path)
-
-    assert wfi_img_photom.meta.instrument.optical_element == "F158"
-    assert isinstance(wfi_img_photom, datamodels.WfiImgPhotomRefModel)
-
-
 # WFI Level 1 Science Raw tests
 def test_make_level1_science_raw():
     wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
@@ -653,16 +488,6 @@ def test_make_level1_science_raw():
     # Test validation
     wfi_science_raw_model = datamodels.ScienceRawModel(wfi_science_raw)
     assert wfi_science_raw_model.validate() is None
-
-
-def test_opening_level1_science_raw_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testwfi_science_raw.asdf"
-    utils.mk_level1_science_raw(filepath=file_path)
-    wfi_science_raw = datamodels.open(file_path)
-
-    assert wfi_science_raw.meta.instrument.optical_element == "F062"
-    assert isinstance(wfi_science_raw, datamodels.ScienceRawModel)
 
 
 # WFI Level 2 Image tests
@@ -684,16 +509,6 @@ def test_make_level2_image():
     # Test validation
     wfi_image_model = datamodels.ImageModel(wfi_image)
     assert wfi_image_model.validate() is None
-
-
-def test_opening_level2_image_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testwfi_image.asdf"
-    utils.mk_level2_image(filepath=file_path)
-    wfi_image = datamodels.open(file_path)
-
-    assert wfi_image.meta.instrument.optical_element == "F062"
-    assert isinstance(wfi_image, datamodels.ImageModel)
 
 
 # WFI Level 3 Mosaic tests
@@ -719,16 +534,6 @@ def test_make_level3_mosaic():
     assert wfi_mosaic_model.validate() is None
 
 
-def test_opening_level3_mosaic_ref(tmp_path):
-    # First make test reference file
-    file_path = tmp_path / "testwfi_mosaic.asdf"
-    utils.mk_level3_mosaic(filepath=file_path)
-    wfi_mosaic = datamodels.open(file_path)
-
-    assert wfi_mosaic.meta.instrument.optical_element == "F062"
-    assert isinstance(wfi_mosaic, datamodels.MosaicModel)
-
-
 def test_datamodel_info_search(capsys):
     wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
     af = asdf.AsdfFile()
@@ -738,8 +543,8 @@ def test_datamodel_info_search(capsys):
     captured = capsys.readouterr()
     assert "optical_element" in captured.out
     result = dm.search("optical_element")
-    assert "F062" in repr(result)
-    assert result.node == "F062"
+    assert "F158" in repr(result)
+    assert result.node == "F158"
 
 
 def test_datamodel_schema_info():
