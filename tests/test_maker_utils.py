@@ -1,3 +1,4 @@
+import inspect
 from unittest import mock
 
 import asdf
@@ -169,3 +170,21 @@ def test_override_data(node_class):
     new_node = maker_utils.mk_node(node_class, **kwargs)
     assert new_node is not node
     assert_node_equal(new_node, node)
+
+
+@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
+def test_keyword_only(node_class):
+    """
+    Ensure all the maker utils at the top level are keyword only.
+    """
+
+    maker = maker_utils._get_node_maker(node_class)
+    sig = inspect.signature(maker)
+
+    assert "kwargs" in sig.parameters
+
+    for param in sig.parameters.values():
+        if param.name == "kwargs":
+            assert param.kind == inspect.Parameter.VAR_KEYWORD
+        else:
+            assert param.kind == inspect.Parameter.KEYWORD_ONLY

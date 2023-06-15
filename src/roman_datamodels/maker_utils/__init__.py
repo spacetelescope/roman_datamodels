@@ -17,6 +17,37 @@ SPECIAL_MAKERS = {
 NODE_REGISTRY = {mdl: node for node, mdl in _MODEL_REGISTRY.items()}
 
 
+def _get_node_maker(node_class):
+    """
+    Create a dummy node of the specified class with valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    node_class : type
+        Node class (from stnode).
+
+    Returns
+    -------
+    maker function for node class
+    """
+    from roman_datamodels.testing.factories import _camel_case_to_snake_case
+
+    if node_class.__name__ in SPECIAL_MAKERS:
+        method_name = SPECIAL_MAKERS[node_class.__name__]
+    else:
+        method_name = "mk_" + _camel_case_to_snake_case(node_class.__name__)
+
+        # Reference files are in their own module so the '_ref` monicker is left off
+        if method_name.endswith("_ref"):
+            method_name = method_name[:-4]
+
+        if method_name not in globals():
+            raise ValueError(f"Maker utility: {method_name} not implemented for class {node_class.__name__}")
+
+    return globals()[method_name]
+
+
 def mk_node(node_class, **kwargs):
     """
     Create a dummy node of the specified class with valid values
@@ -33,20 +64,8 @@ def mk_node(node_class, **kwargs):
     -------
     `roman_datamodels.stnode.TaggedObjectNode`
     """
-    from roman_datamodels.testing.factories import _camel_case_to_snake_case
 
-    if node_class.__name__ in SPECIAL_MAKERS:
-        method_name = SPECIAL_MAKERS[node_class.__name__]
-    else:
-        method_name = "mk_" + _camel_case_to_snake_case(node_class.__name__)
-
-        # Reference files are in their own module so the '_ref` monicker is left off
-        if method_name.endswith("_ref"):
-            method_name = method_name[:-4]
-
-        if method_name not in globals():
-            raise ValueError(f"Maker utility: {method_name} not implemented for class {node_class.__name__}")
-    return globals()[method_name](**kwargs)
+    return _get_node_maker(node_class)(**kwargs)
 
 
 def mk_datamodel(model_class, **kwargs):

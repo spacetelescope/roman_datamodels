@@ -11,21 +11,22 @@ from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_photometry_met
 from ._tagged_nodes import mk_cal_logs
 
 
-def mk_level1_science_raw(shape=(8, 4096, 4096), filepath=None, **kwargs):
+def mk_level1_science_raw(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy level 1 ScienceRaw instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy level 1 ScienceRaw instance (or file) with arrays and valid
+    values for attributes required by the schema.
 
     Parameters
     ----------
     shape : tuple, int
-        (optional) (z, y, x) Shape of data array. This includes a four-pixel
-        border representing the reference pixels. Default is (8, 4096, 4096)
+        (optional, keyword-only) (z, y, x) Shape of data array. This includes a
+        four-pixel border representing the reference pixels. Default is
+            (8, 4096, 4096)
         (8 integrations, 4088 x 4088 represent the science pixels, with the
         additional being the border reference pixels).
 
     filepath : str
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -51,7 +52,7 @@ def mk_level1_science_raw(shape=(8, 4096, 4096), filepath=None, **kwargs):
         return wfi_science_raw
 
 
-def mk_level2_image(shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
+def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     """
     Create a dummy level 2 Image instance (or file) with arrays and valid values
     for attributes required by the schema.
@@ -59,21 +60,21 @@ def mk_level2_image(shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     Parameters
     ----------
     shape : tuple, int
-        (optional) Shape (y, x) of data array in the model (and its
-        corresponding dq/err arrays). This specified size does NOT include the
-        four-pixel border of reference pixels - those are trimmed at level 2.
-        This size, however, is used to construct the additional arrays that
+        (optional, keyword-only) Shape (y, x) of data array in the model (and
+        its corresponding dq/err arrays). This specified size does NOT include
+        the four-pixel border of reference pixels - those are trimmed at level
+        2.  This size, however, is used to construct the additional arrays that
         contain the original border reference pixels (i.e if shape = (10, 10),
         the border reference pixel arrays will have (y, x) dimensions (14, 4)
         and (4, 14)). Default is 4088 x 4088.
 
     n_groups : int
-        The level 2 file is flattened, but it contains arrays for the original
-        reference pixels which remain 3D. n_groups specifies what the z dimension
-        of these arrays should be. Defaults to 8.
+        (optional, keyword-only) The level 2 file is flattened, but it contains
+        arrays for the original reference pixels which remain 3D. n_groups
+        specifies what the z dimension of these arrays should be. Defaults to 8.
 
     filepath : str
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -128,16 +129,16 @@ def mk_level2_image(shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
         return wfi_image
 
 
-def mk_level3_mosaic(shape=None, n_images=2, filepath=None, **kwargs):
+def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs):
     """
-    Create a dummy level 3 Mosaic instance (or file) with arrays and valid values
-    for attributes required by the schema.
+    Create a dummy level 3 Mosaic instance (or file) with arrays and valid
+    values for attributes required by the schema.
 
     Parameters
     ----------
     shape : tuple, int
-        (optional) Shape (y, x) of data array in the model (and its
-        corresponding dq/err arrays). Default is 4088 x 4088.
+        (optional, keyword-only) Shape (y, x) of data array in the model (and
+        its corresponding dq/err arrays). Default is 4088 x 4088.
 
     n_images : int
         Number of images used to create the level 3 image. Defaults to 2.
@@ -151,8 +152,6 @@ def mk_level3_mosaic(shape=None, n_images=2, filepath=None, **kwargs):
     """
     wfi_mosaic = stnode.WfiMosaic()
     wfi_mosaic["meta"] = mk_resample_meta(**kwargs.get("meta", {}))
-    if not shape:
-        shape = (4088, 4088)
 
     wfi_mosaic["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32))
     wfi_mosaic["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32))
@@ -178,7 +177,7 @@ def mk_level3_mosaic(shape=None, n_images=2, filepath=None, **kwargs):
         return wfi_mosaic
 
 
-def mk_ramp(shape=(8, 4096, 4096), filepath=None, **kwargs):
+def mk_ramp(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     """
     Create a dummy Ramp instance (or file) with arrays and valid values for attributes
     required by the schema.
@@ -186,12 +185,12 @@ def mk_ramp(shape=(8, 4096, 4096), filepath=None, **kwargs):
     Parameters
     ----------
     shape : tuple, int
-        (optional) Shape (z, y, x) of data array in the model (and its
-        corresponding dq/err arrays). This specified size includes the
+        (optional, keyword-only) Shape (z, y, x) of data array in the model (and
+        its corresponding dq/err arrays). This specified size includes the
         four-pixel border of reference pixels. Default is 8 x 4096 x 4096.
 
     filepath : str
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -236,18 +235,18 @@ def mk_ramp(shape=(8, 4096, 4096), filepath=None, **kwargs):
         return ramp
 
 
-def mk_ramp_fit_output(shape=(8, 4096, 4096), filepath=None, **kwargs):
+def mk_ramp_fit_output(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Rampfit Output instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Rampfit Output instance (or file) with arrays and valid
+    values for attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -290,16 +289,18 @@ def mk_rampfitoutput(**kwargs):
     return mk_ramp_fit_output(**kwargs)
 
 
-def mk_associations(shape=(2, 3, 1), filepath=None, **kwargs):
+def mk_associations(*, shape=(2, 3, 1), filepath=None, **kwargs):
     """
-    Create a dummy Association table instance (or file) with table and valid values for attributes
-    required by the schema.
+    Create a dummy Association table instance (or file) with table and valid
+    values for attributes required by the schema.
+
     Parameters
     ----------
     shape : tuple
-        (optional) The shape of the member elements of products.
+        (optional, keyword-only) The shape of the member elements of products.
     filepath : string
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
+
     Returns
     -------
     roman_datamodels.stnode.AssociationsModel
@@ -350,18 +351,18 @@ def mk_associations(shape=(2, 3, 1), filepath=None, **kwargs):
         return associations
 
 
-def mk_guidewindow(shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
+def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
     """
-    Create a dummy Guidewindow instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Guidewindow instance (or file) with arrays and valid values
+    for attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------

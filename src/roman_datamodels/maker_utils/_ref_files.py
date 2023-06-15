@@ -32,18 +32,18 @@ __all__ = [
 ]
 
 
-def mk_flat(shape=(4096, 4096), filepath=None, **kwargs):
+def mk_flat(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Flat instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Flat instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -64,18 +64,18 @@ def mk_flat(shape=(4096, 4096), filepath=None, **kwargs):
         return flatref
 
 
-def mk_dark(shape=(2, 4096, 4096), filepath=None, **kwargs):
+def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Dark Current instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Dark Current instance (or file) with arrays and valid values
+    for attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -96,16 +96,16 @@ def mk_dark(shape=(2, 4096, 4096), filepath=None, **kwargs):
         return darkref
 
 
-def mk_distortion(filepath=None, **kwargs):
+def mk_distortion(*, filepath=None, **kwargs):
     """
-    Create a dummy Distortion instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Distortion instance (or file) with arrays and valid values
+    for attributes required by the schema.
 
     Parameters
     ----------
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -126,18 +126,18 @@ def mk_distortion(filepath=None, **kwargs):
         return distortionref
 
 
-def mk_gain(shape=(4096, 4096), filepath=None, **kwargs):
+def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Gain instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Gain instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -156,18 +156,18 @@ def mk_gain(shape=(4096, 4096), filepath=None, **kwargs):
         return gainref
 
 
-def mk_ipc(shape=(3, 3), filepath=None, **kwargs):
+def mk_ipc(*, shape=(3, 3), filepath=None, **kwargs):
     """
-    Create a dummy IPC instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy IPC instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of array in the model.
+        (optional, keyword-only) Shape of array in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -190,18 +190,18 @@ def mk_ipc(shape=(3, 3), filepath=None, **kwargs):
         return ipcref
 
 
-def mk_linearity(shape=(2, 4096, 4096), filepath=None, **kwargs):
+def mk_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Linearity instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Linearity instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -221,7 +221,7 @@ def mk_linearity(shape=(2, 4096, 4096), filepath=None, **kwargs):
         return linearityref
 
 
-def mk_inverse_linearity(shape=(2, 4096, 4096), filepath=None, **kwargs):
+def mk_inverse_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
     Create a dummy InverseLinearity instance (or file) with arrays and valid
     values for attributes required by the schema.
@@ -229,10 +229,10 @@ def mk_inverse_linearity(shape=(2, 4096, 4096), filepath=None, **kwargs):
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -252,18 +252,18 @@ def mk_inverse_linearity(shape=(2, 4096, 4096), filepath=None, **kwargs):
         return inverselinearityref
 
 
-def mk_mask(shape=(4096, 4096), filepath=None, **kwargs):
+def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Mask instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Mask instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -282,18 +282,18 @@ def mk_mask(shape=(4096, 4096), filepath=None, **kwargs):
         return maskref
 
 
-def mk_pixelarea(shape=(4096, 4096), filepath=None, **kwargs):
+def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Pixelarea instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Pixelarea instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -341,15 +341,15 @@ def _mk_phot_table(**kwargs):
     return {entry: _mk_phot_table_entry(entry, **kwargs.get(entry, {})) for entry in entries}
 
 
-def mk_wfi_img_photom(filepath=None, **kwargs):
+def mk_wfi_img_photom(*, filepath=None, **kwargs):
     """
-    Create a dummy WFI Img Photom instance (or file) with dictionary and valid values for attributes
-    required by the schema.
+    Create a dummy WFI Img Photom instance (or file) with dictionary and valid
+    values for attributes required by the schema.
 
     Parameters
     ----------
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -368,18 +368,18 @@ def mk_wfi_img_photom(filepath=None, **kwargs):
         return wfi_img_photomref
 
 
-def mk_readnoise(shape=(4096, 4096), filepath=None, **kwargs):
+def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Readnoise instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Readnoise instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -398,18 +398,18 @@ def mk_readnoise(shape=(4096, 4096), filepath=None, **kwargs):
         return readnoiseref
 
 
-def mk_saturation(shape=(4096, 4096), filepath=None, **kwargs):
+def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Saturation instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Saturation instance (or file) with arrays and valid values
+    for attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -429,18 +429,18 @@ def mk_saturation(shape=(4096, 4096), filepath=None, **kwargs):
         return saturationref
 
 
-def mk_superbias(shape=(4096, 4096), filepath=None, **kwargs):
+def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Superbias instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Superbias instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
@@ -461,30 +461,32 @@ def mk_superbias(shape=(4096, 4096), filepath=None, **kwargs):
         return superbiasref
 
 
-def mk_refpix(shape=(32, 286721), filepath=None, **kwargs):
+def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
     """
-    Create a dummy Refpix instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Refpix instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
-    Note the default shape is intrinically connected to the FFT combined with specifics
-    of the detector:
-        - 32: is the number of detector channels (amp33 is a non-observation channel).
+    Note the default shape is intrinically connected to the FFT combined with
+    specifics of the detector:
+        - 32: is the number of detector channels (amp33 is a non-observation
+            channel).
         - 286721 is more complex:
-            There are 128 columns of the detector per channel, and for time read alignment
-            purposes, these columns are padded by 12 additional columns. That is 140 columns
-            per row. There are 4096 rows per channel. Each channel is then flattened into a
-            1D array of 140 * 4096 = 573440 elements. Since the length is even the FFT of
+            There are 128 columns of the detector per channel, and for time read
+            alignment purposes, these columns are padded by 12 additional
+            columns. That is 140 columns per row. There are 4096 rows per
+            channel. Each channel is then flattened into a 1D array of
+            140 * 4096 = 573440 elements. Since the length is even the FFT of
             this array will be of length (573440 / 2) + 1 = 286721.
-    Also, note the FFT gives a complex value and we are carrying full numerical precision
-    which means it is a complex128.
+    Also, note the FFT gives a complex value and we are carrying full numerical
+    precision which means it is a complex128.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------

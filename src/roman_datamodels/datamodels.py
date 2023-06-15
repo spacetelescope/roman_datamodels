@@ -350,7 +350,7 @@ class RampModel(DataModel):
         if isinstance(model, ScienceRawModel):
             from roman_datamodels.maker_utils import mk_ramp
 
-            instance = mk_ramp(model.shape)
+            instance = mk_ramp(shape=model.shape)
 
             # Copy input_model contents into RampModel
             for key in model:
