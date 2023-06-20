@@ -1,6 +1,4 @@
-from astropy.time import Time
-
-from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode
+from ._tagged import TaggedObjectNode
 
 
 class WfiMode(TaggedObjectNode):
@@ -23,15 +21,3 @@ class WfiMode(TaggedObjectNode):
             return self.optical_element
         else:
             return None
-
-
-class CalLogs(TaggedListNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/cal_logs-1.0.0"
-
-    __module__ = "roman_datamodels.stnode"
-
-
-class FileDate(Time, TaggedScalarNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/file_date-1.0.0"
-
-    __module__ = "roman_datamodels.stnode"
