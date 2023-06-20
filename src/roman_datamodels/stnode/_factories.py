@@ -12,6 +12,8 @@ from rad import resources
 from . import _mixins
 from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, name_from_tag_uri
 
+__all__ = ["stnode_factory"]
+
 # Map of scalar types in the schemas to the python types
 SCALAR_TYPE_MAP = {
     "string": str,

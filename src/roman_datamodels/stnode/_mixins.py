@@ -1,6 +1,7 @@
 """
 Mixin classes for additional functionality for STNode classes
 """
+__all__ = ["WfiModeMixin"]
 
 
 class WfiModeMixin:

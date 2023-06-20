@@ -15,6 +15,12 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_TAG,
 )
 
+__all__ = [
+    "TaggedObjectNode",
+    "TaggedListNode",
+    "TaggedScalarNode",
+]
+
 
 def get_schema_from_tag(ctx, tag):
     """

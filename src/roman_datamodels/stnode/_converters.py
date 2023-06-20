@@ -6,6 +6,12 @@ from astropy.time import Time
 
 from ._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
 
+__all__ = [
+    "TaggedObjectNodeConverter",
+    "TaggedListNodeConverter",
+    "TaggedScalarNodeConverter",
+]
+
 
 class TaggedObjectNodeConverter(Converter):
     """

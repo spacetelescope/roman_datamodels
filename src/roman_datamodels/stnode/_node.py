@@ -21,6 +21,8 @@ from roman_datamodels.validate import ValidationWarning, _check_type, _error_mes
 
 from ._registry import SCALAR_NODE_CLASSES_BY_KEY
 
+__all__ = ["DNode", "LNode"]
+
 validator_callbacks = HashableDict(asdfschema.YAML_VALIDATORS)
 validator_callbacks.update({"type": _check_type})
 
