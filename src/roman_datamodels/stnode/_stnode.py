@@ -23,7 +23,7 @@ from asdf.util import HashableDict
 from astropy.time import Time
 from astropy.units import Unit  # noqa: F401
 
-from .validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
+from roman_datamodels.validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
 
 __all__ = [
     "WfiMode",
@@ -35,6 +35,9 @@ __all__ = [
     "TaggedObjectNode",
     "TaggedListNode",
     "TaggedScalarNode",
+    "TaggedListNodeConverter",
+    "TaggedObjectNodeConverter",
+    "TaggedScalarNodeConverter",
 ]
 
 

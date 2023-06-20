@@ -11,15 +11,15 @@ from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wra
 
 def test_generated_node_classes(manifest):
     for tag in manifest["tags"]:
-        class_name = stnode._class_name_from_tag_uri(tag["tag_uri"])
-        node_class = getattr(stnode, class_name)
+        class_name = stnode._stnode._class_name_from_tag_uri(tag["tag_uri"])
+        node_class = getattr(stnode._stnode, class_name)
 
         assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode))
         assert node_class._tag == tag["tag_uri"]
         assert tag["description"] in node_class.__doc__
         assert tag["tag_uri"] in node_class.__doc__
-        assert node_class.__module__ == stnode.__name__
-        assert node_class.__name__ in stnode.__all__
+        assert node_class.__module__.startswith(stnode.__name__)
+        assert node_class.__name__ in stnode._stnode.__all__
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
