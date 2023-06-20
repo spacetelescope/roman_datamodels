@@ -17,6 +17,9 @@
 - Update ``roman_datamodels`` to support the new reference file for the
   reference pixel correction. [#190]
 
+- Update ``DataModel.schema_uri`` to use non-deprecated
+  ``TagDefinition.schema_uris`` from asdf [#209]
+
 0.15.0 (2023-05-15)
 ===================
 
