@@ -20,6 +20,8 @@
 - Update ``DataModel.schema_uri`` to use non-deprecated
   ``TagDefinition.schema_uris`` from asdf [#209]
 
+- Remove the ``util`` and ``mktest`` modules. [#212]
+
 0.15.0 (2023-05-15)
 ===================
 
