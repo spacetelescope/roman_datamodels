@@ -1,7 +1,7 @@
+import copy
 from abc import ABCMeta
 
 import asdf
-import asdf.schema as asdfschema
 
 from ._node import DNode, LNode
 from ._registry import (
@@ -10,6 +10,12 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_KEY,
     SCALAR_NODE_CLASSES_BY_TAG,
 )
+
+
+def get_schema_from_tag(ctx, tag):
+    schema_uri = ctx.extension_manager.get_tag_definition(tag).schema_uris[0]
+
+    return asdf.schema.load_schema(schema_uri, resolve_references=True)
 
 
 class TaggedObjectNodeMeta(ABCMeta):
@@ -42,11 +48,7 @@ class TaggedObjectNode(DNode, metaclass=TaggedObjectNodeMeta):
 
     def get_schema(self):
         """Retrieve the schema associated with this tag"""
-        extension_manager = self.ctx.extension_manager
-        tag_def = extension_manager.get_tag_definition(self.tag)
-        schema_uri = tag_def.schema_uris[0]
-        schema = asdfschema.load_schema(schema_uri, resolve_references=True)
-        return schema
+        return get_schema_from_tag(self.ctx, self._tag)
 
 
 class TaggedListNodeMeta(ABCMeta):
@@ -110,13 +112,7 @@ class TaggedScalarNode(metaclass=TaggedScalarNodeMeta):
         return _scalar_tag_to_key(self._tag)
 
     def get_schema(self):
-        extension_manager = self.ctx.extension_manager
-        tag_def = extension_manager.get_tag_definition(self.tag)
-        schema_uri = tag_def.schema_uris[0]
-        schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
-        return schema
+        return get_schema_from_tag(self.ctx, self._tag)
 
     def copy(self):
-        import copy
-
         return copy.copy(self)

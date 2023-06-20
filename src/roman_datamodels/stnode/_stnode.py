@@ -15,8 +15,8 @@ __all__ = [
 ]
 
 
-_DATAMODELS_MANIFEST_PATH = importlib.resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
-_DATAMODELS_MANIFEST = yaml.safe_load(_DATAMODELS_MANIFEST_PATH.read_bytes())
+DATAMODELS_MANIFEST_PATH = importlib.resources.files(rad.resources) / "manifests" / "datamodels-1.0.yaml"
+DATAMODELS_MANIFEST = yaml.safe_load(DATAMODELS_MANIFEST_PATH.read_bytes())
 
 
 def _class_name_from_tag_uri(tag_uri):
@@ -30,8 +30,7 @@ def _class_name_from_tag_uri(tag_uri):
 def _class_from_tag(tag, docstring):
     class_name = _class_name_from_tag_uri(tag["tag_uri"])
 
-    schema_uri = tag["schema_uri"]
-    if "tagged_scalar" in schema_uri:
+    if "tagged_scalar" in tag["schema_uri"]:
         cls = type(
             class_name,
             (str, TaggedScalarNode),
@@ -48,7 +47,7 @@ def _class_from_tag(tag, docstring):
     __all__.append(class_name)
 
 
-for tag in _DATAMODELS_MANIFEST["tags"]:
+for tag in DATAMODELS_MANIFEST["tags"]:
     docstring = ""
     if "description" in tag:
         docstring = tag["description"] + "\n\n"

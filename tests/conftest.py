@@ -5,10 +5,12 @@ import yaml
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 
+MANIFEST = yaml.safe_load(asdf.get_config().resource_manager["asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0"])
+
 
 @pytest.fixture(scope="session")
 def manifest():
-    return yaml.safe_load(asdf.get_config().resource_manager["asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0"])
+    return MANIFEST
 
 
 @pytest.fixture(name="set_up_list_of_l2_files")

@@ -8,6 +8,8 @@ class WfiMode(TaggedObjectNode):
 
     _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
 
+    __module__ = "roman_datamodels.stnode"
+
     @property
     def filter(self):
         if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
@@ -26,6 +28,10 @@ class WfiMode(TaggedObjectNode):
 class CalLogs(TaggedListNode):
     _tag = "asdf://stsci.edu/datamodels/roman/tags/cal_logs-1.0.0"
 
+    __module__ = "roman_datamodels.stnode"
+
 
 class FileDate(Time, TaggedScalarNode):
     _tag = "asdf://stsci.edu/datamodels/roman/tags/file_date-1.0.0"
+
+    __module__ = "roman_datamodels.stnode"
