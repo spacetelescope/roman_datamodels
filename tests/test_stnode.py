@@ -13,7 +13,7 @@ from .conftest import MANIFEST
 
 @pytest.mark.parametrize("tag", MANIFEST["tags"])
 def test_generated_node_classes(tag):
-    class_name = stnode._stnode._class_name_from_tag_uri(tag["tag_uri"])
+    class_name = stnode._factories.class_name_from_tag_uri(tag["tag_uri"])
     node_class = getattr(stnode, class_name)
 
     assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode))
