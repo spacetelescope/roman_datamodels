@@ -27,11 +27,11 @@ def iter_subclasses(model_class, include_base_model=True):
         yield from iter_subclasses(sub_class)
 
 
-def test_model_schemas():
-    dmodels = datamodels.MODEL_REGISTRY.keys()
-    for model in dmodels:
-        schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags if t._tag_uri == model._tag).schema_uris[0]
-        asdf.schema.load_schema(schema_uri)
+@pytest.mark.filterwarnings("ignore:ERFA function.*")
+@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
+def test_model_schemas(node, model):
+    instance = model(create_node(node))
+    asdf.schema.load_schema(instance.schema_uri)
 
 
 # Testing core schema
