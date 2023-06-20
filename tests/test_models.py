@@ -191,6 +191,24 @@ def test_opening_association_ref(tmp_path):
     assert isinstance(association, datamodels.AssociationsModel)
 
 
+@pytest.mark.parametrize(
+    "expected, asn_data",
+    [
+        (True, {"asn_id": "foo", "asn_pool": "bar"}),
+        (False, {"asn_id": "foo"}),
+        (False, {"asn_pool": "bar"}),
+        (False, {"foo": "bar"}),
+        (False, "foo"),
+    ],
+)
+def test_is_association(expected, asn_data):
+    """
+    Test the is_association function.
+    """
+
+    assert datamodels.AssociationsModel.is_association(asn_data) is expected
+
+
 # Exposure Test
 def test_read_pattern():
     exposure = utils.mk_exposure()

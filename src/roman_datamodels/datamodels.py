@@ -375,7 +375,16 @@ class RampFitOutputModel(DataModel):
 
 class AssociationsModel(DataModel):
     # Need an init to allow instantiation from a JSON file
-    pass
+
+    @classmethod
+    def is_association(cls, asn_data):
+        """
+        Test if an object is an association by checking for required fields
+        """
+        if isinstance(asn_data, dict):
+            if "asn_id" in asn_data and "asn_pool" in asn_data:
+                return True
+        return False
 
 
 class GuidewindowModel(DataModel):
