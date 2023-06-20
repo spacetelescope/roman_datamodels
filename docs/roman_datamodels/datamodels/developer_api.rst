@@ -16,6 +16,4 @@ Developer API
 
 .. automodapi:: roman_datamodels.table_definitions
 
-.. automodapi:: roman_datamodels.util
-
 .. automodapi:: roman_datamodels.validate
