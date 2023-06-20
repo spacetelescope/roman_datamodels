@@ -8,6 +8,7 @@ import rad.resources
 import yaml
 from astropy.time import Time
 
+from . import _mixins
 from ._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
 from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, name_from_tag_uri
 
@@ -76,9 +77,14 @@ def _node_class(tag, class_name, docstring):
     else:
         raise RuntimeError(f"Unknown schema type: {schema['type']}")
 
+    if hasattr(_mixins, mixin := f"{class_name}Mixin"):
+        class_type = (class_type, getattr(_mixins, mixin))
+    else:
+        class_type = (class_type,)
+
     return type(
         class_name,
-        (class_type,),
+        class_type,
         {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring},
     )
 

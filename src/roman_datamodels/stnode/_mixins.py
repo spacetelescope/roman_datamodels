@@ -1,12 +1,5 @@
-from ._tagged import TaggedObjectNode
-
-
-class WfiMode(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.0.0"
-
+class WfiModeMixin:
     _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
-
-    __module__ = "roman_datamodels.stnode"
 
     @property
     def filter(self):

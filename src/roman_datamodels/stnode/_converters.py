@@ -1,7 +1,6 @@
 from asdf.extension import Converter
 from astropy.time import Time
 
-from ._fixed import WfiMode  # noqa: F401
 from ._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
 from ._stnode import FileDate
 
