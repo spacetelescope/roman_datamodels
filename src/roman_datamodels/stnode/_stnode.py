@@ -9,46 +9,16 @@ import yaml
 from asdf.extension import Converter
 from astropy.time import Time
 
+from ._fixed import FileDate
 from ._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
-from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode
+from ._tagged import TaggedObjectNode, TaggedScalarNode
 
 __all__ = [
-    "WfiMode",
     "NODE_CLASSES",
-    "CalLogs",
-    "FileDate",
     "TaggedListNodeConverter",
     "TaggedObjectNodeConverter",
     "TaggedScalarNodeConverter",
 ]
-
-
-class WfiMode(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.0.0"
-
-    _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
-
-    @property
-    def filter(self):
-        if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
-            return None
-        else:
-            return self.optical_element
-
-    @property
-    def grating(self):
-        if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
-            return self.optical_element
-        else:
-            return None
-
-
-class CalLogs(TaggedListNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/cal_logs-1.0.0"
-
-
-class FileDate(Time, TaggedScalarNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/file_date-1.0.0"
 
 
 class TaggedObjectNodeConverter(Converter):
