@@ -33,6 +33,9 @@
 
 - Update ``roman_datamodels`` to support the new ``msos_stack-1.0.0`` schema. [#206]
 
+- Refactor ``stnode`` to be easier to maintain and test by turning it into a
+  sub-package and splitting the module apart. [#213]
+
 0.15.0 (2023-05-15)
 ===================
 
