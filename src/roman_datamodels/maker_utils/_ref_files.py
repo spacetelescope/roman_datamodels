@@ -1,3 +1,5 @@
+import warnings
+
 import asdf
 import numpy as np
 from astropy import units as u
@@ -5,8 +7,15 @@ from astropy.modeling import models
 
 from roman_datamodels import stnode
 
-from ._base import NONUM, NOSTR
-from ._common_meta import mk_ref_common
+from ._base import MESSAGE
+from ._common_meta import (
+    mk_ref_common,
+    mk_ref_dark_meta,
+    mk_ref_distoriton_meta,
+    mk_ref_pixelarea_meta,
+    mk_ref_readnoise_meta,
+    mk_ref_units_dn_meta,
+)
 
 __all__ = [
     "mk_flat",
@@ -26,31 +35,35 @@ __all__ = [
 ]
 
 
-def mk_flat(shape=(4096, 4096), filepath=None):
+def mk_flat(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Flat instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Flat instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.FlatRef
     """
-    meta = mk_ref_common()
-    flatref = stnode.FlatRef()
-    meta["reftype"] = "FLAT"
-    flatref["meta"] = meta
+    if len(shape) > 2:
+        shape = shape[:2]
 
-    flatref["data"] = np.zeros(shape, dtype=np.float32)
-    flatref["dq"] = np.zeros(shape, dtype=np.uint32)
-    flatref["err"] = np.zeros(shape, dtype=np.float32)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
+    flatref = stnode.FlatRef()
+    flatref["meta"] = mk_ref_common("FLAT", **kwargs.get("meta", {}))
+
+    flatref["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
+    flatref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
+    flatref["err"] = kwargs.get("err", np.zeros(shape, dtype=np.float32))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -60,40 +73,33 @@ def mk_flat(shape=(4096, 4096), filepath=None):
         return flatref
 
 
-def mk_dark(shape=(2, 4096, 4096), filepath=None):
+def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Dark Current instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Dark Current instance (or file) with arrays and valid values
+    for attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.DarkRef
     """
-    meta = mk_ref_common()
-    darkref = stnode.DarkRef()
-    meta["reftype"] = "DARK"
-    darkref["meta"] = meta
-    exposure = {}
-    exposure["ngroups"] = 6
-    exposure["nframes"] = 8
-    exposure["groupgap"] = 0
-    exposure["type"] = "WFI_IMAGE"
-    exposure["p_exptype"] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
-    exposure["ma_table_name"] = NOSTR
-    exposure["ma_table_number"] = NONUM
-    darkref["meta"]["exposure"] = exposure
+    if len(shape) != 3:
+        shape = (2, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
 
-    darkref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
-    darkref["dq"] = np.zeros(shape[1:], dtype=np.uint32)
-    darkref["err"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
+    darkref = stnode.DarkRef()
+    darkref["meta"] = mk_ref_dark_meta(**kwargs.get("meta", {}))
+
+    darkref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
+    darkref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
+    darkref["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -103,30 +109,27 @@ def mk_dark(shape=(2, 4096, 4096), filepath=None):
         return darkref
 
 
-def mk_distortion(filepath=None):
+def mk_distortion(*, filepath=None, **kwargs):
     """
-    Create a dummy Distortion instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Distortion instance (or file) with arrays and valid values
+    for attributes required by the schema.
 
     Parameters
     ----------
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.DistortionRef
     """
-    meta = mk_ref_common()
     distortionref = stnode.DistortionRef()
-    meta["reftype"] = "DISTORTION"
-    distortionref["meta"] = meta
+    distortionref["meta"] = mk_ref_distoriton_meta(**kwargs.get("meta", {}))
 
-    distortionref["meta"]["input_units"] = u.pixel
-    distortionref["meta"]["output_units"] = u.arcsec
-
-    distortionref["coordinate_distortion_transform"] = models.Shift(1) & models.Shift(2)
+    distortionref["coordinate_distortion_transform"] = kwargs.get(
+        "coordinate_distortion_transform", models.Shift(1) & models.Shift(2)
+    )
 
     if filepath:
         af = asdf.AsdfFile()
@@ -136,29 +139,33 @@ def mk_distortion(filepath=None):
         return distortionref
 
 
-def mk_gain(shape=(4096, 4096), filepath=None):
+def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Gain instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Gain instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.GainRef
     """
-    meta = mk_ref_common()
-    gainref = stnode.GainRef()
-    meta["reftype"] = "GAIN"
-    gainref["meta"] = meta
+    if len(shape) > 2:
+        shape = shape[:2]
 
-    gainref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.DN, dtype=np.float32)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
+    gainref = stnode.GainRef()
+    gainref["meta"] = mk_ref_common("GAIN", **kwargs.get("meta", {}))
+
+    gainref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.DN, dtype=np.float32))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -168,30 +175,37 @@ def mk_gain(shape=(4096, 4096), filepath=None):
         return gainref
 
 
-def mk_ipc(shape=(3, 3), filepath=None):
+def mk_ipc(*, shape=(3, 3), filepath=None, **kwargs):
     """
-    Create a dummy IPC instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy IPC instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of array in the model.
+        (optional, keyword-only) Shape of array in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.IpcRef
     """
-    meta = mk_ref_common()
-    ipcref = stnode.IpcRef()
-    meta["reftype"] = "IPC"
-    ipcref["meta"] = meta
+    if len(shape) > 2:
+        shape = shape[:2]
 
-    ipcref["data"] = np.zeros(shape, dtype=np.float32)
-    ipcref["data"][int(np.floor(shape[0] / 2))][int(np.floor(shape[1] / 2))] = 1.0
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
+    ipcref = stnode.IpcRef()
+    ipcref["meta"] = mk_ref_common("IPC", **kwargs.get("meta", {}))
+
+    if "data" in kwargs:
+        ipcref["data"] = kwargs["data"]
+    else:
+        ipcref["data"] = np.zeros(shape, dtype=np.float32)
+        ipcref["data"][int(np.floor(shape[0] / 2))][int(np.floor(shape[1] / 2))] = 1.0
 
     if filepath:
         af = asdf.AsdfFile()
@@ -201,33 +215,32 @@ def mk_ipc(shape=(3, 3), filepath=None):
         return ipcref
 
 
-def mk_linearity(shape=(2, 4096, 4096), filepath=None):
+def mk_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Linearity instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Linearity instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.LinearityRef
     """
-    meta = mk_ref_common()
+    if len(shape) != 3:
+        shape = (2, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+
     linearityref = stnode.LinearityRef()
-    meta["reftype"] = "LINEARITY"
-    linearityref["meta"] = meta
+    linearityref["meta"] = mk_ref_units_dn_meta("LINEARITY", **kwargs.get("meta", {}))
 
-    linearityref["meta"]["input_units"] = u.DN
-    linearityref["meta"]["output_units"] = u.DN
-
-    linearityref["dq"] = np.zeros(shape[1:], dtype=np.uint32)
-    linearityref["coeffs"] = np.zeros(shape, dtype=np.float32)
+    linearityref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
+    linearityref["coeffs"] = kwargs.get("coeffs", np.zeros(shape, dtype=np.float32))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -237,7 +250,7 @@ def mk_linearity(shape=(2, 4096, 4096), filepath=None):
         return linearityref
 
 
-def mk_inverse_linearity(shape=(2, 4096, 4096), filepath=None):
+def mk_inverse_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
     Create a dummy InverseLinearity instance (or file) with arrays and valid
     values for attributes required by the schema.
@@ -245,25 +258,24 @@ def mk_inverse_linearity(shape=(2, 4096, 4096), filepath=None):
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.InverseLinearityRef
     """
-    meta = mk_ref_common()
+    if len(shape) != 3:
+        shape = (2, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+
     inverselinearityref = stnode.InverseLinearityRef()
-    meta["reftype"] = "INVERSELINEARITY"
-    inverselinearityref["meta"] = meta
+    inverselinearityref["meta"] = mk_ref_units_dn_meta("INVERSELINEARITY", **kwargs.get("meta", {}))
 
-    inverselinearityref["meta"]["input_units"] = u.DN
-    inverselinearityref["meta"]["output_units"] = u.DN
-
-    inverselinearityref["dq"] = np.zeros(shape[1:], dtype=np.uint32)
-    inverselinearityref["coeffs"] = np.zeros(shape, dtype=np.float32)
+    inverselinearityref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
+    inverselinearityref["coeffs"] = kwargs.get("coeffs", np.zeros(shape, dtype=np.float32))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -273,29 +285,33 @@ def mk_inverse_linearity(shape=(2, 4096, 4096), filepath=None):
         return inverselinearityref
 
 
-def mk_mask(shape=(4096, 4096), filepath=None):
+def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Mask instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Mask instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.MaskRef
     """
-    meta = mk_ref_common()
-    maskref = stnode.MaskRef()
-    meta["reftype"] = "MASK"
-    maskref["meta"] = meta
+    if len(shape) > 2:
+        shape = shape[:2]
 
-    maskref["dq"] = np.zeros(shape, dtype=np.uint32)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
+    maskref = stnode.MaskRef()
+    maskref["meta"] = mk_ref_common("MASK", **kwargs.get("meta", {}))
+
+    maskref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -305,33 +321,33 @@ def mk_mask(shape=(4096, 4096), filepath=None):
         return maskref
 
 
-def mk_pixelarea(shape=(4096, 4096), filepath=None):
+def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Pixelarea instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Pixelarea instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.PixelareaRef
     """
-    meta = mk_ref_common()
-    pixelarearef = stnode.PixelareaRef()
-    meta["reftype"] = "AREA"
-    meta["photometry"] = {
-        "pixelarea_steradians": float(NONUM) * u.sr,
-        "pixelarea_arcsecsq": float(NONUM) * u.arcsec**2,
-    }
-    pixelarearef["meta"] = meta
+    if len(shape) > 2:
+        shape = shape[:2]
 
-    pixelarearef["data"] = np.zeros(shape, dtype=np.float32)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
+    pixelarearef = stnode.PixelareaRef()
+    pixelarearef["meta"] = mk_ref_pixelarea_meta(**kwargs.get("meta", {}))
+
+    pixelarearef["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -341,71 +357,53 @@ def mk_pixelarea(shape=(4096, 4096), filepath=None):
         return pixelarearef
 
 
-def mk_wfi_img_photom(filepath=None):
+def _mk_phot_table_entry(key, **kwargs):
     """
-    Create a dummy WFI Img Photom instance (or file) with dictionary and valid values for attributes
-    required by the schema.
+    Create single phot_table entry for a given key.
+    """
+    if key in ("GRISM", "PRISM", "DARK"):
+        entry = {
+            "photmjsr": kwargs.get("photmjsr"),
+            "uncertainty": kwargs.get("uncertainty"),
+        }
+    else:
+        entry = {
+            "photmjsr": kwargs.get("photmjsr", 1.0e-15 * np.random.random() * u.megajansky / u.steradian),
+            "uncertainty": kwargs.get("uncertainty", 1.0e-16 * np.random.random() * u.megajansky / u.steradian),
+        }
+
+    entry["pixelareasr"] = kwargs.get("pixelareasr", 1.0e-13 * u.steradian)
+
+    return entry
+
+
+def _mk_phot_table(**kwargs):
+    """
+    Create the phot_table for the photom reference file.
+    """
+    entries = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK")
+
+    return {entry: _mk_phot_table_entry(entry, **kwargs.get(entry, {})) for entry in entries}
+
+
+def mk_wfi_img_photom(*, filepath=None, **kwargs):
+    """
+    Create a dummy WFI Img Photom instance (or file) with dictionary and valid
+    values for attributes required by the schema.
 
     Parameters
     ----------
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.WfiImgPhotomRef
     """
-    meta = mk_ref_common()
     wfi_img_photomref = stnode.WfiImgPhotomRef()
-    meta["reftype"] = "PHOTOM"
-    wfi_img_photomref["meta"] = meta
+    wfi_img_photomref["meta"] = mk_ref_common("PHOTOM", **kwargs.get("meta", {}))
 
-    wfi_img_photo_dict = {
-        "F062": {
-            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
-            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
-            "pixelareasr": 1.0e-13 * u.steradian,
-        },
-        "F087": {
-            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
-            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
-            "pixelareasr": 1.0e-13 * u.steradian,
-        },
-        "F106": {
-            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
-            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
-            "pixelareasr": 1.0e-13 * u.steradian,
-        },
-        "F129": {
-            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
-            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
-            "pixelareasr": 1.0e-13 * u.steradian,
-        },
-        "F146": {
-            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
-            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
-            "pixelareasr": 1.0e-13 * u.steradian,
-        },
-        "F158": {
-            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
-            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
-            "pixelareasr": 1.0e-13 * u.steradian,
-        },
-        "F184": {
-            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
-            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
-            "pixelareasr": 1.0e-13 * u.steradian,
-        },
-        "F213": {
-            "photmjsr": (1.0e-15 * np.random.random() * u.megajansky / u.steradian),
-            "uncertainty": (1.0e-16 * np.random.random() * u.megajansky / u.steradian),
-            "pixelareasr": 1.0e-13 * u.steradian,
-        },
-        "GRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1.0e-13 * u.steradian},
-        "PRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1.0e-13 * u.steradian},
-        "DARK": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1.0e-13 * u.steradian},
-    }
-    wfi_img_photomref["phot_table"] = wfi_img_photo_dict
+    wfi_img_photomref["phot_table"] = _mk_phot_table(**kwargs.get("phot_table", {}))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -415,33 +413,33 @@ def mk_wfi_img_photom(filepath=None):
         return wfi_img_photomref
 
 
-def mk_readnoise(shape=(4096, 4096), filepath=None):
+def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Readnoise instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Readnoise instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.ReadnoiseRef
     """
-    meta = mk_ref_common()
-    readnoiseref = stnode.ReadnoiseRef()
-    meta["reftype"] = "READNOISE"
-    readnoiseref["meta"] = meta
-    exposure = {}
-    exposure["type"] = "WFI_IMAGE"
-    exposure["p_exptype"] = "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
-    readnoiseref["meta"]["exposure"] = exposure
+    if len(shape) > 2:
+        shape = shape[:2]
 
-    readnoiseref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
+    readnoiseref = stnode.ReadnoiseRef()
+    readnoiseref["meta"] = mk_ref_readnoise_meta(**kwargs.get("meta", {}))
+
+    readnoiseref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -451,30 +449,34 @@ def mk_readnoise(shape=(4096, 4096), filepath=None):
         return readnoiseref
 
 
-def mk_saturation(shape=(4096, 4096), filepath=None):
+def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Saturation instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Saturation instance (or file) with arrays and valid values
+    for attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.SaturationRef
     """
-    meta = mk_ref_common()
-    saturationref = stnode.SaturationRef()
-    meta["reftype"] = "SATURATION"
-    saturationref["meta"] = meta
+    if len(shape) > 2:
+        shape = shape[:2]
 
-    saturationref["dq"] = np.zeros(shape, dtype=np.uint32)
-    saturationref["data"] = u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
+    saturationref = stnode.SaturationRef()
+    saturationref["meta"] = mk_ref_common("SATURATION", **kwargs.get("meta", {}))
+
+    saturationref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
+    saturationref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -484,31 +486,35 @@ def mk_saturation(shape=(4096, 4096), filepath=None):
         return saturationref
 
 
-def mk_superbias(shape=(4096, 4096), filepath=None):
+def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
     """
-    Create a dummy Superbias instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Superbias instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.SuperbiasRef
     """
-    meta = mk_ref_common()
-    superbiasref = stnode.SuperbiasRef()
-    meta["reftype"] = "BIAS"
-    superbiasref["meta"] = meta
+    if len(shape) > 2:
+        shape = shape[:2]
 
-    superbiasref["data"] = np.zeros(shape, dtype=np.float32)
-    superbiasref["dq"] = np.zeros(shape, dtype=np.uint32)
-    superbiasref["err"] = np.zeros(shape, dtype=np.float32)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
+    superbiasref = stnode.SuperbiasRef()
+    superbiasref["meta"] = mk_ref_common("BIAS", **kwargs.get("meta", {}))
+
+    superbiasref["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
+    superbiasref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
+    superbiasref["err"] = kwargs.get("err", np.zeros(shape, dtype=np.float32))
 
     if filepath:
         af = asdf.AsdfFile()
@@ -518,45 +524,49 @@ def mk_superbias(shape=(4096, 4096), filepath=None):
         return superbiasref
 
 
-def mk_refpix(shape=(32, 286721), filepath=None):
+def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
     """
-    Create a dummy Refpix instance (or file) with arrays and valid values for attributes
-    required by the schema.
+    Create a dummy Refpix instance (or file) with arrays and valid values for
+    attributes required by the schema.
 
-    Note the default shape is intrinically connected to the FFT combined with specifics
-    of the detector:
-        - 32: is the number of detector channels (amp33 is a non-observation channel).
+    Note the default shape is intrinically connected to the FFT combined with
+    specifics of the detector:
+        - 32: is the number of detector channels (amp33 is a non-observation
+            channel).
         - 286721 is more complex:
-            There are 128 columns of the detector per channel, and for time read alignment
-            purposes, these columns are padded by 12 additional columns. That is 140 columns
-            per row. There are 4096 rows per channel. Each channel is then flattened into a
-            1D array of 140 * 4096 = 573440 elements. Since the length is even the FFT of
+            There are 128 columns of the detector per channel, and for time read
+            alignment purposes, these columns are padded by 12 additional
+            columns. That is 140 columns per row. There are 4096 rows per
+            channel. Each channel is then flattened into a 1D array of
+            140 * 4096 = 573440 elements. Since the length is even the FFT of
             this array will be of length (573440 / 2) + 1 = 286721.
-    Also, note the FFT gives a complex value and we are carrying full numerical precision
-    which means it is a complex128.
+    Also, note the FFT gives a complex value and we are carrying full numerical
+    precision which means it is a complex128.
 
     Parameters
     ----------
     shape
-        (optional) Shape of arrays in the model.
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 2D, the first two dimensions are used.
 
     filepath
-        (optional) File name and path to write model to.
+        (optional, keyword-only) File name and path to write model to.
 
     Returns
     -------
     roman_datamodels.stnode.RefPixRef
     """
-    meta = mk_ref_common()
-    refpix = stnode.RefpixRef()
-    meta["reftype"] = "REFPIX"
-    meta["input_units"] = u.DN
-    meta["output_units"] = u.DN
-    refpix["meta"] = meta
+    if len(shape) > 2:
+        shape = shape[:2]
 
-    refpix["gamma"] = np.zeros(shape, dtype=np.complex128)
-    refpix["zeta"] = np.zeros(shape, dtype=np.complex128)
-    refpix["alpha"] = np.zeros(shape, dtype=np.complex128)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+
+    refpix = stnode.RefpixRef()
+    refpix["meta"] = mk_ref_units_dn_meta("REFPIX", **kwargs.get("meta", {}))
+
+    refpix["gamma"] = kwargs.get("gamma", np.zeros(shape, dtype=np.complex128))
+    refpix["zeta"] = kwargs.get("zeta", np.zeros(shape, dtype=np.complex128))
+    refpix["alpha"] = kwargs.get("alpha", np.zeros(shape, dtype=np.complex128))
 
     if filepath:
         af = asdf.AsdfFile()

@@ -22,6 +22,8 @@
 
 - Remove the ``util`` and ``mktest`` modules. [#212]
 
+- Refactor the ``maker_utils`` API so that it is uniform across all tests. [#207]
+
 0.15.0 (2023-05-15)
 ===================
 

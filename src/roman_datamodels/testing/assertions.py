@@ -29,8 +29,9 @@ def assert_node_equal(node1, node2):
     if isinstance(node1, DNode):
         assert set(node1.keys()) == set(node2.keys())
 
-        for key, value1 in node1.items():
-            value2 = node2[key]
+        for key in node1:
+            value1 = getattr(node1, key)
+            value2 = getattr(node2, key)
             _assert_value_equal(value1, value2)
     elif isinstance(node1, TaggedListNode):
         assert len(node1) == len(node2)
@@ -47,7 +48,7 @@ def assert_node_equal(node1, node2):
 
 
 def _assert_value_equal(value1, value2):
-    if isinstance(value1, (TaggedObjectNode, TaggedListNode, TaggedScalarNode)):
+    if isinstance(value1, (TaggedObjectNode, TaggedListNode, TaggedScalarNode, DNode)):
         assert_node_equal(value1, value2)
     elif isinstance(value1, (np.ndarray, NDArrayType)):
         assert_array_equal(value1, value2)

@@ -10,10 +10,11 @@ from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
+from roman_datamodels import stnode
 
 
 def test_asdf_file_input():
-    tree = utils.mk_level2_image()
+    tree = utils.mk_level2_image(shape=(8, 8))
     with asdf.AsdfFile() as af:
         af.tree = {"roman": tree}
         model = datamodels.open(af)
@@ -53,7 +54,7 @@ def test_asdf_in_fits_error(tmp_path):
 def test_path_input(tmp_path):
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        tree = utils.mk_level2_image()
+        tree = utils.mk_level2_image(shape=(8, 8))
         af.tree = {"roman": tree}
         af.write_to(file_path)
 
@@ -82,10 +83,10 @@ def test_path_input(tmp_path):
 def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    data = u.Quantity(np.random.uniform(size=(1024, 1024)).astype(np.float32), u.electron / u.s, dtype=np.float32)
+    data = u.Quantity(np.random.uniform(size=(4, 4)).astype(np.float32), u.electron / u.s, dtype=np.float32)
 
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": utils.mk_level2_image()}
+        af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
         af.tree["roman"].meta["bozo"] = "clown"
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -126,7 +127,7 @@ def test_memmap(tmp_path):
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": utils.mk_level2_image()}
+        af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
 
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -179,7 +180,7 @@ def test_no_memmap(tmp_path, kwargs):
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": utils.mk_level2_image()}
+        af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
 
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -205,3 +206,18 @@ def test_no_memmap(tmp_path, kwargs):
     with datamodels.open(file_path, mode="rw", **kwargs) as model:
         assert model.data[6, 19] != new_value
         assert (model.data == data).all()
+
+
+@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
+def test_opening_model(tmp_path, node_class):
+    file_path = tmp_path / "test.asdf"
+
+    utils.mk_node(node_class, filepath=file_path, shape=(2, 8, 8))
+    model = datamodels.open(file_path)
+    if node_class == stnode.Associations:
+        assert model.asn_type == "image"
+    else:
+        assert model.meta.instrument.optical_element == "F158"
+    assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
