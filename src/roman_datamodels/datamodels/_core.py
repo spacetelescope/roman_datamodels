@@ -1,3 +1,12 @@
+"""
+This module provides the same interface as the datamodels for JWST, so that they can be
+    used in a common pipeline structure. Unlike, the JWST datamodels, these models are
+    backed by an ASDF file and the schema structure is defined by the ASDF schema.
+
+This provides the abstract base class ``Datamodel`` for all the specific datamodels
+    used for Roman. This dataclass is intended to be subclassed to form all of the actual
+    working datamodels.
+"""
 import abc
 import copy
 import datetime
@@ -26,9 +35,11 @@ class DataModel(abc.ABC):
 
     @abc.abstractproperty
     def _node_type(self):
+        """Define the top-level node type for this model"""
         pass
 
     def __init_subclass__(cls, **kwargs):
+        """Register each subclass in the MODEL_REGISTRY"""
         super().__init_subclass__(**kwargs)
 
         # Allow for sub-registry classes to be defined

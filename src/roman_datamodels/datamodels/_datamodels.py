@@ -1,10 +1,9 @@
 """
-This module provides the same interface as the older, non-tag version of datamodels
-for the whole asdf file. It will start very basic, initially only to support running
-of the flat field step, but many other methods and capabilities will be added to
-keep consistency with the JWST data model version.
-
-It is to be subclassed by the various types of data model variants for products
+This module provides all the specific datamodels used by the Roman pipeline.
+    These models are what will be read and written by the pipeline to ASDF files.
+    Note that we require each model to specify a _node_type, which corresponds to
+    the top-level STNode type that the datamodel wraps. This STNode type is derived
+    from the schema manifest defined by RAD.
 """
 
 import numpy as np
@@ -24,6 +23,7 @@ class _DataModel(DataModel):
     """
 
     def __init_subclass__(cls, **kwargs):
+        """Register each subclass in the __all__ for this module"""
         super().__init_subclass__(**kwargs)
         if cls.__name__ in __all__:
             raise ValueError(f"Duplicate model type {cls.__name__}")
@@ -94,11 +94,13 @@ class AssociationsModel(_DataModel):
     def is_association(cls, asn_data):
         """
         Test if an object is an association by checking for required fields
+
+        Parameters
+        ----------
+        asn_data :
+            The data to be tested.
         """
-        if isinstance(asn_data, dict):
-            if "asn_id" in asn_data and "asn_pool" in asn_data:
-                return True
-        return False
+        return isinstance(asn_data, dict) and "asn_id" in asn_data and "asn_pool" in asn_data
 
 
 class GuidewindowModel(_DataModel):

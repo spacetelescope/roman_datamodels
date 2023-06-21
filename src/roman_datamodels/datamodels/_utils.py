@@ -1,3 +1,7 @@
+"""
+This module contains the utility functions for the datamodels sub-package. Mainly
+    the open/factory function for creating datamodels
+"""
 import warnings
 
 import asdf
@@ -26,7 +30,9 @@ __all__ = ["rdm_open"]
 
 def rdm_open(init, memmap=False, target=None, **kwargs):
     """
-    Data model factory function
+    Datamodel open/create function.
+        This function opens a Roman datamodel from an asdf file or generates
+        the datamodel from an existing one.
 
     Parameters
     ----------
