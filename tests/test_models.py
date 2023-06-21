@@ -14,7 +14,46 @@ from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode
 from roman_datamodels.testing import assert_node_equal
 
+from .conftest import MANIFEST
+
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
+
+
+def datamodel_names():
+    names = []
+
+    extension_manager = asdf.AsdfFile().extension_manager
+    for tag in MANIFEST["tags"]:
+        schema_uri = extension_manager.get_tag_definition(tag["tag_uri"]).schema_uris[0]
+        schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
+
+        if "datamodel_name" in schema:
+            names.append(schema["datamodel_name"])
+
+    return names
+
+
+@pytest.mark.parametrize("name", datamodel_names())
+def test_datamodel_exists(name):
+    """
+    Confirm that a datamodel exists for every schema indicating that it is a datamodel
+    """
+    assert hasattr(datamodels, name)
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
+def test_node_type_matches_model(model):
+    """
+    Test that the _node_type listed for each model is what is listed in the schema
+    """
+    node_type = model._node_type
+    node = utils.mk_node(node_type, shape=(8, 8, 8))
+    schema = node.get_schema()
+    name = schema["datamodel_name"]
+
+    assert model.__name__ == name
 
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
@@ -22,19 +61,6 @@ EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 def test_model_schemas(node, model):
     instance = model(utils.mk_node(node))
     asdf.schema.load_schema(instance.schema_uri)
-
-
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_node_type_matches_model(model):
-    """
-    Test that the _node_type listed for each model is what is listed in the schema
-    """
-    node_type = model._node_type
-    node = utils.mk_node(node_type)
-    schema = node.get_schema()
-    name = schema["datamodel_name"]
-
-    assert model.__name__ == name
 
 
 # Testing core schema
