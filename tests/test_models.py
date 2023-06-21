@@ -17,14 +17,6 @@ from roman_datamodels.testing import assert_node_equal
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
 
-# Helper class to iterate over model subclasses
-def iter_subclasses(model_class, include_base_model=True):
-    if include_base_model:
-        yield model_class
-    for sub_class in model_class.__subclasses__():
-        yield from iter_subclasses(sub_class)
-
-
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
 @pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
 def test_model_schemas(node, model):
