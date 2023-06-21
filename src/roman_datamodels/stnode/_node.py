@@ -1,3 +1,7 @@
+"""
+Base node classes for all STNode classes.
+    These are the base classes for the data objects used by the datamodels package.
+"""
 import datetime
 import re
 import warnings
@@ -83,6 +87,10 @@ def _get_schema_for_property(schema, attr):
 
 
 class DNode(MutableMapping):
+    """
+    Base class describing all "object" (dict-like) data nodes for STNode classes.
+    """
+
     _tag = None
     _ctx = None
 
@@ -220,6 +228,10 @@ class DNode(MutableMapping):
 
 
 class LNode(UserList):
+    """
+    Base class describing all "array" (list-like) data nodes for STNode classes.
+    """
+
     _tag = None
 
     def __init__(self, node=None):

@@ -1,8 +1,10 @@
+"""
+The ASDF Converters to handle the serialization/deseialization of the STNode classes to ASDF.
+"""
 from asdf.extension import Converter
 from astropy.time import Time
 
 from ._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
-from ._stnode import FileDate
 
 
 class TaggedObjectNodeConverter(Converter):
@@ -68,6 +70,8 @@ class TaggedScalarNodeConverter(Converter):
         return obj.tag
 
     def to_yaml_tree(self, obj, tag, ctx):
+        from ._stnode import FileDate
+
         node = obj.__class__.__bases__[0](obj)
 
         if tag == FileDate._tag:
@@ -77,6 +81,8 @@ class TaggedScalarNodeConverter(Converter):
         return node
 
     def from_yaml_tree(self, node, tag, ctx):
+        from ._stnode import FileDate
+
         if tag == FileDate._tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)

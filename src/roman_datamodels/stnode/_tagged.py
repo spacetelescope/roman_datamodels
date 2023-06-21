@@ -1,3 +1,8 @@
+"""
+Base classes for all the tagged objects defined by RAD.
+    Each tagged object will be dynamically created at runtime by _stnode.py
+    from RAD's manifest.
+"""
 import copy
 
 import asdf
@@ -47,6 +52,10 @@ class TaggedObjectNode(DNode):
     """
 
     def __init_subclass__(cls, **kwargs) -> None:
+        """
+        Register any subclasses of this class in the OBJECT_NODE_CLASSES_BY_TAG
+        registry.
+        """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedObjectNode":
             if cls._tag in OBJECT_NODE_CLASSES_BY_TAG:
@@ -75,6 +84,10 @@ class TaggedListNode(LNode):
     """
 
     def __init_subclass__(cls, **kwargs) -> None:
+        """
+        Register any subclasses of this class in the LIST_NODE_CLASSES_BY_TAG
+        registry.
+        """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedListNode":
             if cls._tag in LIST_NODE_CLASSES_BY_TAG:
@@ -98,6 +111,10 @@ class TaggedScalarNode:
     _ctx = None
 
     def __init_subclass__(cls, **kwargs) -> None:
+        """
+        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_TAG
+        and SCALAR_NODE_CLASSES_BY_KEY registry.
+        """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedScalarNode":
             if cls._tag in SCALAR_NODE_CLASSES_BY_TAG:

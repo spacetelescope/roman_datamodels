@@ -1,3 +1,8 @@
+"""
+Mixin classes for additional functionality for STNode classes
+"""
+
+
 class WfiModeMixin:
     _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
 
