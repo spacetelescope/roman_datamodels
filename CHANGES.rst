@@ -26,6 +26,9 @@
 
 - Remove the ``testing.factories`` module. [#197]
 
+- Refactor ``datamodels`` to be easier to maintain and test by turning it into
+  a sub-package and splitting the module apart. [#201]
+
 0.15.0 (2023-05-15)
 ===================
 
