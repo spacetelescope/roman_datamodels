@@ -32,6 +32,19 @@ def test_model_schemas(node, model):
     asdf.schema.load_schema(instance.schema_uri)
 
 
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+def test_node_type_matches_model(model):
+    """
+    Test that the _node_type listed for each model is what is listed in the schema
+    """
+    node_type = model._node_type
+    node = utils.mk_node(node_type)
+    schema = node.get_schema()
+    name = schema["datamodel_name"]
+
+    assert model.__name__ == name
+
+
 # Testing core schema
 def test_core_schema(tmp_path):
     # Set temporary asdf file
