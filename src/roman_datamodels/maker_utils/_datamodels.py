@@ -1,12 +1,11 @@
 import warnings
 
-import asdf
 import numpy as np
 from astropy import units as u
 
 from roman_datamodels import stnode
 
-from ._base import MESSAGE
+from ._base import MESSAGE, save_node
 from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_msos_stack_meta, mk_photometry_meta, mk_resample_meta
 from ._tagged_nodes import mk_cal_logs
 
@@ -48,12 +47,7 @@ def mk_level1_science_raw(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
         "amp33", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
     )
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": wfi_science_raw}
-        af.write_to(filepath)
-    else:
-        return wfi_science_raw
+    return save_node(wfi_science_raw, filepath=filepath)
 
 
 def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
@@ -135,12 +129,7 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     )
     wfi_image["cal_logs"] = mk_cal_logs(**kwargs)
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": wfi_image}
-        af.write_to(filepath)
-    else:
-        return wfi_image
+    return save_node(wfi_image, filepath=filepath)
 
 
 def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs):
@@ -193,12 +182,7 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
     )
     wfi_mosaic["cal_logs"] = mk_cal_logs(**kwargs)
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": wfi_mosaic}
-        af.write_to(filepath)
-    else:
-        return wfi_mosaic
+    return save_node(wfi_mosaic, filepath=filepath)
 
 
 def mk_msos_stack(*, shape=(4096, 4096), filepath=None, **kwargs):
@@ -232,12 +216,7 @@ def mk_msos_stack(*, shape=(4096, 4096), filepath=None, **kwargs):
     msos_stack["mask"] = kwargs.get("mask", np.zeros(shape, dtype=np.uint8))
     msos_stack["coverage"] = kwargs.get("coverage", np.zeros(shape, dtype=np.uint8))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": msos_stack}
-        af.write_to(filepath)
-    else:
-        return msos_stack
+    return save_node(msos_stack, filepath=filepath)
 
 
 def mk_ramp(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
@@ -294,12 +273,7 @@ def mk_ramp(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     ramp["groupdq"] = kwargs.get("groupdq", np.zeros(shape, dtype=np.uint8))
     ramp["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": ramp}
-        af.write_to(filepath)
-    else:
-        return ramp
+    return save_node(ramp, filepath=filepath)
 
 
 def mk_ramp_fit_output(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
@@ -346,12 +320,7 @@ def mk_ramp_fit_output(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
         "var_rnoise", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
     )
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": rampfitoutput}
-        af.write_to(filepath)
-    else:
-        return rampfitoutput
+    return save_node(rampfitoutput, filepath=filepath)
 
 
 def mk_rampfitoutput(**kwargs):
@@ -414,12 +383,7 @@ def mk_associations(*, shape=(2, 3, 1), filepath=None, **kwargs):
                 file_idx += 1
             associations["products"].append({"name": f"product{product_idx}", "members": members_lst})
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": associations}
-        af.write_to(filepath)
-    else:
-        return associations
+    return save_node(associations, filepath=filepath)
 
 
 def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
@@ -454,9 +418,4 @@ def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
     )
     guidewindow["amp33"] = kwargs.get("amp33", u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": guidewindow}
-        af.write_to(filepath)
-    else:
-        return guidewindow
+    return save_node(guidewindow, filepath=filepath)

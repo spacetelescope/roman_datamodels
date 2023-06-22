@@ -1,13 +1,12 @@
 import warnings
 
-import asdf
 import numpy as np
 from astropy import units as u
 from astropy.modeling import models
 
 from roman_datamodels import stnode
 
-from ._base import MESSAGE
+from ._base import MESSAGE, save_node
 from ._common_meta import (
     mk_ref_common,
     mk_ref_dark_meta,
@@ -65,12 +64,7 @@ def mk_flat(*, shape=(4096, 4096), filepath=None, **kwargs):
     flatref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
     flatref["err"] = kwargs.get("err", np.zeros(shape, dtype=np.float32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": flatref}
-        af.write_to(filepath)
-    else:
-        return flatref
+    return save_node(flatref, filepath=filepath)
 
 
 def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
@@ -101,12 +95,7 @@ def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     darkref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
     darkref["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": darkref}
-        af.write_to(filepath)
-    else:
-        return darkref
+    return save_node(darkref, filepath=filepath)
 
 
 def mk_distortion(*, filepath=None, **kwargs):
@@ -131,12 +120,7 @@ def mk_distortion(*, filepath=None, **kwargs):
         "coordinate_distortion_transform", models.Shift(1) & models.Shift(2)
     )
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": distortionref}
-        af.write_to(filepath)
-    else:
-        return distortionref
+    return save_node(distortionref, filepath=filepath)
 
 
 def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
@@ -167,12 +151,7 @@ def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
 
     gainref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.DN, dtype=np.float32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": gainref}
-        af.write_to(filepath)
-    else:
-        return gainref
+    return save_node(gainref, filepath=filepath)
 
 
 def mk_ipc(*, shape=(3, 3), filepath=None, **kwargs):
@@ -207,12 +186,7 @@ def mk_ipc(*, shape=(3, 3), filepath=None, **kwargs):
         ipcref["data"] = np.zeros(shape, dtype=np.float32)
         ipcref["data"][int(np.floor(shape[0] / 2))][int(np.floor(shape[1] / 2))] = 1.0
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": ipcref}
-        af.write_to(filepath)
-    else:
-        return ipcref
+    return save_node(ipcref, filepath=filepath)
 
 
 def mk_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
@@ -242,12 +216,7 @@ def mk_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     linearityref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
     linearityref["coeffs"] = kwargs.get("coeffs", np.zeros(shape, dtype=np.float32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": linearityref}
-        af.write_to(filepath)
-    else:
-        return linearityref
+    return save_node(linearityref, filepath=filepath)
 
 
 def mk_inverse_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
@@ -277,12 +246,7 @@ def mk_inverse_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     inverselinearityref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
     inverselinearityref["coeffs"] = kwargs.get("coeffs", np.zeros(shape, dtype=np.float32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": inverselinearityref}
-        af.write_to(filepath)
-    else:
-        return inverselinearityref
+    return save_node(inverselinearityref, filepath=filepath)
 
 
 def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
@@ -313,12 +277,7 @@ def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
 
     maskref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": maskref}
-        af.write_to(filepath)
-    else:
-        return maskref
+    return save_node(maskref, filepath=filepath)
 
 
 def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
@@ -349,12 +308,7 @@ def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
 
     pixelarearef["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": pixelarearef}
-        af.write_to(filepath)
-    else:
-        return pixelarearef
+    return save_node(pixelarearef, filepath=filepath)
 
 
 def _mk_phot_table_entry(key, **kwargs):
@@ -405,12 +359,7 @@ def mk_wfi_img_photom(*, filepath=None, **kwargs):
 
     wfi_img_photomref["phot_table"] = _mk_phot_table(**kwargs.get("phot_table", {}))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": wfi_img_photomref}
-        af.write_to(filepath)
-    else:
-        return wfi_img_photomref
+    return save_node(wfi_img_photomref, filepath=filepath)
 
 
 def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
@@ -441,12 +390,7 @@ def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
 
     readnoiseref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": readnoiseref}
-        af.write_to(filepath)
-    else:
-        return readnoiseref
+    return save_node(readnoiseref, filepath=filepath)
 
 
 def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
@@ -478,12 +422,7 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
     saturationref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
     saturationref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": saturationref}
-        af.write_to(filepath)
-    else:
-        return saturationref
+    return save_node(saturationref, filepath=filepath)
 
 
 def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
@@ -516,12 +455,7 @@ def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
     superbiasref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
     superbiasref["err"] = kwargs.get("err", np.zeros(shape, dtype=np.float32))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": superbiasref}
-        af.write_to(filepath)
-    else:
-        return superbiasref
+    return save_node(superbiasref, filepath=filepath)
 
 
 def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
@@ -568,9 +502,4 @@ def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
     refpix["zeta"] = kwargs.get("zeta", np.zeros(shape, dtype=np.complex128))
     refpix["alpha"] = kwargs.get("alpha", np.zeros(shape, dtype=np.complex128))
 
-    if filepath:
-        af = asdf.AsdfFile()
-        af.tree = {"roman": refpix}
-        af.write_to(filepath)
-    else:
-        return refpix
+    return save_node(refpix, filepath=filepath)
