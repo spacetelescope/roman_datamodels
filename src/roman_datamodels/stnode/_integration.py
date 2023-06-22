@@ -8,6 +8,6 @@ def get_extensions():
     -------
     List[`asdf.extension.Extension`]
     """
-    from .stnode import NODE_EXTENSIONS
+    from ._converters import NODE_EXTENSIONS
 
     return NODE_EXTENSIONS
