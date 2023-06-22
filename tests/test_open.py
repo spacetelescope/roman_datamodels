@@ -12,6 +12,7 @@ from numpy.testing import assert_array_equal
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode
+from roman_datamodels.testing import assert_node_equal
 
 
 def test_asdf_file_input():
@@ -212,15 +213,33 @@ def test_no_memmap(tmp_path, kwargs):
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
+def test_node_round_trip(tmp_path, node_class):
+    file_path = tmp_path / "test.asdf"
+
+    # Create/return a node and write it to disk, then check if the node round trips
+    node = utils.mk_node(node_class, filepath=file_path, shape=(2, 8, 8))
+    with asdf.open(file_path) as af:
+        assert_node_equal(af.tree["roman"], node)
+
+
+@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_opening_model(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"
 
+    # Create a node and write it to disk
     utils.mk_node(node_class, filepath=file_path, shape=(2, 8, 8))
+
+    # Opened saved file as a datamodel
     with datamodels.open(file_path) as model:
+        # Check that some of read data is correct
         if node_class == stnode.Associations:
             assert model.asn_type == "image"
         else:
             assert model.meta.instrument.optical_element == "F158"
+
+        # Check that the model is the correct type
         assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
 
 
