@@ -1,5 +1,4 @@
 import warnings
-from random import choices
 
 import asdf
 import numpy as np
@@ -405,15 +404,15 @@ def mk_associations(*, shape=(2, 3, 1), filepath=None, **kwargs):
         associations["products"] = kwargs["products"]
     else:
         associations["products"] = []
-        for product_idx in range(len(shape)):
-            exptypes = choices(["SCIENCE", "CALIBRATION", "ENGINEERING"], k=shape[product_idx])
+        CHOICES = ["SCIENCE", "CALIBRATION", "ENGINEERING"]
+        for product_idx, members in enumerate(shape):
             members_lst = []
-            for member_idx in range(shape[product_idx]):
+            for member_idx in range(members):
                 members_lst.append(
-                    {"expname": "file_" + str(file_idx) + ".asdf", "exposerr": "null", "exptype": exptypes[member_idx]}
+                    {"expname": "file_" + str(file_idx) + ".asdf", "exposerr": "null", "exptype": CHOICES[member_idx % 3]}
                 )
                 file_idx += 1
-            associations["products"].append({"name": "product" + str(product_idx), "members": members_lst})
+            associations["products"].append({"name": f"product{product_idx}", "members": members_lst})
 
     if filepath:
         af = asdf.AsdfFile()
