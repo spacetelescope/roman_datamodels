@@ -1,3 +1,7 @@
+0.17.0 (unreleased)
+===================
+- Remove the ``random_utils`` module and make ``maker_utils`` entirely deterministic. [#217]
+
 0.16.1 (2023-06-27)
 ===================
 
