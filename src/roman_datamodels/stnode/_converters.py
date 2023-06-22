@@ -1,7 +1,7 @@
 """
 The ASDF Converters to handle the serialization/deseialization of the STNode classes to ASDF.
 """
-from asdf.extension import Converter
+from asdf.extension import Converter, ManifestExtension
 from astropy.time import Time
 
 from ._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
@@ -10,6 +10,7 @@ __all__ = [
     "TaggedObjectNodeConverter",
     "TaggedListNodeConverter",
     "TaggedScalarNodeConverter",
+    "DATAMODEL_EXTENSIONS",
 ]
 
 
@@ -94,3 +95,14 @@ class TaggedScalarNodeConverter(Converter):
             node = converter.from_yaml_tree(node, tag, ctx)
 
         return SCALAR_NODE_CLASSES_BY_TAG[tag](node)
+
+
+DATAMODEL_CONVERTERS = [
+    TaggedObjectNodeConverter(),
+    TaggedListNodeConverter(),
+    TaggedScalarNodeConverter(),
+]
+
+DATAMODEL_EXTENSIONS = [
+    ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0", converters=DATAMODEL_CONVERTERS)
+]

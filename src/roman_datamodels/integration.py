@@ -8,6 +8,6 @@ def get_extensions():
     -------
     List[`asdf.extension.Extension`]
     """
-    from . import extensions
+    from .stnode import DATAMODEL_EXTENSIONS
 
-    return extensions.DATAMODEL_EXTENSIONS
+    return DATAMODEL_EXTENSIONS
