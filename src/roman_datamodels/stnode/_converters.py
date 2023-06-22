@@ -4,17 +4,35 @@ The ASDF Converters to handle the serialization/deseialization of the STNode cla
 from asdf.extension import Converter, ManifestExtension
 from astropy.time import Time
 
-from ._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
+from ._registry import LIST_NODE_CLASSES_BY_TAG, NODE_CONVERTERS, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
 
 __all__ = [
     "TaggedObjectNodeConverter",
     "TaggedListNodeConverter",
     "TaggedScalarNodeConverter",
-    "DATAMODEL_EXTENSIONS",
+    "NODE_EXTENSIONS",
 ]
 
 
-class TaggedObjectNodeConverter(Converter):
+class _RomanConverter(Converter):
+    """
+    Base class for the roman_datamodels converters.
+    """
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        """
+        Automatically create the converter objects.
+        """
+        super().__init_subclass__(**kwargs)
+
+        if not cls.__name__.startswith("_"):
+            if cls.__name__ in NODE_CONVERTERS:
+                raise ValueError(f"Duplicate converter for {cls.__name__}")
+
+            NODE_CONVERTERS[cls.__name__] = cls()
+
+
+class TaggedObjectNodeConverter(_RomanConverter):
     """
     Converter for all subclasses of TaggedObjectNode.
     """
@@ -37,7 +55,7 @@ class TaggedObjectNodeConverter(Converter):
         return OBJECT_NODE_CLASSES_BY_TAG[tag](node)
 
 
-class TaggedListNodeConverter(Converter):
+class TaggedListNodeConverter(_RomanConverter):
     """
     Converter for all subclasses of TaggedListNode.
     """
@@ -60,7 +78,7 @@ class TaggedListNodeConverter(Converter):
         return LIST_NODE_CLASSES_BY_TAG[tag](node)
 
 
-class TaggedScalarNodeConverter(Converter):
+class TaggedScalarNodeConverter(_RomanConverter):
     """
     Converter for all subclasses of TaggedScalarNode.
     """
@@ -97,12 +115,7 @@ class TaggedScalarNodeConverter(Converter):
         return SCALAR_NODE_CLASSES_BY_TAG[tag](node)
 
 
-DATAMODEL_CONVERTERS = [
-    TaggedObjectNodeConverter(),
-    TaggedListNodeConverter(),
-    TaggedScalarNodeConverter(),
-]
-
-DATAMODEL_EXTENSIONS = [
-    ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0", converters=DATAMODEL_CONVERTERS)
+# Create the ASDF extension for the STNode classes.
+NODE_EXTENSIONS = [
+    ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0", converters=NODE_CONVERTERS.values())
 ]
