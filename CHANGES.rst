@@ -5,6 +5,8 @@
 - Add tests to ensure consistency between file-level schemas in RAD and the corresponding
   datamodels in ``roman_datamodels``. [#214]
 
+- Make ``maker_utils`` return the node when writing the node to a file. [#218]
+
 0.16.1 (2023-06-27)
 ===================
 
