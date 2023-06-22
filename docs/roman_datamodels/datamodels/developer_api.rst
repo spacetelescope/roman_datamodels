@@ -6,8 +6,6 @@ Developer API
 
 .. automodapi:: roman_datamodels.extensions
 
-.. automodapi:: roman_datamodels.filetype
-
 .. automodapi:: roman_datamodels.integration
 
 .. automodapi:: roman_datamodels.stnode
