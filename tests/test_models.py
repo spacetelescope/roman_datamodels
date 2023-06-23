@@ -387,8 +387,8 @@ def test_make_linearity():
     assert linearity_model.validate() is None
 
 
-def test_linearity_mixin():
-    linearity = utils.mk_linearity(shape=(2, 8, 8))
+def test_linearity_ref_mixin():
+    linearity = utils.mk_datamodel(datamodels.LinearityRefModel, shape=(2, 8, 8))
     assert linearity.get_primary_array_name() == "coeffs"
 
 
@@ -404,8 +404,8 @@ def test_make_inverse_linearity():
     assert inverselinearity_model.validate() is None
 
 
-def test_inverse_linearity_mixin():
-    inverse_linearity = utils.mk_inverse_linearity(shape=(2, 8, 8))
+def test_inverse_linearity_ref_mixin():
+    inverse_linearity = utils.mk_datamodel(datamodels.InverseLinearityRefModel, shape=(2, 8, 8))
     assert inverse_linearity.get_primary_array_name() == "coeffs"
 
 
@@ -421,7 +421,7 @@ def test_make_mask():
 
 
 def test_mask_ref_mixin():
-    mask = utils.mk_mask(shape=(8, 8))
+    mask = utils.mk_datamodel(datamodels.MaskRefModel, shape=(8, 8))
     assert mask.get_primary_array_name() == "dq"
 
 

@@ -40,7 +40,7 @@ def datamodel_factory(node_type, datamodel_name):
     A DataModel object class
     """
     if hasattr(_mixins, mixin := f"{datamodel_name}Mixin"):
-        class_type = (DataModel, getattr(_mixins, mixin))
+        class_type = (getattr(_mixins, mixin), DataModel)
     else:
         class_type = (DataModel,)
 
