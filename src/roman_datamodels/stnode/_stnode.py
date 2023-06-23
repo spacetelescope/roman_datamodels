@@ -8,7 +8,7 @@ import rad.resources
 import yaml
 
 from ._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
-from ._tagged import TaggedObjectNode, TaggedScalarNode
+from ._tagged import TaggedObjectNode, TaggedScalarNode, name_from_tag_uri
 
 __all__ = [
     "NODE_CLASSES",
@@ -20,7 +20,7 @@ DATAMODELS_MANIFEST = yaml.safe_load(DATAMODELS_MANIFEST_PATH.read_bytes())
 
 
 def _class_name_from_tag_uri(tag_uri):
-    tag_name = tag_uri.split("/")[-1].split("-")[0]
+    tag_name = name_from_tag_uri(tag_uri)
     class_name = "".join([p.capitalize() for p in tag_name.split("_")])
     if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
         class_name += "Ref"

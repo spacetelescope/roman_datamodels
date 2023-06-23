@@ -1,5 +1,4 @@
 import copy
-from abc import ABCMeta
 
 import asdf
 
@@ -13,29 +12,46 @@ from ._registry import (
 
 
 def get_schema_from_tag(ctx, tag):
+    """
+    Look up and load ASDF's schema corresponding to the tag_uri.
+
+    Parameters
+    ----------
+    ctx :
+        An ASDF file context.
+    tag : str
+        The tag_uri of the schema to load.
+    """
     schema_uri = ctx.extension_manager.get_tag_definition(tag).schema_uris[0]
 
     return asdf.schema.load_schema(schema_uri, resolve_references=True)
 
 
-class TaggedObjectNodeMeta(ABCMeta):
+def name_from_tag_uri(tag_uri):
     """
-    Metaclass for TaggedObjectNode that maintains a registry
-    of subclasses.
-    """
+    Compute the name of the schema from the tag_uri.
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.__name__ != "TaggedObjectNode":
-            if self._tag in OBJECT_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(f"TaggedObjectNode class for tag '{self._tag}' has been defined twice")
-            OBJECT_NODE_CLASSES_BY_TAG[self._tag] = self
+    Parameters
+    ----------
+    tag_uri : str
+        The tag_uri to find the name from
+    """
+    return tag_uri.split("/")[-1].split("-")[0]
 
 
-class TaggedObjectNode(DNode, metaclass=TaggedObjectNodeMeta):
+class TaggedObjectNode(DNode):
     """
-    Expects subclass to define a class instance of _tag
+    Base class for all tagged objects defined by RAD
+        There will be one of these for any tagged object defined by RAD, which has
+        base type: object.
     """
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        if cls.__name__ != "TaggedObjectNode":
+            if cls._tag in OBJECT_NODE_CLASSES_BY_TAG:
+                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._tag}' has been defined twice")
+            OBJECT_NODE_CLASSES_BY_TAG[cls._tag] = cls
 
     @property
     def tag(self):
@@ -51,48 +67,43 @@ class TaggedObjectNode(DNode, metaclass=TaggedObjectNodeMeta):
         return get_schema_from_tag(self.ctx, self._tag)
 
 
-class TaggedListNodeMeta(ABCMeta):
+class TaggedListNode(LNode):
     """
-    Metaclass for TaggedListNode that maintains a registry
-    of subclasses.
+    Base class for all tagged list defined by RAD
+        There will be one of these for any tagged object defined by RAD, which has
+        base type: array.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.__name__ != "TaggedListNode":
-            if self._tag in LIST_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(f"TaggedListNode class for tag '{self._tag}' has been defined twice")
-            LIST_NODE_CLASSES_BY_TAG[self._tag] = self
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        if cls.__name__ != "TaggedListNode":
+            if cls._tag in LIST_NODE_CLASSES_BY_TAG:
+                raise RuntimeError(f"TaggedListNode class for tag '{cls._tag}' has been defined twice")
+            LIST_NODE_CLASSES_BY_TAG[cls._tag] = cls
 
-
-class TaggedListNode(LNode, metaclass=TaggedListNodeMeta):
     @property
     def tag(self):
         return self._tag
 
 
-def _scalar_tag_to_key(tag):
-    return tag.split("/")[-1].split("-")[0]
-
-
-class TaggedScalarNodeMeta(ABCMeta):
+class TaggedScalarNode:
     """
-    Metaclass for TaggedScalarNode that maintains a registry
-    of subclasses.
+    Base class for all tagged scalars defined by RAD
+        There will be one of these for any tagged object defined by RAD, which has
+        a scalar base type, or wraps a scalar base type.
+        These will all be in the tagged_scalars directory.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.__name__ != "TaggedScalarNode":
-            if self._tag in SCALAR_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(f"TaggedScalarNode class for tag '{self._tag}' has been defined twice")
-            SCALAR_NODE_CLASSES_BY_TAG[self._tag] = self
-            SCALAR_NODE_CLASSES_BY_KEY[_scalar_tag_to_key(self._tag)] = self
-
-
-class TaggedScalarNode(metaclass=TaggedScalarNodeMeta):
     _tag = None
     _ctx = None
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        if cls.__name__ != "TaggedScalarNode":
+            if cls._tag in SCALAR_NODE_CLASSES_BY_TAG:
+                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._tag}' has been defined twice")
+            SCALAR_NODE_CLASSES_BY_TAG[cls._tag] = cls
+            SCALAR_NODE_CLASSES_BY_KEY[name_from_tag_uri(cls._tag)] = cls
 
     @property
     def ctx(self):
@@ -109,7 +120,7 @@ class TaggedScalarNode(metaclass=TaggedScalarNodeMeta):
 
     @property
     def key(self):
-        return _scalar_tag_to_key(self._tag)
+        return name_from_tag_uri(self._tag)
 
     def get_schema(self):
         return get_schema_from_tag(self.ctx, self._tag)
