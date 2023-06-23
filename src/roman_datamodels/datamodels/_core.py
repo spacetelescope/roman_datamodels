@@ -41,10 +41,6 @@ class DataModel(abc.ABC):
         """Register each subclass in the MODEL_REGISTRY"""
         super().__init_subclass__(**kwargs)
 
-        # Allow for sub-registry classes to be defined
-        if cls.__name__.startswith("_"):
-            return
-
         # Check the node_type is a tagged object node
         if not issubclass(cls._node_type, stnode.TaggedObjectNode):
             raise ValueError("Subclass must be a TaggedObjectNode subclass")
