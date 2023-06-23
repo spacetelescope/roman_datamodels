@@ -1,67 +1,61 @@
 """
-This module provides the same interface as the older, non-tag version of datamodels
-for the whole asdf file. It will start very basic, initially only to support running
-of the flat field step, but many other methods and capabilities will be added to
-keep consistency with the JWST data model version.
+This module provides the same interface as the datamodels for JWST, so that they can be
+    used in a common pipeline structure. Unlike the JWST datamodels, these models are
+    backed by an ASDF file and the schema structure is defined by the ASDF schema.
 
-It is to be subclassed by the various types of data model variants for products
+This provides the abstract base class ``Datamodel`` for all the specific datamodels
+    used for Roman. This dataclass is intended to be subclassed to form all of the actual
+    working datamodels.
 """
+import abc
 import copy
 import datetime
 import os
 import os.path
 import sys
-import warnings
 from pathlib import PurePath
 
 import asdf
 import numpy as np
-import packaging.version
 from astropy.time import Time
 from jsonschema import ValidationError
 
-from . import stnode, validate
-from .extensions import DATAMODEL_EXTENSIONS
+from roman_datamodels import stnode, validate
+from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 
-# .dev is included in the version comparison to allow for correct version
-# comparisons with development versions of asdf 3.0
-if packaging.version.Version(asdf.__version__) < packaging.version.Version("3.dev"):
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            category=asdf.exceptions.AsdfDeprecationWarning,
-            message=r"AsdfInFits has been deprecated.*",
-        )
-        from asdf.fits_embed import AsdfInFits
-else:
-    AsdfInFits = None
+__all__ = ["DataModel", "MODEL_REGISTRY"]
 
-__all__ = [
-    "DataModel",
-    "ImageModel",
-    "ScienceRawModel",
-    "RampModel",
-    "RampFitOutputModel",
-    "GuidewindowModel",
-    "FlatRefModel",
-    "DarkRefModel",
-    "DistortionRefModel",
-    "GainRefModel",
-    "LinearityRefModel",
-    "MaskRefModel",
-    "PixelareaRefModel",
-    "ReadnoiseRefModel",
-    "SuperbiasRefModel",
-    "SaturationRefModel",
-    "WfiImgPhotomRefModel",
-    "open",
-]
+MODEL_REGISTRY = {}
 
 
-class DataModel:
+class DataModel(abc.ABC):
     """Base class for all top level datamodels"""
 
     crds_observatory = "roman"
+
+    @abc.abstractproperty
+    def _node_type(self):
+        """Define the top-level node type for this model"""
+        pass
+
+    def __init_subclass__(cls, **kwargs):
+        """Register each subclass in the MODEL_REGISTRY"""
+        super().__init_subclass__(**kwargs)
+
+        # Allow for sub-registry classes to be defined
+        if cls.__name__.startswith("_"):
+            return
+
+        # Check the node_type is a tagged object node
+        if not issubclass(cls._node_type, stnode.TaggedObjectNode):
+            raise ValueError("Subclass must be a TaggedObjectNode subclass")
+
+        # Check for duplicates
+        if cls._node_type in MODEL_REGISTRY:
+            raise ValueError(f"Duplicate model type {cls._node_type}")
+
+        # Add to registry
+        MODEL_REGISTRY[cls._node_type] = cls
 
     def __init__(self, init=None, **kwargs):
         self._iscopy = False
@@ -318,244 +312,3 @@ class DataModel:
 
     def schema_info(self, *args, **kwargs):
         return self._asdf.schema_info(*args, **kwargs)
-
-
-class MosaicModel(DataModel):
-    pass
-
-
-class ImageModel(DataModel):
-    pass
-
-
-class ScienceRawModel(DataModel):
-    pass
-
-
-class RampModel(DataModel):
-    @classmethod
-    def from_science_raw(cls, model):
-        """
-        Construct a RampModel from a ScienceRawModel
-
-        Parameters
-        ----------
-        model : ScienceRawModel or RampModel
-            The input science raw model (a RampModel will also work)
-        """
-
-        if isinstance(model, cls):
-            return model
-
-        if isinstance(model, ScienceRawModel):
-            from roman_datamodels.maker_utils import mk_ramp
-
-            instance = mk_ramp(shape=model.shape)
-
-            # Copy input_model contents into RampModel
-            for key in model:
-                # If a dictionary (like meta), overwrite entries (but keep
-                # required dummy entries that may not be in input_model)
-                if isinstance(instance[key], dict):
-                    instance[key].update(getattr(model, key))
-                elif isinstance(instance[key], np.ndarray):
-                    # Cast input ndarray as RampModel dtype
-                    instance[key] = getattr(model, key).astype(instance[key].dtype)
-                else:
-                    instance[key] = getattr(model, key)
-
-            return cls(instance)
-
-        raise ValueError("Input model must be a ScienceRawModel or RampModel")
-
-
-class RampFitOutputModel(DataModel):
-    pass
-
-
-class AssociationsModel(DataModel):
-    # Need an init to allow instantiation from a JSON file
-
-    @classmethod
-    def is_association(cls, asn_data):
-        """
-        Test if an object is an association by checking for required fields
-        """
-        if isinstance(asn_data, dict):
-            if "asn_id" in asn_data and "asn_pool" in asn_data:
-                return True
-        return False
-
-
-class GuidewindowModel(DataModel):
-    pass
-
-
-class FlatRefModel(DataModel):
-    pass
-
-
-class DarkRefModel(DataModel):
-    pass
-
-
-class DistortionRefModel(DataModel):
-    pass
-
-
-class GainRefModel(DataModel):
-    pass
-
-
-class IpcRefModel(DataModel):
-    pass
-
-
-class LinearityRefModel(DataModel):
-    def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
-        return "coeffs"
-
-
-class InverseLinearityRefModel(DataModel):
-    def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
-        return "coeffs"
-
-
-class MaskRefModel(DataModel):
-    def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
-        return "dq"
-
-
-class PixelareaRefModel(DataModel):
-    pass
-
-
-class ReadnoiseRefModel(DataModel):
-    pass
-
-
-class SuperbiasRefModel(DataModel):
-    pass
-
-
-class SaturationRefModel(DataModel):
-    pass
-
-
-class WfiImgPhotomRefModel(DataModel):
-    pass
-
-
-class RefpixRefModel(DataModel):
-    pass
-
-
-def open(init, memmap=False, target=None, **kwargs):
-    """
-    Data model factory function
-
-    Parameters
-    ----------
-    init : str, `DataModel`, `asdf.AsdfFile`
-        May be any one of the following types:
-            - `asdf.AsdfFile` instance
-            - string indicating the path to an ASDF file
-            - `DataModel` Roman data model instance
-    memmap : bool
-        Open ASDF file binary data using memmap (default: False)
-    target : `DataModel`
-        If not None value, the `DataModel` implied by the init argument
-        must be an instance of the target class. If the init value
-        is already a data model, and matches the target, the init
-        value is returned, not copied, as opposed to the case where
-        the init value is a data model, and target is not supplied,
-        and the returned value is a copy of the init value.
-
-    Returns
-    -------
-    `DataModel`
-    """
-    with validate.nuke_validation():
-        file_to_close = None
-        if target is not None:
-            if not issubclass(target, DataModel):
-                raise ValueError("Target must be a subclass of DataModel")
-        # Temp fix to catch JWST args before being passed to asdf open
-        if "asn_n_members" in kwargs:
-            del kwargs["asn_n_members"]
-        if isinstance(init, asdf.AsdfFile):
-            asdffile = init
-        elif isinstance(init, DataModel):
-            if target is not None:
-                if not isinstance(init, target):
-                    raise ValueError("First argument is not an instance of target")
-                else:
-                    return init
-            # Copy the object so it knows not to close here
-            return init.copy()
-        else:
-            try:
-                kwargs["copy_arrays"] = not memmap
-                asdffile = asdf.open(init, **kwargs)
-                file_to_close = asdffile
-            except ValueError:
-                raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
-            if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
-                if file_to_close is not None:
-                    file_to_close.close()
-                raise TypeError("Roman datamodels does not accept FITS files or objects")
-        modeltype = type(asdffile.tree["roman"])
-        if modeltype in MODEL_REGISTRY:
-            rmodel = MODEL_REGISTRY[modeltype](asdffile, **kwargs)
-            if target is not None:
-                if not issubclass(rmodel.__class__, target):
-                    if file_to_close is not None:
-                        file_to_close.close()
-                    raise ValueError("Referenced ASDF file model type is not subclass of target")
-            else:
-                return rmodel
-        else:
-            return DataModel(asdffile, **kwargs)
-
-
-MODEL_REGISTRY = {
-    stnode.WfiMosaic: MosaicModel,
-    stnode.WfiImage: ImageModel,
-    stnode.WfiScienceRaw: ScienceRawModel,
-    stnode.Ramp: RampModel,
-    stnode.RampFitOutput: RampFitOutputModel,
-    stnode.Associations: AssociationsModel,
-    stnode.Guidewindow: GuidewindowModel,
-    stnode.FlatRef: FlatRefModel,
-    stnode.DarkRef: DarkRefModel,
-    stnode.DistortionRef: DistortionRefModel,
-    stnode.GainRef: GainRefModel,
-    stnode.IpcRef: IpcRefModel,
-    stnode.LinearityRef: LinearityRefModel,
-    stnode.InverseLinearityRef: InverseLinearityRefModel,
-    stnode.MaskRef: MaskRefModel,
-    stnode.PixelareaRef: PixelareaRefModel,
-    stnode.ReadnoiseRef: ReadnoiseRefModel,
-    stnode.SaturationRef: SaturationRefModel,
-    stnode.SuperbiasRef: SuperbiasRefModel,
-    stnode.WfiImgPhotomRef: WfiImgPhotomRefModel,
-    stnode.RefpixRef: RefpixRefModel,
-}
