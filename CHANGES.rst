@@ -31,6 +31,8 @@
 
 - Remove the ``filetype`` module. [#219]
 
+- Update ``roman_datamodels`` to support the new ``msos_stack-1.0.0`` schema. [#206]
+
 0.15.0 (2023-05-15)
 ===================
 

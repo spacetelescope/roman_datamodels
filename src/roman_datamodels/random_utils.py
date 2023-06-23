@@ -138,6 +138,18 @@ def generate_array_float32(size=(4096, 4096), min=None, max=None, units=None, se
     return array
 
 
+def generate_array_float64(size=(4096, 4096), min=None, max=None, units=None, seed=None):
+    if min is None:
+        min = np.finfo("float32").min
+    if max is None:
+        max = np.finfo("float32").max
+
+    array = np.random.default_rng(seed).uniform(low=min, high=max, size=size).astype(np.float64)
+    if units:
+        array = u.Quantity(array, units, dtype=np.float64)
+    return array
+
+
 def generate_array_complex128(size=(32, 286721), min=None, max=None, shape=None, seed=None):
     """
     Uniformly at random generate a complex array of the specified size.

@@ -134,6 +134,22 @@ def test_make_ramp_fit_output():
     assert rampfitoutput_model.validate() is None
 
 
+# TEST MSOS stack model
+def test_make_msos_stack():
+    msos_stack = utils.mk_msos_stack(shape=(8, 8))
+
+    assert msos_stack.meta.exposure.type == "WFI_IMAGE"
+    assert isinstance(msos_stack.meta.image_list, str)
+
+    assert msos_stack.data.dtype == np.float64
+    assert msos_stack.uncertainty.dtype == np.float64
+    assert msos_stack.mask.dtype == np.uint8
+    assert msos_stack.coverage.dtype == np.uint8
+
+    datamodel = datamodels.MsosStackModel(msos_stack)
+    assert datamodel.validate() is None
+
+
 # Associations tests
 def test_make_associations():
     member_shapes = (3, 8, 5, 2)
