@@ -1,6 +1,6 @@
 """
 This module provides the same interface as the datamodels for JWST, so that they can be
-    used in a common pipeline structure. Unlike, the JWST datamodels, these models are
+    used in a common pipeline structure. Unlike the JWST datamodels, these models are
     backed by an ASDF file and the schema structure is defined by the ASDF schema.
 
 This provides the abstract base class ``Datamodel`` for all the specific datamodels
