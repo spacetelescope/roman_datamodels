@@ -1,3 +1,9 @@
+"""
+This module provides all the Mixin classes which will be dynamically mixed into
+    the DataModel classes at import time.
+    The name of the mixin must be of the form <DataModelName>Mixin in order for
+    this to work properly.
+"""
 import numpy as np
 
 
