@@ -1,4 +1,5 @@
 import warnings
+from pathlib import Path
 
 import asdf
 import numpy as np
@@ -221,3 +222,15 @@ def test_opening_model(tmp_path, node_class):
     else:
         assert model.meta.instrument.optical_element == "F158"
     assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
+
+
+def test_read_pattern_properties():
+    """
+    Regression test for reading pattern properties
+    """
+
+    from roman_datamodels.datamodels import open as rdm_open
+
+    # This file has been modified by hand to break the `photmjsr` value
+    with pytest.raises(asdf.ValidationError):
+        rdm_open(Path(__file__).parent / "data" / "photmjsm.asdf")
