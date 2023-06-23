@@ -36,6 +36,8 @@
 - Refactor ``stnode`` to be easier to maintain and test by turning it into a
   sub-package and splitting the module apart. [#213]
 
+- Remove the unused project deployment scripts and actions. [#222]
+
 0.15.0 (2023-05-15)
 ===================
 
