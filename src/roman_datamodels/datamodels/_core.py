@@ -21,7 +21,6 @@ from astropy.time import Time
 from jsonschema import ValidationError
 
 from roman_datamodels import stnode, validate
-from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 
 __all__ = ["DataModel", "MODEL_REGISTRY"]
 
@@ -105,7 +104,7 @@ class DataModel(abc.ABC):
     @property
     def schema_uri(self):
         # Determine the schema corresponding to this model's tag
-        schema_uri = next(t for t in DATAMODEL_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uris[0]
+        schema_uri = next(t for t in stnode.NODE_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uris[0]
         return schema_uri
 
     def close(self):
