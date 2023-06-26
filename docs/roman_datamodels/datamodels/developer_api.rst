@@ -4,10 +4,6 @@ Developer API
 
 .. automodapi:: roman_datamodels.datamodels
 
-.. automodapi:: roman_datamodels.extensions
-
-.. automodapi:: roman_datamodels.integration
-
 ..
     The converters are not documented because of https://github.com/asdf-format/asdf/issues/1565
 

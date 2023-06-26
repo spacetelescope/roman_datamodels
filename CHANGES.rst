@@ -38,6 +38,8 @@
 
 - Remove the unused project deployment scripts and actions. [#222]
 
+- Refactor the ASDF extension to be entirely part of the stnode sub-package. [#220]
+
 0.15.0 (2023-05-15)
 ===================
 

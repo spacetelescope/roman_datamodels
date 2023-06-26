@@ -12,7 +12,6 @@ from numpy.testing import assert_array_equal
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode
-from roman_datamodels.extensions import DATAMODEL_EXTENSIONS
 from roman_datamodels.testing import assert_node_equal
 
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
@@ -238,7 +237,7 @@ def test_reference_file_model_base(tmp_path):
     # Set temporary asdf file
 
     # Get all reference file classes
-    tags = [t for t in DATAMODEL_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri]
+    tags = [t for t in stnode.NODE_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri]
     for tag in tags:
         schema = asdf.schema.load_schema(tag.schema_uris[0])
         # Check that schema references common reference schema
