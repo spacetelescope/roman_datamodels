@@ -2,7 +2,6 @@ from astropy import time
 from astropy import units as u
 
 from roman_datamodels import stnode
-from roman_datamodels.random_utils import generate_positive_int, generate_string
 
 from ._base import NONUM, NOSTR
 from ._basic_meta import mk_basic_meta
@@ -207,7 +206,7 @@ def mk_aperture(**kwargs):
     roman_datamodels.stnode.Aperture
     """
     aper = stnode.Aperture()
-    aper["name"] = kwargs.get("name", f"WFI_{generate_positive_int(17) + 1:02d}_FULL")
+    aper["name"] = kwargs.get("name", f"WFI_{5 + 1:02d}_FULL")
     aper["position_angle"] = kwargs.get("position_angle", 30.0)
 
     return aper
@@ -487,7 +486,7 @@ def mk_guidewindow_meta(**kwargs):
     )
     meta["data_start"] = kwargs.get("data_start", NONUM)
     meta["data_end"] = kwargs.get("data_end", NONUM)
-    meta["gw_acq_exec_stat"] = kwargs.get("gw_acq_exec_stat", generate_string("Status ", 15))
+    meta["gw_acq_exec_stat"] = kwargs.get("gw_acq_exec_stat", "StatusRMTest619")
 
     return meta
 
