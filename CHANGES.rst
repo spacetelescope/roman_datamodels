@@ -2,6 +2,9 @@
 ===================
 - Remove the ``random_utils`` module and make ``maker_utils`` entirely deterministic. [#217]
 
+- Add tests to ensure consistency between file-level schemas in RAD and the corresponding
+  datamodels in ``roman_datamodels``. [#214]
+
 0.16.1 (2023-06-27)
 ===================
 
