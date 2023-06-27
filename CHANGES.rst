@@ -1,3 +1,8 @@
+0.16.1 (2023-06-27)
+===================
+
+A minor release to set the minimum version of RADD to 0.16.0.
+
 0.16.0 (2023-06-23)
 ===================
 - Remove ``ModelContainer`` from ``roman_datamodels.datamodels``. [#204]
