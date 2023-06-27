@@ -88,6 +88,7 @@ extensions = [
     "sphinx_automodapi.autodoc_enhancements",
     "sphinx_automodapi.smart_resolver",
     "sphinx_asdf",
+    "sphinxcontrib.jquery",
 ]
 
 if on_rtd:
