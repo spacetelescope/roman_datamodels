@@ -66,13 +66,10 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
         if isinstance(init, asdf.AsdfFile):
             asdffile = init
         elif isinstance(init, DataModel):
-            if target is not None:
-                if not isinstance(init, target):
-                    raise ValueError("First argument is not an instance of target")
-                else:
-                    return init
-            # Copy the object so it knows not to close here
-            return init.copy()
+            if target is None or isinstance(init, target):
+                return init
+            else:
+                raise ValueError("First argument is not an instance of target")
         else:
             try:
                 kwargs["copy_arrays"] = not memmap
