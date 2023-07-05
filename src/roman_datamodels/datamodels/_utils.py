@@ -56,8 +56,7 @@ def rdm_open(init, memmap=False, **kwargs):
         if isinstance(init, asdf.AsdfFile):
             asdffile = init
         elif isinstance(init, DataModel):
-            # Copy the object so it knows not to close here
-            return init.copy()
+            return init
         else:
             try:
                 kwargs["copy_arrays"] = not memmap
