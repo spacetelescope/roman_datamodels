@@ -216,12 +216,12 @@ def test_opening_model(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"
 
     utils.mk_node(node_class, filepath=file_path, shape=(2, 8, 8))
-    model = datamodels.open(file_path)
-    if node_class == stnode.Associations:
-        assert model.asn_type == "image"
-    else:
-        assert model.meta.instrument.optical_element == "F158"
-    assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
+    with datamodels.open(file_path) as model:
+        if node_class == stnode.Associations:
+            assert model.asn_type == "image"
+        else:
+            assert model.meta.instrument.optical_element == "F158"
+        assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
 
 
 def test_read_pattern_properties():

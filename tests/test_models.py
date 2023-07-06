@@ -438,20 +438,22 @@ def test_make_readnoise():
 def test_add_model_attribute(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testreadnoise.asdf"
-    utils.mk_readnoise(filepath=file_path)
-    readnoise = datamodels.open(file_path)
-    readnoise["new_attribute"] = 77
-    assert readnoise.new_attribute == 77
-    with pytest.raises(ValueError):
-        readnoise["_underscore"] = "bad"
     file_path2 = tmp_path / "testreadnoise2.asdf"
-    readnoise.save(file_path2)
-    readnoise2 = datamodels.open(file_path2)
-    assert readnoise2.new_attribute == 77
-    readnoise2.new_attribute = 88
-    assert readnoise2.new_attribute == 88
-    with pytest.raises(ValidationError):
-        readnoise["data"] = "bad_data_value"
+
+    utils.mk_readnoise(filepath=file_path)
+    with datamodels.open(file_path) as readnoise:
+        readnoise["new_attribute"] = 77
+        assert readnoise.new_attribute == 77
+        with pytest.raises(ValueError):
+            readnoise["_underscore"] = "bad"
+        readnoise.save(file_path2)
+
+    with datamodels.open(file_path2) as readnoise2:
+        assert readnoise2.new_attribute == 77
+        readnoise2.new_attribute = 88
+        assert readnoise2.new_attribute == 88
+        with pytest.raises(ValidationError):
+            readnoise["data"] = "bad_data_value"
 
 
 # Saturation tests
@@ -584,64 +586,61 @@ def test_datamodel_info_search(capsys):
     wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
     af = asdf.AsdfFile()
     af.tree = {"roman": wfi_science_raw}
-    dm = datamodels.open(af)
-    dm.info(max_rows=200)
-    captured = capsys.readouterr()
-    assert "optical_element" in captured.out
-    result = dm.search("optical_element")
-    assert "F158" in repr(result)
-    assert result.node == "F158"
+    with datamodels.open(af) as dm:
+        dm.info(max_rows=200)
+        captured = capsys.readouterr()
+        assert "optical_element" in captured.out
+        result = dm.search("optical_element")
+        assert "F158" in repr(result)
+        assert result.node == "F158"
 
 
 def test_datamodel_schema_info():
     wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
     af = asdf.AsdfFile()
     af.tree = {"roman": wfi_science_raw}
-    dm = datamodels.open(af)
-
-    info = dm.schema_info("archive_catalog")
-    assert info["roman"]["meta"]["aperture"] == {
-        "name": {
-            "archive_catalog": (
-                {
-                    "datatype": "nvarchar(40)",
-                    "destination": [
-                        "ScienceCommon.aperture_name",
-                        "GuideWindow.aperture_name",
-                    ],
-                },
-                dm.meta.aperture.name,
-            ),
-        },
-        "position_angle": {
-            "archive_catalog": (
-                {
-                    "datatype": "float",
-                    "destination": [
-                        "ScienceCommon.position_angle",
-                        "GuideWindow.position_angle",
-                    ],
-                },
-                30.0,
-            )
-        },
-    }
+    with datamodels.open(af) as dm:
+        info = dm.schema_info("archive_catalog")
+        assert info["roman"]["meta"]["aperture"] == {
+            "name": {
+                "archive_catalog": (
+                    {
+                        "datatype": "nvarchar(40)",
+                        "destination": [
+                            "ScienceCommon.aperture_name",
+                            "GuideWindow.aperture_name",
+                        ],
+                    },
+                    dm.meta.aperture.name,
+                ),
+            },
+            "position_angle": {
+                "archive_catalog": (
+                    {
+                        "datatype": "float",
+                        "destination": [
+                            "ScienceCommon.position_angle",
+                            "GuideWindow.position_angle",
+                        ],
+                    },
+                    30.0,
+                )
+            },
+        }
 
 
 def test_crds_parameters(tmp_path):
     # CRDS uses meta.exposure.start_time to compare to USEAFTER
     file_path = tmp_path / "testwfi_image.asdf"
     utils.mk_level2_image(filepath=file_path)
-    wfi_image = datamodels.open(file_path)
-
-    crds_pars = wfi_image.get_crds_parameters()
-    assert "roman.meta.exposure.start_time" in crds_pars
+    with datamodels.open(file_path) as wfi_image:
+        crds_pars = wfi_image.get_crds_parameters()
+        assert "roman.meta.exposure.start_time" in crds_pars
 
     utils.mk_ramp(filepath=file_path)
-    ramp = datamodels.open(file_path)
-
-    crds_pars = ramp.get_crds_parameters()
-    assert "roman.meta.exposure.start_time" in crds_pars
+    with datamodels.open(file_path) as ramp:
+        crds_pars = ramp.get_crds_parameters()
+        assert "roman.meta.exposure.start_time" in crds_pars
 
 
 def test_model_validate_without_save():
