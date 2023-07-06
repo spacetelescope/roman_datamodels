@@ -94,8 +94,9 @@ def rdm_open(init, memmap=False, **kwargs):
         else:
             asdf_file = _open_path_like(init, memmap=memmap, **kwargs)
 
-        modeltype = type(asdf_file.tree["roman"])
-        if modeltype in MODEL_REGISTRY:
-            return MODEL_REGISTRY[modeltype](asdf_file, **kwargs)
-        else:
-            return DataModel(asdf_file, **kwargs)
+        model_type = type(asdf_file.tree["roman"])
+        if model_type in MODEL_REGISTRY:
+            return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
+
+        asdf_file.close()
+        raise TypeError(f"Unknown datamodel type: {model_type}")
