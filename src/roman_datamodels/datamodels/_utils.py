@@ -5,7 +5,7 @@ This module contains the utility functions for the datamodels sub-package. Mainl
 import warnings
 
 import asdf
-import packaging.version
+from astropy.utils import minversion
 
 from roman_datamodels import validate
 
@@ -13,7 +13,9 @@ from ._core import MODEL_REGISTRY, DataModel
 
 # .dev is included in the version comparison to allow for correct version
 # comparisons with development versions of asdf 3.0
-if packaging.version.Version(asdf.__version__) < packaging.version.Version("3.dev"):
+if minversion(asdf, "3.dev"):
+    AsdfInFits = None
+else:
     with warnings.catch_warnings():
         warnings.filterwarnings(
             "ignore",
@@ -21,8 +23,6 @@ if packaging.version.Version(asdf.__version__) < packaging.version.Version("3.de
             message=r"AsdfInFits has been deprecated.*",
         )
         from asdf.fits_embed import AsdfInFits
-else:
-    AsdfInFits = None
 
 
 __all__ = ["rdm_open"]
