@@ -169,9 +169,9 @@ class DataModel(abc.ABC):
     def open_asdf(self, init=None, **kwargs):
         with validate.nuke_validation():
             if isinstance(init, str):
-                asdffile = asdf.open(init)
+                asdffile = asdf.open(init, **kwargs)
             else:
-                asdffile = asdf.AsdfFile(init)
+                asdffile = asdf.AsdfFile(init, **kwargs)
             return asdffile
 
     def to_asdf(self, init, *args, **kwargs):
