@@ -691,3 +691,30 @@ def test_ramp_from_science_raw():
 
         else:
             raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
+def test_datamodel_construct_like_from_like(model):
+    """
+    This is a regression test for the issue reported issue #51.
+
+    Namely, if one passes a datamodel instance to the constructor for the datamodel
+    of the same type as the instance, an error should not be raised (#51 reports an
+    error being raised).
+
+    Based on the discussion in PR #52, this should return exactly the same instance object
+    that was passed to the constructor. i.e. it should not return a copy of the instance.
+    """
+
+    # Create a model
+    mdl = utils.mk_datamodel(model, shape=(2, 8, 8))
+
+    # Modify _iscopy as it will be reset to False by initializer if called incorrectly
+    mdl._iscopy = "foo"
+
+    # Pass model instance to model constructor
+    new_mdl = model(mdl)
+    assert new_mdl is mdl
+    assert new_mdl._iscopy == "foo"  # Verify that the constructor didn't override stuff
