@@ -38,7 +38,7 @@ def _open_path_like(init, memmap=False, **kwargs):
         Any path-like object that can be opened by asdf such as a valid string
     memmap : bool
         If we should open the file with memmap
-    kwargs:
+    **kwargs:
         Any additional arguments to pass to asdf.open
 
     Returns
@@ -89,13 +89,8 @@ def rdm_open(init, memmap=False, **kwargs):
         if "asn_n_members" in kwargs:
             del kwargs["asn_n_members"]
 
-        if isinstance(init, asdf.AsdfFile):
-            asdf_file = init
-        else:
-            asdf_file = _open_path_like(init, memmap=memmap, **kwargs)
-
-        model_type = type(asdf_file.tree["roman"])
-        if model_type in MODEL_REGISTRY:
+        asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_path_like(init, memmap=memmap, **kwargs)
+        if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
             return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
 
         asdf_file.close()
