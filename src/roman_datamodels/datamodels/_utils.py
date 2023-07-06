@@ -56,7 +56,9 @@ def rdm_open(init, memmap=False, **kwargs):
         if isinstance(init, asdf.AsdfFile):
             asdffile = init
         elif isinstance(init, DataModel):
-            return init
+            res = init.__class__(init=None)
+            init.clone(res, init, deepcopy=False)
+            return res
         else:
             try:
                 kwargs["copy_arrays"] = not memmap
