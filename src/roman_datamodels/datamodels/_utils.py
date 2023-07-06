@@ -67,7 +67,9 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
             asdffile = init
         elif isinstance(init, DataModel):
             if target is None or isinstance(init, target):
-                return init
+                res = init.__class__(init=None)
+                init.clone(res, init, deepcopy=False)
+                return res
             else:
                 raise ValueError("First argument is not an instance of target")
         else:
