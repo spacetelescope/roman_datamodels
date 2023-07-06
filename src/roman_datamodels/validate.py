@@ -7,10 +7,10 @@ import warnings
 from contextlib import contextmanager
 from textwrap import dedent
 
-import jsonschema
 from asdf import AsdfFile
 from asdf import schema as asdf_schema
 from asdf import yamlutil
+from asdf.exceptions import ValidationError
 from asdf.util import HashableDict
 
 __all__ = [
@@ -94,7 +94,7 @@ def value_change(value, pass_invalid_values, strict_validation):
     try:
         _check_value(value)
         update = True
-    except jsonschema.ValidationError as errmsg:
+    except ValidationError as errmsg:
         update = False
         if pass_invalid_values:
             update = True
