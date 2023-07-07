@@ -81,19 +81,21 @@ def rdm_open(init, memmap=False, **kwargs):
     `DataModel`
     """
     with validate.nuke_validation():
+        if isinstance(init, DataModel):
+            # Copy the object so it knows not to close here
+            return init.copy()
+
         # Temp fix to catch JWST args before being passed to asdf open
         if "asn_n_members" in kwargs:
             del kwargs["asn_n_members"]
-        if isinstance(init, asdf.AsdfFile):
-            asdffile = init
-        elif isinstance(init, DataModel):
-            # Copy the object so it knows not to close here
-            return init.copy()
-        else:
-            asdffile = _open_path_like(init, memmap=memmap, **kwargs)
 
-        modeltype = type(asdffile.tree["roman"])
-        if modeltype in MODEL_REGISTRY:
-            return MODEL_REGISTRY[modeltype](asdffile, **kwargs)
+        if isinstance(init, asdf.AsdfFile):
+            asdf_file = init
         else:
-            return DataModel(asdffile, **kwargs)
+            asdf_file = _open_path_like(init, memmap=memmap, **kwargs)
+
+        modeltype = type(asdf_file.tree["roman"])
+        if modeltype in MODEL_REGISTRY:
+            return MODEL_REGISTRY[modeltype](asdf_file, **kwargs)
+        else:
+            return DataModel(asdf_file, **kwargs)
