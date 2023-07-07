@@ -9,6 +9,10 @@
 
 - Clean up overlooked randomness in ``maker_utils`` and tests. [#236]
 
+- Remove the unused ``target`` keyword from ``rdm_open`` and fix the original issue that the
+  keyword was meant to address; namely, passing a datamodel instance to the constructor for
+  that datamodel instance should return the instance back with no modifications. [#235]
+
 0.16.1 (2023-06-27)
 ===================
 
