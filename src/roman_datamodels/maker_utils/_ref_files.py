@@ -322,8 +322,8 @@ def _mk_phot_table_entry(key, **kwargs):
         }
     else:
         entry = {
-            "photmjsr": kwargs.get("photmjsr", 1.0e-15 * np.random.random() * u.megajansky / u.steradian),
-            "uncertainty": kwargs.get("uncertainty", 1.0e-16 * np.random.random() * u.megajansky / u.steradian),
+            "photmjsr": kwargs.get("photmjsr", 1.0e-15 * u.megajansky / u.steradian),
+            "uncertainty": kwargs.get("uncertainty", 1.0e-16 * u.megajansky / u.steradian),
         }
 
     entry["pixelareasr"] = kwargs.get("pixelareasr", 1.0e-13 * u.steradian)

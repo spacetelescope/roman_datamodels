@@ -7,10 +7,12 @@
 
 - Make ``maker_utils`` return the node when writing the node to a file. [#218]
 
+- Clean up overlooked randomness in ``maker_utils`` and tests. [#236]
+
 0.16.1 (2023-06-27)
 ===================
 
-A minor release to set the minimum version of RADD to 0.16.0.
+A minor release to set the minimum version of RAD to 0.16.0.
 
 0.16.0 (2023-06-23)
 ===================
