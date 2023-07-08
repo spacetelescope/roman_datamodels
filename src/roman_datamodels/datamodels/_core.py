@@ -137,9 +137,9 @@ class DataModel(abc.ABC):
         """Ensure closure of resources when deleted."""
         self.close()
 
-    def copy(self, memo=None):
+    def copy(self, deepcopy=True, memo=None):
         result = self.__class__(init=None)
-        self.clone(result, self, deepcopy=True, memo=memo)
+        self.clone(result, self, deepcopy=deepcopy, memo=memo)
         return result
 
     __copy__ = __deepcopy__ = copy
