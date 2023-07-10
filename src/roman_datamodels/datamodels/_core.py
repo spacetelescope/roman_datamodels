@@ -77,6 +77,18 @@ class DataModel(abc.ABC):
         self._instance = None
         self._asdf = None
 
+        if isinstance(init, stnode.TaggedObjectNode):
+            if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
+                expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
+                raise ValidationError(
+                    f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
+                )
+            with validate.nuke_validation():
+                self._instance = init
+                self._asdf = asdf.AsdfFile({"roman": init})
+
+                return
+
         if init is None:
             self._asdf = self.open_asdf(init=None, **kwargs)
         elif isinstance(init, (str, bytes, PurePath)):
@@ -91,16 +103,6 @@ class DataModel(abc.ABC):
         elif isinstance(init, asdf.AsdfFile):
             self._asdf = init
             self._instance = self._asdf.tree["roman"]
-        elif isinstance(init, stnode.TaggedObjectNode):
-            if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
-                expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
-                raise ValidationError(
-                    f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
-                )
-            with validate.nuke_validation():
-                self._instance = init
-                self._asdf = asdf.AsdfFile()
-                self._asdf.tree = {"roman": init}
         else:
             raise OSError("Argument does not appear to be an ASDF file or TaggedObjectNode.")
 
