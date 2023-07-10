@@ -76,21 +76,21 @@ class DataModel(abc.ABC):
         self._shape = None
         self._instance = None
         self._asdf = None
+
         if init is None:
-            asdffile = self.open_asdf(init=None, **kwargs)
+            self._asdf = self.open_asdf(init=None, **kwargs)
         elif isinstance(init, (str, bytes, PurePath)):
             if isinstance(init, PurePath):
                 init = str(init)
             if isinstance(init, bytes):
                 init = init.decode(sys.getfilesystemencoding())
-            asdffile = self.open_asdf(init, **kwargs)
-            if not self.check_type(asdffile):
+            self._asdf = self.open_asdf(init, **kwargs)
+            if not self.check_type(self._asdf):
                 raise ValueError(f"ASDF file is not of the type expected. Expected {self.__class__.__name__}")
-            self._instance = asdffile.tree["roman"]
+            self._instance = self._asdf.tree["roman"]
         elif isinstance(init, asdf.AsdfFile):
-            asdffile = init
-            self._asdf = asdffile
-            self._instance = asdffile.tree["roman"]
+            self._asdf = init
+            self._instance = self._asdf.tree["roman"]
         elif isinstance(init, stnode.TaggedObjectNode):
             if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
                 expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
@@ -99,11 +99,10 @@ class DataModel(abc.ABC):
                 )
             with validate.nuke_validation():
                 self._instance = init
-                asdffile = asdf.AsdfFile()
-                asdffile.tree = {"roman": init}
+                self._asdf = asdf.AsdfFile()
+                self._asdf.tree = {"roman": init}
         else:
             raise OSError("Argument does not appear to be an ASDF file or TaggedObjectNode.")
-        self._asdf = asdffile
 
     def check_type(self, asdf_file):
         """
