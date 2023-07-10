@@ -105,27 +105,23 @@ class DataModel(abc.ABC):
             raise OSError("Argument does not appear to be an ASDF file or TaggedObjectNode.")
         self._asdf = asdffile
 
-    def check_type(self, asdffile_instance):
+    def check_type(self, asdf_file):
         """
         Subclass is expected to check for proper type of node
         """
-        if "roman" not in asdffile_instance.tree:
+        if "roman" not in asdf_file.tree:
             raise ValueError('ASDF file does not have expected "roman" attribute')
-        topnode = asdffile_instance.tree["roman"]
-        if MODEL_REGISTRY[topnode.__class__] != self.__class__:
-            return False
-        return True
+
+        return MODEL_REGISTRY[asdf_file.tree["roman"].__class__] == self.__class__
 
     @property
     def schema_uri(self):
         # Determine the schema corresponding to this model's tag
-        schema_uri = next(t for t in stnode.NODE_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uris[0]
-        return schema_uri
+        return next(t for t in stnode.NODE_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uris[0]
 
     def close(self):
-        if not self._iscopy:
-            if self._asdf is not None:
-                self._asdf.close()
+        if not (self._iscopy or self._asdf is None):
+            self._asdf.close()
 
     def __enter__(self):
         return self
@@ -147,15 +143,13 @@ class DataModel(abc.ABC):
     @staticmethod
     def clone(target, source, deepcopy=False, memo=None):
         if deepcopy:
-            instance = copy.deepcopy(source._instance, memo=memo)
             target._asdf = source._asdf.copy()
-            target._instance = instance
-            target._iscopy = True
+            target._instance = copy.deepcopy(source._instance, memo=memo)
         else:
             target._asdf = source._asdf
             target._instance = source._instance
-            target._iscopy = True
 
+        target._iscopy = True
         target._files_to_close = []
         target._shape = source._shape
         target._ctx = target
@@ -183,11 +177,7 @@ class DataModel(abc.ABC):
 
     def open_asdf(self, init=None, **kwargs):
         with validate.nuke_validation():
-            if isinstance(init, str):
-                asdffile = asdf.open(init, **kwargs)
-            else:
-                asdffile = asdf.AsdfFile(init, **kwargs)
-            return asdffile
+            return asdf.open(init, **kwargs) if isinstance(init, str) else asdf.AsdfFile(init, **kwargs)
 
     def to_asdf(self, init, *args, **kwargs):
         with validate.nuke_validation():
@@ -202,11 +192,7 @@ class DataModel(abc.ABC):
         This is intended to be overridden in the subclasses if the
         primary array's name is not "data".
         """
-        if hasattr(self, "data"):
-            primary_array_name = "data"
-        else:
-            primary_array_name = ""
-        return primary_array_name
+        return "data" if hasattr(self, "data") else ""
 
     @property
     def override_handle(self):
@@ -214,7 +200,7 @@ class DataModel(abc.ABC):
         would normally be used.
         """
         # Arbitrary choice to look something like crds://
-        return "override://" + self.__class__.__name__
+        return f"override://{self.__class__.__name__}"
 
     @property
     def shape(self):
@@ -266,10 +252,9 @@ class DataModel(abc.ABC):
                 return str(val)
             return val
 
-        if include_arrays:
-            return {"roman." + key: convert_val(val) for (key, val) in self.items()}
-        else:
-            return {"roman." + key: convert_val(val) for (key, val) in self.items() if not isinstance(val, np.ndarray)}
+        return {
+            f"roman.{key}": convert_val(val) for (key, val) in self.items() if include_arrays or not isinstance(val, np.ndarray)
+        }
 
     def items(self):
         """
@@ -305,12 +290,11 @@ class DataModel(abc.ABC):
         -------
         dict
         """
-        crds_header = {
+        return {
             key: val
             for key, val in self.to_flat_dict(include_arrays=False).items()
             if isinstance(val, (str, int, float, complex, bool))
         }
-        return crds_header
 
     def validate(self):
         """
