@@ -4,9 +4,9 @@ from contextlib import nullcontext
 import asdf
 import numpy as np
 import pytest
+from asdf.exceptions import ValidationError
 from astropy import units as u
 from astropy.modeling import Model
-from jsonschema import ValidationError
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
