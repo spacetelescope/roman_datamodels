@@ -5,10 +5,18 @@
 - Add tests to ensure consistency between file-level schemas in RAD and the corresponding
   datamodels in ``roman_datamodels``. [#214]
 
+- Make ``maker_utils`` return the node when writing the node to a file. [#218]
+
+- Clean up overlooked randomness in ``maker_utils`` and tests. [#236]
+
+- Remove the unused ``target`` keyword from ``rdm_open`` and fix the original issue that the
+  keyword was meant to address; namely, passing a datamodel instance to the constructor for
+  that datamodel instance should return the instance back with no modifications. [#235]
+
 0.16.1 (2023-06-27)
 ===================
 
-A minor release to set the minimum version of RADD to 0.16.0.
+A minor release to set the minimum version of RAD to 0.16.0.
 
 0.16.0 (2023-06-23)
 ===================

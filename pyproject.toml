@@ -71,11 +71,7 @@ testpaths = ['tests']
 filterwarnings = [
     # This error replaces pytest-openfiles
     "error::ResourceWarning",
-    # Sometimes turning ResourceWarnings into errors creates an unraisable exception
-    #   e.g. when pyest catches another exception, this will block the turning of
-    #        ResourceWarnings into errors
-    # Disabled until issue #150 is resolved.
-    # "error::pytest.PytestUnraisableExceptionWarning",
+    "error::pytest.PytestUnraisableExceptionWarning",
 ]
 env = [
     "ROMAN_VALIDATE=true",

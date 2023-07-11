@@ -28,7 +28,7 @@ else:
 __all__ = ["rdm_open"]
 
 
-def rdm_open(init, memmap=False, target=None, **kwargs):
+def rdm_open(init, memmap=False, **kwargs):
     """
     Datamodel open/create function.
         This function opens a Roman datamodel from an asdf file or generates
@@ -43,13 +43,6 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
             - `DataModel` Roman data model instance
     memmap : bool
         Open ASDF file binary data using memmap (default: False)
-    target : `DataModel`
-        If not None value, the `DataModel` implied by the init argument
-        must be an instance of the target class. If the init value
-        is already a data model, and matches the target, the init
-        value is returned, not copied, as opposed to the case where
-        the init value is a data model, and target is not supplied,
-        and the returned value is a copy of the init value.
 
     Returns
     -------
@@ -57,21 +50,15 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
     """
     with validate.nuke_validation():
         file_to_close = None
-        if target is not None:
-            if not issubclass(target, DataModel):
-                raise ValueError("Target must be a subclass of DataModel")
         # Temp fix to catch JWST args before being passed to asdf open
         if "asn_n_members" in kwargs:
             del kwargs["asn_n_members"]
         if isinstance(init, asdf.AsdfFile):
             asdffile = init
         elif isinstance(init, DataModel):
-            if target is None or isinstance(init, target):
-                res = init.__class__(init=None)
-                init.clone(res, init, deepcopy=False)
-                return res
-            else:
-                raise ValueError("First argument is not an instance of target")
+            res = init.__class__(init=None)
+            init.clone(res, init, deepcopy=False)
+            return res
         else:
             try:
                 kwargs["copy_arrays"] = not memmap
@@ -85,13 +72,6 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
                 raise TypeError("Roman datamodels does not accept FITS files or objects")
         modeltype = type(asdffile.tree["roman"])
         if modeltype in MODEL_REGISTRY:
-            rmodel = MODEL_REGISTRY[modeltype](asdffile, **kwargs)
-            if target is not None:
-                if not issubclass(rmodel.__class__, target):
-                    if file_to_close is not None:
-                        file_to_close.close()
-                    raise ValueError("Referenced ASDF file model type is not subclass of target")
-            else:
-                return rmodel
+            return MODEL_REGISTRY[modeltype](asdffile, **kwargs)
         else:
             return DataModel(asdffile, **kwargs)
