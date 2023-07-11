@@ -3,11 +3,13 @@ This module contains the utility functions for the datamodels sub-package. Mainl
     the open/factory function for creating datamodels
 """
 import warnings
+import pdb
 
 import asdf
 import packaging.version
 
-from roman_datamodels import validate
+from roman_datamodels import validate, filetype
+from romancal.datamodels import ModelContainer
 
 from ._core import MODEL_REGISTRY, DataModel
 
@@ -31,7 +33,7 @@ __all__ = ["rdm_open"]
 def rdm_open(init, memmap=False, target=None, **kwargs):
     """
     Datamodel open/create function.
-        This function opens a Roman datamodel from an asdf file or generates
+        This function opens a Roman datamodel from various files or generates
         the datamodel from an existing one.
 
     Parameters
@@ -57,6 +59,7 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
     """
     with validate.nuke_validation():
         file_to_close = None
+        input_file_type = filetype.check(init)
         if target is not None:
             if not issubclass(target, DataModel):
                 raise ValueError("Target must be a subclass of DataModel")
@@ -73,6 +76,10 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
                     return init
             # Copy the object so it knows not to close here
             return init.copy()
+        elif input_file_type =='asn':
+            asn_model = ModelContainer(init, save_open=False, return_open=False)
+            # Copy the object so it knows not to close here
+            return asn_model
         else:
             try:
                 kwargs["copy_arrays"] = not memmap
