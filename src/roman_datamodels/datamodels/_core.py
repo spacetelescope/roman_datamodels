@@ -17,8 +17,8 @@ from pathlib import PurePath
 
 import asdf
 import numpy as np
+from asdf.exceptions import ValidationError
 from astropy.time import Time
-from jsonschema import ValidationError
 
 from roman_datamodels import stnode, validate
 
