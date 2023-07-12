@@ -278,7 +278,7 @@ def test_reference_file_model_base(tmp_path):
             if item == EXPECTED_COMMON_REFERENCE:
                 found_common = True
         if not found_common:
-            raise ValueError("Reference schema does not include ref_common")
+            raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
 
 
 # Flat tests
@@ -690,7 +690,7 @@ def test_ramp_from_science_raw():
             assert_node_equal(ramp_value, raw_value)
 
         else:
-            raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")
+            raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")  # pragma: no cover
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())

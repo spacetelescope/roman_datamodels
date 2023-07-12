@@ -47,8 +47,6 @@ def test_no_extra_fields(node_class, manifest):
 
     schema_keys = set()
     subschemas = [schema]
-    if "allOf" in schema:
-        subschemas.extend(schema["allOf"])
     for subschema in subschemas:
         schema_keys.update(subschema.get("properties", {}).keys())
 
@@ -143,9 +141,6 @@ def test_override_data(node_class):
         """
         if isinstance(value, Time):
             return value + 1 * u.day
-
-        if isinstance(value, list):
-            return [mock.MagicMock()]
 
         if isinstance(value, stnode.TaggedScalarNode):
             return value.__class__(mutate_value(value.__class__.__bases__[0](value)))
