@@ -78,16 +78,6 @@ env = [
     "ROMAN_STRICT_VALIDATION=true",
 ]
 
-[tool.coverage.run]
-omit = [
-    'roman_datamodels/pyproject.toml',
-    'roman_datamodels/tests',
-    # And list these again for running against installed version
-    '*/roman_datamodels/pyproject.toml',
-    '*/roman_datamodels/tests',
-    '*/roman_datamodels/src/roman_datamodels/mktest.py',
-]
-
 [tool.coverage.report]
 exclude_lines = [
     # Have to re-enable the standard pragma
