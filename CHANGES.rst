@@ -1,5 +1,8 @@
 0.17.0 (unreleased)
 ===================
+- Make a shallow copy when opening an existing datamodel, rather than
+  a full copy.  [#232]
+
 - Remove the ``random_utils`` module and make ``maker_utils`` entirely deterministic. [#217]
 
 - Add tests to ensure consistency between file-level schemas in RAD and the corresponding
