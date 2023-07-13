@@ -136,7 +136,6 @@ def test_override_data(node_class):
         Generate a mutated value for a given value.
             Note:
                 - Time is a special case because it's constructor is picky.
-                - Pure lists need to be preserved.
                 - TaggedScalarNodes need their type preserved.
         """
         if isinstance(value, Time):
