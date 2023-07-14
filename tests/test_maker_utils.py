@@ -47,6 +47,8 @@ def test_no_extra_fields(node_class, manifest):
 
     schema_keys = set()
     subschemas = [schema]
+    if "allOf" in schema:
+        subschemas.extend(schema["allOf"])  # pragma: no cover
     for subschema in subschemas:
         schema_keys.update(subschema.get("properties", {}).keys())
 
