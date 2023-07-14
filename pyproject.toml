@@ -95,11 +95,6 @@ exclude_lines = [
     'pass\n',
 ]
 
-[tool.isort]
-profile = "black"
-filter_files = true
-line_length = 130
-
 [tool.black]
 line-length = 130
 force-exclude = '''
@@ -116,7 +111,7 @@ force-exclude = '''
 [tool.ruff]
 line-length = 130
 src = ["src", "tests", "docs"]
-select = ["E", "F", "B"]
+select = ["E", "F", "B", "I"]
 
 [tool.codespell]
 skip="*.pdf,*.fits,*.asdf,.tox,build,./tags,.git,docs/_build"

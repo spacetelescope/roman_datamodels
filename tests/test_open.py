@@ -9,9 +9,8 @@ from astropy.io import fits
 from astropy.utils import minversion
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels
+from roman_datamodels import datamodels, stnode
 from roman_datamodels import maker_utils as utils
-from roman_datamodels import stnode
 from roman_datamodels.testing import assert_node_equal
 
 

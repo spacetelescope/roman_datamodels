@@ -7,9 +7,8 @@ import warnings
 from contextlib import contextmanager
 from textwrap import dedent
 
-from asdf import AsdfFile
+from asdf import AsdfFile, yamlutil
 from asdf import schema as asdf_schema
-from asdf import yamlutil
 from asdf.exceptions import ValidationError
 from asdf.util import HashableDict
 
