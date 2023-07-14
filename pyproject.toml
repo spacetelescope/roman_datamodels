@@ -52,7 +52,7 @@ docs = [
 'asdf.extensions' = { roman_datamodels = 'roman_datamodels.stnode._integration:get_extensions' }
 
 [build-system]
-requires = ["setuptools >=61", "setuptools_scm[toml] >=3.4", "wheel"]
+requires = ["setuptools >=61", "setuptools_scm[toml] >=3.4"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
@@ -62,11 +62,13 @@ write_to = "src/roman_datamodels/_version.py"
 where = ['src']
 
 [tool.pytest.ini_options]
-minversion = 4.6
+minversion = 6
 doctest_plus = true
 doctest_rst = true
 text_file_format = 'rst'
-addopts = '--color=yes --doctest-rst'
+log_cli_level = 'info'
+xfail_strict = true
+addopts = '--color=yes --doctest-rst --strict-config --strict-markers -ra'
 testpaths = ['tests']
 filterwarnings = [
     "error",
@@ -113,6 +115,8 @@ force-exclude = '''
 
 [tool.ruff]
 line-length = 130
+src = ["src", "tests", "docs"]
+select = ["E", "F", "B"]
 
 [tool.codespell]
 skip="*.pdf,*.fits,*.asdf,.tox,build,./tags,.git,docs/_build"
