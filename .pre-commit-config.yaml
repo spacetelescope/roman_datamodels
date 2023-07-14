@@ -1,3 +1,6 @@
+ci:
+  autoupdate_commit_msg: "Update pre-commit hooks (style-checks)"
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
