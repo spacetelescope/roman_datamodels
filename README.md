@@ -20,9 +20,9 @@ between different versions of the `roman-datamodels` package (e.g. a released ve
 
 In all cases, the installation is generally a 3-step process:
 
-* Create a conda environment
-* Activate that environment
-* Install the desired version of the `roman-datamodels` package into that environment
+- Create a conda environment
+- Activate that environment
+- Install the desired version of the `roman-datamodels` package into that environment
 
 Details are given below on how to do this for different types of installations, including tagged releases, DMS builds
 used in operations, and development versions. Remember that all conda operations must be done from within a bash shell.
