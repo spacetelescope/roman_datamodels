@@ -29,6 +29,8 @@
 
 - Further adjustments to support CRDS for the ``inverselinearity`` reference file. [#248]
 
+- Apply suggestions from Scientific Python Code Review. [#239]
+
 0.16.1 (2023-06-27)
 ===================
 
