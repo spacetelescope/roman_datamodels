@@ -33,7 +33,7 @@ def mk_level1_science_raw(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     """
     if len(shape) != 3:
         shape = (8, 4096, 4096)
-        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
+        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)", stacklevel=2)
 
     wfi_science_raw = stnode.WfiScienceRaw()
     wfi_science_raw["meta"] = mk_common_meta(**kwargs.get("meta", {}))
@@ -85,7 +85,9 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
         n_groups = shape[0]
 
         warnings.warn(
-            f"{MESSAGE} assuming the first entry is n_groups followed by y, x. The remaining is thrown out!", UserWarning
+            f"{MESSAGE} assuming the first entry is n_groups followed by y, x. The remaining is thrown out!",
+            UserWarning,
+            stacklevel=2,
         )
 
     wfi_image = stnode.WfiImage()
@@ -160,7 +162,9 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
         n_images = shape[0]
 
         warnings.warn(
-            f"{MESSAGE} assuming the first entry is n_images followed by y, x. The remaining is thrown out!", UserWarning
+            f"{MESSAGE} assuming the first entry is n_images followed by y, x. The remaining is thrown out!",
+            UserWarning,
+            stacklevel=2,
         )
 
     wfi_mosaic = stnode.WfiMosaic()
@@ -206,7 +210,9 @@ def mk_msos_stack(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[1:3]
 
-        warnings.warn(f"{MESSAGE} assuming the the first two entries are y, x. The remaining is thrown out!", UserWarning)
+        warnings.warn(
+            f"{MESSAGE} assuming the the first two entries are y, x. The remaining is thrown out!", UserWarning, stacklevel=2
+        )
 
     msos_stack = stnode.MsosStack()
     msos_stack["meta"] = mk_msos_stack_meta(**kwargs.get("meta", {}))
@@ -240,7 +246,7 @@ def mk_ramp(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     """
     if len(shape) != 3:
         shape = (8, 4096, 4096)
-        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
+        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)", stacklevel=2)
 
     ramp = stnode.Ramp()
     ramp["meta"] = mk_common_meta(**kwargs.get("meta", {}))
@@ -295,7 +301,7 @@ def mk_ramp_fit_output(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     """
     if len(shape) != 3:
         shape = (8, 4096, 4096)
-        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
+        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)", stacklevel=2)
 
     rampfitoutput = stnode.RampFitOutput()
     rampfitoutput["meta"] = mk_common_meta(**kwargs.get("meta", {}))
@@ -324,7 +330,7 @@ def mk_ramp_fit_output(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
 
 
 def mk_rampfitoutput(**kwargs):
-    warnings.warn("mk_rampfitoutput is deprecated. Use mk_rampfit_output instead.", DeprecationWarning)
+    warnings.warn("mk_rampfitoutput is deprecated. Use mk_rampfit_output instead.", DeprecationWarning, stacklevel=2)
 
     return mk_ramp_fit_output(**kwargs)
 
@@ -405,7 +411,7 @@ def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
     """
     if len(shape) != 5:
         shape = (2, 8, 16, 32, 32)
-        warnings.warn("Input shape must be 5D. Defaulting to (2, 8, 16, 32, 32)")
+        warnings.warn("Input shape must be 5D. Defaulting to (2, 8, 16, 32, 32)", stacklevel=2)
 
     guidewindow = stnode.Guidewindow()
     guidewindow["meta"] = mk_guidewindow_meta(**kwargs.get("meta", {}))

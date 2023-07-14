@@ -285,7 +285,9 @@ class DataModel(abc.ABC):
         schemas directly.
         """
 
-        def recurse(tree, path=[]):
+        def recurse(tree, path=None):
+            path = path or []
+
             if isinstance(tree, (stnode.DNode, dict)):
                 for key, val in tree.items():
                     yield from recurse(val, path + [key])

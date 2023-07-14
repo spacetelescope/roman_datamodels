@@ -40,7 +40,7 @@ def validation_is_disabled():
             to "true".
         """
     )
-    warnings.warn(MESSAGE, ValidationWarning)
+    warnings.warn(MESSAGE, ValidationWarning, stacklevel=2)
 
 
 def will_validate():
@@ -67,7 +67,7 @@ def strict_validation_is_disabled():
         """
     )
 
-    warnings.warn(MESSAGE, ValidationWarning)
+    warnings.warn(MESSAGE, ValidationWarning, stacklevel=2)
 
 
 def will_strict_validate():
@@ -101,7 +101,7 @@ def value_change(value, pass_invalid_values, strict_validation):
         if strict_validation:
             raise errmsg
         else:
-            warnings.warn(errmsg, ValidationWarning)
+            warnings.warn(errmsg, ValidationWarning, stacklevel=2)
     return update
 
 

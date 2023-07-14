@@ -42,9 +42,9 @@ def _value_change(path, value, schema, pass_invalid_values, strict_validation, c
         if pass_invalid_values:
             update = True
         if strict_validation:
-            raise ValidationError(errmsg)
+            raise ValidationError(errmsg) from error
         else:
-            warnings.warn(errmsg, ValidationWarning)
+            warnings.warn(errmsg, ValidationWarning, stacklevel=2)
     return update
 
 
