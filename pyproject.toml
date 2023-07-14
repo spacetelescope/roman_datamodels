@@ -109,9 +109,10 @@ force-exclude = '''
 '''
 
 [tool.ruff]
+target-version = "py39"
 line-length = 130
 src = ["src", "tests", "docs"]
-select = ["E", "F", "B", "I"]
+select = ["E", "F", "B", "I", "UP"]
 
 [tool.codespell]
 skip="*.pdf,*.fits,*.asdf,.tox,build,./tags,.git,docs/_build"

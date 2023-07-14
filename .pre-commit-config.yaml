@@ -35,12 +35,6 @@ repos:
       additional_dependencies:
         - tomli
 
-- repo: https://github.com/asottile/pyupgrade
-  rev: 'v3.9.0'
-  hooks:
-    - id: pyupgrade
-      args: ["--py38-plus"]
-
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: 'v0.0.280'
   hooks:
