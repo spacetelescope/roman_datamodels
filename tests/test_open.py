@@ -3,10 +3,10 @@ from pathlib import Path
 
 import asdf
 import numpy as np
-import packaging.version
 import pytest
 from astropy import units as u
 from astropy.io import fits
+from astropy.utils import minversion
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
@@ -26,7 +26,7 @@ def test_asdf_file_input():
 
 
 @pytest.mark.skipif(
-    packaging.version.Version(asdf.__version__) >= packaging.version.Version("3.dev"),
+    minversion(asdf, "3.dev"),
     reason="asdf >= 3.0 has no AsdfInFits support",
 )
 def test_asdf_in_fits_error(tmp_path):
@@ -253,3 +253,10 @@ def test_read_pattern_properties():
     # This file has been modified by hand to break the `photmjsr` value
     with pytest.raises(asdf.ValidationError):
         rdm_open(Path(__file__).parent / "data" / "photmjsm.asdf")
+
+
+def test_rdm_open_non_datamodel():
+    from roman_datamodels.datamodels import open as rdm_open
+
+    with pytest.raises(TypeError, match=r"Unknown datamodel type: .*"):
+        rdm_open(Path(__file__).parent / "data" / "not_a_datamodel.asdf")

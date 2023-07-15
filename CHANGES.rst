@@ -18,6 +18,8 @@
 
 - Update ``maker_utils`` to support the new ``cal_step`` keys. [#228]
 
+- Clean up the ``rdm_open`` function. [#233]
+
 0.16.1 (2023-06-27)
 ===================
 
