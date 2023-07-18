@@ -3,7 +3,6 @@ This module contains the utility functions for the datamodels sub-package. Mainl
     the open/factory function for creating datamodels
 """
 import warnings
-import pdb
 
 import asdf
 import packaging.version
@@ -59,7 +58,12 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
     """
     with validate.nuke_validation():
         file_to_close = None
-        input_file_type = filetype.check(init)
+        if isinstance(init, str):
+            input_file_type = filetype.check(init)
+            if input_file_type =='asn':
+                #asn_model = ModelContainer(init, save_open=False, return_open=False)
+                print("returning a asn string:", init)
+                return
         if target is not None:
             if not issubclass(target, DataModel):
                 raise ValueError("Target must be a subclass of DataModel")
@@ -76,10 +80,7 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
                     return init
             # Copy the object so it knows not to close here
             return init.copy()
-        elif input_file_type =='asn':
-            asn_model = ModelContainer(init, save_open=False, return_open=False)
             # Copy the object so it knows not to close here
-            return asn_model
         else:
             try:
                 kwargs["copy_arrays"] = not memmap
