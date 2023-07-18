@@ -8,7 +8,6 @@ import asdf
 import packaging.version
 
 from roman_datamodels import validate, filetype
-from romancal.datamodels import ModelContainer
 
 from ._core import MODEL_REGISTRY, DataModel
 
@@ -61,7 +60,6 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
         if isinstance(init, str):
             input_file_type = filetype.check(init)
             if input_file_type =='asn':
-                #asn_model = ModelContainer(init, save_open=False, return_open=False)
                 print("returning a asn string:", init)
                 return
         if target is not None:
