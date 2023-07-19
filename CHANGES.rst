@@ -16,7 +16,7 @@
 - Use ValidationError from asdf.exceptions instead of jsonschema. Increase minimum
   asdf version to 2.15.0. [#234]
 
-- Update ``maker_utils`` to support the new ``cal_step`` keys. [#228]
+- Update ``maker_utils`` to support the new ``cal_step`` keys. [#228, #243]
 
 - Clean up the ``rdm_open`` function. [#233]
 
