@@ -221,6 +221,9 @@ class DNode(MutableMapping):
     def __iter__(self):
         return iter(self._data)
 
+    def __repr__(self):
+        return repr(self._data)
+
     def copy(self):
         instance = self.__class__.__new__(self.__class__)
         instance.__dict__.update(self.__dict__.copy())
