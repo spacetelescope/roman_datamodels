@@ -22,6 +22,8 @@
 
 - Include tests in coverage and turn testing warnings into errors. [#238]
 
+- Add ``__repr__`` to ``DNode``. [#245]
+
 0.16.1 (2023-06-27)
 ===================
 
