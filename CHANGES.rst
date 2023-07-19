@@ -20,6 +20,8 @@
 
 - Clean up the ``rdm_open`` function. [#233]
 
+- Include tests in coverage and turn testing warnings into errors. [#238]
+
 0.16.1 (2023-06-27)
 ===================
 
