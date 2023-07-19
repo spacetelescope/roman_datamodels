@@ -303,3 +303,24 @@ def test_will_strict_validate(env_strict_var):
     del os.environ[validate.ROMAN_STRICT_VALIDATION]
     assert os.getenv(validate.ROMAN_STRICT_VALIDATION) is None
     assert validate.will_strict_validate() is True
+
+
+@pytest.mark.parametrize("model", [mdl for mdl in datamodels.MODEL_REGISTRY.values() if "Ref" not in mdl.__name__])
+def test_node_representation(model):
+    """
+    Regression test for #244.
+
+    The DNode object was lacking the __repr__ method, which is used to return
+    the representation of the object. The reported issue was with ``mdl.meta.instrument``,
+    so that is directly checked here.
+    """
+    mdl = maker_utils.mk_datamodel(model)
+
+    if hasattr(mdl, "meta"):
+        assert repr(mdl.meta.instrument) == repr(
+            {
+                "name": "WFI",
+                "detector": "WFI01",
+                "optical_element": "F158",
+            }
+        )
