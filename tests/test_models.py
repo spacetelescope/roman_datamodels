@@ -63,6 +63,29 @@ def test_model_schemas(node, model):
     asdf.schema.load_schema(instance.schema_uri)
 
 
+@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
+def test_empty_model(node, model):
+    mdl = model()
+    assert isinstance(mdl._instance, node)
+    assert mdl._asdf is None
+
+
+@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
+def test_empty_model_asdf(node, model):
+    mdl = model()
+
+    # Check there is a validation issue
+    with pytest.raises(asdf.ValidationError):
+        mdl.asdf
+
+    assert mdl._asdf is None
+
+    # Fill in instance properly and check that asdf can be created
+    mdl._instance = utils.mk_node(node)
+    assert mdl.asdf.tree["roman"] is mdl._instance
+    assert mdl._asdf is not None
+
+
 # Testing core schema
 def test_core_schema(tmp_path):
     # Set temporary asdf file

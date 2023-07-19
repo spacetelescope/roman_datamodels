@@ -90,18 +90,22 @@ class DataModel(abc.ABC):
                 return
 
         if init is None:
-            self._asdf = self.open_asdf(init=None, **kwargs)
+            self._instance = self._node_type()
+
         elif isinstance(init, (str, bytes, PurePath)):
             if isinstance(init, PurePath):
                 init = str(init)
             if isinstance(init, bytes):
                 init = init.decode(sys.getfilesystemencoding())
+
             self._asdf = self.open_asdf(init, **kwargs)
             if not self.check_type(self._asdf):
                 raise ValueError(f"ASDF file is not of the type expected. Expected {self.__class__.__name__}")
+
             self._instance = self._asdf.tree["roman"]
         elif isinstance(init, asdf.AsdfFile):
             self._asdf = init
+
             self._instance = self._asdf.tree["roman"]
         else:
             raise OSError("Argument does not appear to be an ASDF file or TaggedObjectNode.")
@@ -303,11 +307,18 @@ class DataModel(abc.ABC):
         """
         validate.value_change(self._instance, pass_invalid_values=False, strict_validation=True)
 
+    @property
+    def asdf(self):
+        if self._asdf is None:
+            self._asdf = asdf.AsdfFile({"roman": self._instance})
+
+        return self._asdf
+
     def info(self, *args, **kwargs):
-        return self._asdf.info(*args, **kwargs)
+        return self.asdf.info(*args, **kwargs)
 
     def search(self, *args, **kwargs):
-        return self._asdf.search(*args, **kwargs)
+        return self.asdf.search(*args, **kwargs)
 
     def schema_info(self, *args, **kwargs):
-        return self._asdf.schema_info(*args, **kwargs)
+        return self.asdf.schema_info(*args, **kwargs)
