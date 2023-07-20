@@ -3,15 +3,16 @@ from pathlib import Path
 
 import asdf
 import numpy as np
-import packaging.version
 import pytest
 from astropy import units as u
 from astropy.io import fits
+from astropy.utils import minversion
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode
+from roman_datamodels.testing import assert_node_equal
 
 
 def test_asdf_file_input():
@@ -25,7 +26,7 @@ def test_asdf_file_input():
 
 
 @pytest.mark.skipif(
-    packaging.version.Version(asdf.__version__) >= packaging.version.Version("3.dev"),
+    minversion(asdf, "3.dev"),
     reason="asdf >= 3.0 has no AsdfInFits support",
 )
 def test_asdf_in_fits_error(tmp_path):
@@ -84,7 +85,7 @@ def test_path_input(tmp_path):
 def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    data = u.Quantity(np.random.uniform(size=(4, 4)).astype(np.float32), u.electron / u.s, dtype=np.float32)
+    data = u.Quantity(np.random.default_rng(42).uniform(size=(4, 4)).astype(np.float32), u.electron / u.s, dtype=np.float32)
 
     with asdf.AsdfFile() as af:
         af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
@@ -212,15 +213,33 @@ def test_no_memmap(tmp_path, kwargs):
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
+def test_node_round_trip(tmp_path, node_class):
+    file_path = tmp_path / "test.asdf"
+
+    # Create/return a node and write it to disk, then check if the node round trips
+    node = utils.mk_node(node_class, filepath=file_path, shape=(2, 8, 8))
+    with asdf.open(file_path) as af:
+        assert_node_equal(af.tree["roman"], node)
+
+
+@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_opening_model(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"
 
+    # Create a node and write it to disk
     utils.mk_node(node_class, filepath=file_path, shape=(2, 8, 8))
+
+    # Opened saved file as a datamodel
     with datamodels.open(file_path) as model:
+        # Check that some of read data is correct
         if node_class == stnode.Associations:
             assert model.asn_type == "image"
         else:
             assert model.meta.instrument.optical_element == "F158"
+
+        # Check that the model is the correct type
         assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
 
 
@@ -234,3 +253,10 @@ def test_read_pattern_properties():
     # This file has been modified by hand to break the `photmjsr` value
     with pytest.raises(asdf.ValidationError):
         rdm_open(Path(__file__).parent / "data" / "photmjsm.asdf")
+
+
+def test_rdm_open_non_datamodel():
+    from roman_datamodels.datamodels import open as rdm_open
+
+    with pytest.raises(TypeError, match=r"Unknown datamodel type: .*"):
+        rdm_open(Path(__file__).parent / "data" / "not_a_datamodel.asdf")

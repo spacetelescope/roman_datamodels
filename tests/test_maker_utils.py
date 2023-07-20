@@ -48,7 +48,7 @@ def test_no_extra_fields(node_class, manifest):
     schema_keys = set()
     subschemas = [schema]
     if "allOf" in schema:
-        subschemas.extend(schema["allOf"])
+        subschemas.extend(schema["allOf"])  # pragma: no cover
     for subschema in subschemas:
         schema_keys.update(subschema.get("properties", {}).keys())
 
@@ -138,14 +138,10 @@ def test_override_data(node_class):
         Generate a mutated value for a given value.
             Note:
                 - Time is a special case because it's constructor is picky.
-                - Pure lists need to be preserved.
                 - TaggedScalarNodes need their type preserved.
         """
         if isinstance(value, Time):
             return value + 1 * u.day
-
-        if isinstance(value, list):
-            return [mock.MagicMock()]
 
         if isinstance(value, stnode.TaggedScalarNode):
             return value.__class__(mutate_value(value.__class__.__bases__[0](value)))

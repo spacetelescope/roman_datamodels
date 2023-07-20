@@ -17,8 +17,8 @@ from pathlib import PurePath
 
 import asdf
 import numpy as np
+from asdf.exceptions import ValidationError
 from astropy.time import Time
-from jsonschema import ValidationError
 
 from roman_datamodels import stnode, validate
 
@@ -56,7 +56,22 @@ class DataModel(abc.ABC):
         # Add to registry
         MODEL_REGISTRY[cls._node_type] = cls
 
+    def __new__(cls, init=None, **kwargs):
+        """
+        Handle the case where one passes in an already instantiated version
+        of the model. In this case the constructor should just directly return
+        the model.
+        """
+        if init.__class__.__name__ == cls.__name__:
+            return init
+
+        return super().__new__(cls)
+
     def __init__(self, init=None, **kwargs):
+        if isinstance(init, self.__class__):
+            # Due to __new__ above, this is already initialized.
+            return
+
         self._iscopy = False
         self._shape = None
         self._instance = None

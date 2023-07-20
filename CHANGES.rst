@@ -7,10 +7,27 @@
 - Add tests to ensure consistency between file-level schemas in RAD and the corresponding
   datamodels in ``roman_datamodels``. [#214]
 
+- Make ``maker_utils`` return the node when writing the node to a file. [#218]
+
+- Clean up overlooked randomness in ``maker_utils`` and tests. [#236]
+
+- Remove the unused ``target`` keyword from ``rdm_open`` and fix the original issue that the
+  keyword was meant to address; namely, passing a datamodel instance to the constructor for
+  that datamodel instance should return the instance back with no modifications. [#235]
+
+- Use ValidationError from asdf.exceptions instead of jsonschema. Increase minimum
+  asdf version to 2.15.0. [#234]
+
+- Update ``maker_utils`` to support the new ``cal_step`` keys. [#228]
+
+- Clean up the ``rdm_open`` function. [#233]
+
+- Include tests in coverage and turn testing warnings into errors. [#238]
+
 0.16.1 (2023-06-27)
 ===================
 
-A minor release to set the minimum version of RADD to 0.16.0.
+A minor release to set the minimum version of RAD to 0.16.0.
 
 0.16.0 (2023-06-23)
 ===================

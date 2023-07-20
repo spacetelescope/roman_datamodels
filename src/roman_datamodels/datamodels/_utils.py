@@ -87,7 +87,6 @@ def rdm_open(init, memmap=False, **kwargs):
             return init
         
     with validate.nuke_validation():
-            
         if isinstance(init, DataModel):
             # Copy the object so it knows not to close here
             return init.copy()

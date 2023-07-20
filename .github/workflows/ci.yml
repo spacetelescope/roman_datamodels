@@ -26,6 +26,7 @@ jobs:
     with:
       envs: |
         - linux: py39-oldestdeps-cov
+          coverage: codecov
         - linux: py39
         - linux: py310
         - linux: py311
