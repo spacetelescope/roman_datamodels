@@ -24,6 +24,8 @@
 
 - Add ``__repr__`` to ``DNode``. [#245]
 
+- Further adjustments to support CRDS for the ``inverselinearity`` reference file. [#248]
+
 0.16.1 (2023-06-27)
 ===================
 
