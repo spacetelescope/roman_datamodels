@@ -80,12 +80,13 @@ def rdm_open(init, memmap=False, **kwargs):
     -------
     `DataModel`
     """
+    if isinstance(init, str):
+        input_file_type = filetype.check(init)
+        if input_file_type =='asn':
+            print(f"Returning an asn string:  {init}")
+            return init
+        
     with validate.nuke_validation():
-        if isinstance(init, str):
-            input_file_type = filetype.check(init)
-            if input_file_type =='asn':
-                print(f"Returning an asn string:  {init}")
-                return init.copy()
             
         if isinstance(init, DataModel):
             # Copy the object so it knows not to close here
