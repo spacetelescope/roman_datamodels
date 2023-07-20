@@ -10,14 +10,14 @@ DATA_DIRECTORY = Path(__file__).parent / "data"
 def test_filetype():
     file_1 = filetype.check(DATA_DIRECTORY / "empty.json")
     file_2 = filetype.check(DATA_DIRECTORY / "example_schema.json")
-    with  open(DATA_DIRECTORY / "fake.json") as file_h:
+    with open(DATA_DIRECTORY / "fake.json") as file_h:
         file_3 = filetype.check(file_h)
     file_4 = filetype.check(DATA_DIRECTORY / "empty.asdf")
     file_5 = filetype.check(DATA_DIRECTORY / "pluto.asdf")
-    with  open(DATA_DIRECTORY / "pluto.asdf", "rb") as file_h:
+    with open(DATA_DIRECTORY / "pluto.asdf", "rb") as file_h:
         file_6 = filetype.check(file_h)
     file_7 = filetype.check(DATA_DIRECTORY / "fake.asdf")
-    with  open(DATA_DIRECTORY / "fake.json") as file_h:
+    with open(DATA_DIRECTORY / "fake.json") as file_h:
         file_8 = filetype.check(file_h)
     file_9 = filetype.check(str(DATA_DIRECTORY / "pluto.asdf"))
 

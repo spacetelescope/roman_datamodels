@@ -7,7 +7,7 @@ import warnings
 import asdf
 from astropy.utils import minversion
 
-from roman_datamodels import validate, filetype
+from roman_datamodels import filetype, validate
 
 from ._core import MODEL_REGISTRY, DataModel
 
@@ -82,10 +82,10 @@ def rdm_open(init, memmap=False, **kwargs):
     """
     if isinstance(init, str):
         input_file_type = filetype.check(init)
-        if input_file_type =='asn':
+        if input_file_type == "asn":
             print(f"Returning an asn string:  {init}")
             return init
-        
+
     with validate.nuke_validation():
         if isinstance(init, DataModel):
             # Copy the object so it knows not to close here
