@@ -60,7 +60,7 @@ def rdm_open(init, memmap=False, target=None, **kwargs):
         if isinstance(init, str):
             input_file_type = filetype.check(init)
             if input_file_type =='asn':
-                print("Returning an asn string:", init)
+                print(f"Returning an asn string:  {init}")
                 return init
         if target is not None:
             if not issubclass(target, DataModel):
