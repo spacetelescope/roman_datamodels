@@ -144,8 +144,8 @@ class LinearityRefModel(_DataModel):
         return "coeffs"
 
 
-class InverseLinearityRefModel(_DataModel):
-    _node_type = stnode.InverseLinearityRef
+class InverselinearityRefModel(_DataModel):
+    _node_type = stnode.InverselinearityRef
 
     def get_primary_array_name(self):
         """

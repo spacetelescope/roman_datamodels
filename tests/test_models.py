@@ -387,15 +387,15 @@ def test_make_linearity():
     assert linearity_model.validate() is None
 
 
-# InverseLinearity tests
-def test_make_inverse_linearity():
-    inverselinearity = utils.mk_inverse_linearity(shape=(2, 8, 8))
+# Inverselinearity tests
+def test_make_inverselinearity():
+    inverselinearity = utils.mk_inverselinearity(shape=(2, 8, 8))
     assert inverselinearity.meta.reftype == "INVERSELINEARITY"
     assert inverselinearity.coeffs.dtype == np.float32
     assert inverselinearity.dq.dtype == np.uint32
 
     # Test validation
-    inverselinearity_model = datamodels.InverseLinearityRefModel(inverselinearity)
+    inverselinearity_model = datamodels.InverselinearityRefModel(inverselinearity)
     assert inverselinearity_model.validate() is None
 
 
