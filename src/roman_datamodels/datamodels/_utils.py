@@ -83,7 +83,7 @@ def rdm_open(init, memmap=False, **kwargs):
     with validate.nuke_validation():
         if isinstance(init, DataModel):
             # Copy the object so it knows not to close here
-            return init.copy()
+            return init.copy(deepcopy=False)
 
         # Temp fix to catch JWST args before being passed to asdf open
         if "asn_n_members" in kwargs:
