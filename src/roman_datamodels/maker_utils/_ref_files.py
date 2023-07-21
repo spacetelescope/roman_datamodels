@@ -23,7 +23,7 @@ __all__ = [
     "mk_gain",
     "mk_ipc",
     "mk_linearity",
-    "mk_inverse_linearity",
+    "mk_inverselinearity",
     "mk_mask",
     "mk_pixelarea",
     "mk_wfi_img_photom",
@@ -219,7 +219,7 @@ def mk_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     return save_node(linearityref, filepath=filepath)
 
 
-def mk_inverse_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
+def mk_inverselinearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
     Create a dummy InverseLinearity instance (or file) with arrays and valid
     values for attributes required by the schema.
@@ -240,7 +240,7 @@ def mk_inverse_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
         shape = (2, 4096, 4096)
         warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
 
-    inverselinearityref = stnode.InverseLinearityRef()
+    inverselinearityref = stnode.InverselinearityRef()
     inverselinearityref["meta"] = mk_ref_units_dn_meta("INVERSELINEARITY", **kwargs.get("meta", {}))
 
     inverselinearityref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))

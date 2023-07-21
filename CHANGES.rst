@@ -18,11 +18,15 @@
 - Use ValidationError from asdf.exceptions instead of jsonschema. Increase minimum
   asdf version to 2.15.0. [#234]
 
-- Update ``maker_utils`` to support the new ``cal_step`` keys. [#228]
+- Update ``maker_utils`` to support the new ``cal_step`` keys. [#228, #243]
 
 - Clean up the ``rdm_open`` function. [#233]
 
 - Include tests in coverage and turn testing warnings into errors. [#238]
+
+- Add ``__repr__`` to ``DNode``. [#245]
+
+- Further adjustments to support CRDS for the ``inverselinearity`` reference file. [#248]
 
 0.16.1 (2023-06-27)
 ===================

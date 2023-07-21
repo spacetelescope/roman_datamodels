@@ -319,6 +319,7 @@ def mk_cal_step(**kwargs):
     calstep["saturation"] = kwargs.get("saturation", "INCOMPLETE")
     calstep["skymatch"] = kwargs.get("skymatch", "INCOMPLETE")
     calstep["tweakreg"] = kwargs.get("tweakreg", "INCOMPLETE")
+    calstep["resample"] = kwargs.get("resample", "INCOMPLETE")
 
     return calstep
 
