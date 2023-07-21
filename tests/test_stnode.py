@@ -43,7 +43,6 @@ def test_copy(node_class):
 
 
 @pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
-@pytest.mark.filterwarnings("ignore:ERFA function.*")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_deepcopy_model(node_class):
@@ -85,7 +84,6 @@ def test_wfi_mode():
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-@pytest.mark.filterwarnings("ignore:ERFA function.*")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_serialization(node_class, tmp_path):
@@ -305,3 +303,24 @@ def test_will_strict_validate(env_strict_var):
     del os.environ[validate.ROMAN_STRICT_VALIDATION]
     assert os.getenv(validate.ROMAN_STRICT_VALIDATION) is None
     assert validate.will_strict_validate() is True
+
+
+@pytest.mark.parametrize("model", [mdl for mdl in datamodels.MODEL_REGISTRY.values() if "Ref" not in mdl.__name__])
+def test_node_representation(model):
+    """
+    Regression test for #244.
+
+    The DNode object was lacking the __repr__ method, which is used to return
+    the representation of the object. The reported issue was with ``mdl.meta.instrument``,
+    so that is directly checked here.
+    """
+    mdl = maker_utils.mk_datamodel(model)
+
+    if hasattr(mdl, "meta"):
+        assert repr(mdl.meta.instrument) == repr(
+            {
+                "name": "WFI",
+                "detector": "WFI01",
+                "optical_element": "F158",
+            }
+        )

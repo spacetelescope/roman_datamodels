@@ -12,7 +12,7 @@ classifiers = [
     'Programming Language :: Python :: 3',
 ]
 dependencies = [
-    'asdf >=2.14.2',
+    'asdf >=2.15.0',
     'asdf-astropy >=0.4.0',
     'gwcs >=0.18.1',
     'psutil >=5.7.2',
@@ -69,23 +69,12 @@ text_file_format = 'rst'
 addopts = '--color=yes --doctest-rst'
 testpaths = ['tests']
 filterwarnings = [
-    # This error replaces pytest-openfiles
-    "error::ResourceWarning",
-    "error::pytest.PytestUnraisableExceptionWarning",
+    "error",
+    "ignore:numpy.ndarray size changed:RuntimeWarning",
 ]
 env = [
     "ROMAN_VALIDATE=true",
     "ROMAN_STRICT_VALIDATION=true",
-]
-
-[tool.coverage.run]
-omit = [
-    'roman_datamodels/pyproject.toml',
-    'roman_datamodels/tests',
-    # And list these again for running against installed version
-    '*/roman_datamodels/pyproject.toml',
-    '*/roman_datamodels/tests',
-    '*/roman_datamodels/src/roman_datamodels/mktest.py',
 ]
 
 [tool.coverage.report]
@@ -100,6 +89,8 @@ exclude_lines = [
     # Don't complain about script hooks
     'def main\(.*\):',
     'if __name__ == \(.*\):',
+    # Don't complain if non-runnable code isn't run
+    'pass\n',
 ]
 
 [tool.isort]

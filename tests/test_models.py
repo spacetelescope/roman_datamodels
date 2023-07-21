@@ -4,9 +4,9 @@ from contextlib import nullcontext
 import asdf
 import numpy as np
 import pytest
+from asdf.exceptions import ValidationError
 from astropy import units as u
 from astropy.modeling import Model
-from jsonschema import ValidationError
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
@@ -278,7 +278,7 @@ def test_reference_file_model_base(tmp_path):
             if item == EXPECTED_COMMON_REFERENCE:
                 found_common = True
         if not found_common:
-            raise ValueError("Reference schema does not include ref_common")
+            raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
 
 
 # Flat tests
@@ -387,15 +387,15 @@ def test_make_linearity():
     assert linearity_model.validate() is None
 
 
-# InverseLinearity tests
-def test_make_inverse_linearity():
-    inverselinearity = utils.mk_inverse_linearity(shape=(2, 8, 8))
+# Inverselinearity tests
+def test_make_inverselinearity():
+    inverselinearity = utils.mk_inverselinearity(shape=(2, 8, 8))
     assert inverselinearity.meta.reftype == "INVERSELINEARITY"
     assert inverselinearity.coeffs.dtype == np.float32
     assert inverselinearity.dq.dtype == np.uint32
 
     # Test validation
-    inverselinearity_model = datamodels.InverseLinearityRefModel(inverselinearity)
+    inverselinearity_model = datamodels.InverselinearityRefModel(inverselinearity)
     assert inverselinearity_model.validate() is None
 
 
@@ -690,7 +690,7 @@ def test_ramp_from_science_raw():
             assert_node_equal(ramp_value, raw_value)
 
         else:
-            raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")
+            raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")  # pragma: no cover
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())

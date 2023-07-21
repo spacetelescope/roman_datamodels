@@ -5,7 +5,7 @@ This module contains the utility functions for the datamodels sub-package. Mainl
 import warnings
 
 import asdf
-import packaging.version
+from astropy.utils import minversion
 
 from roman_datamodels import validate
 
@@ -13,7 +13,9 @@ from ._core import MODEL_REGISTRY, DataModel
 
 # .dev is included in the version comparison to allow for correct version
 # comparisons with development versions of asdf 3.0
-if packaging.version.Version(asdf.__version__) < packaging.version.Version("3.dev"):
+if minversion(asdf, "3.dev"):
+    AsdfInFits = None
+else:
     with warnings.catch_warnings():
         warnings.filterwarnings(
             "ignore",
@@ -21,11 +23,41 @@ if packaging.version.Version(asdf.__version__) < packaging.version.Version("3.de
             message=r"AsdfInFits has been deprecated.*",
         )
         from asdf.fits_embed import AsdfInFits
-else:
-    AsdfInFits = None
 
 
 __all__ = ["rdm_open"]
+
+
+def _open_path_like(init, memmap=False, **kwargs):
+    """
+    Attempt to open init as if it was a path-like object.
+
+    Parameters
+    ----------
+    init : str
+        Any path-like object that can be opened by asdf such as a valid string
+    memmap : bool
+        If we should open the file with memmap
+    **kwargs:
+        Any additional arguments to pass to asdf.open
+
+    Returns
+    -------
+    `asdf.AsdfFile`
+    """
+    kwargs["copy_arrays"] = not memmap
+
+    try:
+        asdf_file = asdf.open(init, **kwargs)
+    except ValueError as err:
+        raise TypeError("Open requires a filepath, file-like object, or Roman datamodel") from err
+
+    # This is only needed until we move min asdf version to 3.0
+    if AsdfInFits is not None and isinstance(asdf_file, AsdfInFits):
+        asdf_file.close()
+        raise TypeError("Roman datamodels does not accept FITS files or objects")
+
+    return asdf_file
 
 
 def rdm_open(init, memmap=False, **kwargs):
@@ -49,27 +81,17 @@ def rdm_open(init, memmap=False, **kwargs):
     `DataModel`
     """
     with validate.nuke_validation():
-        file_to_close = None
+        if isinstance(init, DataModel):
+            # Copy the object so it knows not to close here
+            return init.copy(deepcopy=False)
+
         # Temp fix to catch JWST args before being passed to asdf open
         if "asn_n_members" in kwargs:
             del kwargs["asn_n_members"]
-        if isinstance(init, asdf.AsdfFile):
-            asdffile = init
-        elif isinstance(init, DataModel):
-            return init.copy(deepcopy=False)
-        else:
-            try:
-                kwargs["copy_arrays"] = not memmap
-                asdffile = asdf.open(init, **kwargs)
-                file_to_close = asdffile
-            except ValueError:
-                raise TypeError("Open requires a filepath, file-like object, or Roman datamodel")
-            if AsdfInFits is not None and isinstance(asdffile, AsdfInFits):
-                if file_to_close is not None:
-                    file_to_close.close()
-                raise TypeError("Roman datamodels does not accept FITS files or objects")
-        modeltype = type(asdffile.tree["roman"])
-        if modeltype in MODEL_REGISTRY:
-            return MODEL_REGISTRY[modeltype](asdffile, **kwargs)
-        else:
-            return DataModel(asdffile, **kwargs)
+
+        asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_path_like(init, memmap=memmap, **kwargs)
+        if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
+            return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
+
+        asdf_file.close()
+        raise TypeError(f"Unknown datamodel type: {model_type}")

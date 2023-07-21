@@ -305,16 +305,21 @@ def mk_cal_step(**kwargs):
     roman_datamodels.stnode.CalStep
     """
     calstep = stnode.CalStep()
-    calstep["flat_field"] = kwargs.get("flat_field", "INCOMPLETE")
-    calstep["dq_init"] = kwargs.get("dq_init", "INCOMPLETE")
     calstep["assign_wcs"] = kwargs.get("assign_wcs", "INCOMPLETE")
     calstep["dark"] = kwargs.get("dark", "INCOMPLETE")
+    calstep["dq_init"] = kwargs.get("dq_init", "INCOMPLETE")
+    calstep["flat_field"] = kwargs.get("flat_field", "INCOMPLETE")
     calstep["jump"] = kwargs.get("jump", "INCOMPLETE")
     calstep["linearity"] = kwargs.get("linearity", "INCOMPLETE")
     calstep["photom"] = kwargs.get("photom", "INCOMPLETE")
     calstep["source_detection"] = kwargs.get("source_detection", "INCOMPLETE")
+    calstep["outlier_detection"] = kwargs.get("outlier_detection", "INCOMPLETE")
     calstep["ramp_fit"] = kwargs.get("ramp_fit", "INCOMPLETE")
+    calstep["refpix"] = kwargs.get("refpix", "INCOMPLETE")
     calstep["saturation"] = kwargs.get("saturation", "INCOMPLETE")
+    calstep["skymatch"] = kwargs.get("skymatch", "INCOMPLETE")
+    calstep["tweakreg"] = kwargs.get("tweakreg", "INCOMPLETE")
+    calstep["resample"] = kwargs.get("resample", "INCOMPLETE")
 
     return calstep
 

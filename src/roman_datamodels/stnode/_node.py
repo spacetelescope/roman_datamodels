@@ -11,8 +11,8 @@ from collections.abc import MutableMapping
 import asdf
 import asdf.schema as asdfschema
 import asdf.yamlutil as yamlutil
-import jsonschema
 import numpy as np
+from asdf.exceptions import ValidationError
 from asdf.tags.core import ndarray
 from asdf.util import HashableDict
 from astropy.time import Time
@@ -36,13 +36,13 @@ def _value_change(path, value, schema, pass_invalid_values, strict_validation, c
         _check_value(value, schema, ctx)
         update = True
 
-    except jsonschema.ValidationError as error:
+    except ValidationError as error:
         update = False
         errmsg = _error_message(path, error)
         if pass_invalid_values:
             update = True
         if strict_validation:
-            raise jsonschema.ValidationError(errmsg)
+            raise ValidationError(errmsg)
         else:
             warnings.warn(errmsg, ValidationWarning)
     return update
@@ -220,6 +220,9 @@ class DNode(MutableMapping):
 
     def __iter__(self):
         return iter(self._data)
+
+    def __repr__(self):
+        return repr(self._data)
 
     def copy(self):
         instance = self.__class__.__new__(self.__class__)
