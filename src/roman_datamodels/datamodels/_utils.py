@@ -5,6 +5,7 @@ This module contains the utility functions for the datamodels sub-package. Mainl
 import warnings
 
 import asdf
+from pathlib import Path
 from astropy.utils import minversion
 
 from roman_datamodels import validate
