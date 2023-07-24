@@ -7,7 +7,7 @@ import warnings
 import asdf
 from astropy.utils import minversion
 
-from roman_datamodels import filetype, validate
+from roman_datamodels import validate
 
 from ._core import MODEL_REGISTRY, DataModel
 
@@ -80,20 +80,25 @@ def rdm_open(init, memmap=False, **kwargs):
     -------
     `DataModel`
     """
-    if isinstance(init, str):
-        input_file_type = filetype.check(init)
-        if input_file_type == "asn":
-            return init
 
     with validate.nuke_validation():
         if isinstance(init, DataModel):
             # Copy the object so it knows not to close here
             return init.copy()
 
+        if isinstance(init, str):
+            exts = Path(init).suffixes
+            if not exts:
+                raise ValueError(f"Input file path does not have an extension: {init}")
+
+            # Assume json files are asn and return them
+            if exts[0] == "json":
+                return init
+
         # Temp fix to catch JWST args before being passed to asdf open
         if "asn_n_members" in kwargs:
             del kwargs["asn_n_members"]
-
+        
         asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_path_like(init, memmap=memmap, **kwargs)
         if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
             return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
