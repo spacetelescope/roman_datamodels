@@ -5,7 +5,6 @@ This module contains the utility functions for the datamodels sub-package. Mainl
 import warnings
 
 import asdf
-from pathlib import Path
 from astropy.utils import minversion
 
 from roman_datamodels import validate
@@ -81,9 +80,18 @@ def rdm_open(init, memmap=False, **kwargs):
     -------
     `DataModel`
     """
+    with validate.nuke_validation():
         if isinstance(init, DataModel):
             # Copy the object so it knows not to close here
             return init.copy(deepcopy=False)
+
+        # Temp fix to catch JWST args before being passed to asdf open
+        if "asn_n_members" in kwargs:
+            del kwargs["asn_n_members"]
+
+        asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_path_like(init, memmap=memmap, **kwargs)
+        if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
+            return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
 
         if isinstance(init, str):
             exts = Path(init).suffixes
@@ -93,14 +101,6 @@ def rdm_open(init, memmap=False, **kwargs):
             # Assume json files are asn and return them
             if exts[0] == "json":
                 return init
-
-        # Temp fix to catch JWST args before being passed to asdf open
-        if "asn_n_members" in kwargs:
-            del kwargs["asn_n_members"]
-
-        asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_path_like(init, memmap=memmap, **kwargs)
-        if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
-            return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
 
         asdf_file.close()
         raise TypeError(f"Unknown datamodel type: {model_type}")
