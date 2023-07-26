@@ -1,6 +1,10 @@
 0.17.0 (unreleased)
 ===================
+
 - Add checks for for association processing [#241]
+
+- Make a shallow copy when opening an existing datamodel, rather than
+  a full copy.  [#232]
 
 - Remove the ``random_utils`` module and make ``maker_utils`` entirely deterministic. [#217]
 
