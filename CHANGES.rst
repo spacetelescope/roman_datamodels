@@ -1,6 +1,6 @@
 0.17.0 (unreleased)
 ===================
-- Add check for filetypes for association processing [#241]
+- Add checks for for association processing [#241]
 
 - Remove the ``random_utils`` module and make ``maker_utils`` entirely deterministic. [#217]
 
