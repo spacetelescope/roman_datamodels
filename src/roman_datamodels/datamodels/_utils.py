@@ -6,6 +6,7 @@ import warnings
 
 import asdf
 from astropy.utils import minversion
+from pathlib import Path
 
 from roman_datamodels import validate
 

@@ -137,9 +137,9 @@ class DataModel(abc.ABC):
         """Ensure closure of resources when deleted."""
         self.close()
 
-    def copy(self, memo=None):
+    def copy(self, deepcopy=True, memo=None):
         result = self.__class__(init=None)
-        self.clone(result, self, deepcopy=True, memo=memo)
+        self.clone(result, self, deepcopy=deepcopy, memo=memo)
         return result
 
     __copy__ = __deepcopy__ = copy
@@ -184,9 +184,9 @@ class DataModel(abc.ABC):
     def open_asdf(self, init=None, **kwargs):
         with validate.nuke_validation():
             if isinstance(init, str):
-                asdffile = asdf.open(init)
+                asdffile = asdf.open(init, **kwargs)
             else:
-                asdffile = asdf.AsdfFile(init)
+                asdffile = asdf.AsdfFile(init, **kwargs)
             return asdffile
 
     def to_asdf(self, init, *args, **kwargs):
