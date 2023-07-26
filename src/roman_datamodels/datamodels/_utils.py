@@ -3,10 +3,10 @@ This module contains the utility functions for the datamodels sub-package. Mainl
     the open/factory function for creating datamodels
 """
 import warnings
+from pathlib import Path
 
 import asdf
 from astropy.utils import minversion
-from pathlib import Path
 
 from roman_datamodels import validate
 
