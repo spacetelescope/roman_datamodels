@@ -324,3 +324,4 @@ def test_node_representation(model):
                 "optical_element": "F158",
             }
         )
+
