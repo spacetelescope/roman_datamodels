@@ -1,4 +1,9 @@
-0.17.0 (unreleased)
+0.17.1 (unreleased)
+===================
+
+-
+
+0.17.0 (2023-07-28)
 ===================
 
 - Add checks for for association processing [#241]
