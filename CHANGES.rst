@@ -12,8 +12,8 @@
 
 - Fix newly required units from rand [#256]
 
-0.17.0 (2023-07-28)
-===================
+- Allow DNode and LNode subclass instances to be assigned to tree attributes (without
+  immediate validation). [#527]
 
 - Add checks for for association processing [#241]
 
