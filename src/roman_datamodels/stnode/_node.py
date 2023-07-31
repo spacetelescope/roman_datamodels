@@ -151,9 +151,7 @@ class DNode(MutableMapping):
                 if not (isinstance(value, DNode) or isinstance(value, LNode)):
                     if will_validate():
                         schema = _get_schema_for_property(self._schema(), key)
-                        if schema == {} or _validate(key, value, schema, self.ctx):
-                            # self._data[key] = value
-                            pass
+                        schema == {} or _validate(key, value, schema, self.ctx)
                 self._data[key] = value
             else:
                 raise AttributeError(f"No such attribute ({key}) found in node")
