@@ -1,4 +1,9 @@
-0.17.1 (unreleased)
+0.17.2 (unreleased)
+===================
+
+-
+
+0.17.1 (2023-08-03)
 ===================
 
 - Fix newly required units from rand [#256]
