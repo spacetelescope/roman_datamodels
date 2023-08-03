@@ -18,7 +18,7 @@ dependencies = [
     'psutil >=5.7.2',
     'numpy >=1.20',
     'astropy >=5.0.4',
-    'rad >=0.17.0',
+    'rad >=0.17.1',
     #'rad @ git+https://github.com/spacetelescope/rad.git@main',
     'asdf-standard >=1.0.3',
 ]
