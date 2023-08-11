@@ -100,7 +100,7 @@ page::
 
     There are a couple subtlties with regard to changing values in a datamodel.
     If you assign dicts or lists to attributes, it will map these into the
-    corresponding DNode or LNode subclasses. In such uses, the assigned values 
+    corresponding DNode or LNode subclasses. In such uses, the assigned values
     will be immediately be checked by validating against the defining schemas.
     When the value being assigned fails to pass that validation, an exception
     will occur. This is generally a good thing, particularly if you are changing
@@ -108,7 +108,7 @@ page::
 
     On the other hand, if one assigns to the attribute a subclass of DNode
     or LNode, no immediate validation is done (for current implenentation
-    reasons). If the wrong kind of DNode or LNode is assigned to the 
+    reasons). If the wrong kind of DNode or LNode is assigned to the
     attribute that doesn't match the expected tag for that attribute, the error
     will only be raised when trying to write the file to disk.
 

@@ -558,7 +558,7 @@ def test_make_level2_image():
     assert wfi_image_model.validate() is None
 
 
-# Test that attributes can be assigned subclass instances of DNode or LNode 
+# Test that attributes can be assigned subclass instances of DNode or LNode
 def test_node_assignment():
     """Test round trip attribute access and assignment"""
     wfi_image = utils.mk_level2_image(shape=(8, 8))
