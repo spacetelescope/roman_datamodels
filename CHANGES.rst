@@ -54,7 +54,6 @@ A minor release to set the minimum version of RAD to 0.16.0.
 
 0.16.0 (2023-06-23)
 ===================
-- Permit assignment of Node subclasses to tree attributes. [xxx]
 
 - Remove ``ModelContainer`` from ``roman_datamodels.datamodels``. [#204]
 
