@@ -7,7 +7,6 @@
 - Update minimum version of numpy to 1.22 as this is the oldest version of numpy
   which is currently supported. [#258]
 
-
 - Allow DNode and LNode subclass instances to be assigned to tree attributes (without
   immediate validation). [#527]
 
