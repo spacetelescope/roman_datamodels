@@ -8,7 +8,7 @@
   which is currently supported. [#258]
 
 - Allow DNode and LNode subclass instances to be assigned to tree attributes (without
-  immediate validation). [#527]
+  immediate validation). [#523]
 
 0.17.1 (2023-08-03)
 ===================
