@@ -10,8 +10,8 @@ from ._tagged_nodes import mk_photometry, mk_resample
 
 def mk_exposure(**kwargs):
     """
-    Create a dummy Exposure instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy Exposure instance with valid values for attributes required
+        by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -20,9 +20,15 @@ def mk_exposure(**kwargs):
     exp = stnode.Exposure()
     exp["id"] = kwargs.get("id", NONUM)
     exp["type"] = kwargs.get("type", "WFI_IMAGE")
-    exp["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    exp["mid_time"] = kwargs.get("mid_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    exp["end_time"] = kwargs.get("end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
+    exp["start_time"] = kwargs.get(
+        "start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
+    exp["mid_time"] = kwargs.get(
+        "mid_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
+    exp["end_time"] = kwargs.get(
+        "end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
     exp["start_time_mjd"] = kwargs.get("start_time_mjd", NONUM)
     exp["mid_time_mjd"] = kwargs.get("mid_time_mjd", NONUM)
     exp["end_time_mjd"] = kwargs.get("end_time_mjd", NONUM)
@@ -46,15 +52,17 @@ def mk_exposure(**kwargs):
     exp["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
     exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
     exp["level0_compressed"] = kwargs.get("level0_compressed", True)
-    exp["read_pattern"] = kwargs.get("read_pattern", [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]])
+    exp["read_pattern"] = kwargs.get(
+        "read_pattern", [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]]
+    )
 
     return exp
 
 
 def mk_wfi_mode(**kwargs):
     """
-    Create a dummy WFI mode instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy WFI mode instance with valid values for attributes required
+        by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -70,8 +78,8 @@ def mk_wfi_mode(**kwargs):
 
 def mk_program(**kwargs):
     """
-    Create a dummy Program instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy Program instance with valid values for attributes required by
+        the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -91,7 +99,7 @@ def mk_program(**kwargs):
 def mk_observation(**kwargs):
     """
     Create a dummy Observation instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+        required by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -119,8 +127,8 @@ def mk_observation(**kwargs):
 
 def mk_ephemeris(**kwargs):
     """
-    Create a dummy Ephemeris instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy Ephemeris instance with valid values for attributes required
+        by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -145,8 +153,8 @@ def mk_ephemeris(**kwargs):
 
 def mk_visit(**kwargs):
     """
-    Create a dummy Visit instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy Visit instance with valid values for attributes required by
+        the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -156,8 +164,12 @@ def mk_visit(**kwargs):
     visit["engineering_quality"] = kwargs.get("engineering_quality", "OK")
     visit["pointing_engdb_quality"] = kwargs.get("pointing_engdb_quality", "CALCULATED")
     visit["type"] = kwargs.get("type", NOSTR)
-    visit["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    visit["end_time"] = kwargs.get("end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
+    visit["start_time"] = kwargs.get(
+        "start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
+    visit["end_time"] = kwargs.get(
+        "end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
     visit["status"] = kwargs.get("status", NOSTR)
     visit["total_exposures"] = kwargs.get("total_exposures", NONUM)
     visit["internal_target"] = kwargs.get("internal_target", False)
@@ -169,14 +181,16 @@ def mk_visit(**kwargs):
 def mk_source_detection(**kwargs):
     """
     Create a dummy Source Detection instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below
+        required by the schema. Utilized by the model maker utilities below
 
     Returns
     -------
     roman_datamodels.stnode.SourceDetection
     """
     sd = stnode.SourceDetection()
-    sd["tweakreg_catalog_name"] = kwargs.get("tweakreg_catalog_name", "filename_tweakreg_catalog.asdf")
+    sd["tweakreg_catalog_name"] = kwargs.get(
+        "tweakreg_catalog_name", "filename_tweakreg_catalog.asdf"
+    )
 
     return sd
 
@@ -184,7 +198,7 @@ def mk_source_detection(**kwargs):
 def mk_coordinates(**kwargs):
     """
     Create a dummy Coordinates instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+        required by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -198,8 +212,8 @@ def mk_coordinates(**kwargs):
 
 def mk_aperture(**kwargs):
     """
-    Create a dummy Aperture instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy Aperture instance with valid values for attributes required
+        by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -214,8 +228,8 @@ def mk_aperture(**kwargs):
 
 def mk_pointing(**kwargs):
     """
-    Create a dummy Pointing instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy Pointing instance with valid values for attributes required
+        by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -231,8 +245,8 @@ def mk_pointing(**kwargs):
 
 def mk_target(**kwargs):
     """
-    Create a dummy Target instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy Target instance with valid values for attributes required
+        by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -259,7 +273,7 @@ def mk_target(**kwargs):
 def mk_velocity_aberration(**kwargs):
     """
     Create a dummy Velocity Aberration instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+        required by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -275,8 +289,8 @@ def mk_velocity_aberration(**kwargs):
 
 def mk_wcsinfo(**kwargs):
     """
-    Create a dummy WCS Info instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy WCS Info instance with valid values for attributes required
+        by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -297,8 +311,8 @@ def mk_wcsinfo(**kwargs):
 
 def mk_cal_step(**kwargs):
     """
-    Create a dummy Cal Step instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy Cal Step instance with valid values for attributes required
+        by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -326,8 +340,8 @@ def mk_cal_step(**kwargs):
 
 def mk_guidestar(**kwargs):
     """
-    Create a dummy Guide Star instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy Guide Star instance with valid values for attributes required
+        by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -357,8 +371,12 @@ def mk_guidestar(**kwargs):
     guide["gs_pattern_error"] = kwargs.get("gs_pattern_error", NONUM)
     guide["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
     guide["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
-    guide["gw_window_xstop"] = kwargs.get("gw_window_xstop", guide["gw_window_xstart"] + 170)
-    guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
+    guide["gw_window_xstop"] = kwargs.get(
+        "gw_window_xstop", guide["gw_window_xstart"] + 170
+    )
+    guide["gw_window_ystop"] = kwargs.get(
+        "gw_window_ystop", guide["gw_window_ystart"] + 24
+    )
     guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
     guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
 
@@ -367,8 +385,8 @@ def mk_guidestar(**kwargs):
 
 def mk_ref_file(**kwargs):
     """
-    Create a dummy RefFile instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+    Create a dummy RefFile instance with valid values for attributes required
+        by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
@@ -384,7 +402,9 @@ def mk_ref_file(**kwargs):
     ref_file["readnoise"] = kwargs.get("readnoise", "N/A")
     ref_file["saturation"] = kwargs.get("saturation", "N/A")
     ref_file["photom"] = kwargs.get("photom", "N/A")
-    ref_file["crds"] = kwargs.get("crds", {"sw_version": "12.3.1", "context_used": "roman_0815.pmap"})
+    ref_file["crds"] = kwargs.get(
+        "crds", {"sw_version": "12.3.1", "context_used": "roman_0815.pmap"}
+    )
 
     return ref_file
 
@@ -410,7 +430,9 @@ def mk_common_meta(**kwargs):
     meta["program"] = mk_program(**kwargs.get("program", {}))
     meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
     meta["target"] = mk_target(**kwargs.get("target", {}))
-    meta["velocity_aberration"] = mk_velocity_aberration(**kwargs.get("velocity_aberration", {}))
+    meta["velocity_aberration"] = mk_velocity_aberration(
+        **kwargs.get("velocity_aberration", {})
+    )
     meta["visit"] = mk_visit(**kwargs.get("visit", {}))
     meta["wcsinfo"] = mk_wcsinfo(**kwargs.get("wcsinfo", {}))
 
@@ -419,12 +441,13 @@ def mk_common_meta(**kwargs):
 
 def mk_photometry_meta(**kwargs):
     """
-    Create a dummy common metadata dictionary with valid values for attributes and add
-    the additional photometry metadata
+    Create a dummy common metadata dictionary with valid values for attributes
+        and add the additional photometry metadata
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema with additional photometry metadata)
+    dict (defined by the common-1.0.0 schema with additional
+        photometry metadata)
     """
 
     meta = mk_common_meta(**kwargs)
@@ -435,12 +458,13 @@ def mk_photometry_meta(**kwargs):
 
 def mk_resample_meta(**kwargs):
     """
-    Create a dummy common metadata dictionary with valid values for attributes and add
-    the additional photometry AND resample metadata
+    Create a dummy common metadata dictionary with valid values for attributes
+        and add the additional photometry AND resample metadata
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema with additional photometry and resample metadata)
+    dict (defined by the common-1.0.0 schema with additional photometry and
+        resample metadata)
     """
 
     meta = mk_photometry_meta(**kwargs)
@@ -451,43 +475,61 @@ def mk_resample_meta(**kwargs):
 
 def mk_guidewindow_meta(**kwargs):
     """
-    Create a dummy common metadata dictionary with valid values for attributes and add
-    the additional guidewindow metadata
+    Create a dummy common metadata dictionary with valid values for attributes
+        and add the additional guidewindow metadata
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema with additional guidewindow metadata)
+    dict (defined by the common-1.0.0 schema with additional
+        guidewindow metadata)
     """
 
     meta = mk_common_meta(**kwargs)
 
-    meta["file_creation_time"] = kwargs.get("file_creation_time", time.Time("2020-01-01T20:00:00.0", format="isot", scale="utc"))
-    meta["gw_start_time"] = kwargs.get("gw_start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    meta["gw_end_time"] = kwargs.get("gw_end_time", time.Time("2020-01-01T10:00:00.0", format="isot", scale="utc"))
+    meta["file_creation_time"] = kwargs.get(
+        "file_creation_time",
+        time.Time("2020-01-01T20:00:00.0", format="isot", scale="utc"),
+    )
+    meta["gw_start_time"] = kwargs.get(
+        "gw_start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
+    meta["gw_end_time"] = kwargs.get(
+        "gw_end_time", time.Time("2020-01-01T10:00:00.0", format="isot", scale="utc")
+    )
     meta["gw_function_start_time"] = kwargs.get(
-        "gw_function_start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+        "gw_function_start_time",
+        time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"),
     )
     meta["gw_function_end_time"] = kwargs.get(
-        "gw_function_end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+        "gw_function_end_time",
+        time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"),
     )
     meta["gw_frame_readout_time"] = kwargs.get("gw_frame_readout_time", NONUM)
-    meta["pedestal_resultant_exp_time"] = kwargs.get("pedestal_resultant_exp_time", NONUM)
+    meta["pedestal_resultant_exp_time"] = kwargs.get(
+        "pedestal_resultant_exp_time", NONUM
+    )
     meta["signal_resultant_exp_time"] = kwargs.get("signal_resultant_exp_time", NONUM)
     meta["gw_acq_number"] = kwargs.get("gw_acq_number", NONUM)
     meta["gw_science_file_source"] = kwargs.get("gw_science_file_source", NOSTR)
     meta["gw_mode"] = kwargs.get("gw_mode", "WIM-ACQ")
     meta["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
     meta["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
-    meta["gw_window_xstop"] = kwargs.get("gw_window_xstop", meta["gw_window_xstart"] + 170)
-    meta["gw_window_ystop"] = kwargs.get("gw_window_ystop", meta["gw_window_ystart"] + 24)
+    meta["gw_window_xstop"] = kwargs.get(
+        "gw_window_xstop", meta["gw_window_xstart"] + 170
+    )
+    meta["gw_window_ystop"] = kwargs.get(
+        "gw_window_ystop", meta["gw_window_ystart"] + 24
+    )
     meta["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
     meta["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
 
     meta["gw_function_start_time"] = kwargs.get(
-        "gw_function_start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+        "gw_function_start_time",
+        time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"),
     )
     meta["gw_function_end_time"] = kwargs.get(
-        "gw_function_end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+        "gw_function_end_time",
+        time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"),
     )
     meta["data_start"] = kwargs.get("data_start", NONUM)
     meta["data_end"] = kwargs.get("data_end", NONUM)
@@ -498,12 +540,13 @@ def mk_guidewindow_meta(**kwargs):
 
 def mk_msos_stack_meta(**kwargs):
     """
-    Create a dummy common metadata dictionary with valid values for attributes and add
-    the additional msos_stack metadata
+    Create a dummy common metadata dictionary with valid values for attributes
+        and add the additional msos_stack metadata
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema with additional guidewindow metadata)
+    dict (defined by the common-1.0.0 schema with additional
+        guidewindow metadata)
     """
 
     meta = mk_common_meta(**kwargs)
@@ -522,12 +565,16 @@ def mk_ref_common(reftype_, **kwargs):
     """
     meta = {}
     meta["telescope"] = kwargs.get("telescope", "ROMAN")
-    meta["instrument"] = kwargs.get("instrument", {"name": "WFI", "detector": "WFI01", "optical_element": "F158"})
+    meta["instrument"] = kwargs.get(
+        "instrument", {"name": "WFI", "detector": "WFI01", "optical_element": "F158"}
+    )
     meta["origin"] = kwargs.get("origin", "STSCI")
     meta["pedigree"] = kwargs.get("pedigree", "GROUND")
     meta["author"] = kwargs.get("author", "test system")
     meta["description"] = kwargs.get("description", "blah blah blah")
-    meta["useafter"] = kwargs.get("useafter", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
+    meta["useafter"] = kwargs.get(
+        "useafter", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    )
     meta["reftype"] = kwargs.get("reftype", reftype_)
 
     return meta
@@ -564,7 +611,8 @@ def mk_ref_dark_meta(**kwargs):
 
     Returns
     -------
-    dict (follows reference_file/ref_common-1.0.0 schema + dark reference file metadata)
+    dict (follows reference_file/ref_common-1.0.0 schema
+        + dark reference file metadata)
     """
     meta = mk_ref_common("DARK", **kwargs)
     meta["exposure"] = _mk_ref_dark_exposure(**kwargs.get("exposure", {}))
@@ -578,7 +626,8 @@ def mk_ref_distoriton_meta(**kwargs):
 
     Returns
     -------
-    dict (follows reference_file/ref_common-1.0.0 schema + distortion reference file metadata)
+    dict (follows reference_file/ref_common-1.0.0 schema
+        + distortion reference file metadata)
     """
     meta = mk_ref_common("DISTORTION", **kwargs)
 
@@ -593,8 +642,12 @@ def _mk_ref_photometry_meta(**kwargs):
     Create the photometry meta data for pixelarea reference files
     """
     meta = {}
-    meta["pixelarea_steradians"] = kwargs.get("pixelarea_steradians", float(NONUM) * u.sr)
-    meta["pixelarea_arcsecsq"] = kwargs.get("pixelarea_arcsecsq", float(NONUM) * u.arcsec**2)
+    meta["pixelarea_steradians"] = kwargs.get(
+        "pixelarea_steradians", float(NONUM) * u.sr
+    )
+    meta["pixelarea_arcsecsq"] = kwargs.get(
+        "pixelarea_arcsecsq", float(NONUM) * u.arcsec**2
+    )
 
     return meta
 
@@ -605,7 +658,8 @@ def mk_ref_pixelarea_meta(**kwargs):
 
     Returns
     -------
-    dict (follows reference_file/ref_common-1.0.0 schema + pixelarea reference file metadata)
+    dict (follows reference_file/ref_common-1.0.0 schema
+        + pixelarea reference file metadata)
     """
     meta = mk_ref_common("AREA", **kwargs)
     meta["photometry"] = _mk_ref_photometry_meta(**kwargs.get("photometry", {}))
@@ -615,11 +669,13 @@ def mk_ref_pixelarea_meta(**kwargs):
 
 def mk_ref_units_dn_meta(reftype_, **kwargs):
     """
-    Create dummy metadata for reference file instances which specify DN as input/output units.
+    Create dummy metadata for reference file instances which specify DN as
+        input/output units.
 
     Returns
     -------
-    dict (follows reference_file/ref_common-1.0.0 schema + DN input/output metadata)
+    dict (follows reference_file/ref_common-1.0.0 schema
+        + DN input/output metadata)
     """
     meta = mk_ref_common(reftype_, **kwargs)
 
@@ -635,7 +691,8 @@ def mk_ref_readnoise_meta(**kwargs):
 
     Returns
     -------
-    dict (follows reference_file/ref_common-1.0.0 schema + readnoise reference file metadata)
+    dict (follows reference_file/ref_common-1.0.0 schema +
+        readnoise reference file metadata)
     """
     meta = mk_ref_common("READNOISE", **kwargs)
     meta["exposure"] = _mk_ref_exposure(**kwargs.get("exposure", {}))

@@ -35,14 +35,19 @@ def test_instance_valid(node_class):
         af.validate()
 
 
-@pytest.mark.parametrize("node_class", [c for c in stnode.NODE_CLASSES if issubclass(c, stnode.TaggedObjectNode)])
+@pytest.mark.parametrize(
+    "node_class",
+    [c for c in stnode.NODE_CLASSES if issubclass(c, stnode.TaggedObjectNode)],
+)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_no_extra_fields(node_class, manifest):
     instance = maker_utils.mk_node(node_class, shape=(8, 8, 8))
     instance_keys = set(instance.keys())
 
-    schema_uri = next(t["schema_uri"] for t in manifest["tags"] if t["tag_uri"] == instance.tag)
+    schema_uri = next(
+        t["schema_uri"] for t in manifest["tags"] if t["tag_uri"] == instance.tag
+    )
     schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
 
     schema_keys = set()
@@ -56,10 +61,13 @@ def test_no_extra_fields(node_class, manifest):
     assert len(diff) == 0, "Dummy instance has extra keys: " + ", ".join(diff)
 
 
-@pytest.mark.parametrize("name", [c.__name__ for c in stnode.NODE_CLASSES if c.__name__.endswith("Ref")])
+@pytest.mark.parametrize(
+    "name", [c.__name__ for c in stnode.NODE_CLASSES if c.__name__.endswith("Ref")]
+)
 def test_ref_files_all(name):
     """
-    Meta test to confirm that the __all__ in _ref_files.py has an entry for every ref file maker.
+    Meta test to confirm that the __all__ in _ref_files.py has an entry for
+        every ref file maker.
     """
     from roman_datamodels.maker_utils import _camel_case_to_snake_case
 
@@ -115,22 +123,26 @@ def test_datamodel_maker(model_class):
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_override_data(node_class):
     """
-    Test that we can override data in any maker, all makers are part included in some datamodel,
-    so it is sufficient to work over just the datamodel node classes.
+    Test that we can override data in any maker, all makers are part included in
+        some datamodel, so it is sufficient to work over just the datamodel node
+        classes.
 
     Note:
-        This test is a bit involved because we need to figure out all the possible overrides on the
-        fly. The way we do this is to run the maker utility, then walk the resulting node object mutating
-        everything along the way. We record the nested dictionary of mutated values and then pass that
-        to the maker utility as the override data.
+        This test is a bit involved because we need to figure out all the
+            possible overrides on the fly. The way we do this is to run the
+            maker utility, then walk the resulting node object mutating
+            everything along the way. We record the nested dictionary of mutated
+            values and then pass that to the maker utility as the override data.
 
-        Note that we use MagicMock objects to create mutated data, this is because they are very
-        simple to generate new distinct instances that are easy to check. However, they will not
-        pass validation. Because of the way all the maker utilities are implemented, they do not
-        themselves validate the data as they make the object, so this is fine. The above tests
-        explicitly validate all the maker utility outputs, so we don't need to worry about it here.
-        The purpose here is just to inject unique non-default data into the maker utility to override
-        its default values.
+        Note that we use MagicMock objects to create mutated data, this is
+            because they are very simple to generate new distinct instances that
+            are easy to check. However, they will not pass validation. Because
+            of the way all the maker utilities are implemented, they do not
+            themselves validate the data as they make the object, so this is
+            fine. The above tests explicitly validate all the maker utility
+            outputs, so we don't need to worry about it here.  The purpose here
+            is just to inject unique non-default data into the maker utility to
+            override its default values.
     """
 
     def mutate_value(value):
@@ -150,7 +162,8 @@ def test_override_data(node_class):
 
     def mutate_node(node):
         """
-        Walk the node object and mutate all its values, returning a dict of the mutated values.
+        Walk the node object and mutate all its values, returning a dict of the
+            mutated values.
         """
         if isinstance(node, stnode.DNode):
             dict_ = {}
@@ -171,7 +184,8 @@ def test_override_data(node_class):
     node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
     kwargs = mutate_node(node)
 
-    # Create a new node using the recorded mutation data. Then check it is equal to the mutated object.
+    # Create a new node using the recorded mutation data. Then check it is equal
+    #   to the mutated object.
     new_node = maker_utils.mk_node(node_class, **kwargs)
     assert new_node is not node
     assert_node_equal(new_node, node)

@@ -15,12 +15,20 @@ def mk_photometry(**kwargs):
     roman_datamodels.stnode.Photometry
     """
     phot = stnode.Photometry()
-    phot["conversion_microjanskys"] = kwargs.get("conversion_microjanskys", NONUM * u.uJy / u.arcsec**2)
-    phot["conversion_megajanskys"] = kwargs.get("conversion_megajanskys", NONUM * u.MJy / u.sr)
+    phot["conversion_microjanskys"] = kwargs.get(
+        "conversion_microjanskys", NONUM * u.uJy / u.arcsec**2
+    )
+    phot["conversion_megajanskys"] = kwargs.get(
+        "conversion_megajanskys", NONUM * u.MJy / u.sr
+    )
     phot["pixelarea_steradians"] = kwargs.get("pixelarea_steradians", NONUM * u.sr)
     phot["pixelarea_arcsecsq"] = kwargs.get("pixelarea_arcsecsq", NONUM * u.arcsec**2)
-    phot["conversion_microjanskys_uncertainty"] = kwargs.get("conversion_microjanskys_uncertainty", NONUM * u.uJy / u.arcsec**2)
-    phot["conversion_megajanskys_uncertainty"] = kwargs.get("conversion_megajanskys_uncertainty", NONUM * u.MJy / u.sr)
+    phot["conversion_microjanskys_uncertainty"] = kwargs.get(
+        "conversion_microjanskys_uncertainty", NONUM * u.uJy / u.arcsec**2
+    )
+    phot["conversion_megajanskys_uncertainty"] = kwargs.get(
+        "conversion_megajanskys_uncertainty", NONUM * u.MJy / u.sr
+    )
 
     return phot
 
@@ -58,7 +66,10 @@ def mk_cal_logs(**kwargs):
             "cal_logs",
             [
                 "2021-11-15T09:15:07.12Z :: FlatFieldStep :: INFO :: Completed",
-                "2021-11-15T10:22.55.55Z :: RampFittingStep :: WARNING :: Wow, lots of Cosmic Rays detected",
+                (
+                    "2021-11-15T10:22.55.55Z :: RampFittingStep :: WARNING :: Wow, lots"
+                    " of Cosmic Rays detected"
+                ),
             ],
         )
     )

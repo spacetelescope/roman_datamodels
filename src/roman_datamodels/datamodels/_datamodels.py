@@ -104,7 +104,11 @@ class AssociationsModel(_DataModel):
         asn_data :
             The data to be tested.
         """
-        return isinstance(asn_data, dict) and "asn_id" in asn_data and "asn_pool" in asn_data
+        return (
+            isinstance(asn_data, dict)
+            and "asn_id" in asn_data
+            and "asn_pool" in asn_data
+        )
 
 
 class GuidewindowModel(_DataModel):

@@ -268,7 +268,9 @@ def test_reference_file_model_base(tmp_path):
     # Set temporary asdf file
 
     # Get all reference file classes
-    tags = [t for t in stnode.NODE_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri]
+    tags = [
+        t for t in stnode.NODE_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri
+    ]
     for tag in tags:
         schema = asdf.schema.load_schema(tag.schema_uris[0])
         # Check that schema references common reference schema
@@ -278,7 +280,9 @@ def test_reference_file_model_base(tmp_path):
             if item == EXPECTED_COMMON_REFERENCE:
                 found_common = True
         if not found_common:
-            raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
+            raise ValueError(
+                "Reference schema does not include ref_common"
+            )  # pragma: no cover
 
 
 # Flat tests
@@ -690,7 +694,9 @@ def test_ramp_from_science_raw():
             assert_node_equal(ramp_value, raw_value)
 
         else:
-            raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")  # pragma: no cover
+            raise ValueError(
+                f"Unexpected type {type(ramp_value)}, {key}"
+            )  # pragma: no cover
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
@@ -700,12 +706,13 @@ def test_datamodel_construct_like_from_like(model):
     """
     This is a regression test for the issue reported issue #51.
 
-    Namely, if one passes a datamodel instance to the constructor for the datamodel
-    of the same type as the instance, an error should not be raised (#51 reports an
-    error being raised).
+    Namely, if one passes a datamodel instance to the constructor for the
+        datamodel of the same type as the instance, an error should not be
+        raised (#51 reports an error being raised).
 
-    Based on the discussion in PR #52, this should return exactly the same instance object
-    that was passed to the constructor. i.e. it should not return a copy of the instance.
+    Based on the discussion in PR #52, this should return exactly the same
+        instance object that was passed to the constructor. i.e. it should not
+        return a copy of the instance.
     """
 
     # Create a model

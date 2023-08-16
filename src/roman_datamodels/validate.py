@@ -130,8 +130,12 @@ def _check_value(value):
     if hasattr(value, "_schema"):
         temp_schema = value._schema()
     else:
-        temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
-    validator = asdf_schema.get_validator(temp_schema, validator_context, validators=validator_callbacks)
+        temp_schema = {
+            "$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"
+        }
+    validator = asdf_schema.get_validator(
+        temp_schema, validator_context, validators=validator_callbacks
+    )
 
     value = yamlutil.custom_tree_to_tagged_tree(value, validator_context)
     validator.validate(value, _schema=temp_schema)

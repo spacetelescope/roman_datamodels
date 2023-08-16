@@ -48,7 +48,9 @@ def test_asdf_in_fits_error(tmp_path):
     ff.write_to(fn, overwrite=True)
 
     # attempt to open it with datamodels, verify error
-    with pytest.raises(TypeError, match=r"Roman datamodels does not accept FITS files or objects"):
+    with pytest.raises(
+        TypeError, match=r"Roman datamodels does not accept FITS files or objects"
+    ):
         with datamodels.open(fn):
             pass
 
@@ -85,7 +87,11 @@ def test_path_input(tmp_path):
 def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    data = u.Quantity(np.random.default_rng(42).uniform(size=(4, 4)).astype(np.float32), u.electron / u.s, dtype=np.float32)
+    data = u.Quantity(
+        np.random.default_rng(42).uniform(size=(4, 4)).astype(np.float32),
+        u.electron / u.s,
+        dtype=np.float32,
+    )
 
     with asdf.AsdfFile() as af:
         af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
@@ -134,9 +140,10 @@ def test_memmap(tmp_path):
         af.tree["roman"].data = data
         af.write_to(file_path)
 
-    # Since quantities don't inherit from np.memmap we have to test they are effectively
-    # memapped.
-    # rw mode needed because we have to test the memmap by manipulating the data on disk.
+    # Since quantities don't inherit from np.memmap we have to test they are
+    #   effectively memapped.
+    # rw mode needed because we have to test the memmap by manipulating the data
+    #   on disk.
     with datamodels.open(file_path, memmap=True, mode="rw") as model:
         # Test value before change
         assert (model.data == data).all()
@@ -187,9 +194,10 @@ def test_no_memmap(tmp_path, kwargs):
         af.tree["roman"].data = data
         af.write_to(file_path)
 
-    # Since quantities don't inherit from np.memmap we have to test they are effectively
-    # memapped.
-    # rw mode needed because we have to test the memmap by manipulating the data on disk.
+    # Since quantities don't inherit from np.memmap we have to test they are
+    #   effectively memapped.
+    # rw mode needed because we have to test the memmap by manipulating the data
+    #   on disk.
     with datamodels.open(file_path, mode="rw", **kwargs) as model:
         # Test value before change
         assert (model.data == data).all()

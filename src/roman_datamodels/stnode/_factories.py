@@ -10,7 +10,12 @@ from astropy.time import Time
 from rad import resources
 
 from . import _mixins
-from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, name_from_tag_uri
+from ._tagged import (
+    TaggedListNode,
+    TaggedObjectNode,
+    TaggedScalarNode,
+    name_from_tag_uri,
+)
 
 __all__ = ["stnode_factory"]
 
@@ -122,7 +127,11 @@ def scalar_factory(tag):
     return type(
         class_name,
         (SCALAR_TYPE_MAP[type_], TaggedScalarNode),
-        {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring_from_tag(tag)},
+        {
+            "_tag": tag["tag_uri"],
+            "__module__": "roman_datamodels.stnode",
+            "__doc__": docstring_from_tag(tag),
+        },
     )
 
 
@@ -154,7 +163,8 @@ def node_factory(tag):
         raise RuntimeError(f"Unknown schema type: {schema['type']}")
 
     # In special cases one may need to add additional features to a tagged node class.
-    #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
+    #   This is done by creating a mixin class with the name <ClassName>Mixin in
+    #   _mixins.py
     #   Here we mixin the mixin class if it exists.
     if hasattr(_mixins, mixin := f"{class_name}Mixin"):
         class_type = (class_type, getattr(_mixins, mixin))
@@ -164,7 +174,11 @@ def node_factory(tag):
     return type(
         class_name,
         class_type,
-        {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring_from_tag(tag)},
+        {
+            "_tag": tag["tag_uri"],
+            "__module__": "roman_datamodels.stnode",
+            "__doc__": docstring_from_tag(tag),
+        },
     )
 
 
@@ -179,7 +193,8 @@ def stnode_factory(tag):
 
     Returns
     -------
-    A dynamically generated TaggedScalarNode, TaggedObjectNode, or TaggedListNode subclass
+    A dynamically generated TaggedScalarNode, TaggedObjectNode, or
+        TaggedListNode subclass
     """
     # TaggedScalarNodes are a special case because they are not a subclass of a
     #   _node class, but rather a subclass of the type of the scalar.

@@ -51,7 +51,9 @@ def _open_path_like(init, memmap=False, **kwargs):
     try:
         asdf_file = asdf.open(init, **kwargs)
     except ValueError as err:
-        raise TypeError("Open requires a filepath, file-like object, or Roman datamodel") from err
+        raise TypeError(
+            "Open requires a filepath, file-like object, or Roman datamodel"
+        ) from err
 
     # This is only needed until we move min asdf version to 3.0
     if AsdfInFits is not None and isinstance(asdf_file, AsdfInFits):
@@ -90,7 +92,11 @@ def rdm_open(init, memmap=False, **kwargs):
         if "asn_n_members" in kwargs:
             del kwargs["asn_n_members"]
 
-        asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_path_like(init, memmap=memmap, **kwargs)
+        asdf_file = (
+            init
+            if isinstance(init, asdf.AsdfFile)
+            else _open_path_like(init, memmap=memmap, **kwargs)
+        )
         if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
             return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
 

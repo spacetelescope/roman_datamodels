@@ -55,7 +55,10 @@ def mk_flat(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(
+            f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
+            UserWarning,
+        )
 
     flatref = stnode.FlatRef()
     flatref["meta"] = mk_ref_common("FLAT", **kwargs.get("meta", {}))
@@ -91,9 +94,13 @@ def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     darkref = stnode.DarkRef()
     darkref["meta"] = mk_ref_dark_meta(**kwargs.get("meta", {}))
 
-    darkref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
+    darkref["data"] = kwargs.get(
+        "data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
+    )
     darkref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
-    darkref["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
+    darkref["err"] = kwargs.get(
+        "err", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
+    )
 
     return save_node(darkref, filepath=filepath)
 
@@ -144,12 +151,20 @@ def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(
+            f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
+            UserWarning,
+        )
 
     gainref = stnode.GainRef()
     gainref["meta"] = mk_ref_common("GAIN", **kwargs.get("meta", {}))
 
-    gainref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.DN, dtype=np.float32))
+    gainref["data"] = kwargs.get(
+        "data",
+        u.Quantity(
+            np.zeros(shape, dtype=np.float32), u.electron / u.DN, dtype=np.float32
+        ),
+    )
 
     return save_node(gainref, filepath=filepath)
 
@@ -175,7 +190,10 @@ def mk_ipc(*, shape=(3, 3), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(
+            f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
+            UserWarning,
+        )
 
     ipcref = stnode.IpcRef()
     ipcref["meta"] = mk_ref_common("IPC", **kwargs.get("meta", {}))
@@ -241,10 +259,14 @@ def mk_inverselinearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
         warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
 
     inverselinearityref = stnode.InverselinearityRef()
-    inverselinearityref["meta"] = mk_ref_units_dn_meta("INVERSELINEARITY", **kwargs.get("meta", {}))
+    inverselinearityref["meta"] = mk_ref_units_dn_meta(
+        "INVERSELINEARITY", **kwargs.get("meta", {})
+    )
 
     inverselinearityref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
-    inverselinearityref["coeffs"] = kwargs.get("coeffs", np.zeros(shape, dtype=np.float32))
+    inverselinearityref["coeffs"] = kwargs.get(
+        "coeffs", np.zeros(shape, dtype=np.float32)
+    )
 
     return save_node(inverselinearityref, filepath=filepath)
 
@@ -270,7 +292,10 @@ def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(
+            f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
+            UserWarning,
+        )
 
     maskref = stnode.MaskRef()
     maskref["meta"] = mk_ref_common("MASK", **kwargs.get("meta", {}))
@@ -301,7 +326,10 @@ def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(
+            f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
+            UserWarning,
+        )
 
     pixelarearef = stnode.PixelareaRef()
     pixelarearef["meta"] = mk_ref_pixelarea_meta(**kwargs.get("meta", {}))
@@ -323,7 +351,9 @@ def _mk_phot_table_entry(key, **kwargs):
     else:
         entry = {
             "photmjsr": kwargs.get("photmjsr", 1.0e-15 * u.megajansky / u.steradian),
-            "uncertainty": kwargs.get("uncertainty", 1.0e-16 * u.megajansky / u.steradian),
+            "uncertainty": kwargs.get(
+                "uncertainty", 1.0e-16 * u.megajansky / u.steradian
+            ),
         }
 
     entry["pixelareasr"] = kwargs.get("pixelareasr", 1.0e-13 * u.steradian)
@@ -335,9 +365,23 @@ def _mk_phot_table(**kwargs):
     """
     Create the phot_table for the photom reference file.
     """
-    entries = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK")
+    entries = (
+        "F062",
+        "F087",
+        "F106",
+        "F129",
+        "F146",
+        "F158",
+        "F184",
+        "F213",
+        "GRISM",
+        "PRISM",
+        "DARK",
+    )
 
-    return {entry: _mk_phot_table_entry(entry, **kwargs.get(entry, {})) for entry in entries}
+    return {
+        entry: _mk_phot_table_entry(entry, **kwargs.get(entry, {})) for entry in entries
+    }
 
 
 def mk_wfi_img_photom(*, filepath=None, **kwargs):
@@ -383,12 +427,17 @@ def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(
+            f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
+            UserWarning,
+        )
 
     readnoiseref = stnode.ReadnoiseRef()
     readnoiseref["meta"] = mk_ref_readnoise_meta(**kwargs.get("meta", {}))
 
-    readnoiseref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
+    readnoiseref["data"] = kwargs.get(
+        "data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
+    )
 
     return save_node(readnoiseref, filepath=filepath)
 
@@ -414,13 +463,18 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(
+            f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
+            UserWarning,
+        )
 
     saturationref = stnode.SaturationRef()
     saturationref["meta"] = mk_ref_common("SATURATION", **kwargs.get("meta", {}))
 
     saturationref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
-    saturationref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
+    saturationref["data"] = kwargs.get(
+        "data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32)
+    )
 
     return save_node(saturationref, filepath=filepath)
 
@@ -446,7 +500,10 @@ def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(
+            f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
+            UserWarning,
+        )
 
     superbiasref = stnode.SuperbiasRef()
     superbiasref["meta"] = mk_ref_common("BIAS", **kwargs.get("meta", {}))
@@ -493,7 +550,10 @@ def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(
+            f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
+            UserWarning,
+        )
 
     refpix = stnode.RefpixRef()
     refpix["meta"] = mk_ref_units_dn_meta("REFPIX", **kwargs.get("meta", {}))

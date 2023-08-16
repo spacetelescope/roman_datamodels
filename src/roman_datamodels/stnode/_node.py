@@ -17,7 +17,13 @@ from asdf.tags.core import ndarray
 from asdf.util import HashableDict
 from astropy.time import Time
 
-from roman_datamodels.validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
+from roman_datamodels.validate import (
+    ValidationWarning,
+    _check_type,
+    _error_message,
+    will_strict_validate,
+    will_validate,
+)
 
 from ._registry import SCALAR_NODE_CLASSES_BY_KEY
 
@@ -55,7 +61,9 @@ def _check_value(value, schema, validator_context):
 
     temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
     temp_schema.update(schema)
-    validator = asdfschema.get_validator(temp_schema, validator_context, validator_callbacks)
+    validator = asdfschema.get_validator(
+        temp_schema, validator_context, validator_callbacks
+    )
 
     validator.validate(value, _schema=temp_schema)
     validator_context.close()
@@ -180,7 +188,9 @@ class DNode(MutableMapping):
             return {key: convert_val(val) for (key, val) in self.items()}
         else:
             return {
-                key: convert_val(val) for (key, val) in self.items() if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
+                key: convert_val(val)
+                for (key, val) in self.items()
+                if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
             }
 
     def _schema(self):

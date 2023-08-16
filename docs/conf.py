@@ -55,16 +55,29 @@ def check_sphinx_version(expected_version):
     expected_version = LooseVersion(expected_version)
     if sphinx_version < expected_version:
         raise RuntimeError(
-            f"At least Sphinx version {expected_version} is required to build this documentation.  Found {sphinx_version}."
+            f"At least Sphinx version {expected_version} is required to build this"
+            f" documentation.  Found {sphinx_version}."
         )
 
 
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3/", (None, "http://data.astropy.org/intersphinx/python3.inv")),
-    "numpy": ("https://numpy.org/doc/stable/", (None, "http://data.astropy.org/intersphinx/numpy.inv")),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", (None, "http://data.astropy.org/intersphinx/scipy.inv")),
-    "matplotlib": ("https://matplotlib.org/stable/", (None, "http://data.astropy.org/intersphinx/matplotlib.inv")),
+    "python": (
+        "https://docs.python.org/3/",
+        (None, "http://data.astropy.org/intersphinx/python3.inv"),
+    ),
+    "numpy": (
+        "https://numpy.org/doc/stable/",
+        (None, "http://data.astropy.org/intersphinx/numpy.inv"),
+    ),
+    "scipy": (
+        "https://docs.scipy.org/doc/scipy/reference/",
+        (None, "http://data.astropy.org/intersphinx/scipy.inv"),
+    ),
+    "matplotlib": (
+        "https://matplotlib.org/stable/",
+        (None, "http://data.astropy.org/intersphinx/matplotlib.inv"),
+    ),
     "astropy": ("https://docs.astropy.org/en/stable/", None),
     "asdf": ("https://asdf.readthedocs.io/en/stable/", None),
     "psutil": ("https://psutil.readthedocs.io/en/stable/", None),
@@ -209,7 +222,10 @@ pygments_style = "default"
 
 # Mapping for links to the ASDF Standard in ASDF schema documentation
 asdf_schema_reference_mappings = [
-    ("tag:stsci.edu:asdf", "http://asdf-standard.readthedocs.io/en/latest/generated/stsci.edu/asdf/"),
+    (
+        "tag:stsci.edu:asdf",
+        "http://asdf-standard.readthedocs.io/en/latest/generated/stsci.edu/asdf/",
+    ),
 ]
 
 # -- Options for HTML output ----------------------------------------------
@@ -345,7 +361,15 @@ htmlhelp_basename = "roman_datamodelsdoc"
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "roman_datamodels", "Roman Datamodels Documentation", ["roman_datamodels"], 1)]
+man_pages = [
+    (
+        "index",
+        "roman_datamodels",
+        "Roman Datamodels Documentation",
+        ["roman_datamodels"],
+        1,
+    )
+]
 
 # If true, show URL addresses after external links.
 man_show_urls = True

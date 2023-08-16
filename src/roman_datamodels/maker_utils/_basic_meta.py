@@ -13,7 +13,9 @@ def mk_calibration_software_version(**kwargs):
     -------
     roman_datamodels.stnode.CalibrationSoftwareVersion
     """
-    return stnode.CalibrationSoftwareVersion(kwargs.get("calibration_software_version", "9.9.0"))
+    return stnode.CalibrationSoftwareVersion(
+        kwargs.get("calibration_software_version", "9.9.0")
+    )
 
 
 def mk_sdf_software_version(**kwargs):
@@ -48,7 +50,11 @@ def mk_file_date(**kwargs):
     roman_datamodels.stnode.FileDate
     """
 
-    return stnode.FileDate(kwargs.get("file_date", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")))
+    return stnode.FileDate(
+        kwargs.get(
+            "file_date", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+        )
+    )
 
 
 def mk_model_type(**kwargs):

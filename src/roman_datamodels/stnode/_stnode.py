@@ -12,7 +12,11 @@ import yaml
 from rad import resources
 
 from ._factories import stnode_factory
-from ._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
+from ._registry import (
+    LIST_NODE_CLASSES_BY_TAG,
+    OBJECT_NODE_CLASSES_BY_TAG,
+    SCALAR_NODE_CLASSES_BY_TAG,
+)
 
 __all__ = [
     "NODE_CLASSES",
@@ -22,7 +26,9 @@ __all__ = [
 # Load the manifest directly from the rad resources and not from ASDF.
 #   This is because the ASDF extensions have to be created before they can be registered
 #   and this module creates the classes used by the ASDF extension.
-DATAMODELS_MANIFEST_PATH = importlib.resources.files(resources) / "manifests" / "datamodels-1.0.yaml"
+DATAMODELS_MANIFEST_PATH = (
+    importlib.resources.files(resources) / "manifests" / "datamodels-1.0.yaml"
+)
 DATAMODELS_MANIFEST = yaml.safe_load(DATAMODELS_MANIFEST_PATH.read_bytes())
 
 

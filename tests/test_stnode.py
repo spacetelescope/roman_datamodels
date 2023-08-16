@@ -6,7 +6,11 @@ import astropy.units as u
 import pytest
 
 from roman_datamodels import datamodels, maker_utils, stnode, validate
-from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
+from roman_datamodels.testing import (
+    assert_node_equal,
+    assert_node_is_copy,
+    wraps_hashable,
+)
 
 from .conftest import MANIFEST
 
@@ -16,7 +20,10 @@ def test_generated_node_classes(tag):
     class_name = stnode._factories.class_name_from_tag_uri(tag["tag_uri"])
     node_class = getattr(stnode, class_name)
 
-    assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode))
+    assert issubclass(
+        node_class,
+        (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode),
+    )
     assert node_class._tag == tag["tag_uri"]
     assert tag["description"] in node_class.__doc__
     assert tag["tag_uri"] in node_class.__doc__
@@ -99,7 +106,9 @@ def test_serialization(node_class, tmp_path):
 
 
 def test_info(capsys):
-    node = stnode.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
+    node = stnode.WfiMode(
+        {"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"}
+    )
     tree = dict(wfimode=node)
     af = asdf.AsdfFile(tree)
     af.info()
@@ -109,7 +118,9 @@ def test_info(capsys):
 
 
 def test_schema_info():
-    node = stnode.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
+    node = stnode.WfiMode(
+        {"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"}
+    )
     tree = dict(wfimode=node)
     af = asdf.AsdfFile(tree)
 
@@ -118,19 +129,37 @@ def test_schema_info():
         "wfimode": {
             "detector": {
                 "archive_catalog": (
-                    {"datatype": "nvarchar(10)", "destination": ["ScienceCommon.detector", "GuideWindow.detector"]},
+                    {
+                        "datatype": "nvarchar(10)",
+                        "destination": [
+                            "ScienceCommon.detector",
+                            "GuideWindow.detector",
+                        ],
+                    },
                     "WFI18",
                 )
             },
             "name": {
                 "archive_catalog": (
-                    {"datatype": "nvarchar(5)", "destination": ["ScienceCommon.instrument_name", "GuideWindow.instrument_name"]},
+                    {
+                        "datatype": "nvarchar(5)",
+                        "destination": [
+                            "ScienceCommon.instrument_name",
+                            "GuideWindow.instrument_name",
+                        ],
+                    },
                     "WFI",
                 )
             },
             "optical_element": {
                 "archive_catalog": (
-                    {"datatype": "nvarchar(20)", "destination": ["ScienceCommon.optical_element", "GuideWindow.optical_element"]},
+                    {
+                        "datatype": "nvarchar(20)",
+                        "destination": [
+                            "ScienceCommon.optical_element",
+                            "GuideWindow.optical_element",
+                        ],
+                    },
                     "GRISM",
                 )
             },
@@ -181,7 +210,10 @@ def test_set_pattern_properties():
     mdl.phot_table.F062.pixelareasr = None
 
 
-@pytest.fixture(scope="function", params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"])
+@pytest.fixture(
+    scope="function",
+    params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"],
+)
 def env_var(request):
     assert os.getenv(validate.ROMAN_VALIDATE) == "true"
     os.environ[validate.ROMAN_VALIDATE] = request.param
@@ -218,7 +250,11 @@ def test_will_validate(env_var):
 
 
 def test_nuke_validation(env_var, tmp_path):
-    context = pytest.raises(asdf.ValidationError) if env_var[1] else pytest.warns(validate.ValidationWarning)
+    context = (
+        pytest.raises(asdf.ValidationError)
+        if env_var[1]
+        else pytest.warns(validate.ValidationWarning)
+    )
 
     # Create a broken DNode object
     mdl = maker_utils.mk_wfi_img_photom()
@@ -270,7 +306,10 @@ def test_nuke_validation(env_var, tmp_path):
             pass
 
 
-@pytest.fixture(scope="function", params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"])
+@pytest.fixture(
+    scope="function",
+    params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"],
+)
 def env_strict_var(request):
     assert os.getenv(validate.ROMAN_STRICT_VALIDATION) == "true"
     os.environ[validate.ROMAN_STRICT_VALIDATION] = request.param
@@ -305,14 +344,17 @@ def test_will_strict_validate(env_strict_var):
     assert validate.will_strict_validate() is True
 
 
-@pytest.mark.parametrize("model", [mdl for mdl in datamodels.MODEL_REGISTRY.values() if "Ref" not in mdl.__name__])
+@pytest.mark.parametrize(
+    "model",
+    [mdl for mdl in datamodels.MODEL_REGISTRY.values() if "Ref" not in mdl.__name__],
+)
 def test_node_representation(model):
     """
     Regression test for #244.
 
     The DNode object was lacking the __repr__ method, which is used to return
-    the representation of the object. The reported issue was with ``mdl.meta.instrument``,
-    so that is directly checked here.
+        the representation of the object. The reported issue was with
+        ``mdl.meta.instrument``, so that is directly checked here.
     """
     mdl = maker_utils.mk_datamodel(model)
 

@@ -1,11 +1,12 @@
 """
-This module provides the same interface as the datamodels for JWST, so that they can be
-    used in a common pipeline structure. Unlike the JWST datamodels, these models are
-    backed by an ASDF file and the schema structure is defined by the ASDF schema.
+This module provides the same interface as the datamodels for JWST, so that
+    they can be used in a common pipeline structure. Unlike the JWST datamodels,
+    these models are backed by an ASDF file and the schema structure is defined
+    by the ASDF schema.
 
-This provides the abstract base class ``Datamodel`` for all the specific datamodels
-    used for Roman. This dataclass is intended to be subclassed to form all of the actual
-    working datamodels.
+This provides the abstract base class ``Datamodel`` for all the specific
+    datamodels used for Roman. This dataclass is intended to be subclassed to
+    form all of the actual working datamodels.
 """
 import abc
 import copy
@@ -85,7 +86,10 @@ class DataModel(abc.ABC):
                 init = init.decode(sys.getfilesystemencoding())
             asdffile = self.open_asdf(init, **kwargs)
             if not self.check_type(asdffile):
-                raise ValueError(f"ASDF file is not of the type expected. Expected {self.__class__.__name__}")
+                raise ValueError(
+                    "ASDF file is not of the type expected. Expected"
+                    f" {self.__class__.__name__}"
+                )
             self._instance = asdffile.tree["roman"]
         elif isinstance(init, asdf.AsdfFile):
             asdffile = init
@@ -93,16 +97,21 @@ class DataModel(abc.ABC):
             self._instance = asdffile.tree["roman"]
         elif isinstance(init, stnode.TaggedObjectNode):
             if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
-                expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
+                expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[
+                    self.__class__
+                ].__name__
                 raise ValidationError(
-                    f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
+                    f"TaggedObjectNode: {init.__class__.__name__} is not of the type"
+                    f" expected. Expected {expected}"
                 )
             with validate.nuke_validation():
                 self._instance = init
                 asdffile = asdf.AsdfFile()
                 asdffile.tree = {"roman": init}
         else:
-            raise OSError("Argument does not appear to be an ASDF file or TaggedObjectNode.")
+            raise OSError(
+                "Argument does not appear to be an ASDF file or TaggedObjectNode."
+            )
         self._asdf = asdffile
 
     def check_type(self, asdffile_instance):
@@ -119,7 +128,11 @@ class DataModel(abc.ABC):
     @property
     def schema_uri(self):
         # Determine the schema corresponding to this model's tag
-        schema_uri = next(t for t in stnode.NODE_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uris[0]
+        schema_uri = next(
+            t
+            for t in stnode.NODE_EXTENSIONS[0].tags
+            if t.tag_uri == self._instance._tag
+        ).schema_uris[0]
         return schema_uri
 
     def close(self):
@@ -269,7 +282,11 @@ class DataModel(abc.ABC):
         if include_arrays:
             return {"roman." + key: convert_val(val) for (key, val) in self.items()}
         else:
-            return {"roman." + key: convert_val(val) for (key, val) in self.items() if not isinstance(val, np.ndarray)}
+            return {
+                "roman." + key: convert_val(val)
+                for (key, val) in self.items()
+                if not isinstance(val, np.ndarray)
+            }
 
     def items(self):
         """
@@ -316,7 +333,9 @@ class DataModel(abc.ABC):
         """
         Re-validate the model instance against the tags
         """
-        validate.value_change(self._instance, pass_invalid_values=False, strict_validation=True)
+        validate.value_change(
+            self._instance, pass_invalid_values=False, strict_validation=True
+        )
 
     def info(self, *args, **kwargs):
         return self._asdf.info(*args, **kwargs)

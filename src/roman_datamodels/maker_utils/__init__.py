@@ -1,4 +1,6 @@
-from roman_datamodels.datamodels import MODEL_REGISTRY as _MODEL_REGISTRY  # Hide from public API
+from roman_datamodels.datamodels import (
+    MODEL_REGISTRY as _MODEL_REGISTRY,  # Hide from public API
+)
 
 from ._basic_meta import *  # noqa: F403
 from ._common_meta import *  # noqa: F403
@@ -50,7 +52,10 @@ def _get_node_maker(node_class):
             method_name = method_name[:-4]
 
         if method_name not in globals():
-            raise ValueError(f"Maker utility: {method_name} not implemented for class {node_class.__name__}")
+            raise ValueError(
+                f"Maker utility: {method_name} not implemented for class"
+                f" {node_class.__name__}"
+            )
 
     return globals()[method_name]
 

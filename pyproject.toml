@@ -96,10 +96,10 @@ exclude_lines = [
 [tool.isort]
 profile = "black"
 filter_files = true
-line_length = 130
+line_length = 88
 
 [tool.black]
-line-length = 130
+line-length = 88
 force-exclude = '''
 ^/(
   (
@@ -112,7 +112,7 @@ force-exclude = '''
 '''
 
 [tool.ruff]
-line-length = 130
+line-length = 88
 
 [tool.codespell]
 skip="*.pdf,*.fits,*.asdf,.tox,build,./tags,.git,docs/_build"
