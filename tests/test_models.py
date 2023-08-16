@@ -183,8 +183,6 @@ def test_make_associations():
     member_shapes = (3, 8, 5, 2)
     association = utils.mk_associations(shape=member_shapes)
 
-    print("XXX association.products = " + str(association.products))
-
     assert association.asn_type == "image"
     assert len(association.products) == len(member_shapes)
 

@@ -36,7 +36,6 @@ class DataModel(abc.ABC):
     @abc.abstractproperty
     def _node_type(self):
         """Define the top-level node type for this model"""
-        pass
 
     def __init_subclass__(cls, **kwargs):
         """Register each subclass in the MODEL_REGISTRY"""
