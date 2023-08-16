@@ -1,5 +1,6 @@
 import os
 from contextlib import nullcontext
+from pathlib import Path
 
 import asdf
 import astropy.units as u
@@ -274,12 +275,12 @@ def test_nuke_validation(env_var, tmp_path):
     broken_save = tmp_path / "broken_save.asdf"
     with context:
         mdl.save(broken_save)
-    assert os.path.isfile(broken_save) is not env_var[1]
+    assert Path(broken_save).is_file() is not env_var[1]
 
     broken_to_asdf = tmp_path / "broken_to_asdf.asdf"
     with context:
         mdl.to_asdf(broken_to_asdf)
-    assert os.path.isfile(broken_to_asdf) is not env_var[1]
+    assert Path(broken_to_asdf).is_file() is not env_var[1]
 
     # Create a broken file for reading if needed
     if env_var[1]:

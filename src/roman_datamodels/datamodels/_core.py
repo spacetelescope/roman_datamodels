@@ -14,7 +14,7 @@ import datetime
 import os
 import os.path
 import sys
-from pathlib import PurePath
+from pathlib import Path, PurePath
 
 import asdf
 import numpy as np
@@ -176,13 +176,13 @@ class DataModel(abc.ABC):
             path_head, path_tail = os.path.split(path(self.meta.filename))
         else:
             path_head, path_tail = os.path.split(path)
-        base, ext = os.path.splitext(path_tail)
+        ext = Path(path_tail).suffix
         if isinstance(ext, bytes):
             ext = ext.decode(sys.getfilesystemencoding())
 
         if dir_path:
             path_head = dir_path
-        output_path = os.path.join(path_head, path_tail)
+        output_path = Path(path_head) / path_tail
 
         # TODO: Support gzip-compressed fits
         if ext == ".asdf":

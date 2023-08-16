@@ -33,14 +33,8 @@ def setup(app):
         app.add_stylesheet("stsci.css")
 
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath("../"))
-sys.path.insert(0, os.path.abspath("roman_datamodels/"))
-
 # -- General configuration ------------------------------------------------
-with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as configuration_file:
+with (Path(__file__).parent.parent / "pyproject.toml").open("rb") as configuration_file:
     conf = tomllib.load(configuration_file)
 setup_cfg = conf["project"]
 

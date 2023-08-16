@@ -1,5 +1,6 @@
 import warnings
 from contextlib import nullcontext
+from pathlib import Path
 
 import asdf
 import numpy as np
@@ -98,11 +99,11 @@ def test_core_schema(tmp_path):
 
         af.write_to(file_path)
     # Now mangle the file
-    with open(file_path, "rb") as fp:
+    with Path(file_path).open("rb") as fp:
         fcontents = fp.read()
     romanloc = fcontents.find(bytes("ROMAN", "utf-8"))
     newcontents = fcontents[:romanloc] + bytes("X", "utf-8") + fcontents[romanloc + 1 :]
-    with open(file_path, "wb") as fp:
+    with Path(file_path).open("wb") as fp:
         fp.write(newcontents)
     with pytest.raises(ValidationError):
         with datamodels.open(file_path) as model:
