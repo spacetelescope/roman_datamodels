@@ -124,14 +124,13 @@ def wraps_hashable(node):
     if isinstance(node, TaggedObjectNode):
         return all(_wraps_hashable(value) for value in node.values())
 
-    elif isinstance(node, TaggedListNode):
+    if isinstance(node, TaggedListNode):
         return all(_wraps_hashable(value) for value in node)
 
-    elif isinstance(node, TaggedScalarNode):
+    if isinstance(node, TaggedScalarNode):
         return _wraps_hashable(node.__class__.__bases__[0](node))
 
-    else:
-        raise RuntimeError(f"Unhandled node class: {node.__class__.__name__}")
+    raise RuntimeError(f"Unhandled node class: {node.__class__.__name__}")
 
 
 def _wraps_hashable(value):

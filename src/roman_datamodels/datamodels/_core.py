@@ -127,12 +127,11 @@ class DataModel(abc.ABC):
     @property
     def schema_uri(self):
         # Determine the schema corresponding to this model's tag
-        schema_uri = next(
+        return next(
             t
             for t in stnode.NODE_EXTENSIONS[0].tags
             if t.tag_uri == self._instance._tag
         ).schema_uris[0]
-        return schema_uri
 
     def close(self):
         if not self._iscopy:
@@ -274,18 +273,20 @@ class DataModel(abc.ABC):
         def convert_val(val):
             if isinstance(val, datetime.datetime):
                 return val.isoformat()
-            elif isinstance(val, Time):
+
+            if isinstance(val, Time):
                 return str(val)
+
             return val
 
         if include_arrays:
             return {"roman." + key: convert_val(val) for (key, val) in self.items()}
-        else:
-            return {
-                "roman." + key: convert_val(val)
-                for (key, val) in self.items()
-                if not isinstance(val, np.ndarray)
-            }
+
+        return {
+            "roman." + key: convert_val(val)
+            for (key, val) in self.items()
+            if not isinstance(val, np.ndarray)
+        }
 
     def items(self):
         """
@@ -323,12 +324,11 @@ class DataModel(abc.ABC):
         -------
         dict
         """
-        crds_header = {
+        return {
             key: val
             for key, val in self.to_flat_dict(include_arrays=False).items()
             if isinstance(val, (str, int, float, complex, bool))
         }
-        return crds_header
 
     def validate(self):
         """

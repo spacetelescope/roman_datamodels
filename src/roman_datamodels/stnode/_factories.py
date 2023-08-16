@@ -200,5 +200,5 @@ def stnode_factory(tag):
     #   _node class, but rather a subclass of the type of the scalar.
     if "tagged_scalar" in tag["schema_uri"]:
         return scalar_factory(tag)
-    else:
-        return node_factory(tag)
+
+    return node_factory(tag)

@@ -47,10 +47,11 @@ def _value_change(path, value, schema, pass_invalid_values, strict_validation, c
         errmsg = _error_message(path, error)
         if pass_invalid_values:
             update = True
+
         if strict_validation:
             raise ValidationError(errmsg) from error
-        else:
-            warnings.warn(errmsg, ValidationWarning, stacklevel=2)
+
+        warnings.warn(errmsg, ValidationWarning, stacklevel=2)
     return update
 
 
@@ -140,12 +141,13 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, self._data[key])
             if isinstance(value, dict):
                 return DNode(value, parent=self, name=key)
-            elif isinstance(value, list):
+
+            if isinstance(value, list):
                 return LNode(value)
-            else:
-                return value
-        else:
-            raise AttributeError(f"No such attribute ({key}) found in node")
+
+            return value
+
+        raise AttributeError(f"No such attribute ({key}) found in node")
 
     def __setattr__(self, key, value):
         """
@@ -180,18 +182,20 @@ class DNode(MutableMapping):
         def convert_val(val):
             if isinstance(val, datetime.datetime):
                 return val.isoformat()
-            elif isinstance(val, Time):
+
+            if isinstance(val, Time):
                 return str(val)
+
             return val
 
         if include_arrays:
             return {key: convert_val(val) for (key, val) in self.items()}
-        else:
-            return {
-                key: convert_val(val)
-                for (key, val) in self.items()
-                if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
-            }
+
+        return {
+            key: convert_val(val)
+            for (key, val) in self.items()
+            if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
+        }
 
     def _schema(self):
         """
@@ -263,10 +267,11 @@ class LNode(UserList):
         value = self.data[index]
         if isinstance(value, dict):
             return DNode(value)
-        elif isinstance(value, list):
+
+        if isinstance(value, list):
             return LNode(value)
-        else:
-            return value
+
+        return value
 
     def __asdf_traverse__(self):
         return list(self)

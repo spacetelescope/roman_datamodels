@@ -173,11 +173,10 @@ def test_override_data(node_class):
 
             return node.__class__(dict_)
 
-        elif isinstance(node, stnode.LNode):
+        if isinstance(node, stnode.LNode):
             return node.__class__([mutate_node(value) for value in node])
 
-        else:
-            return mutate_value(node)
+        return mutate_value(node)
 
     # Create a node then mutate it.
     node = maker_utils.mk_node(node_class, shape=(8, 8, 8))

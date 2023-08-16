@@ -11,12 +11,12 @@ class WfiModeMixin:
     def filter(self):  # noqa: A003
         if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
             return None
-        else:
-            return self.optical_element
+
+        return self.optical_element
 
     @property
     def grating(self):
         if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
             return self.optical_element
-        else:
-            return None
+
+        return None

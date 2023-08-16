@@ -99,8 +99,8 @@ def value_change(value, pass_invalid_values, strict_validation):
             update = True
         if strict_validation:
             raise errmsg
-        else:
-            warnings.warn(errmsg, ValidationWarning, stacklevel=2)
+
+        warnings.warn(errmsg, ValidationWarning, stacklevel=2)
     return update
 
 
@@ -155,8 +155,7 @@ def _error_message(path, error):
     if len(error) > 2000:
         error = error[0:1996] + " ..."
     errfmt = "While validating {} the following error occurred:\n{}"
-    errmsg = errfmt.format(name, error)
-    return errmsg
+    return errfmt.format(name, error)
 
 
 @contextmanager
