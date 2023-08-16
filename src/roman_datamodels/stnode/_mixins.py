@@ -8,7 +8,7 @@ class WfiModeMixin:
     _GRATING_OPTICAL_ELEMENTS = ("GRISM", "PRISM")
 
     @property
-    def filter(self):
+    def filter(self):  # noqa: A003
         if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
             return None
         else:

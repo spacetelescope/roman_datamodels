@@ -138,7 +138,7 @@ suppress_warnings = [
 project = setup_cfg["name"]
 primary_author = setup_cfg["authors"][0]
 author = f'{primary_author["name"]} <{primary_author["email"]}>'
-copyright = f"{datetime.datetime.now().year}, {author}"
+copyright = f"{datetime.datetime.now().year}, {author}"  # noqa: A001
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
