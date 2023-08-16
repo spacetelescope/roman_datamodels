@@ -4,7 +4,6 @@ from contextlib import nullcontext
 import asdf
 import astropy.units as u
 import pytest
-
 from roman_datamodels import datamodels, maker_utils, stnode, validate
 from roman_datamodels.testing import (
     assert_node_equal,

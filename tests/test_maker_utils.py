@@ -5,7 +5,6 @@ import asdf
 import pytest
 from astropy import units as u
 from astropy.time import Time
-
 from roman_datamodels import datamodels, maker_utils, stnode
 from roman_datamodels.maker_utils import _ref_files as ref_files
 from roman_datamodels.testing import assert_node_equal
