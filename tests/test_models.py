@@ -552,7 +552,7 @@ def test_make_level2_image():
     assert wfi_image.var_rnoise.dtype == np.float32
     assert wfi_image.var_rnoise.unit == u.electron**2 / u.s**2
     assert wfi_image.var_flat.dtype == np.float32
-    assert type(wfi_image.cal_logs[0]) == str
+    assert isinstance(wfi_image.cal_logs[0], str)
 
     # Test validation
     wfi_image_model = datamodels.ImageModel(wfi_image)
@@ -575,7 +575,7 @@ def test_make_level3_mosaic():
     assert wfi_mosaic.var_rnoise.dtype == np.float32
     assert wfi_mosaic.var_rnoise.unit == u.electron**2 / u.s**2
     assert wfi_mosaic.var_flat.dtype == np.float32
-    assert type(wfi_mosaic.cal_logs[0]) == str
+    assert isinstance(wfi_mosaic.cal_logs[0], str)
 
     # Test validation
     wfi_mosaic_model = datamodels.MosaicModel(wfi_mosaic)
