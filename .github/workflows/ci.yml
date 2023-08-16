@@ -31,7 +31,7 @@ jobs:
         - linux: py310
         - linux: py311
         - macos: py311
-        - linux: cov
+        - linux: py311-cov
           coverage: codecov
   test_upstream:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
