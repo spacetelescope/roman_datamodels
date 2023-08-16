@@ -108,7 +108,7 @@ def test_info(capsys):
     node = stnode.WfiMode(
         {"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"}
     )
-    tree = dict(wfimode=node)
+    tree = {"wfimode": node}
     af = asdf.AsdfFile(tree)
     af.info()
     captured = capsys.readouterr()
@@ -120,7 +120,7 @@ def test_schema_info():
     node = stnode.WfiMode(
         {"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"}
     )
-    tree = dict(wfimode=node)
+    tree = {"wfimode": node}
     af = asdf.AsdfFile(tree)
 
     info = af.schema_info("archive_catalog")

@@ -74,7 +74,7 @@ def test_ref_files_all(name):
     assert method_name[:-4] in ref_files.__all__
 
 
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
+@pytest.mark.parametrize("node_class", list(datamodels.MODEL_REGISTRY))
 def test_make_datamodel_tests(node_class):
     """
     Meta test to confirm that correct tests exist for each datamodel maker utility.
@@ -103,7 +103,7 @@ def test_deprecated():
         maker_utils.mk_rampfitoutput(shape=(8, 8, 8))
 
 
-@pytest.mark.parametrize("model_class", [mdl for mdl in maker_utils.NODE_REGISTRY])
+@pytest.mark.parametrize("model_class", list(maker_utils.NODE_REGISTRY))
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_datamodel_maker(model_class):
@@ -117,7 +117,7 @@ def test_datamodel_maker(model_class):
     model.validate()
 
 
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
+@pytest.mark.parametrize("node_class", list(datamodels.MODEL_REGISTRY))
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_override_data(node_class):
@@ -190,7 +190,7 @@ def test_override_data(node_class):
     assert_node_equal(new_node, node)
 
 
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
+@pytest.mark.parametrize("node_class", list(datamodels.MODEL_REGISTRY))
 def test_keyword_only(node_class):
     """
     Ensure all the maker utils at the top level are keyword only.
