@@ -20,6 +20,8 @@ __all__ = [
 ROMAN_VALIDATE = "ROMAN_VALIDATE"
 ROMAN_STRICT_VALIDATION = "ROMAN_STRICT_VALIDATION"
 
+MAX_ERROR_LENGTH = 2000
+
 
 def validation_is_disabled():
     msg = dedent(
@@ -152,7 +154,7 @@ def _error_message(path, error):
         name = str(path)
 
     error = str(error)
-    if len(error) > 2000:
+    if len(error) > MAX_ERROR_LENGTH:
         error = error[0:1996] + " ..."
     errfmt = "While validating {} the following error occurred:\n{}"
     return errfmt.format(name, error)

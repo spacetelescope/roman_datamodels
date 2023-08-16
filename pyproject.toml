@@ -143,7 +143,7 @@ select = [
     'PTH',     # flake8-use-pathlib (prefer pathlib over os.path)
     'ERA',     # eradicate (remove commented out code)
     'PGH',     # pygrep (simple grep checks)
-    # 'PL',      # pylint (general linting, flake8 alternative)
+    'PL',      # pylint (general linting, flake8 alternative)
     'FLY',     # flynt (f-string conversion where possible)
     'NPY',     # NumPy-specific checks (recommendations from NumPy)
     'PERF',    # Perflint (performance linting)
@@ -151,9 +151,12 @@ select = [
 ]
 
 [tool.ruff.extend-per-file-ignores]
-"tests/*.py" = ["S101"]  # Turn off assert error for test file
+"tests/*.py" = ["S101", "PLR2004"]  # Turn off assert error for test file and magic value error
 "src/roman_datamodels/testing.py" = ["S101"]  # Turn off assert error for general test helpers
 "docs/*.py" = ["INP001", "ERA001"]  # Turn off implicit namespace error for sphinx conf and eradicate error for commented out code in docs
+
+[tool.ruff.pylint]
+max-args = 6
 
 [tool.codespell]
 skip="*.pdf,*.fits,*.asdf,.tox,build,./tags,.git,docs/_build"

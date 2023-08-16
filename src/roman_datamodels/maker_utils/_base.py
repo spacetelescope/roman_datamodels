@@ -1,5 +1,9 @@
 import asdf
 
+DIM2 = 2
+DIM3 = 3
+DIM5 = 5
+
 NONUM = -999999
 NOSTR = "dummy value"
 

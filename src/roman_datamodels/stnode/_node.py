@@ -10,8 +10,8 @@ from collections.abc import MutableMapping
 
 import asdf
 import asdf.schema as asdfschema
-import asdf.yamlutil as yamlutil
 import numpy as np
+from asdf import yamlutil
 from asdf.exceptions import ValidationError
 from asdf.tags.core import ndarray
 from asdf.util import HashableDict

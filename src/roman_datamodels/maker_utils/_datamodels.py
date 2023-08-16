@@ -5,7 +5,7 @@ from astropy import units as u
 
 from roman_datamodels import stnode
 
-from ._base import MESSAGE, save_node
+from ._base import DIM2, DIM3, DIM5, MESSAGE, save_node
 from ._common_meta import (
     mk_common_meta,
     mk_guidewindow_meta,
@@ -37,7 +37,7 @@ def mk_level1_science_raw(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.WfiScienceRaw
     """
-    if len(shape) != 3:
+    if len(shape) != DIM3:
         shape = (8, 4096, 4096)
         warnings.warn(
             "Input shape must be 3D. Defaulting to (8, 4096, 4096)", stacklevel=2
@@ -93,7 +93,7 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.WfiImage
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[1:3]
         n_groups = shape[0]
 
@@ -227,7 +227,7 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
     -------
     roman_datamodels.stnode.WfiMosaic
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[1:3]
         n_images = shape[0]
 
@@ -305,7 +305,7 @@ def mk_msos_stack(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.MsosStack
     """
-    if len(shape) > 2:
+    if len(shape) > DIM3:
         shape = shape[1:3]
 
         warnings.warn(
@@ -347,7 +347,7 @@ def mk_ramp(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.Ramp
     """
-    if len(shape) != 3:
+    if len(shape) != DIM3:
         shape = (8, 4096, 4096)
         warnings.warn(
             "Input shape must be 3D. Defaulting to (8, 4096, 4096)", stacklevel=2
@@ -434,7 +434,7 @@ def mk_ramp_fit_output(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.RampFitOutput
     """
-    if len(shape) != 3:
+    if len(shape) != DIM3:
         shape = (8, 4096, 4096)
         warnings.warn(
             "Input shape must be 3D. Defaulting to (8, 4096, 4096)", stacklevel=2
@@ -582,7 +582,7 @@ def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.Guidewindow
     """
-    if len(shape) != 5:
+    if len(shape) != DIM5:
         shape = (2, 8, 16, 32, 32)
         warnings.warn(
             "Input shape must be 5D. Defaulting to (2, 8, 16, 32, 32)", stacklevel=2

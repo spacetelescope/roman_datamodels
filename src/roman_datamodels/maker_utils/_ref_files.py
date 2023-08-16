@@ -6,7 +6,7 @@ from astropy.modeling import models
 
 from roman_datamodels import stnode
 
-from ._base import MESSAGE, save_node
+from ._base import DIM2, DIM3, MESSAGE, save_node
 from ._common_meta import (
     mk_ref_common,
     mk_ref_dark_meta,
@@ -52,7 +52,7 @@ def mk_flat(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.FlatRef
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[:2]
 
         warnings.warn(
@@ -88,7 +88,7 @@ def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.DarkRef
     """
-    if len(shape) != 3:
+    if len(shape) != DIM3:
         shape = (2, 4096, 4096)
         warnings.warn(
             "Input shape must be 3D. Defaulting to (2, 4096, 4096)", stacklevel=2
@@ -151,7 +151,7 @@ def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.GainRef
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[:2]
 
         warnings.warn(
@@ -191,7 +191,7 @@ def mk_ipc(*, shape=(3, 3), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.IpcRef
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[:2]
 
         warnings.warn(
@@ -229,7 +229,7 @@ def mk_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.LinearityRef
     """
-    if len(shape) != 3:
+    if len(shape) != DIM3:
         shape = (2, 4096, 4096)
         warnings.warn(
             "Input shape must be 3D. Defaulting to (2, 4096, 4096)", stacklevel=2
@@ -261,7 +261,7 @@ def mk_inverselinearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.InverseLinearityRef
     """
-    if len(shape) != 3:
+    if len(shape) != DIM3:
         shape = (2, 4096, 4096)
         warnings.warn(
             "Input shape must be 3D. Defaulting to (2, 4096, 4096)", stacklevel=2
@@ -298,7 +298,7 @@ def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.MaskRef
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[:2]
 
         warnings.warn(
@@ -333,7 +333,7 @@ def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.PixelareaRef
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[:2]
 
         warnings.warn(
@@ -435,7 +435,7 @@ def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.ReadnoiseRef
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[:2]
 
         warnings.warn(
@@ -472,7 +472,7 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.SaturationRef
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[:2]
 
         warnings.warn(
@@ -510,7 +510,7 @@ def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.SuperbiasRef
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[:2]
 
         warnings.warn(
@@ -561,7 +561,7 @@ def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.RefPixRef
     """
-    if len(shape) > 2:
+    if len(shape) > DIM2:
         shape = shape[:2]
 
         warnings.warn(
