@@ -546,7 +546,7 @@ def mk_associations(*, shape=(2, 3, 1), filepath=None, **kwargs):
         associations["products"] = kwargs["products"]
     else:
         associations["products"] = []
-        CHOICES = ["SCIENCE", "CALIBRATION", "ENGINEERING"]
+        choices = ["SCIENCE", "CALIBRATION", "ENGINEERING"]
         for product_idx, members in enumerate(shape):
             members_lst = []
             for member_idx in range(members):
@@ -554,7 +554,7 @@ def mk_associations(*, shape=(2, 3, 1), filepath=None, **kwargs):
                     {
                         "expname": "file_" + str(file_idx) + ".asdf",
                         "exposerr": "null",
-                        "exptype": CHOICES[member_idx % 3],
+                        "exptype": choices[member_idx % 3],
                     }
                 )
                 file_idx += 1

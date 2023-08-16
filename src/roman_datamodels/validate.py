@@ -22,7 +22,7 @@ ROMAN_STRICT_VALIDATION = "ROMAN_STRICT_VALIDATION"
 
 
 def validation_is_disabled():
-    MESSAGE = dedent(
+    msg = dedent(
         """\
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             !!!! VALIDATION HAS BEEN DISABLED GLOBALLY !!!!!
@@ -39,7 +39,7 @@ def validation_is_disabled():
             to "true".
         """
     )
-    warnings.warn(MESSAGE, ValidationWarning, stacklevel=2)
+    warnings.warn(msg, ValidationWarning, stacklevel=2)
 
 
 def will_validate():
@@ -55,7 +55,7 @@ def will_validate():
 
 
 def strict_validation_is_disabled():
-    MESSAGE = dedent(
+    msg = dedent(
         """\
             Strict validation has been disabled. This may result
             in validation errors arising when writing data.
@@ -66,7 +66,7 @@ def strict_validation_is_disabled():
         """
     )
 
-    warnings.warn(MESSAGE, ValidationWarning, stacklevel=2)
+    warnings.warn(msg, ValidationWarning, stacklevel=2)
 
 
 def will_strict_validate():

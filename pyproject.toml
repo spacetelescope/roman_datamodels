@@ -118,7 +118,7 @@ select = [
     'F',       # Pyflakes (part of flake8 defaults)
     'W', 'E',  # pycodestyle (part of flake8 defaults)
     'I',       # isort (sort imports)
-    # # 'N',       # pep8-naming (follow PEP8 naming conventions)
+    'N',       # pep8-naming (follow PEP8 naming conventions)
     'UP',      # pyupgrade (upgrade syntax)
     'S',       # flake8-bandit (security)
     'BLE',     # flake8-blind-except (prevent blind except statements)
@@ -144,9 +144,9 @@ select = [
     # # 'ERA',     # eradicate (remove commented out code)
     'PGH',     # pygrep (simple grep checks)
     # # 'PL',      # pylint (general linting, flake8 alternative)
-    # 'FLY',     # flynt (f-string conversion where possible)
-    # 'NPY',     # NumPy-specific checks (recommendations from NumPy)
-    # 'PERF',    # Perflint (performance linting)
+    'FLY',     # flynt (f-string conversion where possible)
+    'NPY',     # NumPy-specific checks (recommendations from NumPy)
+    'PERF',    # Perflint (performance linting)
     'RUF',     # ruff specific checks
 ]
 
