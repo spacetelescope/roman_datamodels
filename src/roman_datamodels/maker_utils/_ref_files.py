@@ -58,6 +58,7 @@ def mk_flat(*, shape=(4096, 4096), filepath=None, **kwargs):
         warnings.warn(
             f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
             UserWarning,
+            stacklevel=2,
         )
 
     flatref = stnode.FlatRef()
@@ -89,7 +90,9 @@ def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
     if len(shape) != 3:
         shape = (2, 4096, 4096)
-        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+        warnings.warn(
+            "Input shape must be 3D. Defaulting to (2, 4096, 4096)", stacklevel=2
+        )
 
     darkref = stnode.DarkRef()
     darkref["meta"] = mk_ref_dark_meta(**kwargs.get("meta", {}))
@@ -154,6 +157,7 @@ def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
         warnings.warn(
             f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
             UserWarning,
+            stacklevel=2,
         )
 
     gainref = stnode.GainRef()
@@ -193,6 +197,7 @@ def mk_ipc(*, shape=(3, 3), filepath=None, **kwargs):
         warnings.warn(
             f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
             UserWarning,
+            stacklevel=2,
         )
 
     ipcref = stnode.IpcRef()
@@ -226,7 +231,9 @@ def mk_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
     if len(shape) != 3:
         shape = (2, 4096, 4096)
-        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+        warnings.warn(
+            "Input shape must be 3D. Defaulting to (2, 4096, 4096)", stacklevel=2
+        )
 
     linearityref = stnode.LinearityRef()
     linearityref["meta"] = mk_ref_units_dn_meta("LINEARITY", **kwargs.get("meta", {}))
@@ -256,7 +263,9 @@ def mk_inverselinearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
     if len(shape) != 3:
         shape = (2, 4096, 4096)
-        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+        warnings.warn(
+            "Input shape must be 3D. Defaulting to (2, 4096, 4096)", stacklevel=2
+        )
 
     inverselinearityref = stnode.InverselinearityRef()
     inverselinearityref["meta"] = mk_ref_units_dn_meta(
@@ -295,6 +304,7 @@ def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
         warnings.warn(
             f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
             UserWarning,
+            stacklevel=2,
         )
 
     maskref = stnode.MaskRef()
@@ -329,6 +339,7 @@ def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
         warnings.warn(
             f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
             UserWarning,
+            stacklevel=2,
         )
 
     pixelarearef = stnode.PixelareaRef()
@@ -430,6 +441,7 @@ def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
         warnings.warn(
             f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
             UserWarning,
+            stacklevel=2,
         )
 
     readnoiseref = stnode.ReadnoiseRef()
@@ -466,6 +478,7 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
         warnings.warn(
             f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
             UserWarning,
+            stacklevel=2,
         )
 
     saturationref = stnode.SaturationRef()
@@ -503,6 +516,7 @@ def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
         warnings.warn(
             f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
             UserWarning,
+            stacklevel=2,
         )
 
     superbiasref = stnode.SuperbiasRef()
@@ -553,6 +567,7 @@ def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
         warnings.warn(
             f"{MESSAGE} assuming the first two entries. The remaining is thrown out!",
             UserWarning,
+            stacklevel=2,
         )
 
     refpix = stnode.RefpixRef()
