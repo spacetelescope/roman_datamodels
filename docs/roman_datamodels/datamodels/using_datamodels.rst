@@ -1,6 +1,11 @@
 Using Roman Datamodels
 ======================
 
+.. testsetup::
+
+	>>> from roman_datamodels.maker_utils import mk_level1_science_raw
+	>>> _ = mk_level1_science_raw(filepath="my_wonderful_roman_data.asdf")
+
 The following illustrates common operations with the datamodels.
 This is most relevant for interactive use with a loaded datamodel
 or if one is writing scripts or propgrams to view and manipulate
@@ -17,18 +22,18 @@ page::
 	>>> dm = rdm.open('my_wonderful_roman_data.asdf')
 
 	>>> type(dm)
-	roman_datamodels.datamodels.ScienceRawModel
+	<class 'roman_datamodels.datamodels._datamodels.ScienceRawModel'>
 
 	>>> print(dm.meta.instrument.optical_element)
-	GRISM
+	F158
 
 	# most nodes have special types
 
 	>>> type(dm.meta.exposure)
-	roman_datamodels.stnode.Exposure
+	<class 'roman_datamodels.stnode.Exposure'>
 
 	>>> print(dm.data.shape)
-	(6, 4096, 4096)
+	(8, 4096, 4096)
 
 	>>> print(dm.data.dtype)
 	uint16
@@ -36,12 +41,12 @@ page::
 	# Change metadata value
 
 	>>> dm.meta.exposure.start_time_mjd = 60000.
-	print(dm.meta.exposure.start_time_mjd)
+	>>> print(dm.meta.exposure.start_time_mjd)
 	60000.0
 
 	# Try to assign invalid type
 
-	>>> d.meta.exposure.start_time_mjd = "hello"
+	>>> dm.meta.exposure.start_time_mjd = "hello"  # doctest: +SKIP
 
 	# Last part of resulting traceback
 
@@ -70,7 +75,7 @@ page::
 
 	# Try to assign wrong kind of node
 
-	>>> dm.meta.observation = dm.meta.exposure
+	>>> dm.meta.observation = dm.meta.exposure  # doctest: +SKIP
 	Failed validating 'tag' in schema:
 	    {'$schema': 'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema',
 	     'tag': 'asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0'}
@@ -81,18 +86,19 @@ page::
 	# Show and then change pixel value in data
 
 	>>> dm.data[0, 10, 10]
-	115
-	>>> dm.data[0, 10, 10] = 42
+	<Quantity 0 DN>
+	>>> from astropy import units as u
+	>>> dm.data[0, 10, 10] = 42 * u.DN
 	>>> dm.data[0, 10, 10]
-	42
+	<Quantity 42 DN>
 
 	# Save to a new file
 
 	>>> dm.to_asdf('test.asdf')
 	>>> dm2 = rdm.open('test.asdf')
-	>>> dm2[0, 10, 10]
-	42
-	>>> dm2.meta.exposure_start_time_mjd
+	>>> dm2.data[0, 10, 10]
+	<Quantity 42 DN>
+	>>> dm2.meta.exposure.start_time_mjd
 	60000.0
 
 

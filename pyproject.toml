@@ -67,7 +67,7 @@ doctest_plus = true
 doctest_rst = true
 text_file_format = 'rst'
 addopts = '--color=yes --doctest-rst'
-testpaths = ['tests']
+testpaths = ['src', 'tests', 'docs']
 filterwarnings = [
     "error",
     "ignore:numpy.ndarray size changed:RuntimeWarning",
@@ -143,7 +143,7 @@ select = [
     'PTH',     # flake8-use-pathlib (prefer pathlib over os.path)
     'ERA',     # eradicate (remove commented out code)
     'PGH',     # pygrep (simple grep checks)
-    # # 'PL',      # pylint (general linting, flake8 alternative)
+    # 'PL',      # pylint (general linting, flake8 alternative)
     'FLY',     # flynt (f-string conversion where possible)
     'NPY',     # NumPy-specific checks (recommendations from NumPy)
     'PERF',    # Perflint (performance linting)
