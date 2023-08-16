@@ -182,7 +182,7 @@ def nuke_validation():
     validate = asdf_schema.validate
 
     # Monkey patch validation with a function that does nothing
-    def _no_validation_for_you(*args, **kwargs):
+    def _no_validation_for_you(*args, **kwargs):  # noqa: ARG001
         pass
 
     asdf_schema.validate = _no_validation_for_you

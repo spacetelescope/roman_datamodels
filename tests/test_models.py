@@ -261,7 +261,7 @@ def test_make_guidewindow():
 
 
 # Testing all reference file schemas
-def test_reference_file_model_base(tmp_path):
+def test_reference_file_model_base():
     # Set temporary asdf file
 
     # Get all reference file classes

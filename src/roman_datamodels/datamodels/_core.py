@@ -56,7 +56,7 @@ class DataModel(abc.ABC):
         # Add to registry
         MODEL_REGISTRY[cls._node_type] = cls
 
-    def __new__(cls, init=None, **kwargs):
+    def __new__(cls, init=None, **kwargs):  # noqa: ARG003
         """
         Handle the case where one passes in an already instantiated version
         of the model. In this case the constructor should just directly return

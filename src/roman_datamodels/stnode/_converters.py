@@ -51,13 +51,13 @@ class TaggedObjectNodeConverter(_RomanConverter):
     def types(self):
         return list(OBJECT_NODE_CLASSES_BY_TAG.values())
 
-    def select_tag(self, obj, tags, ctx):
+    def select_tag(self, obj, tags, ctx):  # noqa: ARG002
         return obj.tag
 
-    def to_yaml_tree(self, obj, tag, ctx):
+    def to_yaml_tree(self, obj, tag, ctx):  # noqa: ARG002
         return obj._data
 
-    def from_yaml_tree(self, node, tag, ctx):
+    def from_yaml_tree(self, node, tag, ctx):  # noqa: ARG002
         return OBJECT_NODE_CLASSES_BY_TAG[tag](node)
 
 
@@ -74,13 +74,13 @@ class TaggedListNodeConverter(_RomanConverter):
     def types(self):
         return list(LIST_NODE_CLASSES_BY_TAG.values())
 
-    def select_tag(self, obj, tags, ctx):
+    def select_tag(self, obj, tags, ctx):  # noqa: ARG002
         return obj.tag
 
-    def to_yaml_tree(self, obj, tag, ctx):
+    def to_yaml_tree(self, obj, tag, ctx):  # noqa: ARG002
         return list(obj)
 
-    def from_yaml_tree(self, node, tag, ctx):
+    def from_yaml_tree(self, node, tag, ctx):  # noqa: ARG002
         return LIST_NODE_CLASSES_BY_TAG[tag](node)
 
 
@@ -97,7 +97,7 @@ class TaggedScalarNodeConverter(_RomanConverter):
     def types(self):
         return list(SCALAR_NODE_CLASSES_BY_TAG.values())
 
-    def select_tag(self, obj, tags, ctx):
+    def select_tag(self, obj, tags, ctx):  # noqa: ARG002
         return obj.tag
 
     def to_yaml_tree(self, obj, tag, ctx):
