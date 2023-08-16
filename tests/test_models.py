@@ -55,7 +55,7 @@ def test_node_type_matches_model(model):
 
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
-@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
+@pytest.mark.parametrize(("node", "model"), datamodels.MODEL_REGISTRY.items())
 def test_model_schemas(node, model):
     instance = model(utils.mk_node(node))
     asdf.schema.load_schema(instance.schema_uri)
@@ -71,7 +71,7 @@ def test_core_schema(tmp_path):
         af.tree = {"roman": wfi_image}
 
         # Test telescope name
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValidationError):  # noqa: PT012
             # The error should be raised by the first statement,
             # but a bug in asdf is preventing it.  Including both
             # in the pytest.raises context will allow the test
@@ -85,7 +85,7 @@ def test_core_schema(tmp_path):
         af.tree["roman"].meta.telescope = "ROMAN"
 
         # Test origin name
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValidationError):  # noqa: PT012
             # See note above for explanation of why both
             # statements are included in the context here.
             af.tree["roman"].meta.origin = "NOTSTSCI"
@@ -206,7 +206,7 @@ def test_make_associations():
 
 
 @pytest.mark.parametrize(
-    "expected, asn_data",
+    ("expected", "asn_data"),
     [
         (True, {"asn_id": "foo", "asn_pool": "bar"}),
         (False, {"asn_id": "foo"}),
@@ -444,7 +444,9 @@ def test_add_model_attribute(tmp_path):
     with datamodels.open(file_path) as readnoise:
         readnoise["new_attribute"] = 77
         assert readnoise.new_attribute == 77
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match=r"May not specify attributes/keys that start with _"
+        ):
             readnoise["_underscore"] = "bad"
         readnoise.save(file_path2)
 
@@ -659,7 +661,7 @@ def test_model_validate_without_save():
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
 @pytest.mark.parametrize("node", datamodels.MODEL_REGISTRY.keys())
-@pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
+@pytest.mark.parametrize(("correct", "model"), datamodels.MODEL_REGISTRY.items())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_model_only_init_with_correct_node(node, correct, model):

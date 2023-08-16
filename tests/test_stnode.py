@@ -210,7 +210,6 @@ def test_set_pattern_properties():
 
 
 @pytest.fixture(
-    scope="function",
     params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"],
 )
 def env_var(request):
@@ -306,7 +305,6 @@ def test_nuke_validation(env_var, tmp_path):
 
 
 @pytest.fixture(
-    scope="function",
     params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"],
 )
 def env_strict_var(request):
