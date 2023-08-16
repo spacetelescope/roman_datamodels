@@ -147,7 +147,7 @@ select = [
     # 'FLY',     # flynt (f-string conversion where possible)
     # 'NPY',     # NumPy-specific checks (recommendations from NumPy)
     # 'PERF',    # Perflint (performance linting)
-    # 'RUF',     # ruff specific checks
+    'RUF',     # ruff specific checks
 ]
 
 [tool.ruff.extend-per-file-ignores]

@@ -5,7 +5,7 @@ __all__ = ["WfiModeMixin"]
 
 
 class WfiModeMixin:
-    _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
+    _GRATING_OPTICAL_ELEMENTS = ("GRISM", "PRISM")
 
     @property
     def filter(self):

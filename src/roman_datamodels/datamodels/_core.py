@@ -307,10 +307,10 @@ class DataModel(abc.ABC):
 
             if isinstance(tree, (stnode.DNode, dict)):
                 for key, val in tree.items():
-                    yield from recurse(val, path + [key])
+                    yield from recurse(val, [*path, key])
             elif isinstance(tree, (stnode.LNode, list, tuple)):
                 for i, val in enumerate(tree):
-                    yield from recurse(val, path + [i])
+                    yield from recurse(val, [*path, i])
             elif tree is not None:
                 yield (".".join(str(x) for x in path), tree)
 

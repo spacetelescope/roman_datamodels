@@ -254,7 +254,7 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
         ),
     )
     wfi_mosaic["context"] = kwargs.get(
-        "context", np.zeros((n_images,) + shape, dtype=np.uint32)
+        "context", np.zeros((n_images, *shape), dtype=np.uint32)
     )
     wfi_mosaic["weight"] = kwargs.get("weight", np.zeros(shape, dtype=np.float32))
 
