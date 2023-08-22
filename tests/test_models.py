@@ -240,7 +240,7 @@ def test_read_pattern():
         [9, 10],
         [11],
     ]
-    assert (type(rp) == list for rp in exposure.read_pattern)
+    assert (isinstance(rp, list) for rp in exposure.read_pattern)
 
 
 # Guide Window tests
