@@ -22,5 +22,5 @@ jobs:
       envs: |
         - macos: py39
         - macos: py310
-        - macos: py311
-        - linux: py311-devdeps
+        - linux: py312-devdeps
+          python-version: "3.12-dev"
