@@ -665,7 +665,7 @@ def test_model_validate_without_save():
 def test_model_only_init_with_correct_node(node, correct, model):
     """
     Datamodels should only be initializable with the correct node in the model_registry.
-    This checks that it can be initiallized with the correct node, and that it cannot be
+    This checks that it can be initialized with the correct node, and that it cannot be
     with any other node.
     """
     img = utils.mk_node(node, shape=(2, 8, 8))
