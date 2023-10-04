@@ -3,8 +3,8 @@ The ASDF Converters to handle the serialization/deseialization of the STNode cla
 """
 from asdf.extension import Converter, ManifestExtension
 from astropy.time import Time
-
-from ._registry import LIST_NODE_CLASSES_BY_TAG, NODE_CONVERTERS, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
+from ._registry import (LIST_NODE_CLASSES_BY_TAG, NODE_CONVERTERS,
+    OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG)
 
 __all__ = [
     "TaggedObjectNodeConverter",
@@ -117,5 +117,6 @@ class TaggedScalarNodeConverter(_RomanConverter):
 
 # Create the ASDF extension for the STNode classes.
 NODE_EXTENSIONS = [
-    ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0", converters=NODE_CONVERTERS.values())
+    ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0",
+        converters=NODE_CONVERTERS.values()),
 ]

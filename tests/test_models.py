@@ -85,7 +85,6 @@ def test_core_schema(tmp_path):
         with pytest.raises(ValidationError):
             af.write_to(file_path)
         af.tree["roman"].meta.telescope = "ROMAN"
-
         # Test origin name
         with pytest.raises(ValidationError):
             # See note above for explanation of why both
@@ -557,6 +556,30 @@ def test_make_level2_image():
     # Test validation
     wfi_image_model = datamodels.ImageModel(wfi_image)
     assert wfi_image_model.validate() is None
+
+
+# Test that attributes can be assigned object instances without raising exceptions
+# unless they don't match the corresponding tag
+def test_node_assignment():
+    """Test round trip attribute access and assignment"""
+    wfi_image = utils.mk_level2_image(shape=(8, 8))
+    aperture = wfi_image.meta.aperture
+    assert isinstance(aperture, stnode.DNode)
+    wfi_image.meta.aperture = aperture
+    assert isinstance(wfi_image.meta.aperture, stnode.DNode)
+    with pytest.raises(ValidationError):
+        wfi_image.meta.aperture = utils.mk_program()
+    # The following tests that supplying a LNode passes validation.
+    rampmodel = datamodels.RampModel(utils.mk_ramp(shape=(9, 9, 2)))
+    assert isinstance(rampmodel.meta.exposure.read_pattern[1:], stnode.LNode)
+    rampmodel.meta.exposure.read_pattern = rampmodel.meta.exposure.read_pattern[1:]
+    # Test that supplying a DNode passes validation
+    darkmodel = datamodels.DarkRefModel(utils.mk_dark(shape=(2, 9, 9)))
+    darkexp = darkmodel.meta.exposure
+    assert isinstance(darkexp, stnode.DNode)
+    darkexp.ngroups = darkexp.ngroups + 1
+    assert(darkexp.ngroups == 7)
+    darkmodel.meta.exposure = darkexp
 
 
 # WFI Level 3 Mosaic tests
