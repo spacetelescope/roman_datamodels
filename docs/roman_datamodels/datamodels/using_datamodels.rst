@@ -104,7 +104,7 @@ page::
     will be immediately checked by validating against the defining schemas.
     When the value being assigned fails to pass that validation, an exception
     will occur. This is generally a good thing, particularly if you are changing
-    values interactively
+    values interactively.
 
 	If you are getting validation errors consult the corresponding schema in
 	``rad`` to se what is allowed. If you think the schema is wrong, or you
