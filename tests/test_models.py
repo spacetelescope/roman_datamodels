@@ -578,7 +578,7 @@ def test_node_assignment():
     darkexp = darkmodel.meta.exposure
     assert isinstance(darkexp, stnode.DNode)
     darkexp.ngroups = darkexp.ngroups + 1
-    assert(darkexp.ngroups == 7)
+    assert darkexp.ngroups == 7
     darkmodel.meta.exposure = darkexp
 
 

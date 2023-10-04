@@ -100,7 +100,7 @@ page::
 
     There are a couple subtlties with regard to changing values in a datamodel.
     If you assign dicts or lists to attributes, it will map these into the
-    corresponding DNode or LNode subclasses. In such uses, the assigned values 
+    corresponding DNode or LNode subclasses. In such uses, the assigned values
     will be immediately checked by validating against the defining schemas.
     When the value being assigned fails to pass that validation, an exception
     will occur. This is generally a good thing, particularly if you are changing
