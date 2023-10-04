@@ -117,5 +117,5 @@ class TaggedScalarNodeConverter(_RomanConverter):
 
 # Create the ASDF extension for the STNode classes.
 NODE_EXTENSIONS = [
-    ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0", converters=NODE_CONVERTERS.values())
+    ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0", converters=NODE_CONVERTERS.values()),
 ]

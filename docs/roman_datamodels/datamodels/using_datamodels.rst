@@ -98,9 +98,13 @@ page::
 
 .. note::
 
-	All datamodels have built in validation against the defining schemas.
-	This means that if you try to assign a value that is not allowed according
-	to one of these schemas, you will get an error. This is a good thing!
+    There are a couple subtlties with regard to changing values in a datamodel.
+    If you assign dicts or lists to attributes, it will map these into the
+    corresponding DNode or LNode subclasses. In such uses, the assigned values
+    will be immediately checked by validating against the defining schemas.
+    When the value being assigned fails to pass that validation, an exception
+    will occur. This is generally a good thing, particularly if you are changing
+    values interactively.
 
 	If you are getting validation errors consult the corresponding schema in
 	``rad`` to se what is allowed. If you think the schema is wrong, or you

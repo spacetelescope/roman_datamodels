@@ -1,6 +1,9 @@
 0.17.2 (unreleased)
 ===================
 
+- Allow DNode and LNode subclass instances to be assigned to tree attributes and support
+  validation of all such instances. [#275]
+
 - Update minimum version of astropy to 5.3.0 in order to fix a bug due to a breaking
   change in astropy. [#258]
 
@@ -53,6 +56,7 @@ A minor release to set the minimum version of RAD to 0.16.0.
 
 0.16.0 (2023-06-23)
 ===================
+
 - Remove ``ModelContainer`` from ``roman_datamodels.datamodels``. [#204]
 
 - Update the ``reftype`` for ``InverseLinearityRev``. [#195]

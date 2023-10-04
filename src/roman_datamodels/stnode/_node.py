@@ -56,12 +56,18 @@ def _check_value(value, schema, validator_context):
     temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
     temp_schema.update(schema)
     validator = asdfschema.get_validator(temp_schema, validator_context, validator_callbacks)
-
     validator.validate(value, _schema=temp_schema)
     validator_context.close()
 
 
 def _validate(attr, instance, schema, ctx):
+    # Note that the following checks cannot use isinstance since the TaggedObjectNode
+    # and TaggedListNode subclasses will break as a result. And currently there is no
+    # non-tagged subclasses of these classes that exist, nor are any envisioned yet.
+    if type(instance) == DNode:  # noqa: E721
+        instance = instance._data
+    elif type(instance) == LNode:  # noqa: E721
+        instance = instance.data
     tagged_tree = yamlutil.custom_tree_to_tagged_tree(instance, ctx)
     return _value_change(attr, tagged_tree, schema, False, will_strict_validate(), ctx)
 
@@ -142,16 +148,17 @@ class DNode(MutableMapping):
     def __setattr__(self, key, value):
         """
         Permit assigning dict keys as attributes.
+
         """
+
         if key[0] != "_":
             value = self._convert_to_scalar(key, value)
             if key in self._data:
                 if will_validate():
                     schema = _get_schema_for_property(self._schema(), key)
-
-                    if schema == {} or _validate(key, value, schema, self.ctx):
-                        self._data[key] = value
-                self.__dict__["_data"][key] = value
+                    if schema:
+                        _validate(key, value, schema, self.ctx)
+                self._data[key] = value
             else:
                 raise AttributeError(f"No such attribute ({key}) found in node")
         else:
@@ -193,7 +200,6 @@ class DNode(MutableMapping):
             # Extract the subschema corresponding to this node.
             subschema = _get_schema_for_property(parent_schema, self._name)
             self._x_schema = subschema
-
         return self._x_schema
 
     def __asdf_traverse__(self):
