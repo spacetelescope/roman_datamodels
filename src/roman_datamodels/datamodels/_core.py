@@ -10,6 +10,7 @@ This provides the abstract base class ``Datamodel`` for all the specific datamod
 import abc
 import copy
 import datetime
+import functools
 import os
 import os.path
 import sys
@@ -25,6 +26,26 @@ from roman_datamodels import stnode, validate
 __all__ = ["DataModel", "MODEL_REGISTRY"]
 
 MODEL_REGISTRY = {}
+
+
+def _set_default_asdf(func):
+    """
+    Decorator which ensures that a DataModel has an asdf file available for use
+    if required
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self._asdf is None:
+            try:
+                with validate.nuke_validation():
+                    self._asdf = asdf.AsdfFile({"roman": self._instance})
+            except ValidationError as err:
+                raise ValueError(f"DataModel needs to have all its data flushed out before calling {func.__name__}") from err
+
+        return func(self, *args, **kwargs)
+
+    return wrapper
 
 
 class DataModel(abc.ABC):
@@ -307,18 +328,14 @@ class DataModel(abc.ABC):
         """
         validate.value_change(self._instance, pass_invalid_values=False, strict_validation=True)
 
-    @property
-    def asdf(self):
-        if self._asdf is None:
-            self._asdf = asdf.AsdfFile({"roman": self._instance})
-
-        return self._asdf
-
+    @_set_default_asdf
     def info(self, *args, **kwargs):
-        return self.asdf.info(*args, **kwargs)
+        return self._asdf.info(*args, **kwargs)
 
+    @_set_default_asdf
     def search(self, *args, **kwargs):
-        return self.asdf.search(*args, **kwargs)
+        return self._asdf.search(*args, **kwargs)
 
+    @_set_default_asdf
     def schema_info(self, *args, **kwargs):
-        return self.asdf.schema_info(*args, **kwargs)
+        return self._asdf.schema_info(*args, **kwargs)

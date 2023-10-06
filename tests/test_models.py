@@ -11,7 +11,7 @@ from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
-from roman_datamodels import stnode
+from roman_datamodels import stnode, validate
 from roman_datamodels.testing import assert_node_equal
 
 from .conftest import MANIFEST
@@ -64,25 +64,63 @@ def test_model_schemas(node, model):
 
 
 @pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
-def test_empty_model(node, model):
+@pytest.mark.parametrize("method", ["info", "search", "schema_info"])
+@pytest.mark.parametrize("nuke_env_var", ["true", "false"], indirect=True)
+def test_empty_model_asdf_operations(node, model, method, nuke_env_var):
+    """
+    Test the decorator for asdf operations on models when the model is left truly empty.
+    """
     mdl = model()
     assert isinstance(mdl._instance, node)
+
+    # Check that the model does not have the asdf attribute set.
     assert mdl._asdf is None
+
+    # Depending on the state for nuke_validation we either expect an error or a
+    # warning to be raised.
+    #    - error: when nuke_env_var == true
+    #    - warning: when nuke_env_var == false
+    msg = f"DataModel needs to have all its data flushed out before calling {method}"
+    context = pytest.raises(ValueError, match=msg) if nuke_env_var[1] else pytest.warns(validate.ValidationWarning)
+
+    # Execute the method we wish to test, and catch the expected error/warning.
+    with context:
+        getattr(mdl, method)()
+
+    if nuke_env_var[1]:
+        # If an error is raised (nuke_env_var == true), then the asdf attribute should
+        #    fail to be set.
+        assert mdl._asdf is None
+    else:
+        # In a warning is raised (nuke_env_var == false), then the asdf attribute should
+        #    be set to something.
+        assert mdl._asdf is not None
 
 
 @pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
-def test_empty_model_asdf(node, model):
+@pytest.mark.parametrize("method", ["info", "search", "schema_info"])
+def test_model_asdf_operations(node, model, method):
+    """
+    Test the decorator for asdf operations on models when an empty initial model
+    which is then filled.
+    """
+    # Create an empty model
     mdl = model()
+    assert isinstance(mdl._instance, node)
 
-    # Check there is a validation issue
-    with pytest.raises(asdf.ValidationError):
-        mdl.asdf
+    # Check there model prior to filling raises an error.
+    with pytest.raises(ValueError):
+        getattr(mdl, method)()
 
+    # Fill the model with data, but no asdf file is present
+    mdl._instance = utils.mk_node(node)
     assert mdl._asdf is None
 
-    # Fill in instance properly and check that asdf can be created
-    mdl._instance = utils.mk_node(node)
-    assert mdl.asdf.tree["roman"] is mdl._instance
+    # Run the method we wish to test (it should fail with warning or error
+    # if something is broken)
+    getattr(mdl, method)()
+
+    # Show that mdl._asdf is now set
     assert mdl._asdf is not None
 
 
