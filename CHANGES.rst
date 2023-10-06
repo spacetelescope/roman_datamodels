@@ -10,6 +10,8 @@
 - Update minimum version of numpy to 1.22 as this is the oldest version of numpy
   which is currently supported. [#258]
 
+- Fix the initialization of empty DataModels and clean up the datamodel core. [#251]
+
 0.17.1 (2023-08-03)
 ===================
 

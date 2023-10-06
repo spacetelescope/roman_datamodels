@@ -10,6 +10,7 @@ This provides the abstract base class ``Datamodel`` for all the specific datamod
 import abc
 import copy
 import datetime
+import functools
 import os
 import os.path
 import sys
@@ -25,6 +26,26 @@ from roman_datamodels import stnode, validate
 __all__ = ["DataModel", "MODEL_REGISTRY"]
 
 MODEL_REGISTRY = {}
+
+
+def _set_default_asdf(func):
+    """
+    Decorator which ensures that a DataModel has an asdf file available for use
+    if required
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self._asdf is None:
+            try:
+                with validate.nuke_validation():
+                    self._asdf = asdf.AsdfFile({"roman": self._instance})
+            except ValidationError as err:
+                raise ValueError(f"DataModel needs to have all its data flushed out before calling {func.__name__}") from err
+
+        return func(self, *args, **kwargs)
+
+    return wrapper
 
 
 class DataModel(abc.ABC):
@@ -76,22 +97,8 @@ class DataModel(abc.ABC):
         self._shape = None
         self._instance = None
         self._asdf = None
-        if init is None:
-            asdffile = self.open_asdf(init=None, **kwargs)
-        elif isinstance(init, (str, bytes, PurePath)):
-            if isinstance(init, PurePath):
-                init = str(init)
-            if isinstance(init, bytes):
-                init = init.decode(sys.getfilesystemencoding())
-            asdffile = self.open_asdf(init, **kwargs)
-            if not self.check_type(asdffile):
-                raise ValueError(f"ASDF file is not of the type expected. Expected {self.__class__.__name__}")
-            self._instance = asdffile.tree["roman"]
-        elif isinstance(init, asdf.AsdfFile):
-            asdffile = init
-            self._asdf = asdffile
-            self._instance = asdffile.tree["roman"]
-        elif isinstance(init, stnode.TaggedObjectNode):
+
+        if isinstance(init, stnode.TaggedObjectNode):
             if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
                 expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
                 raise ValidationError(
@@ -99,33 +106,48 @@ class DataModel(abc.ABC):
                 )
             with validate.nuke_validation():
                 self._instance = init
-                asdffile = asdf.AsdfFile()
-                asdffile.tree = {"roman": init}
+                self._asdf = asdf.AsdfFile({"roman": init})
+
+                return
+
+        if init is None:
+            self._instance = self._node_type()
+
+        elif isinstance(init, (str, bytes, PurePath)):
+            if isinstance(init, PurePath):
+                init = str(init)
+            if isinstance(init, bytes):
+                init = init.decode(sys.getfilesystemencoding())
+
+            self._asdf = self.open_asdf(init, **kwargs)
+            if not self.check_type(self._asdf):
+                raise ValueError(f"ASDF file is not of the type expected. Expected {self.__class__.__name__}")
+
+            self._instance = self._asdf.tree["roman"]
+        elif isinstance(init, asdf.AsdfFile):
+            self._asdf = init
+
+            self._instance = self._asdf.tree["roman"]
         else:
             raise OSError("Argument does not appear to be an ASDF file or TaggedObjectNode.")
-        self._asdf = asdffile
 
-    def check_type(self, asdffile_instance):
+    def check_type(self, asdf_file):
         """
         Subclass is expected to check for proper type of node
         """
-        if "roman" not in asdffile_instance.tree:
+        if "roman" not in asdf_file.tree:
             raise ValueError('ASDF file does not have expected "roman" attribute')
-        topnode = asdffile_instance.tree["roman"]
-        if MODEL_REGISTRY[topnode.__class__] != self.__class__:
-            return False
-        return True
+
+        return MODEL_REGISTRY[asdf_file.tree["roman"].__class__] == self.__class__
 
     @property
     def schema_uri(self):
         # Determine the schema corresponding to this model's tag
-        schema_uri = next(t for t in stnode.NODE_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uris[0]
-        return schema_uri
+        return next(t for t in stnode.NODE_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uris[0]
 
     def close(self):
-        if not self._iscopy:
-            if self._asdf is not None:
-                self._asdf.close()
+        if not (self._iscopy or self._asdf is None):
+            self._asdf.close()
 
     def __enter__(self):
         return self
@@ -147,15 +169,13 @@ class DataModel(abc.ABC):
     @staticmethod
     def clone(target, source, deepcopy=False, memo=None):
         if deepcopy:
-            instance = copy.deepcopy(source._instance, memo=memo)
             target._asdf = source._asdf.copy()
-            target._instance = instance
-            target._iscopy = True
+            target._instance = copy.deepcopy(source._instance, memo=memo)
         else:
             target._asdf = source._asdf
             target._instance = source._instance
-            target._iscopy = True
 
+        target._iscopy = True
         target._files_to_close = []
         target._shape = source._shape
         target._ctx = target
@@ -183,11 +203,7 @@ class DataModel(abc.ABC):
 
     def open_asdf(self, init=None, **kwargs):
         with validate.nuke_validation():
-            if isinstance(init, str):
-                asdffile = asdf.open(init, **kwargs)
-            else:
-                asdffile = asdf.AsdfFile(init, **kwargs)
-            return asdffile
+            return asdf.open(init, **kwargs) if isinstance(init, str) else asdf.AsdfFile(init, **kwargs)
 
     def to_asdf(self, init, *args, **kwargs):
         with validate.nuke_validation():
@@ -202,11 +218,7 @@ class DataModel(abc.ABC):
         This is intended to be overridden in the subclasses if the
         primary array's name is not "data".
         """
-        if hasattr(self, "data"):
-            primary_array_name = "data"
-        else:
-            primary_array_name = ""
-        return primary_array_name
+        return "data" if hasattr(self, "data") else ""
 
     @property
     def override_handle(self):
@@ -214,7 +226,7 @@ class DataModel(abc.ABC):
         would normally be used.
         """
         # Arbitrary choice to look something like crds://
-        return "override://" + self.__class__.__name__
+        return f"override://{self.__class__.__name__}"
 
     @property
     def shape(self):
@@ -266,10 +278,9 @@ class DataModel(abc.ABC):
                 return str(val)
             return val
 
-        if include_arrays:
-            return {"roman." + key: convert_val(val) for (key, val) in self.items()}
-        else:
-            return {"roman." + key: convert_val(val) for (key, val) in self.items() if not isinstance(val, np.ndarray)}
+        return {
+            f"roman.{key}": convert_val(val) for (key, val) in self.items() if include_arrays or not isinstance(val, np.ndarray)
+        }
 
     def items(self):
         """
@@ -305,12 +316,11 @@ class DataModel(abc.ABC):
         -------
         dict
         """
-        crds_header = {
+        return {
             key: val
             for key, val in self.to_flat_dict(include_arrays=False).items()
             if isinstance(val, (str, int, float, complex, bool))
         }
-        return crds_header
 
     def validate(self):
         """
@@ -318,11 +328,14 @@ class DataModel(abc.ABC):
         """
         validate.value_change(self._instance, pass_invalid_values=False, strict_validation=True)
 
+    @_set_default_asdf
     def info(self, *args, **kwargs):
         return self._asdf.info(*args, **kwargs)
 
+    @_set_default_asdf
     def search(self, *args, **kwargs):
         return self._asdf.search(*args, **kwargs)
 
+    @_set_default_asdf
     def schema_info(self, *args, **kwargs):
         return self._asdf.schema_info(*args, **kwargs)

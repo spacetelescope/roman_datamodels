@@ -181,21 +181,17 @@ def test_set_pattern_properties():
     mdl.phot_table.F062.pixelareasr = None
 
 
-@pytest.fixture(scope="function", params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"])
-def env_var(request):
-    assert os.getenv(validate.ROMAN_VALIDATE) == "true"
-    os.environ[validate.ROMAN_VALIDATE] = request.param
-    yield request.param, request.param.lower() in ["true", "yes", "1"]
-    os.environ[validate.ROMAN_VALIDATE] = "true"
+VALIDATION_CASES = ("true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ")
 
 
-def test_will_validate(env_var):
+@pytest.mark.parametrize("nuke_env_var", VALIDATION_CASES, indirect=True)
+def test_will_validate(nuke_env_var):
     # Test the fixture passed the value of the environment variable
-    value = env_var[0]
+    value = nuke_env_var[0]
     assert os.getenv(validate.ROMAN_VALIDATE) == value
 
     # Test the validate property
-    truth = env_var[1]
+    truth = nuke_env_var[1]
     context = nullcontext() if truth else pytest.warns(validate.ValidationWarning)
 
     with context:
@@ -217,8 +213,9 @@ def test_will_validate(env_var):
     assert validate.will_validate() is True
 
 
-def test_nuke_validation(env_var, tmp_path):
-    context = pytest.raises(asdf.ValidationError) if env_var[1] else pytest.warns(validate.ValidationWarning)
+@pytest.mark.parametrize("nuke_env_var", VALIDATION_CASES, indirect=True)
+def test_nuke_validation(nuke_env_var, tmp_path):
+    context = pytest.raises(asdf.ValidationError) if nuke_env_var[1] else pytest.warns(validate.ValidationWarning)
 
     # Create a broken DNode object
     mdl = maker_utils.mk_wfi_img_photom()
@@ -232,7 +229,7 @@ def test_nuke_validation(env_var, tmp_path):
         mdl.phot_table = "THIS IS NOT VALID"
 
     # Break model without outside validation
-    with nullcontext() if env_var[1] else pytest.warns(validate.ValidationWarning):
+    with nullcontext() if nuke_env_var[1] else pytest.warns(validate.ValidationWarning):
         mdl = datamodels.WfiImgPhotomRefModel(maker_utils.mk_wfi_img_photom())
     mdl._instance["phot_table"] = "THIS IS NOT VALID"
 
@@ -240,20 +237,20 @@ def test_nuke_validation(env_var, tmp_path):
     broken_save = tmp_path / "broken_save.asdf"
     with context:
         mdl.save(broken_save)
-    assert os.path.isfile(broken_save) is not env_var[1]
+    assert os.path.isfile(broken_save) is not nuke_env_var[1]
 
     broken_to_asdf = tmp_path / "broken_to_asdf.asdf"
     with context:
         mdl.to_asdf(broken_to_asdf)
-    assert os.path.isfile(broken_to_asdf) is not env_var[1]
+    assert os.path.isfile(broken_to_asdf) is not nuke_env_var[1]
 
     # Create a broken file for reading if needed
-    if env_var[1]:
+    if nuke_env_var[1]:
         os.environ[validate.ROMAN_VALIDATE] = "false"
         with pytest.warns(validate.ValidationWarning):
             mdl.save(broken_save)
             mdl.to_asdf(broken_to_asdf)
-        os.environ[validate.ROMAN_VALIDATE] = env_var[0]
+        os.environ[validate.ROMAN_VALIDATE] = nuke_env_var[0]
 
     # Read broken files with datamodel object
     with context:
@@ -270,32 +267,25 @@ def test_nuke_validation(env_var, tmp_path):
             pass
 
 
-@pytest.fixture(scope="function", params=["true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ"])
-def env_strict_var(request):
-    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) == "true"
-    os.environ[validate.ROMAN_STRICT_VALIDATION] = request.param
-    yield request.param
-    os.environ[validate.ROMAN_STRICT_VALIDATION] = "true"
-
-
-def test_will_strict_validate(env_strict_var):
+@pytest.mark.parametrize("nuke_env_strict_var", VALIDATION_CASES, indirect=True)
+def test_will_strict_validate(nuke_env_strict_var):
     # Test the fixture passed the value of the environment variable
-    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) == env_strict_var
+    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) == nuke_env_strict_var
 
     # Test the validate property
-    truth = env_strict_var.lower() in ["true", "yes", "1"]
+    truth = nuke_env_strict_var.lower() in ["true", "yes", "1"]
     context = nullcontext() if truth else pytest.warns(validate.ValidationWarning)
 
     with context:
         assert validate.will_strict_validate() is truth
 
     # Try all uppercase
-    os.environ[validate.ROMAN_STRICT_VALIDATION] = env_strict_var.upper()
+    os.environ[validate.ROMAN_STRICT_VALIDATION] = nuke_env_strict_var.upper()
     with context:
         assert validate.will_strict_validate() is truth
 
     # Try all lowercase
-    os.environ[validate.ROMAN_STRICT_VALIDATION] = env_strict_var.lower()
+    os.environ[validate.ROMAN_STRICT_VALIDATION] = nuke_env_strict_var.lower()
     with context:
         assert validate.will_strict_validate() is truth
 
