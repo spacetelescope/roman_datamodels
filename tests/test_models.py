@@ -391,6 +391,10 @@ def test_make_dark():
     assert dark.dq.shape == (8, 8)
     assert dark.err.dtype == np.float32
     assert dark.data.unit == u.DN
+    assert dark.dark_slope.dtype == np.float32
+    assert dark.dark_slope.unit == u.DN / u.s
+    assert dark.dark_slope_error.dtype == np.float32
+    assert dark.dark_slope_error.shape == (8, 8)
 
     # Test validation
     dark_model = datamodels.DarkRefModel(dark)
