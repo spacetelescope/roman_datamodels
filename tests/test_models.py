@@ -245,8 +245,6 @@ def test_make_associations():
     member_shapes = (3, 8, 5, 2)
     association = utils.mk_associations(shape=member_shapes)
 
-    print("XXX association.products = " + str(association.products))
-
     assert association.asn_type == "image"
     assert len(association.products) == len(member_shapes)
 
@@ -591,7 +589,8 @@ def test_make_wfi_img_photom():
 
 # WFI Level 1 Science Raw tests
 def test_make_level1_science_raw():
-    wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
+    shape=(2, 8, 8)
+    wfi_science_raw = utils.mk_level1_science_raw(shape=shape, dq=True)
 
     assert wfi_science_raw.data.dtype == np.uint16
     assert wfi_science_raw.data.unit == u.DN

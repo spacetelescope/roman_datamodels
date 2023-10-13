@@ -10,7 +10,7 @@ from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_msos_stack_met
 from ._tagged_nodes import mk_cal_logs
 
 
-def mk_level1_science_raw(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
+def mk_level1_science_raw(*, shape=(8, 4096, 4096), dq=False, filepath=None, **kwargs):
     """
     Create a dummy level 1 ScienceRaw instance (or file) with arrays and valid
     values for attributes required by the schema.
@@ -23,6 +23,10 @@ def mk_level1_science_raw(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
             (8, 4096, 4096)
         (8 integrations, 4088 x 4088 represent the science pixels, with the
         additional being the border reference pixels).
+
+    dq : bool
+        (optional, keyword-only) Toggle to add a data quality array for 
+        dropout pixels
 
     filepath : str
         (optional, keyword-only) File name and path to write model to.
@@ -41,6 +45,9 @@ def mk_level1_science_raw(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     n_groups = shape[0]
 
     wfi_science_raw["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16))
+
+    if dq:
+        wfi_science_raw["resultantdq"] = kwargs.get("resultantdq", np.zeros(shape, dtype=np.uint8))
 
     # add amp 33 ref pix
     wfi_science_raw["amp33"] = kwargs.get(
