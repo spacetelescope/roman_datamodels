@@ -589,7 +589,7 @@ def test_make_wfi_img_photom():
 
 # WFI Level 1 Science Raw tests
 def test_make_level1_science_raw():
-    shape=(2, 8, 8)
+    shape = (2, 8, 8)
     wfi_science_raw = utils.mk_level1_science_raw(shape=shape, dq=True)
 
     assert wfi_science_raw.data.dtype == np.uint16
