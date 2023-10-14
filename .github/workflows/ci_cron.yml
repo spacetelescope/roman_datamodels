@@ -23,4 +23,3 @@ jobs:
         - macos: py39
         - macos: py310
         - linux: py312-devdeps
-          python-version: "3.12-dev"
