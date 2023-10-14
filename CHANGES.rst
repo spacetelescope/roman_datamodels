@@ -14,6 +14,8 @@
 
 - Add slope and error to dark RefModel and tests. [#280]
 
+- Added truncation to exposure. [#283]
+
 0.17.1 (2023-08-03)
 ===================
 
