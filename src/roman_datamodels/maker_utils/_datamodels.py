@@ -25,7 +25,7 @@ def mk_level1_science_raw(*, shape=(8, 4096, 4096), dq=False, filepath=None, **k
         additional being the border reference pixels).
 
     dq : bool
-        (optional, keyword-only) Toggle to add a data quality array for 
+        (optional, keyword-only) Toggle to add a data quality array for
         dropout pixels
 
     filepath : str
