@@ -63,9 +63,9 @@ def _validate(attr, instance, schema, ctx):
     # Note that the following checks cannot use isinstance since the TaggedObjectNode
     # and TaggedListNode subclasses will break as a result. And currently there is no
     # non-tagged subclasses of these classes that exist, nor are any envisioned yet.
-    if type(instance) == DNode: # noqa E721
+    if type(instance) == DNode: # noqa: E721
         instance = instance._data
-    elif type(instance) == LNode: # noqa E721
+    elif type(instance) == LNode: # noqa: E721
         instance = instance.data
     tagged_tree = yamlutil.custom_tree_to_tagged_tree(instance, ctx)
     return _value_change(attr, tagged_tree, schema, False, will_strict_validate(), ctx)
