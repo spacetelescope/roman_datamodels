@@ -18,7 +18,6 @@ from asdf.util import HashableDict
 from astropy.time import Time
 
 from roman_datamodels.validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
-
 from ._registry import SCALAR_NODE_CLASSES_BY_KEY
 
 __all__ = ["DNode", "LNode"]
@@ -64,9 +63,9 @@ def _validate(attr, instance, schema, ctx):
     # Note that the following checks cannot use isinstance since the TaggedObjectNode
     # and TaggedListNode subclasses will break as a result. And currently there is no
     # non-tagged subclasses of these classes that exist, nor are any envisioned yet.
-    if type(instance) == DNode:  # noqa: E721
+    if type(instance) == DNode: # noqa E721
         instance = instance._data
-    elif type(instance) == LNode:  # noqa: E721
+    elif type(instance) == LNode: # noqa E721
         instance = instance.data
     tagged_tree = yamlutil.custom_tree_to_tagged_tree(instance, ctx)
     return _value_change(attr, tagged_tree, schema, False, will_strict_validate(), ctx)
@@ -94,6 +93,33 @@ def _get_schema_for_property(schema, attr):
     return {}
 
 
+def _get_attributes_from_schema(schema):
+    explicit_properties = schema.get("properties", {}).keys()
+    patterns = schema.get("patternProperties", {})
+    return SchemaProperties(explicit_properties, patterns)
+
+
+class SchemaProperties:
+    """
+    This class provides the capability for using the "contains" machinery
+    so that an attribute can be tested against patternProperties as well
+    as whether the attribute is explicitly a property of the schema.
+    """
+
+    def __init__(self, explicit_properties, patterns):
+        self.explicit_properties = explicit_properties
+        self.patterns = patterns
+
+    def __contains__(self, attr):
+        if attr in self.explicit_properties:
+            return True
+        else:
+            for key in self.patterns.keys():
+                if re.match(key, attr):
+                    return True
+        return False
+
+
 class DNode(MutableMapping):
     """
     Base class describing all "object" (dict-like) data nodes for STNode classes.
@@ -113,6 +139,7 @@ class DNode(MutableMapping):
         self._schema_uri = None
         self._parent = parent
         self._name = name
+        self._x_schema_attributes = None
 
     @property
     def ctx(self):
@@ -153,7 +180,7 @@ class DNode(MutableMapping):
 
         if key[0] != "_":
             value = self._convert_to_scalar(key, value)
-            if key in self._data:
+            if key in self._data or key in self._schema_attributes():
                 if will_validate():
                     schema = _get_schema_for_property(self._schema(), key)
                     if schema:
@@ -163,6 +190,17 @@ class DNode(MutableMapping):
                 raise AttributeError(f"No such attribute ({key}) found in node")
         else:
             self.__dict__[key] = value
+
+    def _schema_attributes(self):
+        if self._x_schema_attributes is None:
+            self._x_schema_attributes = self._get_schema_attributes()
+        return self._x_schema_attributes
+
+    def _get_schema_attributes(self):
+        """
+        Extract all schema attributes for this node.
+        """
+        return _get_attributes_from_schema(self._schema())
 
     def to_flat_dict(self, include_arrays=True):
         """
