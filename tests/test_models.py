@@ -245,8 +245,6 @@ def test_make_associations():
     member_shapes = (3, 8, 5, 2)
     association = utils.mk_associations(shape=member_shapes)
 
-    print("XXX association.products = " + str(association.products))
-
     assert association.asn_type == "image"
     assert len(association.products) == len(member_shapes)
 
@@ -389,8 +387,11 @@ def test_make_dark():
     assert dark.data.dtype == np.float32
     assert dark.dq.dtype == np.uint32
     assert dark.dq.shape == (8, 8)
-    assert dark.err.dtype == np.float32
     assert dark.data.unit == u.DN
+    assert dark.dark_slope.dtype == np.float32
+    assert dark.dark_slope.unit == u.DN / u.s
+    assert dark.dark_slope_error.dtype == np.float32
+    assert dark.dark_slope_error.shape == (8, 8)
 
     # Test validation
     dark_model = datamodels.DarkRefModel(dark)
@@ -588,7 +589,8 @@ def test_make_wfi_img_photom():
 
 # WFI Level 1 Science Raw tests
 def test_make_level1_science_raw():
-    wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
+    shape = (2, 8, 8)
+    wfi_science_raw = utils.mk_level1_science_raw(shape=shape, dq=True)
 
     assert wfi_science_raw.data.dtype == np.uint16
     assert wfi_science_raw.data.unit == u.DN

@@ -12,6 +12,10 @@
 
 - Fix the initialization of empty DataModels and clean up the datamodel core. [#251]
 
+- Add slope and error to dark RefModel and tests. [#280]
+
+- Added optional dq array to science raw maker utility and test. [#282]
+
 0.17.1 (2023-08-03)
 ===================
 

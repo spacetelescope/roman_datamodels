@@ -93,7 +93,12 @@ def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
 
     darkref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
     darkref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
-    darkref["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
+    darkref["dark_slope"] = kwargs.get(
+        "dark_slope", u.Quantity(np.zeros(shape[1:], dtype=np.float32), u.DN / u.s, dtype=np.float32)
+    )
+    darkref["dark_slope_error"] = kwargs.get(
+        "dark_slope_error", u.Quantity(np.zeros(shape[1:], dtype=np.float32), u.DN / u.s, dtype=np.float32)
+    )
 
     return save_node(darkref, filepath=filepath)
 
