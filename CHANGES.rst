@@ -16,6 +16,9 @@
 
 - Added truncation to exposure. [#283]
 
+- Added optional dq array to science raw maker utility and test. [#282]
+
+
 0.17.1 (2023-08-03)
 ===================
 
