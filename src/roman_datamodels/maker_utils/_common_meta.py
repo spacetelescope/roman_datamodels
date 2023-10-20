@@ -47,6 +47,7 @@ def mk_exposure(**kwargs):
     exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
     exp["level0_compressed"] = kwargs.get("level0_compressed", True)
     exp["read_pattern"] = kwargs.get("read_pattern", [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]])
+    exp["truncated"] = kwargs.get("truncated", False)
 
     return exp
 
