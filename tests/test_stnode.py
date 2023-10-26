@@ -278,17 +278,19 @@ def test_nuke_validation(nuke_env_var, tmp_path):
 
     # Read broken files with datamodel object
     with context:
-        datamodels.WfiImgPhotomRefModel(broken_save)
+        dm = datamodels.WfiImgPhotomRefModel(broken_save)
+        dm.close()
     with context:
-        datamodels.WfiImgPhotomRefModel(broken_to_asdf)
+        dm = datamodels.WfiImgPhotomRefModel(broken_to_asdf)
+        dm.close()
 
     # True to read broken files with rdm.open
     with context:
-        with datamodels.open(broken_save):
-            pass
+        with datamodels.open(broken_save) as dm:
+            dm.close()
     with context:
-        with datamodels.open(broken_to_asdf):
-            pass
+        with datamodels.open(broken_to_asdf) as dm:
+            dm.close()
 
 
 @pytest.mark.parametrize("nuke_env_strict_var", VALIDATION_CASES, indirect=True)
