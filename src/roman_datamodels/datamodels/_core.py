@@ -155,10 +155,6 @@ class DataModel(abc.ABC):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def __del__(self):
-        """Ensure closure of resources when deleted."""
-        self.close()
-
     def copy(self, deepcopy=True, memo=None):
         result = self.__class__(init=None)
         self.clone(result, self, deepcopy=deepcopy, memo=memo)
