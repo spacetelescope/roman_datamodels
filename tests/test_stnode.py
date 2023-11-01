@@ -2,12 +2,14 @@ import os
 from contextlib import nullcontext
 
 import asdf
-from asdf.exceptions import ValidationError
 import astropy.units as u
 import pytest
+from asdf.exceptions import ValidationError
 
+from roman_datamodels import datamodels
+from roman_datamodels import maker_utils
 from roman_datamodels import maker_utils as utils
-from roman_datamodels import datamodels, maker_utils, stnode, validate
+from roman_datamodels import stnode, validate
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 from .conftest import MANIFEST
@@ -184,7 +186,7 @@ def test_set_pattern_properties():
 
 
 # Test that a currently undefined attribute can be assigned using dot notation
-# so long as the attribute is defined in the coresponding schema.
+# so long as the attribute is defined in the corresponding schema.
 def test_node_new_attribute_assignment():
     exp = stnode.Exposure()
     with pytest.raises(AttributeError):
@@ -194,11 +196,11 @@ def test_node_new_attribute_assignment():
     # Test patternProperties attribute case
     photmod = utils.mk_wfi_img_photom()
     phottab = photmod.phot_table
-    newphottab = {'F062': phottab['F062']}
+    newphottab = {"F062": phottab["F062"]}
     photmod.phot_table = newphottab
-    photmod.phot_table.F213 = phottab['F213']
+    photmod.phot_table.F213 = phottab["F213"]
     with pytest.raises(AttributeError):
-        photmod.phot_table.F214 = phottab['F213']
+        photmod.phot_table.F214 = phottab["F213"]
     with pytest.raises(ValidationError):
         photmod.phot_table.F106 = 0
 
