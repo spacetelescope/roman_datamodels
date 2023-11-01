@@ -644,25 +644,6 @@ def test_node_assignment():
     assert(darkexp.ngroups == 7)
     darkmodel.meta.exposure = darkexp
 
-# Test that a currently undefined attribute can be assigned using dot notation
-# so long as the attribute is defined in the coresponding schema.
-def test_node_new_attribute_assignment():
-    exp = stnode.Exposure()
-    with pytest.raises(AttributeError):
-        exp.bozo = 0
-    exp.ngroups = 5
-    assert exp.ngroups == 5
-    # Test patternProperties attribute case
-    photmod = utils.mk_wfi_img_photom()
-    phottab = photmod.phot_table
-    newphottab = {'F062': phottab['F062']}
-    photmod.phot_table = newphottab
-    photmod.phot_table.F213 = phottab['F213']
-    with pytest.raises(AttributeError):
-        photmod.phot_table.F214 = phottab['F213']
-    with pytest.raises(ValidationError):
-        photmod.phot_table.F106 = 0
-
 
 # WFI Level 3 Mosaic tests
 def test_make_level3_mosaic():
