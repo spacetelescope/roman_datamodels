@@ -686,12 +686,16 @@ def test_append_individual_image_meta_level3_mosaic():
     wfi_mosaic_model.append_individual_image_meta(wfi_image2.meta.to_flat_dict())
     wfi_mosaic_model.append_individual_image_meta(wfi_image3_model.meta)
 
-    # Test that each entry contains the same instument name
+    # Test that each entry contains the same instrument name
     assert wfi_mosaic_model.meta.individual_image_meta.all_meta[0]["instrument"]["name"] == "WFI"
-    assert wfi_mosaic_model.meta.individual_image_meta.all_meta[0]["instrument"]["name"] == \
+    assert (
+        wfi_mosaic_model.meta.individual_image_meta.all_meta[0]["instrument"]["name"]
+        == wfi_mosaic_model.meta.individual_image_meta.all_meta[1]["instrument"]["name"]
+    )
+    assert (
         wfi_mosaic_model.meta.individual_image_meta.all_meta[1]["instrument"]["name"]
-    assert wfi_mosaic_model.meta.individual_image_meta.all_meta[1]["instrument"]["name"] == \
-        wfi_mosaic_model.meta.individual_image_meta.all_meta[2]["instrument"]["name"]
+        == wfi_mosaic_model.meta.individual_image_meta.all_meta[2]["instrument"]["name"]
+    )
 
     # Test that each entry contains the correct (different) PI name
     assert wfi_mosaic_model.meta.individual_image_meta.all_meta[0]["program"]["pi_name"] == "Nancy"

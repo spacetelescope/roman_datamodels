@@ -676,6 +676,7 @@ def mk_mosaic_basic(**kwargs):
 
     return mosbasic
 
+
 def mk_mosaic_wcsinfo(**kwargs):
     """
     Create a dummy mosaic WCS Info instance with valid values for attributes
@@ -691,11 +692,10 @@ def mk_mosaic_wcsinfo(**kwargs):
     moswcsi["dec_ref"] = kwargs.get("dec_ref", NONUM)
     moswcsi["x_ref"] = kwargs.get("x_ref", NONUM)
     moswcsi["y_ref"] = kwargs.get("y_ref", NONUM)
-    moswcsi["rotation_matrix"] = kwargs.get("rotation_matrix",
-                                            [[NONUM,NONUM], [NONUM,NONUM]])
+    moswcsi["rotation_matrix"] = kwargs.get("rotation_matrix", [[NONUM, NONUM], [NONUM, NONUM]])
     moswcsi["pixel_scale"] = kwargs.get("pixel_scale", NONUM)
     moswcsi["pixel_scale_local"] = kwargs.get("pixel_scale_local", NONUM)
-    moswcsi["pixel_shape"] = kwargs.get("pixel_shape", [NONUM,NONUM])
+    moswcsi["pixel_shape"] = kwargs.get("pixel_shape", [NONUM, NONUM])
     moswcsi["ra_center"] = kwargs.get("ra_center", NONUM)
     moswcsi["dec_center"] = kwargs.get("dec_center", NONUM)
     moswcsi["ra_corn1"] = kwargs.get("ra_corn1", NONUM)
