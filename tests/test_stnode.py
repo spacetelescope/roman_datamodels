@@ -310,21 +310,21 @@ def test_node_representation(model):
         if isinstance(mdl, datamodels.MosaicModel):
             assert repr(mdl.meta.basic) == repr(
                 {
-                    'time_first_mjd': -999999,
-                    'time_last_mjd': -999999,
-                    'time_mean_mjd': -999999,
-                    'max_exposure_time': -999999,
-                    'mean_exposure_time': -999999,
-                    'visit': -999999,
-                    'segment': -999999,
-                    'pass': -999999,
-                    'program': 'dummy value',
-                    'survey': 'dummy value',
-                    'optical_element': 'F158',
-                    'instrument': 'WFI',
-                    'telescope': 'ROMAN',
-                    'location_name': 'dummy value',
-                    'product_type': 'dummy value'
+                    "time_first_mjd": -999999,
+                    "time_last_mjd": -999999,
+                    "time_mean_mjd": -999999,
+                    "max_exposure_time": -999999,
+                    "mean_exposure_time": -999999,
+                    "visit": -999999,
+                    "segment": -999999,
+                    "pass": -999999,
+                    "program": "dummy value",
+                    "survey": "dummy value",
+                    "optical_element": "F158",
+                    "instrument": "WFI",
+                    "telescope": "ROMAN",
+                    "location_name": "dummy value",
+                    "product_type": "dummy value",
                 }
             )
         else:
