@@ -34,6 +34,21 @@ class _DataModel(DataModel):
 class MosaicModel(_DataModel):
     _node_type = stnode.WfiMosaic
 
+    def append_individual_image_meta(self, meta):
+        """
+        Add the contents of meta to the all_meta keyword in individual_image_meta as a dictionary.
+
+        Parameters
+        ----------
+        meta : stnode or dict
+            Metadata from a component image of the mosiac.
+        """
+
+        if isinstance(meta, dict):
+            self.meta.individual_image_meta.all_meta.append(meta)
+        else:
+            self.meta.individual_image_meta.all_meta.append(meta.to_flat_dict())
+
 
 class ImageModel(_DataModel):
     _node_type = stnode.WfiImage

@@ -434,18 +434,21 @@ def mk_photometry_meta(**kwargs):
     return meta
 
 
-def mk_resample_meta(**kwargs):
+def mk_mosaic_meta(**kwargs):
     """
-    Create a dummy common metadata dictionary with valid values for attributes and add
-    the additional photometry AND resample metadata
+    Create a dummy metadata dictionary with valid values for mosaic attributes.
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema with additional photometry and resample metadata)
+    dict (defined by the wfi_mosaic-1.0.0 schema)
     """
 
-    meta = mk_photometry_meta(**kwargs)
+    meta = {}
+    meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
+    meta["individual_image_meta"] = mk_individual_image_meta(**kwargs.get("individual_image_meta", {}))
+    meta["program"] = mk_program(**kwargs.get("program", {}))
     meta["resample"] = mk_resample(**kwargs.get("resample", {}))
+    meta["wcsinfo"] = mk_mosaic_wcsinfo(**kwargs.get("wcsinfo", {}))
 
     return meta
 
@@ -642,3 +645,87 @@ def mk_ref_readnoise_meta(**kwargs):
     meta["exposure"] = _mk_ref_exposure(**kwargs.get("exposure", {}))
 
     return meta
+
+
+def mk_mosaic_basic(**kwargs):
+    """
+    Create a dummy mosaic basic instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities.
+
+    Returns
+    -------
+    roman_datamodels.stnode.MosaicBasic
+    """
+
+    mosbasic = stnode.MosaicBasic()
+    mosbasic["time_first_mjd"] = kwargs.get("time_first_mjd", NONUM)
+    mosbasic["time_last_mjd"] = kwargs.get("time_last_mjd", NONUM)
+    mosbasic["time_mean_mjd"] = kwargs.get("time_mean_mjd", NONUM)
+    mosbasic["max_exposure_time"] = kwargs.get("max_exposure_time", NONUM)
+    mosbasic["mean_exposure_time"] = kwargs.get("mean_exposure_time", NONUM)
+    mosbasic["visit"] = kwargs.get("visit", NONUM)
+    mosbasic["segment"] = kwargs.get("segment", NONUM)
+    mosbasic["pass"] = kwargs.get("pass", NONUM)
+    mosbasic["program"] = kwargs.get("program", NOSTR)
+    mosbasic["survey"] = kwargs.get("survey", NOSTR)
+    mosbasic["optical_element"] = kwargs.get("optical_element", "F158")
+    mosbasic["instrument"] = kwargs.get("instrument", "WFI")
+    mosbasic["telescope"] = kwargs.get("telescope", "ROMAN")
+    mosbasic["location_name"] = kwargs.get("location_name", NOSTR)
+    mosbasic["product_type"] = kwargs.get("product_type", NOSTR)
+
+    return mosbasic
+
+def mk_mosaic_wcsinfo(**kwargs):
+    """
+    Create a dummy mosaic WCS Info instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities.
+
+    Returns
+    -------
+    roman_datamodels.stnode.MosaicWcsinfo
+    """
+
+    moswcsi = stnode.MosaicWcsinfo()
+    moswcsi["ra_ref"] = kwargs.get("ra_ref", NONUM)
+    moswcsi["dec_ref"] = kwargs.get("dec_ref", NONUM)
+    moswcsi["x_ref"] = kwargs.get("x_ref", NONUM)
+    moswcsi["y_ref"] = kwargs.get("y_ref", NONUM)
+    moswcsi["rotation_matrix"] = kwargs.get("rotation_matrix",
+                                            [[NONUM,NONUM], [NONUM,NONUM]])
+    moswcsi["pixel_scale"] = kwargs.get("pixel_scale", NONUM)
+    moswcsi["pixel_scale_local"] = kwargs.get("pixel_scale_local", NONUM)
+    moswcsi["pixel_shape"] = kwargs.get("pixel_shape", [NONUM,NONUM])
+    moswcsi["ra_center"] = kwargs.get("ra_center", NONUM)
+    moswcsi["dec_center"] = kwargs.get("dec_center", NONUM)
+    moswcsi["ra_corn1"] = kwargs.get("ra_corn1", NONUM)
+    moswcsi["dec_corn1"] = kwargs.get("dec_corn1", NONUM)
+    moswcsi["ra_corn2"] = kwargs.get("ra_corn2", NONUM)
+    moswcsi["dec_corn2"] = kwargs.get("dec_corn2", NONUM)
+    moswcsi["ra_corn3"] = kwargs.get("ra_corn3", NONUM)
+    moswcsi["dec_corn3"] = kwargs.get("dec_corn3", NONUM)
+    moswcsi["ra_corn4"] = kwargs.get("ra_corn4", NONUM)
+    moswcsi["dec_corn4"] = kwargs.get("dec_corn4", NONUM)
+    moswcsi["orientat_local"] = kwargs.get("orientat_local", NONUM)
+    moswcsi["orientat"] = kwargs.get("orientat", NONUM)
+    moswcsi["projection"] = kwargs.get("projection", ["RA---TAN", "DEC--TAN"])
+    moswcsi["s_region"] = kwargs.get("s_region", NOSTR)
+
+    return moswcsi
+
+
+def mk_individual_image_meta(**kwargs):
+    """
+    Create a dummy component image metadata storage instance for mosaics
+    with valid values for attributes required by the schema.
+    Utilized by the model maker utilities.
+
+    Returns
+    -------
+    roman_datamodels.stnode.IndividualImageMeta
+    """
+
+    imm = stnode.IndividualImageMeta()
+    imm["all_meta"] = kwargs.get("all_meta", [])
+
+    return imm
