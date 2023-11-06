@@ -1,4 +1,9 @@
-0.17.2 (unreleased)
+0.18.1 (unreleased)
+===================
+
+-
+
+0.18.0 (2023-11-06)
 ===================
 
 - Allow DNode and LNode subclass instances to be assigned to tree attributes and support
