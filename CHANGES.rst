@@ -1,12 +1,11 @@
 0.18.1 (unreleased)
 ===================
 
--
+- Allow assignment to or creation of node attributes using dot notation of object instances
+  with validation. [#284]
 
 0.18.0 (2023-11-06)
 ===================
-- Allow assignment to or creation of node attributes using dot notation of object instances
-  with validation. [#284]
 
 - Allow DNode and LNode subclass instances to be assigned to tree attributes and support
   validation of all such instances. [#275]
