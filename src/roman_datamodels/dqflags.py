@@ -18,10 +18,11 @@ The data structure that stores bit flags is just the standard Python `int`,
 which provides 32 bits. Bits of an integer are most easily referred to using
 the formula `2**bit_number` where `bit_number` is the 0-index bit of interest.
 """
-from enum import IntEnum
+from enum import IntEnum, unique
 
 
 # fmt: off
+@unique
 class pixel(IntEnum):
     """Pixel-specific data quality flags"""
 
@@ -59,6 +60,7 @@ class pixel(IntEnum):
     REFERENCE_PIXEL  = 2**31  # Pixel is a reference pixel
 
 
+@unique
 class group(IntEnum):
     """Group-specific data quality flags
         Once groups are combined, these flags are equivalent to the pixel-specific flags.
