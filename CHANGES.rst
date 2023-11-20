@@ -1,7 +1,8 @@
 0.18.1 (unreleased)
 ===================
 
--
+- Allow assignment to or creation of node attributes using dot notation of object instances
+  with validation. [#284]
 
 0.18.0 (2023-11-06)
 ===================
