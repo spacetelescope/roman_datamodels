@@ -26,17 +26,17 @@ from enum import IntEnum, unique
 class pixel(IntEnum):
     """Pixel-specific data quality flags"""
 
-    GOOD             = 0  # No bits set, all is good
-    DO_NOT_USE       = 2**0  # Bad pixel. Do not use.
-    SATURATED        = 2**1  # Pixel saturated during exposure
-    JUMP_DET         = 2**2  # Jump detected during exposure
-    DROPOUT          = 2**3  # Data lost in transmission
-    GW_AFFECTED_DATA = 2**4  # Data affected by the GW read window
-    PERSISTENCE      = 2**5  # High persistence (was RESERVED_2)
-    AD_FLOOR         = 2**6  # Below A/D floor (0 DN, was RESERVED_3)
-    RESERVED_4       = 2**7  #
-    UNRELIABLE_ERROR = 2**8  # Uncertainty exceeds quoted error
-    NON_SCIENCE      = 2**9  # Pixel not on science portion of detector
+    GOOD             = 0      # No bits set, all is good
+    DO_NOT_USE       = 2**0   # Bad pixel. Do not use.
+    SATURATED        = 2**1   # Pixel saturated during exposure
+    JUMP_DET         = 2**2   # Jump detected during exposure
+    DROPOUT          = 2**3   # Data lost in transmission
+    GW_AFFECTED_DATA = 2**4   # Data affected by the GW read window
+    PERSISTENCE      = 2**5   # High persistence (was RESERVED_2)
+    AD_FLOOR         = 2**6   # Below A/D floor (0 DN, was RESERVED_3)
+    OUTLIER          = 2**7   # Flagged by outlier detection (was RESERVED_4)
+    UNRELIABLE_ERROR = 2**8   # Uncertainty exceeds quoted error
+    NON_SCIENCE      = 2**9   # Pixel not on science portion of detector
     DEAD             = 2**10  # Dead pixel
     HOT              = 2**11  # Hot pixel
     WARM             = 2**12  # Warm pixel
