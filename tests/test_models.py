@@ -804,3 +804,15 @@ def test_datamodel_construct_like_from_like(model):
     new_mdl = model(mdl)
     assert new_mdl is mdl
     assert new_mdl._iscopy == "foo"  # Verify that the constructor didn't override stuff
+
+
+def test_datamodel_save_filename(tmp_path):
+    filename = tmp_path / "fancy_filename.asdf"
+    ramp = utils.mk_datamodel(datamodels.RampModel, shape=(2, 8, 8))
+    assert ramp.meta.filename != filename.name
+
+    ramp.save(filename)
+    assert ramp.meta.filename != filename.name
+
+    with datamodels.open(filename) as new_ramp:
+        assert new_ramp.meta.filename == filename.name
