@@ -11,10 +11,8 @@ import abc
 import copy
 import datetime
 import functools
-import os
-import os.path
 import sys
-from pathlib import PurePath
+from pathlib import Path, PurePath
 
 import asdf
 import numpy as np
@@ -181,17 +179,9 @@ class DataModel(abc.ABC):
         target._ctx = target
 
     def save(self, path, dir_path=None, *args, **kwargs):
-        if callable(path):
-            path_head, path_tail = os.path.split(path(self.meta.filename))
-        else:
-            path_head, path_tail = os.path.split(path)
-        base, ext = os.path.splitext(path_tail)
-        if isinstance(ext, bytes):
-            ext = ext.decode(sys.getfilesystemencoding())
-
-        if dir_path:
-            path_head = dir_path
-        output_path = os.path.join(path_head, path_tail)
+        path = Path(path(self.meta.filename) if callable(path) else path)
+        output_path = Path(dir_path) / path.name if dir_path else path
+        ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix
 
         # TODO: Support gzip-compressed fits
         if ext == ".asdf":
