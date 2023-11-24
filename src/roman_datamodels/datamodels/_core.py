@@ -12,6 +12,7 @@ import copy
 import datetime
 import functools
 import sys
+from contextlib import contextmanager
 from pathlib import Path, PurePath
 
 import asdf
@@ -44,6 +45,22 @@ def _set_default_asdf(func):
         return func(self, *args, **kwargs)
 
     return wrapper
+
+
+@contextmanager
+def _temporary_update_filename(datamodel, filename):
+    """
+    Context manager to temporarily update the filename of a datamodel so that it
+    can be saved with that new file name without changing the current model's filename
+    """
+    from roman_datamodels.stnode import Filename
+
+    if "meta" in datamodel._instance and "filename" in datamodel._instance.meta:
+        old_filename = datamodel._instance.meta.filename
+        datamodel._instance.meta.filename = Filename(filename)
+
+        yield
+        datamodel._instance.meta.filename = old_filename
 
 
 class DataModel(abc.ABC):
@@ -196,10 +213,10 @@ class DataModel(abc.ABC):
             return asdf.open(init, **kwargs) if isinstance(init, str) else asdf.AsdfFile(init, **kwargs)
 
     def to_asdf(self, init, *args, **kwargs):
-        with validate.nuke_validation():
-            asdffile = self.open_asdf(**kwargs)
-            asdffile.tree = {"roman": self._instance}
-            asdffile.write_to(init, *args, **kwargs)
+        with validate.nuke_validation(), _temporary_update_filename(self, Path(init).name):
+            asdf_file = self.open_asdf(**kwargs)
+            asdf_file.tree = {"roman": self._instance}
+            asdf_file.write_to(init, *args, **kwargs)
 
     def get_primary_array_name(self):
         """
