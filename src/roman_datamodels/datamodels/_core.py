@@ -61,6 +61,10 @@ def _temporary_update_filename(datamodel, filename):
 
         yield
         datamodel._instance.meta.filename = old_filename
+        return
+
+    yield
+    return
 
 
 class DataModel(abc.ABC):
