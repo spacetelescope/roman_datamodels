@@ -109,6 +109,8 @@ def test_datamodel_maker(model_class):
     assert isinstance(model, model_class)
     model.validate()
 
+    assert model.meta.model_type == model_class.__name__
+
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
