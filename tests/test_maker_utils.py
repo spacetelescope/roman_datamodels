@@ -7,6 +7,7 @@ from astropy import units as u
 from astropy.time import Time
 
 from roman_datamodels import datamodels, maker_utils, stnode
+from roman_datamodels.datamodels._datamodels import _RomanDataModel
 from roman_datamodels.maker_utils import _ref_files as ref_files
 from roman_datamodels.testing import assert_node_equal
 
@@ -109,7 +110,8 @@ def test_datamodel_maker(model_class):
     assert isinstance(model, model_class)
     model.validate()
 
-    assert model.meta.model_type == model_class.__name__
+    if issubclass(model_class, _RomanDataModel):
+        assert model.meta.model_type == model_class.__name__
 
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])

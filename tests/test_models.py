@@ -772,6 +772,14 @@ def test_ramp_from_science_raw():
         if isinstance(ramp_value, np.ndarray):
             assert_array_equal(ramp_value, raw_value.astype(ramp_value.dtype))
 
+        elif key == "meta":
+            for meta_key in ramp_value:
+                if meta_key == "model_type":
+                    ramp_value[meta_key] = ramp.__class__.__name__
+                    raw_value[meta_key] = raw.__class__.__name__
+                    continue
+                assert_node_equal(ramp_value[meta_key], raw_value[meta_key])
+
         elif isinstance(ramp_value, stnode.DNode):
             assert_node_equal(ramp_value, raw_value)
 
