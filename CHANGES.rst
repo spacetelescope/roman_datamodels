@@ -4,6 +4,8 @@
 - Allow assignment to or creation of node attributes using dot notation of object instances
   with validation. [#284]
 
+- Bugfix for ``model.meta.filename`` not matching the filename of the file on disk. [#295]
+
 0.18.0 (2023-11-06)
 ===================
 
