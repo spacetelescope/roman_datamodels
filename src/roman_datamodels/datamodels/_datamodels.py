@@ -25,29 +25,42 @@ class _DataModel(DataModel):
     def __init_subclass__(cls, **kwargs):
         """Register each subclass in the __all__ for this module"""
         super().__init_subclass__(**kwargs)
+
+        # Don't register private classes
+        if cls.__name__.startswith("_"):
+            return
+
         if cls.__name__ in __all__:
             raise ValueError(f"Duplicate model type {cls.__name__}")
 
         __all__.append(cls.__name__)
 
 
-class MosaicModel(_DataModel):
+class _RomanDataModel(_DataModel):
+    def __init__(self, init=None, **kwargs):
+        super().__init__(init, **kwargs)
+
+        if init is not None:
+            self.meta.model_type = self.__class__.__name__
+
+
+class MosaicModel(_RomanDataModel):
     _node_type = stnode.WfiMosaic
 
 
-class ImageModel(_DataModel):
+class ImageModel(_RomanDataModel):
     _node_type = stnode.WfiImage
 
 
-class ScienceRawModel(_DataModel):
+class ScienceRawModel(_RomanDataModel):
     _node_type = stnode.WfiScienceRaw
 
 
-class MsosStackModel(_DataModel):
+class MsosStackModel(_RomanDataModel):
     _node_type = stnode.MsosStack
 
 
-class RampModel(_DataModel):
+class RampModel(_RomanDataModel):
     _node_type = stnode.Ramp
 
     @classmethod
@@ -86,7 +99,7 @@ class RampModel(_DataModel):
         raise ValueError("Input model must be a ScienceRawModel or RampModel")
 
 
-class RampFitOutputModel(_DataModel):
+class RampFitOutputModel(_RomanDataModel):
     _node_type = stnode.RampFitOutput
 
 
@@ -107,7 +120,7 @@ class AssociationsModel(_DataModel):
         return isinstance(asn_data, dict) and "asn_id" in asn_data and "asn_pool" in asn_data
 
 
-class GuidewindowModel(_DataModel):
+class GuidewindowModel(_RomanDataModel):
     _node_type = stnode.Guidewindow
 
 
