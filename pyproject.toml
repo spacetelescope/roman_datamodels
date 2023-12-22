@@ -18,9 +18,12 @@ dependencies = [
     'psutil >=5.7.2',
     'numpy >=1.22',
     'astropy >=5.3.0',
-    'rad >=0.18.0',
-    # 'rad @ git+https://github.com/spacetelescope/rad.git',
+    'rad @ git+https://github.com/WilliamJamieson/rad.git@feature/autogen_schema',
     'asdf-standard >=1.0.3',
+    'datamodel-code-generator >=0.25',
+    'pydantic >=2.5',
+    'StrEnum >=0.4; python_version <"3.11"',
+
 ]
 dynamic = ['version']
 
@@ -52,7 +55,17 @@ docs = [
 'asdf.extensions' = { roman_datamodels = 'roman_datamodels.stnode._integration:get_extensions' }
 
 [build-system]
-requires = ["setuptools >=61", "setuptools_scm[toml] >=3.4", "wheel"]
+requires = [
+    "setuptools >=61",
+    "setuptools_scm[toml] >=3.4",
+    'asdf >=2.14.2',
+    'asdf-astropy >=0.4.0',
+    'datamodel-code-generator >=0.25',
+    'pydantic >=2.5',
+    'StrEnum >=0.4; python_version <"3.11"',
+    'rad @ git+https://github.com/WilliamJamieson/rad.git@feature/autogen_schema',
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
