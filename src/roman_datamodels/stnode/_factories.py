@@ -44,6 +44,8 @@ def load_schema_from_uri(schema_uri):
         schema_path = BASE_SCHEMA_PATH / "reference_files" / filename
     elif "tagged_scalars" in schema_uri:
         schema_path = BASE_SCHEMA_PATH / "tagged_scalars" / filename
+    elif "data_products" in schema_uri:
+        schema_path = BASE_SCHEMA_PATH / "data_products" / filename
     else:
         schema_path = BASE_SCHEMA_PATH / filename
 

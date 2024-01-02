@@ -28,6 +28,16 @@ class RomanDataModelConverter(Converter):
         "asdf://stsci.edu/datamodels/roman/tags/source_detection-1.0.0",
         "asdf://stsci.edu/datamodels/roman/tags/resample-1.0.0",
     )
+    _updated_tags: ClassVar[dict[str, str]] = {
+        "asdf://stsci.edu/datamodels/roman/tags/guidewindow-1.0.0": "asdf://stsci.edu/datamodels/roman/tags/data_products/guidewindow-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/ramp-1.0.0": "asdf://stsci.edu/datamodels/roman/tags/data_products/ramp-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/ramp_fit_output-1.0.0": "asdf://stsci.edu/datamodels/roman/tags/data_products/ramp_fit_output-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/wfi_science_raw-1.0.0": "asdf://stsci.edu/datamodels/roman/tags/data_products/wfi_science_raw-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/wfi_image-1.0.0": "asdf://stsci.edu/datamodels/roman/tags/data_products/wfi_image-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/wfi_mosaic-1.0.0": "asdf://stsci.edu/datamodels/roman/tags/data_products/wfi_mosaic-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/associations-1.0.0": "asdf://stsci.edu/datamodels/roman/tags/data_products/associations-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/msos_stack-1.0.0": "asdf://stsci.edu/datamodels/roman/tags/data_products/msos_stack-1.0.0",
+    }
 
     def __init__(self) -> None:
         global _ROMAN_DATAMODEL_CONVERTER
@@ -44,7 +54,7 @@ class RomanDataModelConverter(Converter):
 
     @property
     def tags(self) -> tuple(str):
-        return tuple(self._tag_to_model.keys()) + self._removed_tags
+        return tuple(self._tag_to_model.keys()) + self._removed_tags + tuple(self._updated_tags.keys())
 
     @property
     def types(self) -> tuple(type):
@@ -66,6 +76,13 @@ class RomanDataModelConverter(Converter):
                 return _TIME_CONVERTER.from_yaml_tree(node, "tag:stsci.edu:asdf/time/time-1.1.0", ctx)
 
             return node
+
+        if tag in self._updated_tags:
+            warnings.warn(
+                f"The tag: {tag} has been updated to {self._updated_tags[tag]}, if this data is written the tag will be updated",
+                DeprecationWarning,
+            )
+            tag = self._updated_tags[tag]
 
         return self._tag_to_model[tag](**node)
 
