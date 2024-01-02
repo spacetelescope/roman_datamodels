@@ -203,6 +203,12 @@ class RadSchemaParser(JsonSchemaParser):
         if obj.tag_uri:
             self.extra_template_data[name]["tag_uri"] = obj.tag_uri
 
+    def parse_array(self, name: str, obj: RadSchemaObject, path: list[str], original_name: str | None = None) -> DataType:
+        """Insert the ability to tag an array"""
+        self.set_title(name, obj)
+
+        return super().parse_array(name, obj, path, original_name)
+
     def parse_object(
         self,
         name: str,

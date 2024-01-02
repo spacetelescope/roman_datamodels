@@ -30,7 +30,7 @@ class RomanDataModel(BaseModel):
                     if isinstance(value, RomanDataModel) and value._tag_uri is not None:
                         field[index] = value.to_asdf_tree()
 
-            if isinstance(field, RootModel):
+            if isinstance(field, RootModel) and (not hasattr(field, "_tag_uri") or field._tag_uri is None):
                 tree[field_name] = field.root
 
             if isinstance(field, Enum):

@@ -1,24 +1,41 @@
 from __future__ import annotations
 
+import warnings
 from typing import Any, ClassVar
 
 from asdf.extension import Converter
+from asdf_astropy.converters.time import TimeConverter
+from pydantic import RootModel
 
 from .datamodel import RomanDataModel
 
-_ASDF_CONVERTER: RomanDataModelConverter | None = None
+_ROMAN_DATAMODEL_CONVERTER: RomanDataModelConverter | None = None
+_ROMAN_ROOTMODEL_CONVERTER: RomanRootModelConverter | None = None
+_TIME_CONVERTER = TimeConverter()
 
 
 class RomanDataModelConverter(Converter):
     _tag_to_model: ClassVar[dict[str, type[RomanDataModel]] | None] = None
+    _removed_tags: ClassVar[tuple(str)] = (
+        "asdf://stsci.edu/datamodels/roman/tags/calibration_software_version-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/filename-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/file_date-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/model_type-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/origin-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/prd_software_version-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/sdf_software_version-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/telescope-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/source_detection-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/resample-1.0.0",
+    )
 
     def __init__(self) -> None:
-        global _ASDF_CONVERTER
+        global _ROMAN_DATAMODEL_CONVERTER
 
-        if _ASDF_CONVERTER is not None:
-            _ASDF_CONVERTER = self
+        if _ROMAN_DATAMODEL_CONVERTER is not None:
+            _ROMAN_DATAMODEL_CONVERTER = self
 
-        self = _ASDF_CONVERTER
+        self = _ROMAN_DATAMODEL_CONVERTER
 
     @classmethod
     def from_registry(cls, registry: dict[str, type[RomanDataModel]]) -> RomanDataModelConverter:
@@ -27,7 +44,7 @@ class RomanDataModelConverter(Converter):
 
     @property
     def tags(self) -> tuple(str):
-        return tuple(self._tag_to_model.keys())
+        return tuple(self._tag_to_model.keys()) + self._removed_tags
 
     @property
     def types(self) -> tuple(type):
@@ -40,4 +57,48 @@ class RomanDataModelConverter(Converter):
         return obj.to_asdf_tree()
 
     def from_yaml_tree(self, node: Any, tag: Any, ctx: Any) -> RomanDataModel:
+        if tag in self._removed_tags:
+            warnings.warn(
+                f"The tag: {tag} has been removed as a stand alone tag, if this data is written the tag will not be included",
+                DeprecationWarning,
+            )
+            if "file_date" in tag:
+                return _TIME_CONVERTER.from_yaml_tree(node, "tag:stsci.edu:asdf/time/time-1.1.0", ctx)
+
+            return node
+
         return self._tag_to_model[tag](**node)
+
+
+class RomanRootModelConverter(Converter):
+    _tag_to_model: ClassVar[dict[str, type[RomanDataModel]] | None] = None
+
+    def __init__(self) -> None:
+        global _ROMAN_ROOTMODEL_CONVERTER
+
+        if _ROMAN_ROOTMODEL_CONVERTER is not None:
+            _ROMAN_ROOTMODEL_CONVERTER = self
+
+        self = _ROMAN_ROOTMODEL_CONVERTER
+
+    @classmethod
+    def from_registry(cls, registry: dict[str, type[RootModel]]) -> RomanRootModelConverter:
+        cls._tag_to_model = registry if cls._tag_to_model is None else {**cls._tag_to_model, **registry}
+        return cls()
+
+    @property
+    def tags(self) -> tuple(str):
+        return tuple(self._tag_to_model.keys())
+
+    @property
+    def types(self) -> tuple(type):
+        return tuple(self._tag_to_model.values())
+
+    def select_tag(self, obj: RootModel, tags: Any, ctx: Any) -> str:
+        return obj._tag_uri
+
+    def to_yaml_tree(self, obj: RootModel, tag: Any, ctx: Any) -> dict:
+        return obj.root
+
+    def from_yaml_tree(self, node: Any, tag: Any, ctx: Any) -> RootModel:
+        return self._tag_to_model[tag](node)

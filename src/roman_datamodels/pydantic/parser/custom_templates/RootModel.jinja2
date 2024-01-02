@@ -1,15 +1,19 @@
+{%- macro get_type_hint(_fields) -%}
+{%- if _fields -%}
+{#There will only ever be a single field for RootModel#}
+{{- _fields[0].type_hint}}
+{%- endif -%}
+{%- endmacro -%}
+
+
 {% for decorator in decorators -%}
 {{ decorator }}
 {% endfor -%}
-class {{ class_name }}({{ base_class }}):{% if comment is defined %}  # {{ comment }}{% endif %}
-{%- if description or title %}
+
+class {{ class_name }}({{ base_class }}[{{get_type_hint(fields)}}]):{% if comment is defined %}  # {{ comment }}{% endif %}
+{%- if description %}
     """
-    {%- if title %}
-    {{ title | indent(4) }}
-    {%- endif %}
-    {%- if description %}
     {{ description | indent(4) }}
-    {%- endif %}
     """
 {%- endif %}
 {%- if tag_uri %}
@@ -19,24 +23,24 @@ class {{ class_name }}({{ base_class }}):{% if comment is defined %}  # {{ comme
     _tag_uri: ClassVar = None
 
 {% endif %}
-{%- if not fields and not description %}
-    pass
-{%- endif %}
 {%- if config %}
 {%- filter indent(4) %}
 {% include 'ConfigDict.jinja2' %}
 {%- endfilter %}
 {%- endif %}
-{%- for field in fields -%}
+{%- if not fields and not description %}
+    pass
+{%- else %}
+    {%- set field = fields[0] %}
     {%- if not field.annotated and field.field %}
-    {{ field.name }}: {{ field.type_hint }} = {{ field.field }}
+    root: {{ field.type_hint }} = {{ field.field }}
     {%- else %}
     {%- if field.annotated %}
-    {{ field.name }}: {{ field.annotated }}
+    root: {{ field.annotated }}
     {%- else %}
-    {{ field.name }}: {{ field.type_hint }}
+    root: {{ field.type_hint }}
     {%- endif %}
-    {%- if (not field.required or field.data_type.is_optional or field.nullable) and not field.annotated
+    {%- if not (field.required or (field.represented_default == 'None' and field.strip_default_none))
             %} = {{ field.represented_default }}
     {%- endif -%}
     {%- endif %}
@@ -45,7 +49,4 @@ class {{ class_name }}({{ base_class }}):{% if comment is defined %}  # {{ comme
     {{ field.docstring | indent(4) }}
     """
     {%- endif %}
-{%- for method in methods -%}
-    {{ method }}
-{%- endfor -%}
-{%- endfor -%}
+{%- endif %}

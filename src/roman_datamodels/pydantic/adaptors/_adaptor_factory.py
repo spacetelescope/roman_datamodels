@@ -82,7 +82,7 @@ def adaptor_factory(obj: RadSchemaObject, data_type: DataType) -> DataType:
         type_, import_ = _ndarray_factory(obj, name)
         type_ = f"{name}[{type_}]"  # wrap type in NdArray annotation
 
-    elif obj.tag == asdf_tags.ASTROPY_UNIT:
+    elif obj.tag == asdf_tags.ASTROPY_UNIT or obj.tag == asdf_tags.ASDF_UNIT:
         name = IMPORT_[asdf_tags.ASTROPY_UNIT.name]
 
         type_, import_ = _unit_factory(obj, name)
