@@ -11,8 +11,7 @@ from datamodel_code_generator.parser.base import get_special_path
 from datamodel_code_generator.parser.jsonschema import JsonSchemaParser, get_model_by_path
 from datamodel_code_generator.types import DataType
 
-from roman_datamodels.pydantic.adaptors import adaptor_factory, has_adaptor
-
+from ._adaptor import adaptor_factory, has_adaptor
 from ._reslover import RadModelResolver
 from ._schema import RadSchemaObject
 from ._utils import class_name_from_uri, remove_uri_version

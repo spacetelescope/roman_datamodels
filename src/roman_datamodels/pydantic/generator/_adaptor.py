@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING
 from datamodel_code_generator.imports import Import
 from datamodel_code_generator.types import DataType
 
-from ._adaptor_tags import asdf_tags
-from ._astropy_quantity import AstropyQuantity
-from ._astropy_time import AstropyTime
-from ._astropy_unit import AstropyUnit
-from ._ndarray import NdArray
+from ..adaptors._adaptor_tags import asdf_tags
+from ..adaptors._astropy_quantity import AstropyQuantity
+from ..adaptors._astropy_time import AstropyTime
+from ..adaptors._astropy_unit import AstropyUnit
+from ..adaptors._ndarray import NdArray
 
 if TYPE_CHECKING:
     # Prevent a runtime import loop for the sake of type annotations
-    from roman_datamodels.pydantic.parser._schema import RadSchemaObject
+    from roman_datamodels.pydantic.generator._schema import RadSchemaObject
 
 
 __all__ = ["has_adaptor", "adaptor_factory"]

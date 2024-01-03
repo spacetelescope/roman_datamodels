@@ -5,12 +5,64 @@ from textwrap import dedent
 from datamodel_code_generator.parser.base import Result
 from datamodel_code_generator.reference import get_relative_path
 
-from roman_datamodels.pydantic.parser._utils import class_name_from_module
+from roman_datamodels.pydantic.generator._utils import class_name_from_module
 
 __all__ = ["write_files"]
 
 
-def create_code(file: Result, version: str, use_timestamp: bool) -> str:
+def write_files(
+    path: Path,
+    results: dict[tuple[str], Result],
+    version: str | None = None,
+    use_timestamp: bool = True,
+) -> None:
+    """
+    Write the parser results to actual files.
+
+    Parameters
+    ----------
+    path: Path
+        The base path for where the files will be written.
+    results: dict[tuple[str], Result]
+        The results from the parser
+    version: str, optional
+        The version of the schemas being used.
+    use_timestamp: bool, optional
+        If we timestamp the output files.
+
+    Effects
+    -------
+    Write the parser results to files.
+    """
+    # Set the version if it is not provided.
+    #    this should be updated to "1.0" when bugfix versions are dropped from
+    #    the naming of the schemas.
+    version = version or "1.0.0"
+
+    module_paths = {}  # so that we can fill in the __init__ modules
+    for name, file in results.items():
+        # Create the file path and then write the file to the path
+        write_path = _make_file_path(path, name)
+        with write_path.open("w") as f:
+            f.write(_create_code(file, version, use_timestamp))
+
+        # Add the module path data so we can turn it into __init__ modules
+        module_path = get_relative_path(path, write_path)
+        module_name = module_path.stem
+        module_parent = module_path.parent.as_posix()
+        module_parent = "" if module_parent == "." else module_parent
+
+        if module_parent not in module_paths:
+            module_paths[module_parent] = []
+
+        if module_name != "__init__":
+            module_paths[module_parent].append(module_name)
+
+    # Write the __init__ modules
+    _write_init(path, module_paths, version, use_timestamp)
+
+
+def _create_code(file: Result, version: str, use_timestamp: bool) -> str:
     """
     Create the final form of the code from a parser result.
 
@@ -46,7 +98,7 @@ def create_code(file: Result, version: str, use_timestamp: bool) -> str:
     return header + file.body
 
 
-def create_init_module(module_paths: dict[str, list[str]], version: str, use_timestamp: bool, suffix: str) -> str:
+def _create_init_module(module_paths: dict[str, list[str]], version: str, use_timestamp: bool, suffix: str) -> str:
     """
     Create an __init__ for the given modules.
 
@@ -54,6 +106,12 @@ def create_init_module(module_paths: dict[str, list[str]], version: str, use_tim
     ----------
     module_paths: dict[str, list[str]]
         A mapping of package names to lists of module names.
+    version: str
+        The version of the schemas being used. (this is a pass through to create_code)
+    use_timestamp: bool
+        The version of the schemas being used. (this is a pass through to create_code)
+    suffix: str
+        A suffix to add to the class names.
 
     Returns
     -------
@@ -80,10 +138,10 @@ def create_init_module(module_paths: dict[str, list[str]], version: str, use_tim
         body += f'    "{class_name}",\n'
     body += "]\n"
 
-    return create_code(Result(body=body, source=None), version, use_timestamp)
+    return _create_code(Result(body=body, source=None), version, use_timestamp)
 
 
-def make_file_path(path: Path, name: tuple[str]) -> Path:
+def _make_file_path(path: Path, name: tuple[str]) -> Path:
     """
     Make construct the file path and make sure the directories exist.
 
@@ -114,7 +172,7 @@ def make_file_path(path: Path, name: tuple[str]) -> Path:
     return file_path / name[-1]
 
 
-def write_init(
+def _write_init(
     path: Path, module_paths: dict[str, list[str]], version: str, use_timestamp: bool, suffix: str | None = None
 ) -> None:
     """
@@ -130,6 +188,8 @@ def write_init(
         The version of the schemas being used.
     use_timestamp: bool
         If we timestamp the output file.
+    suffix: str, optional
+        A suffix to add to the class names.
 
     Effects
     -------
@@ -139,66 +199,19 @@ def write_init(
 
     # Write the top level __init__ module
     with (path / "__init__.py").open("w") as f:
-        f.write(create_init_module(module_paths, version, use_timestamp, suffix))
+        f.write(_create_init_module(module_paths, version, use_timestamp, suffix))
 
-    del module_paths[""]
+    # Write the __init__ modules for the sub packages
+    del module_paths[""]  # remove the top level package
     for base_path, base_modules in module_paths.items():
-        sub_module_paths = {"": base_modules}
+        new_module_paths = {"": base_modules}  # Add all the new "top level" modules
         for path_, modules in module_paths.items():
+            # Add all the sub-packages adjusted for the new relative import
             path_prefix = f"{base_path}."
             if path_.startswith(path_prefix):
-                sub_module_paths[path_.split(path_prefix)[-1]] = modules
+                new_module_paths[path_.split(path_prefix)[-1]] = modules
 
-        suffix = class_name_from_module(base_path, "") if suffix == "" else suffix
-        write_init(path / base_path, sub_module_paths, version, use_timestamp, suffix)
-
-
-def write_files(
-    path: Path,
-    results: dict[tuple[str], Result],
-    version: str | None = None,
-    use_timestamp: bool = True,
-) -> None:
-    """
-    Write the parser results to actual files.
-
-    Parameters
-    ----------
-    path: Path
-        The base path for where the files will be written.
-    results: dict[tuple[str], Result]
-        The results from the parser
-    version: str, optional
-        The version of the schemas being used.
-    use_timestamp: bool, optional
-        If we timestamp the output files.
-
-    Effects
-    -------
-    Write the parser results to files.
-    """
-    # Set the version if it is not provided.
-    #    this should be updated to "1.0" when bugfix versions are dropped from
-    #    the naming of the schemas.
-    version = version or "1.0.0"
-
-    module_paths = {}  # so that we can fill in the __init__ modules
-    for name, file in results.items():
-        # Create the file path and then write the file to the path
-        write_path = make_file_path(path, name)
-        with write_path.open("w") as f:
-            f.write(create_code(file, version, use_timestamp))
-
-        # Add the module path data so we can turn it into __init__ modules
-        module_path = get_relative_path(path, write_path)
-        module_name = module_path.stem
-        module_parent = module_path.parent.as_posix()
-        module_parent = "" if module_parent == "." else module_parent
-
-        if module_parent not in module_paths:
-            module_paths[module_parent] = []
-
-        if module_name != "__init__":
-            module_paths[module_parent].append(module_name)
-
-    write_init(path, module_paths, version, use_timestamp)
+        # Suffix preserves the module suffix has that is determined the base path and
+        # so can be lost.
+        new_suffix = class_name_from_module(base_path, "") if suffix == "" else suffix
+        _write_init(path / base_path, new_module_paths, version, use_timestamp, new_suffix)
