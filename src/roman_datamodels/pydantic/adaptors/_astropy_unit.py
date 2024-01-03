@@ -7,6 +7,7 @@ from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
 from ._adaptor_tags import asdf_tags
+from ._base import Adaptor
 
 __all__ = ["Unit", "AstropyUnit"]
 
@@ -49,7 +50,7 @@ astropy_unit_schema = core_schema.no_info_wrap_validator_function(
 )
 
 
-class _AstropyUnitPydanticAnnotation:
+class _AstropyUnitPydanticAnnotation(Adaptor):
     units: ClassVar[Optional[list[Unit]]] = None
 
     @classmethod
@@ -133,8 +134,12 @@ class _AstropyUnitPydanticAnnotation:
         return {**schema, "enum": sorted(_get_unit_symbol(unit) for unit in cls.units)}
 
 
-class _AstropyUnit:
+class _AstropyUnit(Adaptor):
     """Hack to make it look like it has the style of a type annotation."""
+
+    @classmethod
+    def make_default(cls, **kwargs):
+        raise NotImplementedError("This cannot be called on this class")
 
     @staticmethod
     def __getitem__(unit: Units = None) -> type:

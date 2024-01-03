@@ -8,6 +8,7 @@ from pydantic_core import core_schema
 
 from ._adaptor_tags import asdf_tags
 from ._astropy_unit import Unit, Units, _AstropyUnitPydanticAnnotation
+from ._base import Adaptor
 from ._ndarray import NDArrayLike, _AsdfNdArrayPydanticAnnotation
 
 __all__ = ["AstropyQuantity"]
@@ -176,7 +177,11 @@ _Factory = Union[
 ]
 
 
-class _AstropyQuantity:
+class _AstropyQuantity(Adaptor):
+    @classmethod
+    def make_default(cls, **kwargs):
+        raise NotImplementedError("This cannot be called on this class")
+
     @staticmethod
     def __getitem__(factory: _Factory) -> type:
         if not isinstance(factory, tuple):

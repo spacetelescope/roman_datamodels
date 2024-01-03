@@ -6,11 +6,12 @@ from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
 from ._adaptor_tags import asdf_tags
+from ._base import Adaptor
 
 __all__ = ["AstropyTime"]
 
 
-class _AstropyTimePydanticAnnotation:
+class _AstropyTimePydanticAnnotation(Adaptor):
     @classmethod
     def __get_pydantic_core_schema__(
         cls,

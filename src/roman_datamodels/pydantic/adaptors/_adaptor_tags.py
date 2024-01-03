@@ -18,3 +18,17 @@ class asdf_tags(StrEnum):
     ASTROPY_QUANTITY = "tag:stsci.edu:asdf/unit/quantity-1.1.0"
 
     ND_ARRAY = "tag:stsci.edu:asdf/core/ndarray-1.0.0"
+
+    @staticmethod
+    def get_tag_key(value: str) -> str:
+        """
+        Courtesy of https://stackoverflow.com/a/1176023
+
+        Parameters
+        ----------
+        value : str
+            The value to convert to a tag key (this may not be in the enum)
+        """
+        import re
+
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", value).upper()

@@ -8,6 +8,7 @@ from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
 from ._adaptor_tags import asdf_tags
+from ._base import Adaptor
 
 __all__ = ["NdArray"]
 
@@ -48,7 +49,7 @@ def _validate_array(
     return array
 
 
-class _AsdfNdArrayPydanticAnnotation:
+class _AsdfNdArrayPydanticAnnotation(Adaptor):
     dtype: ClassVar[Optional[DTypeLike]]
     ndim: ClassVar[Optional[PositiveInt]]
     default_shape: ClassVar[Optional[tuple[PositiveInt, ...]]]
@@ -178,7 +179,11 @@ class _AsdfNdArrayPydanticAnnotation:
 _Factory = Union[DTypeLike, tuple[DTypeLike, PositiveInt]]
 
 
-class _NdArray:
+class _NdArray(Adaptor):
+    @classmethod
+    def make_default(cls, **kwargs):
+        raise NotImplementedError("This cannot be called on this class")
+
     @staticmethod
     def __getitem__(factory: _Factory) -> type:
         if not isinstance(factory, tuple):
