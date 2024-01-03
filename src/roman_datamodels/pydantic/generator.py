@@ -2,39 +2,11 @@ from datetime import datetime
 from pathlib import Path
 from textwrap import dedent
 
-from asdf.config import get_config
-from datamodel_code_generator import DataModelType, PythonVersion
-from datamodel_code_generator.model import get_data_model_types
 from datamodel_code_generator.parser.base import Result
 from datamodel_code_generator.reference import get_relative_path
 
 from roman_datamodels.pydantic.parser import RadSchemaParser
-
-
-def get_rad_schema_path(suffix: str) -> Path:
-    manager = get_config().resource_manager
-
-    for resource in manager._resource_mappings:
-        if resource.package_name == "rad" and resource.delegate.uri_prefix.endswith(suffix):
-            return resource.delegate.root
-
-
-def create_rad_schema_parser(path: Path) -> RadSchemaParser:
-    data_model_types = get_data_model_types(DataModelType.PydanticV2BaseModel, target_python_version=PythonVersion.PY_311)
-    return RadSchemaParser(
-        path,
-        data_model_type=data_model_types.data_model,
-        data_model_root_type=data_model_types.root_model,
-        data_model_field_type=data_model_types.field_model,
-        data_type_manager_type=data_model_types.data_type_manager,
-        dump_resolve_reference_action=data_model_types.dump_resolve_reference_action,
-        use_annotated=True,
-        field_constraints=True,
-        base_class="roman_datamodels.pydantic.datamodel.RomanDataModel",
-        custom_template_dir=Path(__file__).parent / "parser" / "custom_templates",
-        additional_imports=["typing.ClassVar"],
-        field_extra_keys={"sdf", "archive_catalog"},
-    )
+from roman_datamodels.pydantic.parser._utils import class_name_from_module, get_rad_schema_path
 
 
 def make_file_path(path: Path, name: tuple[str]) -> Path:
@@ -62,23 +34,15 @@ def create_code(file: Result, version: str, use_timestamp: bool) -> str:
     return header + file.body
 
 
-def class_name_from_module(module: str, name: str):
-    class_name = "".join([p.capitalize() for p in name.split("/")[-1].split("_")])
-    if "reference_files" in module:
-        class_name += "Ref"
-
-    return class_name
-
-
 def create_base_module(module_paths: dict[str, list[str]]) -> str:
     code = ""
     all_classes = []
-    for module, names in module_paths.items():
-        module_name = f".{module}" if module else ""
-        names = sorted(names)
-        for name in names:
-            class_name = class_name_from_module(module, name)
-            code += f"from {module_name}.{name} import {class_name}\n"
+    for package, modules in module_paths.items():
+        module_name = f".{package}" if package else ""
+        modules = sorted(modules)
+        for module in modules:
+            class_name = class_name_from_module(package, module)
+            code += f"from {module_name}.{module} import {class_name}\n"
             all_classes.append(class_name)
 
     code += "\n"
@@ -120,13 +84,12 @@ def write_files(
 
 
 def generate_files(
-    suffix: str,
     write_path: Path,
     version: str | None = None,
     use_timestamp: bool = True,
 ):
-    schema_path = get_rad_schema_path(suffix)
-    parsed_results = create_rad_schema_parser(schema_path).parse()
+    schema_path = get_rad_schema_path(version)
+    parsed_results = RadSchemaParser(schema_path).parse()
     write_files(write_path, parsed_results, version, use_timestamp)
 
 
@@ -134,7 +97,7 @@ def setup_files():
     write_path = Path(__file__).parent / "_generated"
     write_path.mkdir(exist_ok=True)
 
-    generate_files("schemas", write_path, use_timestamp=False)
+    generate_files(write_path, use_timestamp=False)
 
 
 if __name__ == "__main__":

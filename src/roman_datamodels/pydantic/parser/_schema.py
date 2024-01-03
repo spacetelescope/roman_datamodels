@@ -1,40 +1,12 @@
 from __future__ import annotations
 
-from functools import lru_cache
-from typing import Any, NamedTuple
+from typing import Any
 
-import yaml
-from asdf.config import get_config
 from datamodel_code_generator.parser.jsonschema import JsonSchemaObject
 
+from ._utils import get_manifest_maps
+
 __all__ = ["RadSchemaObject"]
-
-
-class ManifestMaps(NamedTuple):
-    tag_to_uri: dict[str, str]
-    uri_to_tag: dict[str, str]
-
-
-# Modify this to eventually deal with multiple manifests
-@lru_cache
-def get_manifest_maps() -> ManifestMaps:
-    manager = get_config().resource_manager
-
-    for resource in manager._resource_mappings:
-        if resource.package_name == "rad" and resource.delegate.uri_prefix.endswith("manifests"):
-            resource_map = resource.delegate
-
-            uri = f"{resource_map.uri_prefix}/datamodels-1.0"
-
-            tag_to_uri_map = {tag["tag_uri"]: tag["schema_uri"] for tag in yaml.safe_load(resource_map[uri])["tags"]}
-            uri_to_tag_map = {}
-            for tag_uri, schema_uri in tag_to_uri_map.items():
-                if schema_uri in uri_to_tag_map:
-                    raise ValueError(f"Duplicate schema_uri: {schema_uri}")
-
-                uri_to_tag_map[schema_uri] = tag_uri
-
-            return ManifestMaps(tag_to_uri_map, uri_to_tag_map)
 
 
 class RadSchemaObject(JsonSchemaObject):
