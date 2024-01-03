@@ -33,6 +33,7 @@ def create_rad_schema_parser(path: Path) -> RadSchemaParser:
         base_class="roman_datamodels.pydantic.datamodel.RomanDataModel",
         custom_template_dir=Path(__file__).parent / "parser" / "custom_templates",
         additional_imports=["typing.ClassVar"],
+        field_extra_keys={"sdf", "archive_catalog"},
     )
 
 

@@ -1,7 +1,10 @@
 from enum import Enum
-from typing import ClassVar
+from inspect import isclass
+from typing import ClassVar, get_args
 
 from pydantic import BaseModel, ConfigDict, RootModel
+
+from .metadata import Archive, Archives
 
 
 class RomanDataModel(BaseModel):
@@ -37,3 +40,32 @@ class RomanDataModel(BaseModel):
                 tree[field_name] = field.value
 
         return tree
+
+    @classmethod
+    def get_archive_metadata(cls) -> dict[str, Archive | Archives]:
+        """Get the archive data for this model"""
+
+        def _field_type(annotation: type) -> type:
+            """Get the type of a field"""
+
+            if isclass(annotation):
+                return annotation
+
+            return _field_type(get_args(annotation)[0])
+
+        metadata = {}
+
+        for field_name, field in cls.model_fields.items():
+            if (archive := Archive(**({} if field.json_schema_extra is None else field.json_schema_extra))).has_info:
+                metadata[field_name] = archive
+
+            field_type = _field_type(field.annotation)
+            if issubclass(field_type, RomanDataModel) and (archive := field_type.get_archive_metadata()):
+                metadata[field_name] = archive
+
+            if issubclass(field_type, RootModel):
+                extra = field_type.model_fields["root"].json_schema_extra
+                if (archive := Archive(**({} if extra is None else extra))).has_info:
+                    metadata[field_name] = archive
+
+        return metadata
