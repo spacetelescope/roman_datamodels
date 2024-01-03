@@ -81,6 +81,20 @@ class _AstropyUnitPydanticAnnotation:
         )
 
     @classmethod
+    def make_default(cls, **kwargs) -> u.Unit:
+        """
+        Return the default unit, this is assumed to be the first unit listed
+
+        Returns
+        -------
+        Returns the first unit
+        """
+        if cls.units is None:
+            return u.dimensionless_unscaled
+
+        return cls.units[0]
+
+    @classmethod
     def _units_schema(cls) -> core_schema.CoreSchema:
         return astropy_unit_schema if cls.units is None else core_schema.literal_schema(cls.units)
 

@@ -39,17 +39,51 @@ def _validate_scalar(
 
 class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _AstropyUnitPydanticAnnotation):
     @classmethod
-    def factory(cls, *, dtype: Optional[DTypeLike] = None, ndim: Optional[PositiveInt] = None, unit: Units = None) -> type:
+    def factory(
+        cls,
+        *,
+        dtype: Optional[DTypeLike] = None,
+        ndim: Optional[PositiveInt] = None,
+        unit: Units = None,
+        default_shape: Optional[tuple[PositiveInt, ...]] = None,
+    ) -> type:
         units = cls._get_units(unit)
-        name = f"{super().factory(dtype=dtype, ndim=ndim).__name__}"
+        name = f"{super().factory(dtype=dtype, ndim=ndim, default_shape=default_shape).__name__}"
         if units is not None:
-            name += f"_{cls._get_unit_name(units)}"
+            name += f"_{cls._get_unit_name(units).replace(' ', '')}"
 
         return type(
             name,
             (cls,),
-            {"units": units, "dtype": dtype, "ndim": ndim},
+            {"units": units, "dtype": dtype, "ndim": ndim, "default_shape": default_shape},
         )
+
+    @classmethod
+    def make_default(
+        cls, *, shape: Optional[tuple[PositiveInt, ...]] = None, fill: float = 0, _shrink: bool = False, **kwargs
+    ) -> u.Quantity:
+        """
+        Create a default instance of the Quantity with unit being the first unit listed.
+
+        Parameters
+        ----------
+        shape : tuple of int, optional
+            Override the default shape. Required if no default shape is defined.
+        fill : float, optional
+            The value to fill the array with. Default is 0.
+        _shrink : bool, optional
+            If true, the shape will be shrunk to a maximum of 8 in each dimension. This is for
+            testing. Default is False
+
+        Returns
+        -------
+        Quantity of the default shape and dtype filled with the fill value, with unit the first
+        unit listed in the annotation.
+        """
+        array = super().make_default(shape=shape, fill=fill, _shrink=_shrink)
+        unit = super(_AsdfNdArrayPydanticAnnotation, cls).make_default(**kwargs)
+
+        return u.Quantity(array, unit=unit, dtype=cls.dtype)
 
     @classmethod
     def _value_schema(
@@ -148,16 +182,17 @@ class _AstropyQuantity:
         if not isinstance(factory, tuple):
             factory = (factory,)
 
-        if len(factory) < 1 or len(factory) > 3:
+        if len(factory) < 1 or len(factory) > 4:
             raise TypeError("AstropyQuantity requires a dtype.")
 
         dtype: Optional[DTypeLike] = factory[0]
         ndim: Optional[PositiveInt] = factory[1] if len(factory) > 2 else None
         unit: Units = factory[2] if len(factory) > 1 else None
+        default_shape: Optional[tuple[PositiveInt, ...]] = factory[3] if len(factory) > 3 else None
 
         return Annotated[
             u.Quantity,
-            _AstropyQuantityPydanticAnnotation.factory(dtype=dtype, ndim=ndim, unit=unit),
+            _AstropyQuantityPydanticAnnotation.factory(dtype=dtype, ndim=ndim, unit=unit, default_shape=default_shape),
         ]
 
 

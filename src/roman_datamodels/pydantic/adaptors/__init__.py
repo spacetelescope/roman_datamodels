@@ -17,4 +17,14 @@ __all__ = [
     "Unit",
     "has_adaptor",
     "adaptor_factory",
+    "Adaptor",
 ]
+
+from typing import Protocol, runtime_checkable
+
+
+@runtime_checkable
+class Adaptor(Protocol):
+    @classmethod
+    def make_default(cls, **kwargs):
+        ...

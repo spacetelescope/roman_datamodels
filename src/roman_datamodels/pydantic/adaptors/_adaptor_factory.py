@@ -79,7 +79,8 @@ def adaptor_factory(obj: RadSchemaObject, data_type: DataType) -> DataType:
     elif obj.tag == asdf_tags.ND_ARRAY:
         name = IMPORT_[asdf_tags.ND_ARRAY.name]
 
-        type_, import_ = _ndarray_factory(obj, name)
+        type_, default_shape, import_ = _ndarray_factory(obj, name)
+        type_ = f"{type_}, {tuple(default_shape)}"
         type_ = f"{name}[{type_}]"  # wrap type in NdArray annotation
 
     elif obj.tag == asdf_tags.ASTROPY_UNIT or obj.tag == asdf_tags.ASDF_UNIT:
@@ -105,7 +106,7 @@ def adaptor_factory(obj: RadSchemaObject, data_type: DataType) -> DataType:
     return d_type
 
 
-def _ndarray_factory(obj: RadSchemaObject, import_: str) -> tuple[str, str]:
+def _ndarray_factory(obj: RadSchemaObject, import_: str) -> tuple[str, list[int] | None, str]:
     """
     Factory to get the type and import for an ndarray
 
@@ -136,7 +137,7 @@ def _ndarray_factory(obj: RadSchemaObject, import_: str) -> tuple[str, str]:
         dtype = f"np.{dtype}"  # Turn schema info into python code snippet involving numpy
         import_ += ", np"
 
-    return f"{dtype}, {extras.get('ndim', None)}", import_
+    return f"{dtype}, {extras.get('ndim', None)}", extras.get("default_shape", None), import_
 
 
 def _unit_factory(obj: RadSchemaObject, import_: str) -> tuple[str, str]:
@@ -203,6 +204,8 @@ def _quantity_factory(obj: RadSchemaObject, import_: str) -> tuple[str, str]:
             necessary for the quantity.
     )
     """
+    default_shape = None
+
     # Scalar quantities are represented using only "datatype" and "unit", with no "value" key.
     # Non-scalar quantities are represented using "value" and "unit", with no "datatype" key.
     #   the "value" key is an ndarray representation
@@ -215,9 +218,13 @@ def _quantity_factory(obj: RadSchemaObject, import_: str) -> tuple[str, str]:
         # Treat the value as an ndarray
         value = obj.get("value", "None, None")
         if value is not None:
-            value, import_ = _ndarray_factory(value, import_)
+            value, default_shape, import_ = _ndarray_factory(value, import_)
 
     unit = obj.get("unit", None)
     unit, import_ = _unit_factory(unit, import_)
 
-    return f"{value}, {unit}", import_
+    value = f"{value}, {unit}"
+    if default_shape is not None:
+        value = f"{value}, {tuple(default_shape)}"
+
+    return value, import_

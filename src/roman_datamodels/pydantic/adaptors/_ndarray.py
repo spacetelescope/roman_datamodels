@@ -51,14 +51,24 @@ def _validate_array(
 class _AsdfNdArrayPydanticAnnotation:
     dtype: ClassVar[Optional[DTypeLike]]
     ndim: ClassVar[Optional[PositiveInt]]
+    default_shape: ClassVar[Optional[tuple[PositiveInt, ...]]]
 
     @classmethod
-    def factory(cls, *, dtype: Optional[DTypeLike] = None, ndim: Optional[PositiveInt] = None) -> type:
+    def factory(
+        cls,
+        *,
+        dtype: Optional[DTypeLike] = None,
+        ndim: Optional[PositiveInt] = None,
+        default_shape: Optional[tuple[PositiveInt, ...]] = None,
+    ) -> type:
         name = f"{cls.__name__}"
         if dtype is not None:
             name += f"_{dtype.__name__}"
         if ndim is not None:
             name += f"_{ndim}"
+
+        if default_shape is not None:
+            name += f"_default_{'_'.join(str(s) for s in default_shape)}"
 
         return type(
             name,
@@ -66,8 +76,47 @@ class _AsdfNdArrayPydanticAnnotation:
             {
                 "dtype": dtype,
                 "ndim": ndim,
+                "default_shape": default_shape,
             },
         )
+
+    @classmethod
+    def make_default(
+        cls, *, shape: Optional[tuple[PositiveInt, ...]] = None, fill: float = 0, _shrink: bool = False, **kwargs
+    ) -> np.ndarray:
+        """
+        Create a default instance of the array.
+
+        Parameters
+        ----------
+        shape : tuple of int, optional
+            Override the default shape. Required if no default shape is defined.
+        fill : float, optional
+            The value to fill the array with. Default is 0.
+        _shrink : bool, optional
+            If true, the shape will be shrunk to a maximum of 8 in each dimension. This is for
+            testing. Default is False
+
+        Returns
+        -------
+        An array of the default shape and dtype filled with the fill value.
+        """
+        if shape is None:
+            shape = cls.default_shape
+
+        if shape is None and cls.ndim == 0:
+            shape = tuple()
+
+        if shape is None:
+            raise ValueError("No default shape defined.")
+
+        if _shrink:
+            shape = tuple((s if s < 8 else 8) for s in shape)
+
+        if len(shape) != cls.ndim:
+            raise ValueError(f"Shape {shape} does not have the expected ndim {cls.ndim}.")
+
+        return np.full(shape, fill, dtype=cls.dtype)
 
     @classmethod
     def _dtype_schema(cls) -> core_schema.CoreSchema:
@@ -135,18 +184,19 @@ class _NdArray:
         if not isinstance(factory, tuple):
             factory = (factory,)
 
-        if len(factory) < 1 or len(factory) > 2:
+        if len(factory) < 1 or len(factory) > 3:
             raise TypeError("NdArray requires a dtype and optionally a dimension.")
 
         dtype: DTypeLike = factory[0]
         ndim: Optional[int] = factory[1] if len(factory) > 1 else None
+        default_shape: Optional[tuple[PositiveInt, ...]] = factory[2] if len(factory) > 2 else None
 
         return Annotated[
             Union[
                 NDArrayType,
                 np.ndarray[ndim if ndim else Any, dtype if dtype else dtype],
             ],
-            _AsdfNdArrayPydanticAnnotation.factory(dtype=dtype, ndim=ndim),
+            _AsdfNdArrayPydanticAnnotation.factory(dtype=dtype, ndim=ndim, default_shape=default_shape),
         ]
 
 
