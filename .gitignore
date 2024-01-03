@@ -7,7 +7,7 @@ __pycache__/
 *.so
 
 # Generated files
-src/roman_datamodels/pydantic/_generated/
+src/roman_datamodels/datamodels/_generated/
 
 # Distribution / packaging
 .Python

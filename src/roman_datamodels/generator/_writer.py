@@ -5,7 +5,7 @@ from textwrap import dedent
 from datamodel_code_generator.parser.base import Result
 from datamodel_code_generator.reference import get_relative_path
 
-from roman_datamodels.pydantic.generator._utils import class_name_from_module
+from ._utils import class_name_from_module
 
 __all__ = ["write_files"]
 

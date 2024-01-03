@@ -12,7 +12,7 @@ class PostBuildExtCommand(build_ext):
         roman_datamodels = Path(__file__).parent / "src"
         sys.path.append(str(roman_datamodels))
 
-        from roman_datamodels.pydantic.generator import setup_files
+        from roman_datamodels.generator import setup_files
 
         setup_files()
 
@@ -23,7 +23,7 @@ setup(
     },
     ext_modules=[
         Extension(
-            "roman_datamodels.pydantic._generated",
+            "roman_datamodels.datamodels._generated",
             [],
         ),
     ],

@@ -15,7 +15,7 @@ def setup_files():
     -------
     Setup all the generated files
     """
-    write_path = Path(__file__).parent.parent / "_generated"
+    write_path = Path(__file__).parent.parent / "datamodels" / "_generated"
     write_path.mkdir(exist_ok=True)
 
     _generate_files(write_path, use_timestamp=False)

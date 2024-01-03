@@ -5,36 +5,19 @@ from typing import TYPE_CHECKING
 from datamodel_code_generator.imports import Import
 from datamodel_code_generator.types import DataType
 
-from ..adaptors._adaptor_tags import asdf_tags
-from ..adaptors._astropy_quantity import AstropyQuantity
-from ..adaptors._astropy_time import AstropyTime
-from ..adaptors._astropy_unit import AstropyUnit
-from ..adaptors._ndarray import NdArray
+from roman_datamodels.pydantic import adaptors
 
 if TYPE_CHECKING:
     # Prevent a runtime import loop for the sake of type annotations
-    from roman_datamodels.pydantic.generator._schema import RadSchemaObject
+    from ._schema import RadSchemaObject
 
 
 __all__ = ["has_adaptor", "adaptor_factory"]
 
-FROM_ = ".".join(__name__.split(".")[:-1])  # string representing the import of adaptors
+FROM_ = adaptors.__name__  # string representing the import of adaptors
+IMPORT_ = adaptors.ADAPTORS
 
-
-def get_tag_key(value):
-    """
-    Courtesy of https://stackoverflow.com/a/1176023
-    """
-    import re
-
-    return re.sub(r"(?<!^)(?=[A-Z])", "_", value).upper()
-
-
-IMPORT_ = {
-    get_tag_key(name): name for name, value in locals().items() if value in (AstropyTime, AstropyUnit, AstropyQuantity, NdArray)
-}
-
-ASDF_TAGS = {tag.value for tag in asdf_tags}
+ASDF_TAGS = {tag.value for tag in adaptors.asdf_tags}
 
 
 def has_adaptor(obj: RadSchemaObject) -> bool:
@@ -70,27 +53,27 @@ def adaptor_factory(obj: RadSchemaObject, data_type: DataType) -> DataType:
     real python code.
     """
     # This can be converted to a match statement when min python is 3.10
-    if obj.tag == asdf_tags.ASTROPY_TIME:
-        name = IMPORT_[asdf_tags.ASTROPY_TIME.name]
+    if obj.tag == adaptors.asdf_tags.ASTROPY_TIME:
+        name = IMPORT_[adaptors.asdf_tags.ASTROPY_TIME.name]
 
         type_ = name
         import_ = name
 
-    elif obj.tag == asdf_tags.ND_ARRAY:
-        name = IMPORT_[asdf_tags.ND_ARRAY.name]
+    elif obj.tag == adaptors.asdf_tags.ND_ARRAY:
+        name = IMPORT_[adaptors.asdf_tags.ND_ARRAY.name]
 
         type_, default_shape, import_ = _ndarray_factory(obj, name)
         type_ = f"{type_}, {tuple(default_shape)}"
         type_ = f"{name}[{type_}]"  # wrap type in NdArray annotation
 
-    elif obj.tag == asdf_tags.ASTROPY_UNIT or obj.tag == asdf_tags.ASDF_UNIT:
-        name = IMPORT_[asdf_tags.ASTROPY_UNIT.name]
+    elif obj.tag == adaptors.asdf_tags.ASTROPY_UNIT or obj.tag == adaptors.asdf_tags.ASDF_UNIT:
+        name = IMPORT_[adaptors.asdf_tags.ASTROPY_UNIT.name]
 
         type_, import_ = _unit_factory(obj, name)
         type_ = f"{name}[{type_}]"  # wrap type in AstropyUnit annotation
 
-    elif obj.tag == asdf_tags.ASTROPY_QUANTITY:
-        name = IMPORT_[asdf_tags.ASTROPY_QUANTITY.name]
+    elif obj.tag == adaptors.asdf_tags.ASTROPY_QUANTITY:
+        name = IMPORT_[adaptors.asdf_tags.ASTROPY_QUANTITY.name]
 
         type_, import_ = _quantity_factory(obj.properties, name)
         type_ = f"{name}[{type_}]"  # wrap type in AstropyQuantity annotation
