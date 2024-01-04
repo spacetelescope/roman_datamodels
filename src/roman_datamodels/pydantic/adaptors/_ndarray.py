@@ -194,7 +194,7 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
         """
         schema = {
             "title": None,
-            "tag": asdf_tags.ASDF_NDARRAY.value,
+            "tag": asdf_tags.ND_ARRAY.value,
         }
         if cls.dtype is not None:
             schema["datatype"] = cls.dtype.__name__

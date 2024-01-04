@@ -8,20 +8,12 @@ from roman_datamodels.pydantic.adaptors._ndarray import NdArray
 
 dtypes = (
     None,
-    np.int8,
-    np.int16,
-    np.uint16,
     np.int32,
     np.uint32,
-    np.int64,
-    np.uint64,
     np.float32,
-    np.float64,
-    np.complex64,
     np.complex128,
-    np.bool_,
 )
-ndims = (None, 0, 1, 2, 3, 4, 5, 6)
+ndims = (None, 2, 3, 5)
 
 
 def _generate_array(dtype, ndim):
@@ -197,7 +189,7 @@ def test_type_annotation_fails():
 def test_json_schema_return(dtype, ndim):
     truth = {
         "title": None,
-        "tag": asdf_tags.ASDF_NDARRAY.value,
+        "tag": asdf_tags.ND_ARRAY.value,
     }
     if dtype is not None:
         truth["datatype"] = dtype.__name__

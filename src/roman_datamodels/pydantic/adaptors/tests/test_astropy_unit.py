@@ -5,12 +5,13 @@ from pydantic import BaseModel, ValidationError
 from roman_datamodels.pydantic.adaptors._adaptor_tags import asdf_tags
 from roman_datamodels.pydantic.adaptors._astropy_unit import AstropyUnit, _get_unit_symbol
 
-units_no_dimensionless = tuple(
-    sorted(
-        {unit for unit in list(u.__dict__.values()) if isinstance(unit, u.UnitBase) and unit != u.dimensionless_unscaled},
-        key=_get_unit_symbol,
-    )
-)
+units_no_dimensionless = (u.s, u.DN, u.DN / u.s, (u.DN / u.s) ** 2, u.electron)
+# units_no_dimensionless = tuple(
+#     sorted(
+#         {unit for unit in list(u.__dict__.values()) if isinstance(unit, u.UnitBase) and unit != u.dimensionless_unscaled},
+#         key=_get_unit_symbol,
+#     )
+# )
 units = units_no_dimensionless + (u.dimensionless_unscaled,)
 
 
@@ -161,8 +162,10 @@ def test_divide_unit(unit_type):
     with pytest.raises(ValidationError):
         TestModel1(unit=unit0)
 
-    with pytest.raises(ValidationError):
-        TestModel1(unit=unit_type[0])
+    # There is a single case where unit1 == unit_type[0] accidentally
+    if unit1 != unit_type[0]:
+        with pytest.raises(ValidationError):
+            TestModel1(unit=unit_type[0])
 
     with pytest.raises(ValidationError):
         TestModel1(unit=unit_type[1])

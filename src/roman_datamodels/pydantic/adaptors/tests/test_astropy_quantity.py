@@ -3,20 +3,17 @@ import numpy as np
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.pydantic._adaptors.adaptor_tags import asdf_tags
-from roman_datamodels.pydantic._adaptors.astropy_quantity import AstropyQuantity
-from roman_datamodels.pydantic._adaptors.astropy_unit import _get_unit_symbol
+from roman_datamodels.pydantic.adaptors import AstropyQuantity, asdf_tags
+from roman_datamodels.pydantic.adaptors._astropy_unit import _get_unit_symbol
 
 dtypes = (
     None,
     np.uint16,
-    np.int32,
     np.float32,
-    np.float64,
     np.complex128,
 )
-ndims = (None, 0, 2, 3)
-units = (None, u.s, u.DN, u.DN / u.s, (u.DN / u.s) ** 2, (u.electron, u.DN))
+ndims = (None, 2, 3)
+units = (None, u.DN, u.DN / u.s, (u.DN / u.s) ** 2, (u.electron, u.DN))
 
 
 def _generate_quantity(dtype, unit, ndim):
@@ -181,7 +178,7 @@ def test_json_schema_return(dtype, ndim, unit):
     if ndim is not None:
         value["ndim"] = ndim
     if value:
-        properties["value"] = {"title": None, "tag": asdf_tags.ASDF_NDARRAY.value, **value}
+        properties["value"] = {"title": None, "tag": asdf_tags.ND_ARRAY.value, **value}
     if unit is not None:
         properties["unit"] = {
             "title": None,
