@@ -14,7 +14,7 @@ from datamodel_code_generator.parser.base import get_special_path
 from datamodel_code_generator.parser.jsonschema import JsonSchemaParser, get_model_by_path
 from datamodel_code_generator.types import DataType
 
-from roman_datamodels.pydantic.datamodel import RomanDataModel
+from roman_datamodels.pydantic import RomanDataModel
 
 from ._adaptor import adaptor_factory, has_adaptor
 from ._reslover import RadModelResolver
@@ -107,6 +107,9 @@ class RadSchemaParser(JsonSchemaParser):
         # Be sure to include the tag_uri in the template data
         if obj.tag_uri:
             self.extra_template_data[name]["tag_uri"] = obj.tag_uri
+
+        if obj.id:
+            self.extra_template_data[name]["id"] = obj.id
 
     def parse_array(self, name: str, obj: RadSchemaObject, path: list[str], original_name: str | None = None) -> DataType:
         """Insert the ability to tag an array"""

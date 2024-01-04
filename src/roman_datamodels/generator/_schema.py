@@ -7,7 +7,7 @@ from typing import Any
 
 from datamodel_code_generator.parser.jsonschema import JsonSchemaObject
 
-from roman_datamodels.datamodels.datamodel import TaggedDataModel
+from roman_datamodels.datamodels import ExtendedDataModel
 
 from ._utils import get_manifest_maps
 
@@ -49,7 +49,8 @@ class RadSchemaObject(JsonSchemaObject):
         if self.id is not None:
             if self.id in manifest_maps.uri_to_tag:
                 self.tag_uri = manifest_maps.uri_to_tag[self.id]
-                self.custom_base_path = f"{TaggedDataModel.__module__}.{TaggedDataModel.__name__}"
+                model_base = ExtendedDataModel.model_from_schema_uri(self.id)
+                self.custom_base_path = f"{model_base.__module__}.{model_base.__name__}"
 
 
 RadSchemaObject.model_rebuild()

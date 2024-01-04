@@ -12,6 +12,9 @@ class {{ class_name }}({{ base_class }}):{% if comment is defined %}  # {{ comme
     {%- endif %}
     """
 {%- endif %}
+{%- if id %}
+    _schema_uri: ClassVar[str] = "{{ id }}"
+{%- endif %}
 {%- if tag_uri %}
     _tag_uri: ClassVar[str] = "{{ tag_uri }}"
 {% endif %}

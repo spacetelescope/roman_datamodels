@@ -16,6 +16,9 @@ class {{ class_name }}({{ base_class }}[{{get_type_hint(fields)}}]):{% if commen
     {{ description | indent(4) }}
     """
 {%- endif %}
+{%- if id %}
+    _schema_uri: ClassVar[str] = "{{ id }}"
+{% endif %}
 {%- if tag_uri %}
     _tag_uri: ClassVar[str] = "{{ tag_uri }}"
 {% endif %}
