@@ -20,7 +20,11 @@ class RomanDataModel(BaseModel):
     _tag_uri: ClassVar[str | None] = None
 
     model_config = ConfigDict(
+        # model_* is a protected namespace for Pydantic, so we have to remove that protection
+        # because Basic.model_type is a field we want to use
         protected_namespaces=(),
+        # Store the values from an enum not the enum instance
+        use_enum_values=True,
     )
 
     def to_asdf_tree(self) -> dict[str, Any]:
@@ -76,7 +80,8 @@ class RomanDataModel(BaseModel):
         for field_name, field in tree.items():
             tree[field_name] = recurse_tree(field)
 
-        return tree
+        # Handle the case that we have a conflicting keyword with Python
+        return {_field_name(field_name): field for field_name, field in tree.items()}
 
     @classmethod
     def get_archive_metadata(cls) -> dict[str, Archive | Archives]:
@@ -101,12 +106,7 @@ class RomanDataModel(BaseModel):
 
         # loop over the fields in this model
         for field_name, field in cls.model_fields.items():
-            # modify the field names which are aliased with a trailing underscore
-            #    these are the fields that have names that conflict with Python keywords
-            #    and are defined with the trailing underscore in the schemas, but
-            #    aliased to the desired name, which is stripped of the trailing underscore
-            if field_name.endswith("_"):
-                field_name = field_name[:-1]
+            field_name = _field_name(field_name)
 
             # Build archive metadata for this field
             if (archive := get_archive(field.json_schema_extra)).has_info:
@@ -233,12 +233,7 @@ class RomanDataModel(BaseModel):
         # Build a dict of default values
         defaults = {}
         for field_name, field in cls.model_fields.items():
-            # modify the field names which are aliased with a trailing underscore
-            #    these are the fields that have names that conflict with Python keywords
-            #    and are defined with the trailing underscore in the schemas, but
-            #    aliased to the desired name, which is stripped of the trailing underscore
-            if field_name.endswith("_"):
-                field_name = field_name[:-1]
+            field_name = _field_name(field_name)
 
             # Only bother setting defaults for required fields
             if field.is_required():
@@ -285,3 +280,13 @@ def _annotation_type(annotation: type) -> type:
         return annotation
 
     return _annotation_type(get_args(annotation)[0])
+
+
+def _field_name(field_name: str) -> str:
+    """
+    Remove the trailing underscore from a field name if it exists
+
+    This is because a trailing underscore is added to any field name that conflicts
+    with a Python keyword, but the schemas do not have the trailing underscore.
+    """
+    return field_name[:-1] if field_name.endswith("_") else field_name

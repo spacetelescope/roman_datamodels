@@ -74,7 +74,7 @@ class _AstropyTimePydanticAnnotation(Adaptor):
         The default time: 2020-01-01T00:00:00.0
         """
 
-        return Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+        return Time("2020-01-01T00:00:00.000", format="isot", scale="utc")
 
 
 # Create an annotated type alias for the annotation
