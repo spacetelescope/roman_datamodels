@@ -25,6 +25,8 @@ class RomanDataModel(BaseModel):
         protected_namespaces=(),
         # Store the values from an enum not the enum instance
         use_enum_values=True,
+        # Allow extra fields to be added to the model
+        extra="allow",
     )
 
     def to_asdf_tree(self) -> dict[str, Any]:

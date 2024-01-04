@@ -29,3 +29,29 @@ def test_write_asdf(model, tmp_path):
 
     with asdf.open(filename) as af:
         assert isinstance(af["roman_datamodel"], model)
+
+
+@pytest.mark.parametrize("model", models)
+def test_extras(model, tmp_path):
+    """
+    Test that we can add, write, and read-back extra data to a model.
+    """
+
+    filename = tmp_path / "test.asdf"
+
+    # _shrink=True is used to limit testing memory use
+    instance = model.make_default(_shrink=True)
+
+    # Add extra field and check that it is there
+    instance.foo = "bar"
+    assert instance.foo == "bar"
+
+    # Write to ASDF
+    af = asdf.AsdfFile({"roman_datamodel": instance})
+    af.write_to(filename)
+
+    # Read back from ASDF contains the extra field
+    with asdf.open(filename) as af:
+        assert isinstance(af["roman_datamodel"], model)
+        new_instance = af["roman_datamodel"]
+        assert new_instance.foo == "bar"
