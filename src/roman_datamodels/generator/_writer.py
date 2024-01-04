@@ -1,3 +1,6 @@
+"""
+Handle writing the parser results to python files.
+"""
 from datetime import datetime
 from pathlib import Path
 from textwrap import dedent

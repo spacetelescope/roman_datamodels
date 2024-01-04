@@ -1,3 +1,6 @@
+"""
+Utilities used by the code generator
+"""
 from __future__ import annotations
 
 from functools import lru_cache

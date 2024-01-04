@@ -1,3 +1,7 @@
+"""
+This contains the logic to turn schema information related to third party types
+that have Pydatnic adaptors into the python code using those adaptors.
+"""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -52,14 +56,20 @@ def adaptor_factory(obj: RadSchemaObject, data_type: DataType) -> DataType:
     DataType object with type and import_ set so that the strings can be used as
     real python code.
     """
-    # This can be converted to a match statement when min python is 3.10
+    # To create a DataType object, we need to know the type and an import string
+    # to support importing the type
+
+    # Handle each tag for which we have an adaptor
+    #   This can be converted to a match statement when min python is 3.10
     if obj.tag == adaptors.asdf_tags.ASTROPY_TIME:
+        # handle astropy time
         name = IMPORT_[adaptors.asdf_tags.ASTROPY_TIME.name]
 
         type_ = name
         import_ = name
 
     elif obj.tag == adaptors.asdf_tags.ND_ARRAY:
+        # handle ndarray
         name = IMPORT_[adaptors.asdf_tags.ND_ARRAY.name]
 
         type_, default_shape, import_ = _ndarray_factory(obj, name)
@@ -67,22 +77,25 @@ def adaptor_factory(obj: RadSchemaObject, data_type: DataType) -> DataType:
         type_ = f"{name}[{type_}]"  # wrap type in NdArray annotation
 
     elif obj.tag == adaptors.asdf_tags.ASTROPY_UNIT or obj.tag == adaptors.asdf_tags.ASDF_UNIT:
+        # handle astropy unit
         name = IMPORT_[adaptors.asdf_tags.ASTROPY_UNIT.name]
 
         type_, import_ = _unit_factory(obj, name)
         type_ = f"{name}[{type_}]"  # wrap type in AstropyUnit annotation
 
     elif obj.tag == adaptors.asdf_tags.ASTROPY_QUANTITY:
+        # handle astropy quantity
         name = IMPORT_[adaptors.asdf_tags.ASTROPY_QUANTITY.name]
 
         type_, import_ = _quantity_factory(obj.properties, name)
         type_ = f"{name}[{type_}]"  # wrap type in AstropyQuantity annotation
 
     else:
+        # Use of this function should be gated by has_adaptor
         raise NotImplementedError(f"Unsupported tag: {obj.tag}")
 
     # Create the DataType object
-    d_type = data_type.copy()  # needs copy so it doesn't modify the original type
+    d_type = data_type.model_copy()  # needs copy so it doesn't modify the original type
     d_type.type = type_
     d_type.import_ = Import(from_=FROM_, import_=import_)
 
@@ -106,6 +119,8 @@ def _ndarray_factory(obj: RadSchemaObject, import_: str) -> tuple[str, list[int]
         dtype : str
             The argument to the `rad.pydantic.adaptors.NdArray` annotation, e.g, what
             goes in the `[]`.
+        default_shape : list[int] | None
+            The default shape of the ndarray, if any
         import_ : str
             The import string for the annotation modified to include any new imports
             necessary for ndarray.
@@ -207,6 +222,7 @@ def _quantity_factory(obj: RadSchemaObject, import_: str) -> tuple[str, str]:
     unit, import_ = _unit_factory(unit, import_)
 
     value = f"{value}, {unit}"
+    # Include the default shape if it was defined
     if default_shape is not None:
         value = f"{value}, {tuple(default_shape)}"
 

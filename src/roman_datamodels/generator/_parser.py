@@ -1,3 +1,6 @@
+"""
+The datamodel-code-generator based parser for the RAD schemas.
+"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -39,18 +42,28 @@ class RadSchemaParser(JsonSchemaParser):
 
         super().__init__(
             source=source,
+            # Select the PydanticV2BaseModel as the base class
             data_model_type=data_model_types.data_model,
             data_model_root_type=data_model_types.root_model,
             data_model_field_type=data_model_types.field_model,
             data_type_manager_type=data_model_types.data_type_manager,
             dump_resolve_reference_action=data_model_types.dump_resolve_reference_action,
+            # Use the annotated style
             use_annotated=True,
+            # Use field constraints
             field_constraints=True,
+            # String pointing the the RomanDataModel class
             base_class=base_class,
+            # Use the template files to modify the code output
             custom_template_dir=Path(__file__).parent / "custom_templates",
+            # We use some class variables in the generated code, Pydantic needs those
+            #   to be specifically annotated as such.
             additional_imports=["typing.ClassVar"],
+            # Include the archive metadata in the generated code
             field_extra_keys={"sdf", "archive_catalog"},
         )
+        # Override the standard model resolver in order to enable ASDF to handle
+        #     resolving some schema references
         self.model_resolver = RadModelResolver(
             base_url=self.model_resolver.base_url,
             singular_name_suffix=self.model_resolver.singular_name_suffix,
@@ -85,9 +98,11 @@ class RadSchemaParser(JsonSchemaParser):
         return super().parse_item(name, item, path, singular_name, parent)
 
     def set_title(self, name: str, obj: RadSchemaObject) -> None:
+        """Override the title setting to use our naming conventions"""
         if obj.title:
             self.extra_template_data[name]["title"] = obj.title
 
+        # Be sure to include the tag_uri in the template data
         if obj.tag_uri:
             self.extra_template_data[name]["tag_uri"] = obj.tag_uri
 
@@ -124,7 +139,12 @@ class RadSchemaParser(JsonSchemaParser):
         in those name in any case.
         """
         self._current_source_path = Path(remove_uri_version(str(value)))
-        # self._current_source_path = value
+
+    ###### Below this point are copies of the JsonSchemaParser methods, with the
+    ######   JsonSchemaObject replaced with RadSchemaObject to enable the custom
+    ######   processing of the ASDF related bits of RAD schemas
+    ###### These can be removed once datamodel-code-generator is released with
+    ######   the changes from https://github.com/koxudaxi/datamodel-code-generator/pull/1783
 
     def parse_combined_schema(
         self,

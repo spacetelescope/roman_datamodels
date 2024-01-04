@@ -1,3 +1,6 @@
+"""
+Module for all the code to activate the code generation
+"""
 from pathlib import Path
 
 from ._parser import RadSchemaParser

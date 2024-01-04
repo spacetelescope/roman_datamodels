@@ -1,3 +1,6 @@
+"""
+Define the custom model resolver so ASDF can resolve the schema references if needed.
+"""
 from typing import Sequence
 
 from asdf.config import get_config
