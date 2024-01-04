@@ -31,6 +31,26 @@ def test_write_asdf(model, tmp_path):
         assert isinstance(af["roman_datamodel"], model)
 
 
+def test_observation(tmp_path):
+    """
+    Test that the aliased field "pass" in Observation is written as "pass" not its
+    python field name (python syntax reasons) "pass_".
+    """
+
+    filename = tmp_path / "test.asdf"
+
+    # _shrink=True is used to limit testing memory use
+    af = asdf.AsdfFile({"roman_datamodel": _generated.Observation.make_default(_shrink=True)})
+    af.write_to(filename)
+
+    # Force raw types so we can look at the ASDF tree itself
+    with asdf.open(filename, _force_raw_types=True) as af:
+        assert "pass" in af.tree["roman_datamodel"]
+        assert "pass_" not in af.tree["roman_datamodel"]
+
+        assert af.tree["roman_datamodel"]["pass"] == -999999
+
+
 @pytest.mark.parametrize("model", models)
 def test_extras(model, tmp_path):
     """

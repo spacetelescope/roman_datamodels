@@ -3,6 +3,8 @@ Base class for all RomanDataModels
 """
 from __future__ import annotations
 
+import warnings
+from contextlib import contextmanager
 from enum import Enum
 from inspect import isclass
 from typing import Any, ClassVar, get_args, get_origin
@@ -25,8 +27,15 @@ class RomanDataModel(BaseModel):
         protected_namespaces=(),
         # Store the values from an enum not the enum instance
         use_enum_values=True,
+        # Allow the model to be populated by field name even if it is aliased.
+        #    this is need because pass is a Python syntax word, but it is used as a field name
+        #    in the observation schema.
+        populate_by_name=True,
         # Allow extra fields to be added to the model
         extra="allow",
+        # Validate values when they are set
+        validate_assignment=True,
+        revalidate_instances="always",
     )
 
     def to_asdf_tree(self) -> dict[str, Any]:
@@ -273,6 +282,34 @@ class RomanDataModel(BaseModel):
                     continue
 
         return cls(**defaults)
+
+    @contextmanager
+    def pause_validation(self, *, revalidate_on_exit: bool = True) -> None:
+        """Context manager to pause validation of the model within the context."""
+        self.model_config["validate_assignment"] = False
+        self.model_config["revalidate_instances"] = "never"
+
+        try:
+            yield
+        finally:
+            self.model_config["validate_assignment"] = True
+            self.model_config["revalidate_instances"] = "always"
+
+            if revalidate_on_exit:
+                self.model_validate(self)
+
+    def __getitem__(self, item: str) -> Any:
+        return getattr(self, item)
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        warnings.warn(
+            "RomanDataModel.__setitem__ circumvents validation, and does not re-validate the model. "
+            "This can lead to an invalid model for serialization. Thus this should not be used in "
+            "production code.",
+            RuntimeWarning,
+        )
+        with self.pause_validation(revalidate_on_exit=False):
+            setattr(self, key, value)
 
 
 def _annotation_type(annotation: type) -> type:
