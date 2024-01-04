@@ -1,7 +1,7 @@
 """
 Define the custom model resolver so ASDF can resolve the schema references if needed.
 """
-from typing import Sequence
+from collections.abc import Sequence
 
 from asdf.config import get_config
 from datamodel_code_generator.reference import ModelResolver, get_relative_path

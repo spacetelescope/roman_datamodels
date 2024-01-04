@@ -119,7 +119,7 @@ def _ndarray_factory(obj: RadSchemaObject, import_: str) -> tuple[str, list[int]
         dtype : str
             The argument to the `rad.pydantic.adaptors.NdArray` annotation, e.g, what
             goes in the `[]`.
-        default_shape : list[int] | None
+        default_shape : Optional[list[int]]
             The default shape of the ndarray, if any
         import_ : str
             The import string for the annotation modified to include any new imports

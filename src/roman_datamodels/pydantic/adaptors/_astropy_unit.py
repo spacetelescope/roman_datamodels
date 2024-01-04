@@ -67,10 +67,10 @@ class _AstropyUnitPydanticAnnotation(Adaptor):
     validate that a field is the right unit. Note that it supports a list of possible units
     """
 
-    units: ClassVar[Optional[list[Unit]]] = None
+    units: ClassVar[list[Unit] | None] = None
 
     @classmethod
-    def _get_units(cls, unit: Units) -> Optional[list[str]]:
+    def _get_units(cls, unit: Units) -> list[str] | None:
         """
         Translate the possible types of unit listings into something which
         can be used by this adaptor.
@@ -92,7 +92,7 @@ class _AstropyUnitPydanticAnnotation(Adaptor):
         return list(units)
 
     @classmethod
-    def _get_unit_name(cls, units: Optional[Units]) -> str:
+    def _get_unit_name(cls, units: Units | None) -> str:
         """Create a name for the unit based on the symbols of the units."""
         return "" if units is None else "_".join([_get_unit_symbol(unit) for unit in units])
 

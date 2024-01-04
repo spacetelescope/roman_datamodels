@@ -17,10 +17,10 @@ class {{ class_name }}({{ base_class }}[{{get_type_hint(fields)}}]):{% if commen
     """
 {%- endif %}
 {%- if tag_uri %}
-    _tag_uri: ClassVar = "{{ tag_uri }}"
+    _tag_uri: ClassVar[str | None] = "{{ tag_uri }}"
 
 {% else %}
-    _tag_uri: ClassVar = None
+    _tag_uri: ClassVar[str | None] = None
 
 {% endif %}
 {%- if config %}

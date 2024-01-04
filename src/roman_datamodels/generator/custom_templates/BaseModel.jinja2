@@ -13,10 +13,10 @@ class {{ class_name }}({{ base_class }}):{% if comment is defined %}  # {{ comme
     """
 {%- endif %}
 {%- if tag_uri %}
-    _tag_uri: ClassVar = "{{ tag_uri }}"
+    _tag_uri: ClassVar[str | None] = "{{ tag_uri }}"
 
 {% else %}
-    _tag_uri: ClassVar = None
+    _tag_uri: ClassVar[str | None] = None
 
 {% endif %}
 {%- if not fields and not description %}

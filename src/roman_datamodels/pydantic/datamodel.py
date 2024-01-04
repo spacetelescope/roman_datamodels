@@ -318,6 +318,9 @@ def _annotation_type(annotation: type) -> type:
     if isclass(annotation):
         return annotation
 
+    if annotation is Any:
+        return object
+
     return _annotation_type(get_args(annotation)[0])
 
 

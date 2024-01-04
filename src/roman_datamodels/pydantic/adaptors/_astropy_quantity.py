@@ -59,10 +59,10 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
     def factory(
         cls,
         *,
-        dtype: Optional[DTypeLike] = None,
-        ndim: Optional[PositiveInt] = None,
+        dtype: DTypeLike | None = None,
+        ndim: PositiveInt | None = None,
         unit: Units = None,
-        default_shape: Optional[tuple[PositiveInt, ...]] = None,
+        default_shape: tuple[PositiveInt, ...] | None = None,
     ) -> type:
         """Construct a new Adaptor type constrained to the values given."""
 
@@ -79,7 +79,7 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
 
     @classmethod
     def make_default(
-        cls, *, shape: Optional[tuple[PositiveInt, ...]] = None, fill: float = 0, _shrink: bool = False, **kwargs
+        cls, *, shape: tuple[PositiveInt, ...] | None = None, fill: float = 0, _shrink: bool = False, **kwargs
     ) -> u.Quantity:
         """
         Create a default instance of the Quantity with unit being the first unit listed.
@@ -226,10 +226,10 @@ class _AstropyQuantity(Adaptor):
         if len(factory) < 1 or len(factory) > 4:
             raise TypeError("AstropyQuantity requires a dtype.")
 
-        dtype: Optional[DTypeLike] = factory[0]
-        ndim: Optional[PositiveInt] = factory[1] if len(factory) > 2 else None
+        dtype: DTypeLike | None = factory[0]
+        ndim: PositiveInt | None = factory[1] if len(factory) > 2 else None
         unit: Units = factory[2] if len(factory) > 1 else None
-        default_shape: Optional[tuple[PositiveInt, ...]] = factory[3] if len(factory) > 3 else None
+        default_shape: tuple[PositiveInt, ...] | None = factory[3] if len(factory) > 3 else None
 
         return Annotated[
             u.Quantity,

@@ -1,7 +1,8 @@
 """
 Define a Pydantic adaptor for a numpy ndarray (and asdf NDArrayType).
 """
-from typing import Annotated, Any, Callable, ClassVar, Optional, TypedDict, Union
+from collections.abc import Callable
+from typing import Annotated, Any, ClassVar, TypedDict, Union
 
 import numpy as np
 from asdf.tags.core import NDArrayType
@@ -65,17 +66,17 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
     validate that a field is the right ndarray.
     """
 
-    dtype: ClassVar[Optional[DTypeLike]]
-    ndim: ClassVar[Optional[PositiveInt]]
-    default_shape: ClassVar[Optional[tuple[PositiveInt, ...]]]
+    dtype: ClassVar[DTypeLike | None]
+    ndim: ClassVar[PositiveInt | None]
+    default_shape: ClassVar[tuple[PositiveInt, ...] | None]
 
     @classmethod
     def factory(
         cls,
         *,
-        dtype: Optional[DTypeLike] = None,
-        ndim: Optional[PositiveInt] = None,
-        default_shape: Optional[tuple[PositiveInt, ...]] = None,
+        dtype: DTypeLike | None = None,
+        ndim: PositiveInt | None = None,
+        default_shape: tuple[PositiveInt, ...] | None = None,
     ) -> type:
         """Construct a new Adaptor type constrained to the values given."""
         name = f"{cls.__name__}"
@@ -99,7 +100,7 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
 
     @classmethod
     def make_default(
-        cls, *, shape: Optional[tuple[PositiveInt, ...]] = None, fill: float = 0, _shrink: bool = False, **kwargs
+        cls, *, shape: tuple[PositiveInt, ...] | None = None, fill: float = 0, _shrink: bool = False, **kwargs
     ) -> np.ndarray:
         """
         Create a default instance of the array.
@@ -227,8 +228,8 @@ class _NdArray(Adaptor):
             raise TypeError("NdArray requires a dtype and optionally a dimension.")
 
         dtype: DTypeLike = factory[0]
-        ndim: Optional[int] = factory[1] if len(factory) > 1 else None
-        default_shape: Optional[tuple[PositiveInt, ...]] = factory[2] if len(factory) > 2 else None
+        ndim: int | None = factory[1] if len(factory) > 1 else None
+        default_shape: tuple[PositiveInt, ...] | None = factory[2] if len(factory) > 2 else None
 
         return Annotated[
             Union[

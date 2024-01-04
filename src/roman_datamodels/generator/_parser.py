@@ -35,7 +35,7 @@ class RadSchemaParser(JsonSchemaParser):
         Note this explicitly feeds all the adjusted arguments to the JsonSchemaParser's
         __init__ method, so that we don't have to replicate the interface here.
         """
-        data_model_types = get_data_model_types(DataModelType.PydanticV2BaseModel, target_python_version=PythonVersion.PY_39)
+        data_model_types = get_data_model_types(DataModelType.PydanticV2BaseModel, target_python_version=PythonVersion.PY_310)
 
         # Use the datamodel as the baseclass
         base_class = f"{RomanDataModel.__module__}.{RomanDataModel.__name__}"
@@ -48,6 +48,8 @@ class RadSchemaParser(JsonSchemaParser):
             data_model_field_type=data_model_types.field_model,
             data_type_manager_type=data_model_types.data_type_manager,
             dump_resolve_reference_action=data_model_types.dump_resolve_reference_action,
+            # Python version
+            target_python_version=PythonVersion.PY_310,
             # Use the annotated style
             use_annotated=True,
             # Use field constraints

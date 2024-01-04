@@ -2,6 +2,8 @@
 This module is to facilitate easy identification of Pydantic Adaptors, in the
 context of the FieldInfo data encoded into a Pydantic model.
 """
+from __future__ import annotations
+
 import abc
 from inspect import isclass
 from typing import Annotated, get_args, get_origin
