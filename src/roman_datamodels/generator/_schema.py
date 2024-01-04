@@ -7,6 +7,8 @@ from typing import Any
 
 from datamodel_code_generator.parser.jsonschema import JsonSchemaObject
 
+from roman_datamodels.datamodels.datamodel import TaggedDataModel
+
 from ._utils import get_manifest_maps
 
 __all__ = ["RadSchemaObject"]
@@ -43,16 +45,11 @@ class RadSchemaObject(JsonSchemaObject):
 
                 self.ref = manifest_maps.tag_to_uri[self.tag]
 
-        # LEAVING THIS COMMENTED AS A REMINDER FOR LATER (adjusting the base class as needed)
-        # # Handle external reference (this is a bit of a hack)
-        # if self.astropy_type is not None:
-        #     self.custom_type_path = self.astropy_type
-        #     self.allOf = []
-
         # Set the tag_uri if it has one
         if self.id is not None:
             if self.id in manifest_maps.uri_to_tag:
                 self.tag_uri = manifest_maps.uri_to_tag[self.id]
+                self.custom_base_path = f"{TaggedDataModel.__module__}.{TaggedDataModel.__name__}"
 
 
 RadSchemaObject.model_rebuild()

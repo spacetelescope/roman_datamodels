@@ -5,12 +5,12 @@ import asdf
 import pytest
 
 from roman_datamodels.datamodels import _generated
-from roman_datamodels.pydantic import RomanDataModel
+from roman_datamodels.datamodels.datamodel import TaggedDataModel
 
 models = [
     getattr(_generated, name)
     for name in _generated.__all__
-    if issubclass(mdl := getattr(_generated, name), RomanDataModel) and mdl._tag_uri is not None
+    if issubclass(mdl := getattr(_generated, name), TaggedDataModel) and mdl._tag_uri is not None
 ]
 
 

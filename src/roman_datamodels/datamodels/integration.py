@@ -13,6 +13,6 @@ def get_extensions():
     -------
     List[`asdf.extension.Extension`]
     """
-    from roman_datamodels.pydantic.extension import RomanPydanticExtension
+    from roman_datamodels.datamodels.extension import RomanPydanticExtension
 
     return [RomanPydanticExtension()]

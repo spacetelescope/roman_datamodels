@@ -7,7 +7,7 @@ import warnings
 from contextlib import contextmanager
 from enum import Enum
 from inspect import isclass
-from typing import Any, ClassVar, get_args, get_origin
+from typing import Any, get_args, get_origin
 
 from astropy.modeling import models
 from pydantic import BaseModel, ConfigDict, RootModel
@@ -19,8 +19,6 @@ from .metadata import Archive, Archives
 
 
 class RomanDataModel(BaseModel):
-    _tag_uri: ClassVar[str | None] = None
-
     model_config = ConfigDict(
         # model_* is a protected namespace for Pydantic, so we have to remove that protection
         # because Basic.model_type is a field we want to use
@@ -47,6 +45,9 @@ class RomanDataModel(BaseModel):
         An ASDF tree (dict) representation of this model, it
         """
 
+        # Avoid circular import
+        from roman_datamodels.datamodels.datamodel import TaggedDataModel
+
         def recurse_tree(field: Any) -> Any:
             """
             Find the sub-tree for a field
@@ -61,8 +62,8 @@ class RomanDataModel(BaseModel):
             -------
             The sub tree for the field
             """
-            # Recurse into sub-RomanDataModels
-            if isinstance(field, RomanDataModel) and field._tag_uri is None:
+            # Recurse into sub-RomanDataModels that are not TaggedDataModels (so ASDF can tag them)
+            if isinstance(field, RomanDataModel) and not isinstance(field, TaggedDataModel):
                 return field.to_asdf_tree()
 
             # Recurse into sub-RootModels
