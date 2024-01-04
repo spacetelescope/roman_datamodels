@@ -1,3 +1,7 @@
+"""
+This module contains the tags needed for third party ASDF related types to be supported
+by Pydantic.
+"""
 import sys
 
 if sys.version_info < (3, 11):

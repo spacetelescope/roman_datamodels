@@ -7,20 +7,21 @@ from roman_datamodels.datamodels import _generated  # noqa: F401
 from .converter import RomanDataModelConverter, RomanRootModelConverter
 from .datamodel import RomanDataModel
 
-TAGGED_MODELS = {}
-ROOT_MODELS = {}
+# Populate dictionaries to register into the converters
+_TAGGED_MODELS = {}
+_ROOT_MODELS = {}
 for model_name in _generated.__all__:
     model = getattr(_generated, model_name)
     if issubclass(model, RomanDataModel) and model._tag_uri is not None:
-        TAGGED_MODELS[model._tag_uri] = model
+        _TAGGED_MODELS[model._tag_uri] = model
 
     if issubclass(model, RootModel) and hasattr(model, "_tag_uri") and model._tag_uri is not None:
-        ROOT_MODELS[model._tag_uri] = model
+        _ROOT_MODELS[model._tag_uri] = model
 
 
 # Add all the models to the converter
-RomanDataModelConverter.from_registry(TAGGED_MODELS)
-RomanRootModelConverter.from_registry(ROOT_MODELS)
+RomanDataModelConverter.from_registry(_TAGGED_MODELS)
+RomanRootModelConverter.from_registry(_ROOT_MODELS)
 
 
 class RomanPydanticExtension(Extension):

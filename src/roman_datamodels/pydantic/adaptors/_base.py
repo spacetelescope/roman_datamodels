@@ -1,3 +1,7 @@
+"""
+This module is to facilitate easy identification of Pydantic Adaptors, in the
+context of the FieldInfo data encoded into a Pydantic model.
+"""
 import abc
 from inspect import isclass
 from typing import Annotated, get_args, get_origin
@@ -57,4 +61,7 @@ def get_adaptor(obj) -> Adaptor | None:
 
 
 def is_adaptor(obj: type) -> bool:
+    """
+    Determine if the given object is an Adaptor.
+    """
     return get_adaptor(obj) is not None

@@ -1,3 +1,6 @@
+"""
+This package enables us to use some third party ASDF related types with Pydantic.
+"""
 import numpy as np
 from astropy.units import Unit
 

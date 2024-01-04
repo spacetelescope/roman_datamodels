@@ -1,3 +1,6 @@
+"""
+Base class for all RomanDataModels
+"""
 from __future__ import annotations
 
 from enum import Enum

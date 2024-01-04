@@ -1,3 +1,6 @@
+"""
+Define a Pydantic adaptor for an astropy Quantity.
+"""
 from typing import Annotated, Any, Optional, TypedDict, Union
 
 import astropy.units as u
@@ -23,6 +26,9 @@ def _validate_quantity(
     quantity: u.Quantity,
     validator: core_schema.ValidatorFunctionWrapHandler,
 ) -> u.Quantity:
+    """
+    Wrap a validator around a quantity so that it can validate each part of the quantity.
+    """
     split = _QuantitySplit(
         value=quantity.value,
         unit=quantity.unit,
@@ -35,10 +41,20 @@ def _validate_quantity(
 def _validate_scalar(
     scalar: DTypeLike,
 ) -> DTypeLike:
+    """
+    Assists in validating a scalar astropy Quantities.
+    """
     return scalar.dtype.type
 
 
 class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _AstropyUnitPydanticAnnotation):
+    """
+    The pydantic adaptor for an astropy Quantity.
+
+    This will be attached to the type via typing.Annotated so that Pydantic can use it to
+    validate that a field is the right quantity.
+    """
+
     @classmethod
     def factory(
         cls,
@@ -48,6 +64,8 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
         unit: Units = None,
         default_shape: Optional[tuple[PositiveInt, ...]] = None,
     ) -> type:
+        """Construct a new Adaptor type constrained to the values given."""
+
         units = cls._get_units(unit)
         name = f"{super().factory(dtype=dtype, ndim=ndim, default_shape=default_shape).__name__}"
         if units is not None:
@@ -92,6 +110,7 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
         _source_type: Any,
         _handler: GetCoreSchemaHandler,
     ) -> core_schema.CoreSchema:
+        """Create the pydantic_core schema to validate the value part of a quantity."""
         if not cls.ndim:
             return core_schema.chain_schema(
                 [
@@ -107,6 +126,7 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
         _source_type: Any,
         _handler: GetCoreSchemaHandler,
     ) -> core_schema.CoreSchema:
+        """Create the pydantic_core schema to validate the unit part of a quantity."""
         return super(_AsdfNdArrayPydanticAnnotation, cls).__get_pydantic_core_schema__(_source_type, _handler)["python_schema"]
 
     @classmethod
@@ -115,6 +135,7 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
         _source_type: Any,
         _handler: GetCoreSchemaHandler,
     ) -> core_schema.CoreSchema:
+        """Create the pydantic_core schema to validate a quantity."""
         return core_schema.no_info_wrap_validator_function(
             function=_validate_quantity,
             schema=core_schema.typed_dict_schema(
@@ -131,6 +152,10 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
         _source_type: Any,
         _handler: GetCoreSchemaHandler,
     ) -> core_schema.CoreSchema:
+        """
+        Specify the pydantic_core schema for an astropy Quantity.
+            This is what is used to validate a model field against its annotation.
+        """
         quantity_schema = cls._quantity_schema(_source_type, _handler)
 
         return core_schema.json_or_python_schema(
@@ -150,6 +175,11 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
         _core_schema: core_schema.CoreSchema,
         handler: GetJsonSchemaHandler,
     ) -> JsonSchemaValue:
+        """
+        This enables Pydantic to generate a JsonSchema for the annotation
+            This is to allow us to create single monolithic JsonSchemas for each
+            data product if we wish.
+        """
         schema = {
             "title": None,
             "tag": asdf_tags.ASTROPY_QUANTITY.value,
@@ -178,12 +208,18 @@ _Factory = Union[
 
 
 class _AstropyQuantity(Adaptor):
+    """
+    This is a Hack class to make the AstropyQuantity annotation "look" like how python annotations
+    typically look
+    """
+
     @classmethod
     def make_default(cls, **kwargs):
         raise NotImplementedError("This cannot be called on this class")
 
     @staticmethod
     def __getitem__(factory: _Factory) -> type:
+        """Turn the typical python annotation style something suitable for Pydantic."""
         if not isinstance(factory, tuple):
             factory = (factory,)
 
@@ -201,4 +237,5 @@ class _AstropyQuantity(Adaptor):
         ]
 
 
+# Turn the Hack into a singleton instance
 AstropyQuantity = _AstropyQuantity()

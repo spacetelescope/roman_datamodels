@@ -1,3 +1,7 @@
+"""
+This module is to make accessing the archive_catalog and sdf metadata in the
+schemas easier in a more organized way.
+"""
 from __future__ import annotations
 
 from pydantic import BaseModel

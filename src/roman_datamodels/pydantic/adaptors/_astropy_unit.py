@@ -12,6 +12,8 @@ from ._base import Adaptor
 __all__ = ["Unit", "AstropyUnit"]
 
 
+# This is due to the annoying fact that there is no root class for astropy units.
+#     This covers all the types supported by ASDF
 Unit = Union[
     u.CompositeUnit,
     u.IrreducibleUnit,
@@ -26,6 +28,9 @@ Units = Optional[Union[Unit, list[Unit], tuple[Unit, ...]]]
 
 
 def _get_unit_symbol(unit: Unit) -> str:
+    """
+    Build a string, symbol, representation of a unit.
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=u.UnitsWarning)
 
@@ -39,28 +44,46 @@ def _validate_unit(
     unit: Unit,
     validator: core_schema.ValidatorFunctionWrapHandler,
 ) -> Unit:
-    symbol = _get_unit_symbol(unit)
-    validator(input_value=symbol)
+    """
+    Wrap a validator around a unit so that it can validate the symbol.
+    """
+    validator(input_value=_get_unit_symbol(unit))
 
     return unit
 
 
+# This is based on the ASDF schema for unit symbols. This translates that logic
+#     into a pydantic_core schema.
 astropy_unit_schema = core_schema.no_info_wrap_validator_function(
     function=_validate_unit, schema=core_schema.str_schema(pattern="[\x00-\x7f]*")
 )
 
 
 class _AstropyUnitPydanticAnnotation(Adaptor):
+    """
+    The pydantic adaptor for an astropy Unit.
+
+    This will be attached to the type via typing.Annotated so that Pydantic can use it to
+    validate that a field is the right unit. Note that it supports a list of possible units
+    """
+
     units: ClassVar[Optional[list[Unit]]] = None
 
     @classmethod
     def _get_units(cls, unit: Units) -> Optional[list[str]]:
+        """
+        Translate the possible types of unit listings into something which
+        can be used by this adaptor.
+        """
+        # No specific unit specified
         if unit is None:
             return
 
+        # This handles if a single unit is passed
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
 
+        # Remove duplicates an any None values, leaving only the units
         units = set(unit)
         if None in units:
             units.remove(None)
@@ -70,10 +93,12 @@ class _AstropyUnitPydanticAnnotation(Adaptor):
 
     @classmethod
     def _get_unit_name(cls, units: Optional[Units]) -> str:
+        """Create a name for the unit based on the symbols of the units."""
         return "" if units is None else "_".join([_get_unit_symbol(unit) for unit in units])
 
     @classmethod
     def factory(cls, *, unit: Units = None) -> type:
+        """Construct a new Adaptor type constrained to the values given."""
         units = cls._get_units(unit)
         return type(
             cls.__name__ if units is None else f"{cls.__name__}_{cls._get_unit_name(units)}",
@@ -97,6 +122,7 @@ class _AstropyUnitPydanticAnnotation(Adaptor):
 
     @classmethod
     def _units_schema(cls) -> core_schema.CoreSchema:
+        """Create the pydantic_core schema to validate a unit."""
         return astropy_unit_schema if cls.units is None else core_schema.literal_schema(cls.units)
 
     @classmethod
@@ -105,6 +131,10 @@ class _AstropyUnitPydanticAnnotation(Adaptor):
         _source_type: Any,
         _handler: GetCoreSchemaHandler,
     ) -> core_schema.CoreSchema:
+        """
+        Specify the pydantic_core schema for an astropy Unit.
+            This is what is used to validate a model field against its annotation.
+        """
         units_schema = cls._units_schema()
 
         return core_schema.json_or_python_schema(
@@ -124,6 +154,11 @@ class _AstropyUnitPydanticAnnotation(Adaptor):
         _core_schema: core_schema.CoreSchema,
         handler: GetJsonSchemaHandler,
     ) -> JsonSchemaValue:
+        """
+        This enables Pydantic to generate a JsonSchema for the annotation
+            This is to allow us to create single monolithic JsonSchemas for each
+            data product if we wish.
+        """
         schema = {
             "title": None,
             "tag": asdf_tags.ASTROPY_UNIT.value,
@@ -143,7 +178,9 @@ class _AstropyUnit(Adaptor):
 
     @staticmethod
     def __getitem__(unit: Units = None) -> type:
+        """Turn the typical python annotation style something suitable for Pydantic."""
         return Annotated[Unit, _AstropyUnitPydanticAnnotation.factory(unit=unit)]
 
 
+# Turn the Hack into a singleton instance
 AstropyUnit = _AstropyUnit()

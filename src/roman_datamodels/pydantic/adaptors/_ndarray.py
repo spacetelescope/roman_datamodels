@@ -1,3 +1,6 @@
+"""
+Define a Pydantic adaptor for a numpy ndarray (and asdf NDArrayType).
+"""
 from typing import Annotated, Any, Callable, ClassVar, Optional, TypedDict, Union
 
 import numpy as np
@@ -20,12 +23,14 @@ class _NDArrayMeta(TypedDict):
     ndim: int
 
 
+# Pydantic core schema for a numpy dtype validation
 _dtype_schema = core_schema.union_schema(
     [
         core_schema.is_subclass_schema(np.number),
         core_schema.is_subclass_schema(np.bool_),
     ],
 )
+# Pydantic core schema for a numpy ndim validation
 _ndim_schema = core_schema.int_schema(ge=0)
 
 
@@ -33,6 +38,9 @@ def _validate_array(
     array: NDArrayLike,
     validator: core_schema.ValidatorFunctionWrapHandler,
 ) -> NDArrayLike:
+    """
+    Wrap a validator around an array so that it can be validated correctly
+    """
     if isinstance(array, NDArrayType):
         # This is so the binary data is not force loaded into memory
         #    when the array is validated
@@ -50,6 +58,13 @@ def _validate_array(
 
 
 class _AsdfNdArrayPydanticAnnotation(Adaptor):
+    """
+    The pydantic adaptor for an numpy ndarray (and asdf NdArrayType).
+
+    This will be attached to the type via typing.Annotated so that Pydantic can use it to
+    validate that a field is the right ndarray.
+    """
+
     dtype: ClassVar[Optional[DTypeLike]]
     ndim: ClassVar[Optional[PositiveInt]]
     default_shape: ClassVar[Optional[tuple[PositiveInt, ...]]]
@@ -62,6 +77,7 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
         ndim: Optional[PositiveInt] = None,
         default_shape: Optional[tuple[PositiveInt, ...]] = None,
     ) -> type:
+        """Construct a new Adaptor type constrained to the values given."""
         name = f"{cls.__name__}"
         if dtype is not None:
             name += f"_{dtype.__name__}"
@@ -121,14 +137,17 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
 
     @classmethod
     def _dtype_schema(cls) -> core_schema.CoreSchema:
+        """Create the pydantic_core schema to validate a dtype."""
         return _dtype_schema if cls.dtype is None else core_schema.literal_schema([cls.dtype])
 
     @classmethod
     def _ndim_schema(cls) -> core_schema.CoreSchema:
+        """Create the pydantic_core schema to validate a ndim."""
         return _ndim_schema if cls.ndim is None else core_schema.literal_schema([cls.ndim])
 
     @classmethod
     def _nd_array_schema(cls) -> core_schema.CoreSchema:
+        """Create the pydantic_core schema to validate an ndarray (or NdArrayType)."""
         return core_schema.no_info_wrap_validator_function(
             function=_validate_array,
             schema=core_schema.typed_dict_schema(
@@ -145,6 +164,10 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
         _source_type: Any,
         _handler: Callable[[Any], core_schema.CoreSchema],
     ) -> core_schema.CoreSchema:
+        """
+        Specify the pydantic_core schema for an ndarray or NdArrayType.
+            This is what is used to validate a model field against its annotation.
+        """
         np_array_schema = cls._nd_array_schema()
 
         return core_schema.json_or_python_schema(
@@ -164,6 +187,11 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
         _core_schema: core_schema.CoreSchema,
         handler: GetJsonSchemaHandler,
     ) -> JsonSchemaValue:
+        """
+        This enables Pydantic to generate a JsonSchema for the annotation
+            This is to allow us to create single monolithic JsonSchemas for each
+            data product if we wish.
+        """
         schema = {
             "title": None,
             "tag": asdf_tags.ASDF_NDARRAY.value,
@@ -180,12 +208,18 @@ _Factory = Union[DTypeLike, tuple[DTypeLike, PositiveInt]]
 
 
 class _NdArray(Adaptor):
+    """
+    This is a Hack class to make the NdArray annotation "look" like how python annotations
+    typically look
+    """
+
     @classmethod
     def make_default(cls, **kwargs):
         raise NotImplementedError("This cannot be called on this class")
 
     @staticmethod
     def __getitem__(factory: _Factory) -> type:
+        """Turn the typical python annotation style something suitable for Pydantic."""
         if not isinstance(factory, tuple):
             factory = (factory,)
 
@@ -205,4 +239,5 @@ class _NdArray(Adaptor):
         ]
 
 
+# Turn the Hack into a singleton instance
 NdArray = _NdArray()

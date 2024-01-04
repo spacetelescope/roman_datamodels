@@ -1,3 +1,6 @@
+"""
+Define a Pydantic adaptor for an astropy Time.
+"""
 from typing import Annotated, Any
 
 from astropy.time import Time
@@ -12,12 +15,23 @@ __all__ = ["AstropyTime"]
 
 
 class _AstropyTimePydanticAnnotation(Adaptor):
+    """
+    The pydantic adaptor for an astropy Time.
+
+    This does not allow any constraints on the time, it basically does an isinstance check.
+    """
+
     @classmethod
     def __get_pydantic_core_schema__(
         cls,
         _source_type: Any,
         _handler: GetCoreSchemaHandler,
     ) -> core_schema.CoreSchema:
+        """
+        Specify the pydantic_core schema for an astropy Time.
+            This is what is used to validate a model field against its annotation.
+        """
+
         def validate_from_str(value: str) -> Time:
             return Time(value)
 
@@ -40,6 +54,11 @@ class _AstropyTimePydanticAnnotation(Adaptor):
         _core_schema: core_schema.CoreSchema,
         handler: GetJsonSchemaHandler,
     ) -> JsonSchemaValue:
+        """
+        This enables Pydantic to generate a JsonSchema for the annotation
+            This is to allow us to create single monolithic JsonSchemas for each
+            data product if we wish.
+        """
         return {
             "title": None,
             "tag": asdf_tags.ASTROPY_TIME.value,
@@ -58,4 +77,5 @@ class _AstropyTimePydanticAnnotation(Adaptor):
         return Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
 
 
+# Create an annotated type alias for the annotation
 AstropyTime = Annotated[Time, _AstropyTimePydanticAnnotation]

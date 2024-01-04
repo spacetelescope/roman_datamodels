@@ -1,3 +1,7 @@
+"""
+The ASDF converter here is based on the one in the asdf-pydantic package, but
+that one required too many modifications to be viable for our use case.
+"""
 from __future__ import annotations
 
 import warnings
@@ -15,6 +19,21 @@ _TIME_CONVERTER = TimeConverter()
 
 
 class RomanDataModelConverter(Converter):
+    """
+    Converter to handle RomanDataModel tagged objects
+
+    Class Variables
+    ---------------
+    _tag_to_model :
+        Map from tag uri to model class object
+    _removed_tags :
+        Tags that can still be read but have been removed from the schemas. These
+        are to support reading of old files during the transition period.
+    _updated_tags :
+        Mapping of old tags to new tags. These are to support reading old files
+        written before reorganizing RAD. This is to ease the transition period.
+    """
+
     _tag_to_model: ClassVar[dict[str, type[RomanDataModel]] | None] = None
     _removed_tags: ClassVar[tuple(str)] = (
         "asdf://stsci.edu/datamodels/roman/tags/calibration_software_version-1.0.0",
@@ -88,6 +107,11 @@ class RomanDataModelConverter(Converter):
 
 
 class RomanRootModelConverter(Converter):
+    """
+    Converter for tagged RootModel objects.
+        - Currently this is only to support CalLogs
+    """
+
     _tag_to_model: ClassVar[dict[str, type[RomanDataModel]] | None] = None
 
     def __init__(self) -> None:
