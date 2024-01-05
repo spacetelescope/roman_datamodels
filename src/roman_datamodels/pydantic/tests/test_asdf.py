@@ -10,7 +10,7 @@ from roman_datamodels.datamodels.datamodel import TaggedDataModel
 models = [
     getattr(_generated, name)
     for name in _generated.__all__
-    if issubclass(mdl := getattr(_generated, name), TaggedDataModel) and mdl._tag_uri is not None
+    if issubclass(mdl := getattr(_generated, name), TaggedDataModel) and mdl.tag_uri is not None
 ]
 
 

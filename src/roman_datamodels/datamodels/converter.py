@@ -80,7 +80,7 @@ class RomanDataModelConverter(Converter):
         return tuple(self._tag_to_model.values())
 
     def select_tag(self, obj: TaggedDataModel, tags: Any, ctx: Any) -> str:
-        return obj._tag_uri
+        return obj.tag_uri
 
     def to_yaml_tree(self, obj: TaggedDataModel, tag: Any, ctx: Any) -> dict:
         return obj.to_asdf_tree()
@@ -136,7 +136,7 @@ class RomanRootModelConverter(Converter):
         return tuple(self._tag_to_model.values())
 
     def select_tag(self, obj: RootModel, tags: Any, ctx: Any) -> str:
-        return obj._tag_uri
+        return obj.tag_uri
 
     def to_yaml_tree(self, obj: RootModel, tag: Any, ctx: Any) -> dict:
         return obj.root

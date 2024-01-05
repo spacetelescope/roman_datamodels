@@ -1,8 +1,12 @@
 """
 Base class for all RomanDataModels
+
+Note this contains only the methods needed to support all RomanDataModels whether
+they can be directly serialized to ASDF (tagged) or not.
 """
 from __future__ import annotations
 
+import abc
 import warnings
 from contextlib import contextmanager
 from enum import Enum
@@ -18,7 +22,7 @@ from .adaptors import get_adaptor
 from .metadata import Archive, Archives
 
 
-class RomanDataModel(BaseModel):
+class RomanDataModel(BaseModel, abc.ABC):
     model_config = ConfigDict(
         # model_* is a protected namespace for Pydantic, so we have to remove that protection
         # because Basic.model_type is a field we want to use
@@ -35,6 +39,10 @@ class RomanDataModel(BaseModel):
         validate_assignment=True,
         revalidate_instances="always",
     )
+
+    @abc.abstractproperty
+    def schema_uri(cls) -> str:
+        ...
 
     def to_asdf_tree(self) -> dict[str, Any]:
         """

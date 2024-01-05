@@ -1,6 +1,11 @@
+"""
+This module contains the base class for all ASDF-serializable data models. These
+models can be independently serialized and deserialized using the ASDF library.
+"""
 from __future__ import annotations
 
-from typing import Any, ClassVar
+import abc
+from typing import Any
 
 from asdf import AsdfFile
 
@@ -8,8 +13,9 @@ from roman_datamodels.pydantic import RomanDataModel
 
 
 class TaggedDataModel(RomanDataModel):
-    _schema_uri: ClassVar[str | None] = None
-    _tag_uri: ClassVar[str | None] = None
+    @abc.abstractproperty
+    def tag_uri(cls) -> str:
+        ...
 
     _iscopy: bool = False
     _shape: tuple[int, ...] | None = None
@@ -18,14 +24,6 @@ class TaggedDataModel(RomanDataModel):
     def model_post_init(self, __context: Any) -> None:
         if self._asdf is None:
             self._asdf = AsdfFile()
-
-    @property
-    def tag_uri(self) -> str | None:
-        return self._tag_uri
-
-    @property
-    def schema_uri(self) -> str | None:
-        return self._schema_uri
 
     def close(self):
         if not (self._iscopy or self._asdf is None):

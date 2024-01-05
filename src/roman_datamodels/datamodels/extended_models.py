@@ -1,6 +1,12 @@
+"""
+This module contains base models for all data models which need extended functionality.
+
+    To extend an automatically generated model, it needs to be tagged, and a subclass of
+    `ExtendedDataModel` needs to be created with _schema_uri set to the schema URI of the
+    underlying model.
+"""
 from __future__ import annotations
 
-import abc
 from typing import ClassVar
 
 from .datamodel import TaggedDataModel
@@ -8,7 +14,7 @@ from .datamodel import TaggedDataModel
 __all__ = ["ExtendedDataModel"]
 
 
-class ExtendedDataModel(TaggedDataModel, abc.ABC):
+class ExtendedDataModel(TaggedDataModel):
     """
     Base class for all data models which need extended functionality.
         This is intended to act as a base class only.
