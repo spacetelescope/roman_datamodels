@@ -10,7 +10,7 @@ import warnings
 from collections.abc import Callable
 from contextlib import contextmanager
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import asdf
 
@@ -35,6 +35,21 @@ class RomanDataModel(BaseRomanDataModel):
     _shape: tuple[int, ...] | None = None
     _asdf: asdf.AsdfFile | None = None
     _asdf_external: bool = False
+
+    @property
+    def _has_model_type(self) -> bool:
+        """Determines if the model has the model_type attribute."""
+        return "meta" in self and "model_type" in self.meta
+
+    def model_post_init(self, __context: Any):
+        """
+        Post initialization hook for the model.
+            This is called after all the Pydantic related initialization is complete, as part
+            of the initialization of a model instance.
+        """
+        # Set the model_type (if it has one), to match the class name
+        if self._has_model_type:
+            self.meta.model_type = self.__class__.__name__
 
     @property
     def _has_filename(self) -> bool:
@@ -273,3 +288,10 @@ class RomanDataModel(BaseRomanDataModel):
                 self._shape = primary_array.shape
 
         return self._shape
+
+
+# TODO:
+#  - Address copy/clone of the model
+#  - Address asdf functionality pass through
+#  - Write tests for extended models
+#  - Migrate the init and rdm.open functionality

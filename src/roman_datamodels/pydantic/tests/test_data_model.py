@@ -12,6 +12,20 @@ models = [
 
 
 @pytest.mark.parametrize("model", models)
+def test_model_type(model):
+    """
+    Test that model type is set correctly
+    """
+    instance = model.make_default(_shrink=True)
+
+    # Check that the model type is set correctly (if it exists)
+    if instance._has_model_type:
+        assert instance.meta.model_type == model.__name__
+    else:
+        assert "meta" not in instance or "model_type" not in instance.meta
+
+
+@pytest.mark.parametrize("model", models)
 def test_override_handle(model):
     """
     Test the override_handle method
