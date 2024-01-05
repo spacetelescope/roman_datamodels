@@ -8,12 +8,16 @@ from __future__ import annotations
 
 import abc
 import warnings
+from collections.abc import Generator
 from contextlib import contextmanager
+from datetime import datetime
 from enum import Enum
 from inspect import isclass
 from typing import Any, get_args, get_origin
 
+import numpy as np
 from astropy.modeling import models
+from astropy.time import Time
 from pydantic import BaseModel, ConfigDict, RootModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
@@ -291,6 +295,59 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
                     continue
 
         return cls(**defaults)
+
+    def to_flat_dict(self, include_arrays: bool = True) -> dict[str, Any]:
+        """
+        Get a flattened dictionary representation of the model.
+        """
+
+        def convert_value(value: Any) -> Any:
+            """Convert times into strings and leave everything else alone"""
+            if isinstance(value, datetime):
+                return value.isoformat()
+
+            if isinstance(value, Time):
+                return str(value)
+
+            return value
+
+        return {
+            name: convert_value(value) for name, value in self.flat_items() if include_arrays or not isinstance(value, np.ndarray)
+        }
+
+    def flat_items(self) -> Generator[tuple[str, Any], None, None]:
+        def recurse(field: Any, path=None) -> Generator[tuple[str, Any], None, None]:
+            if path is None:
+                path = []
+
+            # Recurse into sub-RomanDataModels that are not TaggedDataModels (so ASDF can tag them)
+            if isinstance(field, BaseRomanDataModel):
+                for field_name, value in field:
+                    yield from recurse(value, path + [field_name])
+
+            # Recurse into sub-RootModels
+            elif isinstance(field, RootModel):
+                yield from recurse(field.root, path)
+
+            # Recurse into sub-dicts
+            elif isinstance(field, dict):
+                for key, value in field.items():
+                    yield from recurse(value, path + [key])
+
+            # Recurse into sub-lists
+            elif isinstance(field, list):
+                for index, value in enumerate(field):
+                    yield from recurse(value, path + [index])
+
+            # Handle enumerations
+            elif isinstance(field, Enum):
+                yield from recurse(field.value, path)
+
+            # Return field if it has no nested data to be serialized
+            else:
+                yield (".".join(str(name) for name in path), field)
+
+        yield from recurse(self)
 
     @contextmanager
     def pause_validation(self, *, revalidate_on_exit: bool = True) -> None:

@@ -4,6 +4,7 @@ Test general aspects of the RomanDataModel class.
 import pytest
 
 from roman_datamodels.datamodels import RomanDataModel, RomanExtendedDataModel, _generated
+from roman_datamodels.pydantic import BaseRomanDataModel
 
 models = [
     getattr(_generated, name) for name in _generated.__all__ if issubclass(mdl := getattr(_generated, name), RomanDataModel)
@@ -57,3 +58,45 @@ def test_shape(model):
         assert instance.shape == instance[instance.get_primary_array_name()].shape
         # Shape is now remembered
         assert instance._shape == instance[instance.get_primary_array_name()].shape
+
+
+@pytest.mark.parametrize("model", models)
+def test_to_flat_dict(model):
+    """
+    Partially test the to_flat_dict method
+    """
+    instance = model.make_default(_shrink=True)
+
+    flat_dict = instance.to_flat_dict()
+
+    # Check first and second levels for data models
+    for field_name, field in instance.model_fields.items():
+        # We only check required fields
+        if field.is_required():
+            for key in flat_dict:
+                if key.startswith(field_name):
+                    break
+            else:
+                assert False, f"Field {field_name} not found in flat_dict"
+
+            # Do the same for sub-models
+            if isinstance(sub_instance := instance[field_name], BaseRomanDataModel):
+                for sub_field_name, sub_field in sub_instance.model_fields.items():
+                    if sub_field.is_required():
+                        for key in flat_dict:
+                            if key.startswith(f"{field_name}.{sub_field_name}"):
+                                break
+                        else:
+                            assert False, f"Field {field_name}.{sub_field_name} not found in flat_dict"
+
+
+@pytest.mark.parametrize("model", models)
+def test_get_crds_parameters(model):
+    """
+    Test that the get_crds_parameters method works
+    """
+    instance = model.make_default(_shrink=True)
+
+    for key, value in instance.get_crds_parameters().items():
+        assert isinstance(key, str)
+        assert isinstance(value, (str, int, float, bool, complex))
