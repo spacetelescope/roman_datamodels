@@ -4,10 +4,10 @@ Run tests on the archive metadata retrieval for datamodels
 import pytest
 
 from roman_datamodels.datamodels import _generated
-from roman_datamodels.pydantic import RomanDataModel
+from roman_datamodels.pydantic import BaseRomanDataModel
 from roman_datamodels.pydantic.metadata import Archive
 
-models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), RomanDataModel)]
+models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseRomanDataModel)]
 
 
 @pytest.mark.parametrize("model", models)

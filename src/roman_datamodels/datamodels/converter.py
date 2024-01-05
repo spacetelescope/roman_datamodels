@@ -11,7 +11,7 @@ from asdf.extension import Converter
 from asdf_astropy.converters.time import TimeConverter
 from pydantic import RootModel
 
-from .datamodel import TaggedDataModel
+from .datamodel import RomanDataModel
 
 _ROMAN_DATAMODEL_CONVERTER: RomanDataModelConverter | None = None
 _ROMAN_ROOTMODEL_CONVERTER: RomanRootModelConverter | None = None
@@ -34,7 +34,7 @@ class RomanDataModelConverter(Converter):
         written before reorganizing RAD. This is to ease the transition period.
     """
 
-    _tag_to_model: ClassVar[dict[str, type[TaggedDataModel]] | None] = None
+    _tag_to_model: ClassVar[dict[str, type[RomanDataModel]] | None] = None
     _removed_tags: ClassVar[tuple(str)] = (
         "asdf://stsci.edu/datamodels/roman/tags/calibration_software_version-1.0.0",
         "asdf://stsci.edu/datamodels/roman/tags/filename-1.0.0",
@@ -67,7 +67,7 @@ class RomanDataModelConverter(Converter):
         self = _ROMAN_DATAMODEL_CONVERTER
 
     @classmethod
-    def from_registry(cls, registry: dict[str, type[TaggedDataModel]]) -> RomanDataModelConverter:
+    def from_registry(cls, registry: dict[str, type[RomanDataModel]]) -> RomanDataModelConverter:
         cls._tag_to_model = registry if cls._tag_to_model is None else {**cls._tag_to_model, **registry}
         return cls()
 
@@ -79,13 +79,13 @@ class RomanDataModelConverter(Converter):
     def types(self) -> tuple(type):
         return tuple(self._tag_to_model.values())
 
-    def select_tag(self, obj: TaggedDataModel, tags: Any, ctx: Any) -> str:
+    def select_tag(self, obj: RomanDataModel, tags: Any, ctx: Any) -> str:
         return obj.tag_uri
 
-    def to_yaml_tree(self, obj: TaggedDataModel, tag: Any, ctx: Any) -> dict:
+    def to_yaml_tree(self, obj: RomanDataModel, tag: Any, ctx: Any) -> dict:
         return obj.to_asdf_tree()
 
-    def from_yaml_tree(self, node: Any, tag: Any, ctx: Any) -> TaggedDataModel:
+    def from_yaml_tree(self, node: Any, tag: Any, ctx: Any) -> RomanDataModel:
         if tag in self._removed_tags:
             warnings.warn(
                 f"The tag: {tag} has been removed as a stand alone tag, if this data is written the tag will not be included",

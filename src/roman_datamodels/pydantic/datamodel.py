@@ -22,7 +22,7 @@ from .adaptors import get_adaptor
 from .metadata import Archive, Archives
 
 
-class RomanDataModel(BaseModel, abc.ABC):
+class BaseRomanDataModel(BaseModel, abc.ABC):
     model_config = ConfigDict(
         # model_* is a protected namespace for Pydantic, so we have to remove that protection
         # because Basic.model_type is a field we want to use
@@ -54,7 +54,7 @@ class RomanDataModel(BaseModel, abc.ABC):
         """
 
         # Avoid circular import
-        from roman_datamodels.datamodels.datamodel import TaggedDataModel
+        from roman_datamodels.datamodels.datamodel import RomanDataModel
 
         def recurse_tree(field: Any) -> Any:
             """
@@ -71,7 +71,7 @@ class RomanDataModel(BaseModel, abc.ABC):
             The sub tree for the field
             """
             # Recurse into sub-RomanDataModels that are not TaggedDataModels (so ASDF can tag them)
-            if isinstance(field, RomanDataModel) and not isinstance(field, TaggedDataModel):
+            if isinstance(field, BaseRomanDataModel) and not isinstance(field, RomanDataModel):
                 return field.to_asdf_tree()
 
             # Recurse into sub-RootModels
@@ -138,7 +138,7 @@ class RomanDataModel(BaseModel, abc.ABC):
 
             # Handle the case of field being a RomanDataModel
             #    Note that we do not add the archive metadata if the model has no archive metadata
-            if issubclass(field_type, RomanDataModel) and (archive := field_type.get_archive_metadata()):
+            if issubclass(field_type, BaseRomanDataModel) and (archive := field_type.get_archive_metadata()):
                 metadata[field_name] = archive
 
             # Handle the case we have a root model
@@ -152,7 +152,7 @@ class RomanDataModel(BaseModel, abc.ABC):
         return metadata
 
     @classmethod
-    def make_default(cls, **kwargs) -> RomanDataModel:
+    def make_default(cls, **kwargs) -> BaseRomanDataModel:
         """
         Create a default instance of this model
 
@@ -203,7 +203,7 @@ class RomanDataModel(BaseModel, abc.ABC):
             """
 
             # Recurse into sub-models
-            if issubclass(field_type, RomanDataModel):
+            if issubclass(field_type, BaseRomanDataModel):
                 return field_type.make_default(**kwargs)
 
             # Set default numerical scalars

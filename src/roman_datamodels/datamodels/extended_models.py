@@ -9,29 +9,29 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from .datamodel import TaggedDataModel
+from .datamodel import RomanDataModel
 
-__all__ = ["ExtendedDataModel"]
+__all__ = ["RomanExtendedDataModel"]
 
 
-class ExtendedDataModel(TaggedDataModel):
+class RomanExtendedDataModel(RomanDataModel):
     """
     Base class for all data models which need extended functionality.
         This is intended to act as a base class only.
     """
 
     @classmethod
-    def model_from_schema_uri(cls, schema_uri: str) -> type[TaggedDataModel]:
+    def model_from_schema_uri(cls, schema_uri: str) -> type[RomanDataModel]:
         """Grab a subclass of this model corresponding to the schema_uri."""
 
         for subclass in cls.__subclasses__():
             if subclass._schema_uri == schema_uri:
                 return subclass
 
-        return TaggedDataModel
+        return RomanDataModel
 
 
-class _WfiMode(ExtendedDataModel):
+class _WfiMode(RomanExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/wfi_mode-1.0.0"
 
     _grating_optical_elements: ClassVar[frozenset[str]] = frozenset({"GRISM", "PRISM"})
@@ -47,7 +47,7 @@ class _WfiMode(ExtendedDataModel):
         return self.optical_element if self.optical_element in self._grating_optical_elements else None
 
 
-class _RampModel(ExtendedDataModel):
+class _RampModel(RomanExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/data_products/ramp-1.0.0"
 
     @classmethod
@@ -63,7 +63,7 @@ class _RampModel(ExtendedDataModel):
         raise NotImplementedError("This method is not implemented yet, but will be.")
 
 
-class _AssociationsModel(ExtendedDataModel):
+class _AssociationsModel(RomanExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/data_products/associations-1.0.0"
 
     @classmethod
@@ -79,7 +79,7 @@ class _AssociationsModel(ExtendedDataModel):
         return isinstance(asn_data, dict) and "asn_id" in asn_data and "asn_pool" in asn_data
 
 
-class _LinearityRefModel(ExtendedDataModel):
+class _LinearityRefModel(RomanExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/linearity-1.0.0"
 
     def get_primary_array_name(self):
@@ -89,7 +89,7 @@ class _LinearityRefModel(ExtendedDataModel):
         return "coeffs"
 
 
-class _InverselinearityRefModel(ExtendedDataModel):
+class _InverselinearityRefModel(RomanExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/inverselinearity-1.0.0"
 
     def get_primary_array_name(self):
@@ -99,7 +99,7 @@ class _InverselinearityRefModel(ExtendedDataModel):
         return "coeffs"
 
 
-class _MaskRefModel(ExtendedDataModel):
+class _MaskRefModel(RomanExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/mask-1.0.0"
 
     def get_primary_array_name(self):

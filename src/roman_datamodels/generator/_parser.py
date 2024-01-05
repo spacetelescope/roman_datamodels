@@ -14,7 +14,7 @@ from datamodel_code_generator.parser.base import get_special_path
 from datamodel_code_generator.parser.jsonschema import JsonSchemaParser, get_model_by_path
 from datamodel_code_generator.types import DataType
 
-from roman_datamodels.pydantic import RomanDataModel
+from roman_datamodels.pydantic import BaseRomanDataModel
 
 from ._adaptor import adaptor_factory, has_adaptor
 from ._reslover import RadModelResolver
@@ -38,7 +38,7 @@ class RadSchemaParser(JsonSchemaParser):
         data_model_types = get_data_model_types(DataModelType.PydanticV2BaseModel, target_python_version=PythonVersion.PY_310)
 
         # Use the datamodel as the baseclass
-        base_class = f"{RomanDataModel.__module__}.{RomanDataModel.__name__}"
+        base_class = f"{BaseRomanDataModel.__module__}.{BaseRomanDataModel.__name__}"
 
         super().__init__(
             source=source,

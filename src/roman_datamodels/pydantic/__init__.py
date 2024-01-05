@@ -1,3 +1,3 @@
-from .datamodel import RomanDataModel
+from .datamodel import BaseRomanDataModel
 
-__all__ = ["RomanDataModel"]
+__all__ = ["BaseRomanDataModel"]

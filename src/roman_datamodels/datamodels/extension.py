@@ -4,14 +4,14 @@ from pydantic import RootModel
 # Import all the models so they get registered
 from . import _generated  # noqa: F401
 from .converter import RomanDataModelConverter, RomanRootModelConverter
-from .datamodel import TaggedDataModel
+from .datamodel import RomanDataModel
 
 # Populate dictionaries to register into the converters
 _TAGGED_MODELS = {}
 _ROOT_MODELS = {}
 for model_name in _generated.__all__:
     model = getattr(_generated, model_name)
-    if issubclass(model, TaggedDataModel) and model.tag_uri is not None:
+    if issubclass(model, RomanDataModel) and model.tag_uri is not None:
         _TAGGED_MODELS[model.tag_uri] = model
 
     if issubclass(model, RootModel) and hasattr(model, "tag_uri") and model.tag_uri is not None:
