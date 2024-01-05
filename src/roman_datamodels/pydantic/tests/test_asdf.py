@@ -1,5 +1,5 @@
 """
-Run tests on writing the data models to ASDF
+Tests related to the ASDF interface for RomanDataModel
 """
 from pathlib import Path
 from unittest import mock
@@ -7,36 +7,70 @@ from unittest import mock
 import asdf
 import pytest
 
-from roman_datamodels.datamodels import _generated
-from roman_datamodels.datamodels.datamodel import RomanDataModel
+from roman_datamodels.datamodels import RomanDataModel, _generated
 
 models = [
-    getattr(_generated, name)
-    for name in _generated.__all__
-    if issubclass(mdl := getattr(_generated, name), RomanDataModel) and mdl.tag_uri is not None
+    getattr(_generated, name) for name in _generated.__all__ if issubclass(mdl := getattr(_generated, name), RomanDataModel)
 ]
 
 
-@pytest.mark.parametrize("model", models)
-class TestOpenAsdf:
+class _TestAsdf:
     """
-    Test the open_asdf method
+    Base class to contain useful methods for testing the ASDF interface
     """
+
+    def create_instance(self, model):
+        """
+        Instantiate the model using the make_default
+        """
+        return model.make_default(_shrink=True)
 
     def create_model(self, model, tmp_path):
         """
         Instantiate the model and create a file path to write it to
         """
-        filename = tmp_path / "test.asdf"
+        return self.create_instance(model), tmp_path / "test.asdf"
+
+    def create_asdf(self, model, tmp_path):
+        """Create an ASDF file with the model in it"""
+        instance, filename = self.create_model(model, tmp_path)
+        instance.to_asdf(filename)
+
+        return filename
+
+    def create_dummy_asdf(self, model, tmp_path):
+        """
+        Create a dummy ASDF file (not containing a RomanDataModel)
+        """
+        instance, filename = self.create_model(model, tmp_path)
+
+        # Create a file with a non-data model in it
         asdf.AsdfFile({"foo": "bar"}).write_to(filename)
 
-        return model.make_default(_shrink=True), filename
+        return instance, filename
+
+    def create_callable_path(self, tmp_path):
+        """
+        Create a dummy that returns a callable path
+        """
+
+        def dummy(path: str):
+            return tmp_path / f"{path.replace(' ', '_')}.asdf"
+
+        return dummy
+
+
+@pytest.mark.parametrize("model", models)
+class TestOpenAsdf(_TestAsdf):
+    """
+    Test the open_asdf method
+    """
 
     def test_str(self, model, tmp_path):
         """
         Test that we can open an ASDF file represented by a str
         """
-        instance, filename = self.create_model(model, tmp_path)
+        instance, filename = self.create_dummy_asdf(model, tmp_path)
 
         # Open the ASDF file
         af = instance.open_asdf(str(filename))
@@ -50,7 +84,7 @@ class TestOpenAsdf:
         """
         Test that we can open an ASDF file represented by a path
         """
-        instance, filename = self.create_model(model, tmp_path)
+        instance, filename = self.create_dummy_asdf(model, tmp_path)
         assert isinstance(filename, Path)
 
         # Open the ASDF file
@@ -65,7 +99,7 @@ class TestOpenAsdf:
         """
         Test that we can open an existing ASDF file
         """
-        instance, filename = self.create_model(model, tmp_path)
+        instance, filename = self.create_dummy_asdf(model, tmp_path)
 
         # Open the ASDF file with asdf
         with asdf.open(filename) as af:
@@ -79,7 +113,7 @@ class TestOpenAsdf:
         """
         Test that we can open nothing
         """
-        instance, filename = self.create_model(model, tmp_path)
+        instance, _ = self.create_dummy_asdf(model, tmp_path)
 
         # Open nothing
         af = instance.open_asdf()
@@ -88,16 +122,10 @@ class TestOpenAsdf:
 
 
 @pytest.mark.parametrize("model", models)
-class TestToAsdf:
+class TestToAsdf(_TestAsdf):
     """
     Test the to_asdf method
     """
-
-    def create_model(self, model, tmp_path):
-        """
-        Instantiate the model and create a file path to write it to
-        """
-        return model.make_default(_shrink=True), tmp_path / "test.asdf"
 
     def test_str(self, model, tmp_path):
         """
@@ -177,7 +205,9 @@ class TestToAsdf:
         Test that the filename in the meta is updated when writing to a file
         """
         instance, filename = self.create_model(model, tmp_path)
-        if hasattr(instance, "meta") and hasattr(instance.meta, "filename"):
+
+        # Note only models with meta.filename will have this behavior
+        if instance._has_filename:
             assert instance.meta.filename != filename
 
             current_filename = instance.meta.filename
@@ -214,17 +244,10 @@ def test_observation(tmp_path):
 
 
 @pytest.mark.parametrize("model", models)
-class TestFromAsdf:
+class TestFromAsdf(_TestAsdf):
     """
     Test the from_asdf class method
     """
-
-    def create_asdf(self, model, tmp_path):
-        """Create an ASDF file with the model in it"""
-        filename = tmp_path / "test.asdf"
-        model.make_default(_shrink=True).to_asdf(filename)
-
-        return filename
 
     def test_str(self, model, tmp_path):
         """
@@ -329,23 +352,13 @@ class TestFromAsdf:
         with pytest.raises(TypeError, match=r"Expected file containing model of type.*, got.*"):
             other_model.from_asdf(filename)
 
-    def create_dummy_asdf(self, tmp_path):
-        """
-        Create a dummy ASDF file (not containing a RomanDataModel)
-        """
-        # Create a file with a non-data model in it
-        filename = tmp_path / "test.asdf"
-        asdf.AsdfFile({"foo": "bar"}).write_to(filename)
-
-        return filename
-
     def test_open_non_data_model_file(self, model, tmp_path):
         """
         Test that we catch if the file doesn't contain a data model and close the model.
             This test assumes we pass a str/Path to RomanDataModel.from_asdf (not an open asdf.AsdfFile)
             pytest will raise a file not closed error if we don't close the file.
         """
-        filename = self.create_dummy_asdf(tmp_path)
+        _, filename = self.create_dummy_asdf(model, tmp_path)
 
         # Try to open the file with RomanDataModel.from_asdf
         with pytest.raises(KeyError, match=r".*from_asdf expects a file with a 'roman' key"):
@@ -355,12 +368,12 @@ class TestFromAsdf:
         with pytest.raises(KeyError, match=r".*from_asdf expects a file with a 'roman' key"):
             model.from_asdf(filename)
 
-    def test_open_non_data_model_asdffile(self, model, tmp_path):
+    def test_open_non_data_model_asdf_file(self, model, tmp_path):
         """
         Test that we catch if the file doesn't contain a data model and close the model.
             This test assumes we pass an open asdf.AsdfFile to RomanDataModel.from_asdf.
         """
-        filename = self.create_dummy_asdf(tmp_path)
+        _, filename = self.create_dummy_asdf(model, tmp_path)
 
         with asdf.open(filename) as af:
             # Try to open the file with RomanDataModel.from_asdf
@@ -374,3 +387,114 @@ class TestFromAsdf:
             # Check if ASDF believes the file is closed (it shouldn't be)
             #    Note that it has been requested that this be made public in asdf
             assert af._closed is False
+
+
+@pytest.mark.parametrize("model", models)
+class TestSave(_TestAsdf):
+    """
+    Test the save interface for stpipe
+    """
+
+    def test_str(self, model, tmp_path):
+        """
+        Test with string path
+        """
+        instance, filename = self.create_model(model, tmp_path)
+
+        # Test saving the model and check that the output filename is correct
+        assert instance.save(str(filename)) == filename
+
+        # Check that the written file is then readable
+        with RomanDataModel.from_asdf(filename) as instance:
+            assert isinstance(instance, model)
+
+    def test_str_dir_path(self, model, tmp_path):
+        """
+        Test with string path and directory path
+        """
+        instance, filename = self.create_model(model, tmp_path)
+
+        # Create a directory path
+        dir_path = tmp_path / "test"
+        dir_path.mkdir(exist_ok=True)
+
+        # Test saving the model and check that the output filename is correct
+        assert (output_path := instance.save(str(filename), dir_path=dir_path)) == dir_path / filename.name
+
+        # Check that the written file is then readable
+        with RomanDataModel.from_asdf(output_path) as instance:
+            assert isinstance(instance, model)
+
+    def test_path(self, model, tmp_path):
+        """
+        Test with path
+        """
+        instance, filename = self.create_model(model, tmp_path)
+
+        # Test saving the model and check that the output filename is correct
+        assert instance.save(filename) == filename
+
+        # Check that the written file is then readable
+        with RomanDataModel.from_asdf(filename) as instance:
+            assert isinstance(instance, model)
+
+    def test_path_dir_path(self, model, tmp_path):
+        """
+        Test with path and directory path
+        """
+        instance, filename = self.create_model(model, tmp_path)
+
+        # Create a directory path
+        dir_path = tmp_path / "test"
+        dir_path.mkdir(exist_ok=True)
+
+        # Test saving the model and check that the output filename is correct
+        assert (output_path := instance.save(filename, dir_path=dir_path)) == dir_path / filename.name
+
+        # Check that the written file is then readable
+        with RomanDataModel.from_asdf(output_path) as instance:
+            assert isinstance(instance, model)
+
+    def test_callable(self, model, tmp_path):
+        """
+        Test with callable
+        """
+        instance, _ = self.create_model(model, tmp_path)
+        path = self.create_callable_path(tmp_path)
+
+        if instance._has_filename:
+            # Test saving the model and check that the output filename is correct
+            #    This can only happen if the model has a filename attribute
+            assert (output_path := instance.save(path)) == tmp_path / "dummy_value.asdf"
+
+            # Check that the written file is then readable
+            with RomanDataModel.from_asdf(output_path) as instance:
+                assert isinstance(instance, model)
+        else:
+            # Test that we raise an error if the model doesn't have a filename attribute
+            with pytest.raises(ValueError, match=r"Cannot use a Callable path if the model does not have a filename attribute"):
+                instance.save(path)
+
+    def test_callable_dir_path(self, model, tmp_path):
+        """
+        Test with callable and directory path
+        """
+        instance, filename = self.create_model(model, tmp_path)
+        path = self.create_callable_path(tmp_path)
+
+        # Create a directory path
+        dir_path = tmp_path / "test"
+        dir_path.mkdir(exist_ok=True)
+
+        if instance._has_filename:
+            # Test saving the model and check that the output filename is correct
+            #    This can only happen if the model has a filename attribute
+            assert (output_path := instance.save(path, dir_path=dir_path)) == dir_path / "dummy_value.asdf"
+
+            # Check that the written file is then readable
+            with RomanDataModel.from_asdf(output_path) as instance:
+                assert isinstance(instance, model)
+        else:
+            # Test that we raise an error if the model doesn't have a filename attribute
+            with pytest.raises(ValueError, match=r"Cannot use a Callable path if the model does not have a filename attribute"):
+                instance.save(path, dir_path=dir_path)

@@ -58,7 +58,11 @@ def test_cannot_override_classvar(model):
     with pytest.raises(AttributeError, match=r"'schema_uri' is a ClassVar of `.*` and cannot be set on an instance."):
         instance.schema_uri = "test"
 
-    # Check that we cannot accidentally override the tag_uri on an instance
     if issubclass(model, RomanDataModel):
+        # Check that we cannot accidentally override the tag_uri on an instance
         with pytest.raises(AttributeError, match=r"'tag_uri' is a ClassVar of `.*` and cannot be set on an instance."):
             instance.tag_uri = "test"
+
+        # Check that we cannot accidentally override the crds_observatory on an instance
+        with pytest.raises(AttributeError, match=r"'crds_observatory' is a ClassVar of `.*` and cannot be set on an instance."):
+            instance.crds_observatory = "test"

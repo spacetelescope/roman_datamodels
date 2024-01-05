@@ -320,6 +320,9 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
         with self.pause_validation(revalidate_on_exit=False):
             setattr(self, key, value)
 
+    def __contains__(self, item: str) -> bool:
+        return item in self.model_fields or item in self.model_extra
+
 
 def _annotation_type(annotation: type) -> type:
     """Recursively discover the actual type of an annotation"""
@@ -327,6 +330,7 @@ def _annotation_type(annotation: type) -> type:
     if isclass(annotation):
         return annotation
 
+    # Required for Python 3.10 support because Any is not a "class" in python < 3.11
     if annotation is Any:
         return object
 

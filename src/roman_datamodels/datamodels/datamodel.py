@@ -5,9 +5,12 @@ models can be independently serialized and deserialized using the ASDF library.
 from __future__ import annotations
 
 import abc
+import sys
 import warnings
+from collections.abc import Callable
 from contextlib import contextmanager
 from pathlib import Path
+from typing import ClassVar
 
 import asdf
 
@@ -17,6 +20,14 @@ asdf_file = str | Path | asdf.AsdfFile | None
 
 
 class RomanDataModel(BaseRomanDataModel):
+    """
+    Base class for all ASDF serializable Roman data models.
+        Provides all the interfaces necessary for CRDS and stpipe to use the model.
+    """
+
+    # crds_observatory is required for the stpipe DataModel protocol
+    crds_observatory: ClassVar[str] = "roman"
+
     @abc.abstractproperty
     def tag_uri(cls) -> str:
         ...
@@ -24,6 +35,11 @@ class RomanDataModel(BaseRomanDataModel):
     _shape: tuple[int, ...] | None = None
     _asdf: asdf.AsdfFile | None = None
     _asdf_external: bool = False
+
+    @property
+    def _has_filename(self) -> bool:
+        """Determines if the model has a filename attribute."""
+        return "meta" in self and "filename" in self.meta
 
     @contextmanager
     def _temporary_filename_update(self, filename: str) -> None:
@@ -34,7 +50,7 @@ class RomanDataModel(BaseRomanDataModel):
             the filename in the newly written file to make sense, while retaining the original filename
             for the model in memory.
         """
-        if hasattr(self, "meta") and hasattr(self.meta, "filename"):
+        if self._has_filename:
             old_filename = self.meta.filename
             self.meta.filename = filename
             yield
@@ -73,7 +89,7 @@ class RomanDataModel(BaseRomanDataModel):
         """
         Write the model to an ASDF file.
         """
-        if not isinstance(file, (str, Path)):
+        if not isinstance(file, str | Path):
             raise TypeError(f"Expected file to be a string or Path; not {type(file).__name__}")
 
         with self._temporary_filename_update(Path(file).name):
@@ -144,6 +160,9 @@ class RomanDataModel(BaseRomanDataModel):
 
         raise TypeError(f"Expected file containing model of type {cls.__name__}, got {type(new_cls).__name__}")
 
+    ###############################################################################################################
+    #     Allow the data model to be used as a context manager to manage if it's asdf file is open or closed      #
+    ###############################################################################################################
     def close(self):
         if not (self._asdf_external or self._asdf is None):
             self._asdf.close()
@@ -153,3 +172,105 @@ class RomanDataModel(BaseRomanDataModel):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
+
+    ###############################################################################################################
+    #                                          End context manager                                                #
+    ###############################################################################################################
+
+    def save(self, path: str | Path | Callable, dir_path: str | Path | None = None, *args, **kwargs) -> Path:
+        """
+        Save the model to a file.
+
+            Note this is the interface used directly by stpipe when running STScI's pipeline to
+            save a model to a file. The interface here is constrained to the interface defined by
+            the stpipe DataModel protocol.
+
+        Parameters
+        ----------
+        path: str, Path, or Callable
+            The path to save the model to. If a Callable is provided, it should return a path or filename.
+        dir_path: str or Path, optional
+            The directory to save the model to. If None, the current working directory,
+            typically this is where the code is run from, is used.
+        *args :
+            Additional positional arguments passed to self.to_asdf().
+        **kwargs :
+            Additional keyword arguments passed to self.to_asdf().
+
+        Returns
+        -------
+        The path ultimately saved to
+        """
+        if not isinstance(path, str | Path | Callable):
+            raise TypeError(f"Expected path to be a string, Path, or Callable; not {type(path).__name__}")
+
+        # Invoke the callable if necessary
+        if callable(path):
+            if self._has_filename:
+                path = path(self.meta.filename)
+            else:
+                raise ValueError("Cannot use a Callable path if the model does not have a filename attribute")
+
+        # make sure we have a Path object
+        path = Path(path)
+
+        # If a directory is provided, join it to the path
+        output_path = Path(dir_path) / path.name if dir_path is not None else path
+
+        # Find the extension
+        ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix
+
+        # TODO: Support gzip-compressed fits
+        if ext == ".asdf":
+            self.to_asdf(output_path, *args, **kwargs)
+        else:
+            raise ValueError(f"unknown filetype {ext}")
+
+        return output_path
+
+    def get_crds_parameters(self):
+        """
+        Get parameters used by CRDS to select references for this model.
+
+            Note this is the interface used directly by stpipe when running STScI's pipeline to
+            to pull reference files. The interface here is constrained to the interface defined by
+            the stpipe DataModel protocol.
+
+        Returns
+        -------
+        dict
+        """
+        # return {
+        #     key: val
+        #     for key, val in self.to_flat_dict(include_arrays=False).items()
+        #     if isinstance(val, (str, int, float, complex, bool))
+        # }
+        raise NotImplementedError("This will be implemented in the future")
+
+    @property
+    def override_handle(self) -> str:
+        """
+        override_handle identifies in-memory models where a filepath would normally be used.
+        """
+        # Arbitrary choice to look something like crds://
+        return f"override://{self.__class__.__name__}"
+
+    def get_primary_array_name(self) -> str | None:
+        """
+        Returns the name "primary" array for this model, which
+        controls the size of other arrays that are implicitly created.
+        This is intended to be overridden in the subclasses if the
+        primary array's name is not "data".
+        """
+        return "data" if "data" in self else None
+
+    @property
+    def shape(self) -> tuple[int, ...] | None:
+        """Return the shape of the primary array if it has one"""
+        if self._shape is None:
+            primary_array_name = self.get_primary_array_name()
+            if primary_array_name and primary_array_name in self:
+                primary_array = self[primary_array_name]
+                self._shape = primary_array.shape
+
+        return self._shape

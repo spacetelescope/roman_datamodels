@@ -55,6 +55,8 @@ def test_invalidate_field(model):
 
     # Modify the field to the bad value
     with pytest.raises(ValidationError, match=r".* validation error for .*"):
+        # Use setattr instead of __setitem__ interface to avoid the warning
+        #    and be independent of the implementation of __setitem__
         setattr(instance, field_name, BadValue())
 
 
@@ -84,7 +86,12 @@ def test_model_pause_validation(model):
                 assert instance.model_config["revalidate_instances"] == "never"
 
                 # Set the value to a bad value
+                #    Use setattr instead of __setitem__ interface to avoid the warning
+                #    and be independent of the implementation of __setitem__
                 setattr(instance, field_name, bad_value := BadValue())
+                # Check that the value is bad
+                #    Use getattr instead of __getitem__ interface to be independent
+                #    of the implementation of __getitem__
                 assert getattr(instance, field_name) is bad_value
                 has_been_set = True
 
@@ -115,7 +122,12 @@ def test_model_pause_validation_no_revalidate(model):
             assert instance.model_config["revalidate_instances"] == "never"
 
             # Set the value to a bad value
+            #    Use setattr instead of __setitem__ interface to avoid the warning
+            #    and be independent of the implementation of __setitem__
             setattr(instance, field_name, bad_value := BadValue())
+            # Check that the value is bad
+            #    Use getattr instead of __getitem__ interface to be independent
+            #    of the implementation of __getitem__
             assert getattr(instance, field_name) is bad_value
 
         # Check that the validation configuration for the model is restored
@@ -156,3 +168,23 @@ def test_model_setitem(model):
 
         with pytest.raises(ValidationError):
             instance.model_validate(instance)
+
+
+@pytest.mark.parametrize("model", models)
+def test_model_contains(model):
+    """
+    Test that we can use the "in" operator to check if a field is in the model.
+    """
+    instance = model.make_default(_shrink=True)
+
+    # Check all the fields defined for the model are in the model
+    for field_name in model.model_fields:
+        assert field_name in instance
+
+    # Check that a field not defined for the model is not in the model
+    assert "not_a_field" not in instance
+
+    # Check that an extra field added to the model is in the model
+    instance.not_a_field = "test"
+
+    assert "not_a_field" in instance
