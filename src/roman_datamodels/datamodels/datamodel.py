@@ -34,7 +34,7 @@ class RomanDataModel(BaseRomanDataModel):
 
     _shape: tuple[int, ...] | None = None
     _asdf: asdf.AsdfFile | None = None
-    _asdf_external: bool = False
+    _asdf_external: bool = True
 
     @property
     def _has_model_type(self) -> bool:
@@ -289,9 +289,65 @@ class RomanDataModel(BaseRomanDataModel):
 
         return self._shape
 
+    @property
+    def _asdf_file(self) -> asdf.AsdfFile:
+        """
+        Get the asdf file associated with this model.
+            Note that if no ASDF file object is associated with this model, a new one is created.
+
+            This new AsdfFile object should be valid because Pydantic ensures that the model
+            has valid data up to what is annotated in the model by the code generator. There are
+            three known exceptions to this:
+                1. __setitem__ is used to set the data in the model, this means Pydantic did not
+                   validate that data.
+                2. The model.pause_validation(revalidate_on_exit=False) context manager is used to
+                   and modifications took place on the model. That is intended to be a feature of
+                   the model to enable developers to modify model fields before schema's are updated.
+                3. The model's schema uses a "patternProperties" to constrain the formulation of
+                   keys for a dictionary. This is a limitation of the code generator at this time.
+                   This currently is limited to `WfiImgPhotomRefModel.phot_table`.
+            All cases 1 and 2 will be caught if model.model_validate(model) is called before the
+            asdf file is accessed. Case 3 currently can only be caught by ASDF (use model.asdf_validate).
+        """
+        if self._asdf is None:
+            self._asdf = asdf.AsdfFile({"roman": self})
+            self._asdf_external = False
+
+        return self._asdf
+
+    def asdf_validate(self) -> None:
+        """Run ASDF validation on the model"""
+        self._asdf_file.validate()
+
+    def info(self, *args, **kwargs) -> str:
+        """
+        Call down into the info method for ASDF.
+            This allows one to leverage ASDF's info functionality to get information about the data
+            in the model.
+        """
+
+        return self._asdf_file.info(*args, **kwargs)
+
+    def search(self, *args, **kwargs) -> str:
+        """
+        Call down into the search method for ASDF.
+            This allows one to leverage ASDF's search functionality to get information about the data
+            in the model.
+        """
+
+        return self._asdf_file.search(*args, **kwargs)
+
+    def schema_info(self, *args, **kwargs) -> str:
+        """
+        Call down into the schema_info method for ASDF.
+            This allows one to leverage ASDF's schema_info functionality to get information about the data
+            in the model.
+        """
+
+        return self._asdf_file.schema_info(*args, **kwargs)
+
 
 # TODO:
 #  - Address copy/clone of the model
-#  - Address asdf functionality pass through
 #  - Write tests for extended models
 #  - Migrate the init and rdm.open functionality

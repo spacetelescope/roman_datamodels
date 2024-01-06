@@ -498,3 +498,91 @@ class TestSave(_TestAsdf):
             # Test that we raise an error if the model doesn't have a filename attribute
             with pytest.raises(ValueError, match=r"Cannot use a Callable path if the model does not have a filename attribute"):
                 instance.save(path, dir_path=dir_path)
+
+
+@pytest.mark.parametrize("model", models)
+class TestAsdfPassThrough(_TestAsdf):
+    """
+    Test all the passthrough methods to ASDF
+    """
+
+    def test_asdf_validate(self, model):
+        """
+        Test that we can run validate on the model via ASDF
+        """
+        instance = self.create_instance(model)
+
+        # The default models should not have an associated ASDF file
+        assert instance._asdf is None
+        assert instance._asdf_external is True
+
+        # Run validate via ASDF
+        instance.asdf_validate()
+
+        # There should now be an associated ASDF file
+        assert instance._asdf is not None
+        assert instance._asdf_external is False
+        assert isinstance(instance._asdf, asdf.AsdfFile)
+        assert instance._asdf.tree["roman"] is instance
+
+    def test_do_not_override_asdf_file(self, model, tmp_path):
+        """
+        Test that we do not override an existing ASDF file
+        """
+        filename = self.create_asdf(model, tmp_path)
+
+        # Read the model via ASDF
+        with RomanDataModel.from_asdf(filename) as instance:
+            # Check the state of the AsdfFile object
+            assert instance._asdf is not None
+            assert instance._asdf_external is False
+
+            # Grab the asdf file object
+            asdf_file = instance._asdf
+
+            # Call the pass down property (._asdf_file) used to access the ASDF file
+            assert instance._asdf_file is instance._asdf
+            assert instance._asdf is asdf_file
+
+    def test_info(self, model, capsys):
+        """
+        Test that we can call down into the ASDF info method
+        """
+        instance = self.create_instance(model)
+
+        # info displays to standard out/err so we need to capture it
+        instance.info()
+        captured = capsys.readouterr()
+        stdout = captured.out
+        stderr = captured.err
+
+        # Ensure we captured something (sanity check), stderr should be nothing as
+        #    info should have succeeded
+        assert stdout
+        assert stderr == ""
+
+        # Info should be the same as if we ran it directly on the AsdfFile object
+        instance._asdf.info()
+        captured = capsys.readouterr()
+        assert captured.out == stdout
+        assert captured.err == stderr
+
+    def test_search(self, model):
+        """
+        Test that we can call down into the ASDF search method
+        """
+        instance = self.create_instance(model)
+
+        # search returns an AsdfSearchResult object which has no __eq__ method;
+        #    however, it is intended to be printed for human consumption so we can
+        #    compare the string representations.
+        assert repr(instance.search("roman")) == repr(instance._asdf.search("roman"))
+
+    def test_schema_info(self, model):
+        """
+        Test that we can call down to the ASDF search schema method
+        """
+        instance = self.create_instance(model)
+
+        # schema_info returns a nested dictionary of strings, so we can directly compare the results
+        assert instance.schema_info("archive_catalog") == instance._asdf.schema_info("archive_catalog")
