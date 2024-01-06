@@ -156,12 +156,16 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
         return metadata
 
     @classmethod
-    def make_default(cls, **kwargs) -> BaseRomanDataModel:
+    def make_default(cls, *, data: dict[str, Any] | None = None, **kwargs) -> BaseRomanDataModel:
         """
         Create a default instance of this model
+            Note all arguments to this method are positional.
 
         Parameters
         ----------
+        data : dict, optional
+            Data in the form of a fully nested dictionary representation of the model, specifying
+            the overrides to the default values.
         **kwargs :
             The arguments which can be passed down into the specific default value
             construction logic.
@@ -294,7 +298,11 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
                     defaults[field_name] = value
                     continue
 
-        return cls(**defaults)
+        # Mix in supplied data with the defaults.
+        #    This leverages the Pydantic model_dump() method, which dumps the model
+        #    to a nested dictionary. We then merge the supplied data into the defaults
+        #    and then pass that dictionary back to the model initializer method.
+        return cls(**_merge_dicts(cls(**defaults).model_dump(), data or {}))
 
     def to_flat_dict(self, include_arrays: bool = True) -> dict[str, Any]:
         """
@@ -315,7 +323,20 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
             name: convert_value(value) for name, value in self.flat_items() if include_arrays or not isinstance(value, np.ndarray)
         }
 
-    def flat_items(self) -> Generator[tuple[str, Any], None, None]:
+    def flat_items(self, *, flatten_lists: bool = True) -> Generator[tuple[str, Any], None, None]:
+        """
+        Get a generator of flattened items from the model.
+
+        Parameters
+        ----------
+        flatten_lists : bool
+            If true, lists are flattened with their index acting as the key.
+
+        Returns
+        -------
+        A generator for a flattened dictionary representation of the model.
+        """
+
         def recurse(field: Any, path=None) -> Generator[tuple[str, Any], None, None]:
             if path is None:
                 path = []
@@ -335,7 +356,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
                     yield from recurse(value, path + [key])
 
             # Recurse into sub-lists
-            elif isinstance(field, list):
+            elif isinstance(field, list) and flatten_lists:
                 for index, value in enumerate(field):
                     yield from recurse(value, path + [index])
 
@@ -402,3 +423,28 @@ def _field_name(field_name: str) -> str:
     with a Python keyword, but the schemas do not have the trailing underscore.
     """
     return field_name[:-1] if field_name.endswith("_") else field_name
+
+
+def _merge_dicts(base_dict: dict[str, Any], new_dict: dict[str, Any]) -> dict[str, Any]:
+    """
+    Merge two dicts together, recursively merging sub-dicts
+    """
+    # Loop over the new_dict and merge it into the base_dict
+    for key, value in new_dict.items():
+        if key in base_dict and isinstance(value, dict):
+            # If the new_dict key is present, recursively merge the data down.
+            if isinstance(base_dict[key], dict):
+                # _merge_dicts needs base_dict to be an actual dict
+                base_dict[key] = _merge_dicts(base_dict[key], value)
+            elif not isinstance(base_dict[key], dict) and not isinstance(value, dict):
+                # This is where we are updating a plane value
+                base_dict[key] = value
+            else:
+                # Something went wrong here
+                raise ValueError(f"Cannot merge {type(base_dict[key])} and {type(value)}")
+        else:
+            # If the new_dict key is not present, just set it.
+            #    We do allow extras, so this can set these if necessary
+            base_dict[key] = value
+
+    return base_dict
