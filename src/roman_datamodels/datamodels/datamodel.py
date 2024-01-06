@@ -351,3 +351,6 @@ class RomanDataModel(BaseRomanDataModel):
 #  - Address copy/clone of the model
 #  - Write tests for extended models
 #  - Migrate the init and rdm.open functionality
+#  - Write update_asdf method
+#  - Pass nested dict to make_default
+#  - Write make_default (if applicable)

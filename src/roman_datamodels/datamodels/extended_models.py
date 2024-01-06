@@ -4,6 +4,10 @@ This module contains base models for all data models which need extended functio
     To extend an automatically generated model, it needs to be tagged, and a subclass of
     `ExtendedDataModel` needs to be created with _schema_uri set to the schema URI of the
     underlying model.
+
+We will enforce the convention that the name of the extended model is the name of the underlying model
+prefixed with an underscore.  This is to avoid name collisions with the underlying model, and make
+it clear that the model is an extension of the underlying model.
 """
 from __future__ import annotations
 
@@ -67,7 +71,7 @@ class _AssociationsModel(RomanExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/data_products/associations-1.0.0"
 
     @classmethod
-    def is_association(cls, asn_data):
+    def is_association(cls, asn_data) -> bool:
         """
         Test if an object is an association by checking for required fields
 
