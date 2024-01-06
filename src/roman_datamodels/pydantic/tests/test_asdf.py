@@ -25,11 +25,17 @@ class _TestAsdf:
         """
         return model.make_default(_shrink=True)
 
+    def create_filename(self, tmp_path):
+        """
+        Create a file path to write to
+        """
+        return tmp_path / "test.asdf"
+
     def create_model(self, model, tmp_path):
         """
         Instantiate the model and create a file path to write it to
         """
-        return self.create_instance(model), tmp_path / "test.asdf"
+        return self.create_instance(model), self.create_filename(tmp_path)
 
     def create_asdf(self, model, tmp_path):
         """Create an ASDF file with the model in it"""
@@ -223,6 +229,21 @@ class TestToAsdf(_TestAsdf):
             with asdf.open(filename) as af:
                 assert isinstance(af["roman"], model)
                 assert af["roman"].meta.filename == filename.name
+
+    def test_make_default(self, model, tmp_path):
+        """
+        Test saving the model to an asdf file as part of model generation
+        """
+        filename = self.create_filename(tmp_path)
+
+        # Create the model and save it to an ASDF file
+        instance = model.make_default(_shrink=True, filepath=filename)
+        assert isinstance(instance, model)
+
+        # Read back from ASDF and check that the filename in the meta is updated
+        #    to reflect the name of the file that it was written to
+        with asdf.open(filename) as af:
+            assert isinstance(af["roman"], model)
 
 
 def test_observation(tmp_path):

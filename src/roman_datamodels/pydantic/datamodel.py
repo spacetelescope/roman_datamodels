@@ -159,7 +159,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
     def make_default(cls, *, data: dict[str, Any] | None = None, **kwargs) -> BaseRomanDataModel:
         """
         Create a default instance of this model
-            Note all arguments to this method are positional.
+            Note all arguments to this method are keyword-only.
 
         Parameters
         ----------

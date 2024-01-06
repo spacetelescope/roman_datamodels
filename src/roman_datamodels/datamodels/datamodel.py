@@ -346,9 +346,25 @@ class RomanDataModel(BaseRomanDataModel):
 
         return self._asdf_file.schema_info(*args, **kwargs)
 
+    @classmethod
+    def make_default(
+        cls, *, data: dict[str, Any] | None = None, filepath: str | Path | None = None, **kwargs
+    ) -> BaseRomanDataModel:
+        """
+        Create a new model with the default values.
+            This extends the existing make_default functionality by allowing us to write the model
+            to an asdf file in addition to returning the model.
+        """
+        new_model = super().make_default(data=data, **kwargs)
+
+        # Write the new model to a file if a filepath is provided
+        if filepath:
+            new_model.to_asdf(filepath)
+
+        return new_model
+
 
 # TODO:
 #  - Address copy/clone of the model
 #  - Migrate the init and rdm.open functionality
 #  - Write update_asdf method
-#  - Write make_default (if applicable)
