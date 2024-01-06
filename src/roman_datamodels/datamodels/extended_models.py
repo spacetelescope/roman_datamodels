@@ -11,7 +11,10 @@ it clear that the model is an extension of the underlying model.
 """
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import Annotated, Any, ClassVar
+
+import astropy.units as u
+from pydantic import Field, field_validator
 
 from .datamodel import RomanDataModel
 
@@ -54,8 +57,31 @@ class _WfiMode(RomanExtendedDataModel):
 class _RampModel(RomanExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/data_products/ramp-1.0.0"
 
+    # The data array which needs to be coerced to the correct dtype has to be annotated now, so that
+    #    Pydantic can compute this model correctly. This will be overridden by the generated model.
+    data: Annotated[Any, Field()]
+
+    @field_validator("data", mode="before")
     @classmethod
-    def from_science_raw(cls, model) -> _RampModel:
+    def _coerce_data_dtype(cls, quantity: u.Quantity):
+        """
+        Coerce the data array to be the correct dtype, this may force a data copy.
+
+            This uses a Pydantic "before" field_validator, which takes in the value of the field
+            in question during model instance construction BEFORE Pydantic attempts to validate
+            the field. It then must return the value which will be used for the field. This enables
+            use to coerce the data array to the correct dtype before Pydantic attempts to validate.
+        """
+        # Find the annotated dtype
+        dtype = cls.model_fields["data"].metadata[0].dtype
+
+        if isinstance(quantity, u.Quantity) and quantity.dtype != dtype:
+            quantity = quantity.astype(dtype)
+
+        return quantity
+
+    @classmethod
+    def from_science_raw(cls, model: RomanDataModel, **kwargs) -> _RampModel:
         """
         Construct a RampModel from a ScienceRawModel
 
@@ -63,8 +89,16 @@ class _RampModel(RomanExtendedDataModel):
         ----------
         model : ScienceRawModel or RampModel
             The input science raw model (a RampModel will also work)
+
+        **kwargs :
+            Any additional keyword arguments to be passed to the RampModel default constructor.
         """
-        raise NotImplementedError("This method is not implemented yet, but will be.")
+        # If one already has a RampModel, just return it back
+        if isinstance(model, cls):
+            return model
+
+        # Use model_dump to generate override data from the old model, then pass to make_default
+        return cls.make_default(data=model.model_dump(), **kwargs)
 
 
 class _AssociationsModel(RomanExtendedDataModel):

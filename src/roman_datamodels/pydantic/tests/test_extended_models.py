@@ -62,10 +62,23 @@ class TestRampModel:
 
     def test_from_science_raw(self):
         """
-        Test the from_science_raw method
+        Test the from_science_raw method, using the WfiScienceRawModel
         """
-        # Placeholder for now
-        pass
+        science = _generated.WfiScienceRawModel.make_default(_shrink=True)
+        instance = _generated.RampModel.from_science_raw(science, _shrink=True)
+
+        assert isinstance(instance, _generated.RampModel)
+        assert instance.amp33 is science.amp33
+
+    def test_from_science_raw_from_ramp_model(self):
+        """
+        Test the from_science_raw method, using the RampModel
+        """
+        ramp = _generated.RampModel.make_default(_shrink=True)
+        instance = _generated.RampModel.from_science_raw(ramp, _shrink=True)
+
+        # Check that we just pass the input through
+        assert instance is ramp
 
 
 class TestAssociationsModel:

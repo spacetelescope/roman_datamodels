@@ -349,7 +349,6 @@ class RomanDataModel(BaseRomanDataModel):
 
 # TODO:
 #  - Address copy/clone of the model
-#  - Write tests for extended models (finish the one for _RampModel)
 #  - Migrate the init and rdm.open functionality
 #  - Write update_asdf method
 #  - Write make_default (if applicable)
