@@ -390,6 +390,5 @@ class RomanDataModel(BaseRomanDataModel):
 
 
 # TODO:
-#  - Address copy/clone of the model
 #  - Migrate rdm.open functionality
 #  - Write update_asdf method

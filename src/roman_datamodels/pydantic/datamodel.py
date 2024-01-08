@@ -401,6 +401,12 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
     def __contains__(self, item: str) -> bool:
         return item in self.model_fields or item in self.model_extra
 
+    def copy(self, deepcopy=True):
+        """
+        Copy method
+        """
+        return self.model_copy(deep=deepcopy)
+
 
 def _annotation_type(annotation: type) -> type:
     """Recursively discover the actual type of an annotation"""
