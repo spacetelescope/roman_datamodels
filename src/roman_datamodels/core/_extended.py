@@ -11,34 +11,34 @@ it clear that the model is an extension of the underlying model.
 """
 from __future__ import annotations
 
-__all__ = ["RomanExtendedDataModel"]
+__all__ = ["ExtendedDataModel"]
 
 from typing import Annotated, Any, ClassVar
 
 import astropy.units as u
 from pydantic import Field, field_validator
 
-from ._model import RomanDataModel
+from ._model import DataModel
 
 
-class RomanExtendedDataModel(RomanDataModel):
+class ExtendedDataModel(DataModel):
     """
     Base class for all data models which need extended functionality.
         This is intended to act as a base class only.
     """
 
     @classmethod
-    def model_from_schema_uri(cls, schema_uri: str) -> type[RomanDataModel]:
+    def model_from_schema_uri(cls, schema_uri: str) -> type[DataModel]:
         """Grab a subclass of this model corresponding to the schema_uri."""
 
         for subclass in cls.__subclasses__():
             if subclass._schema_uri == schema_uri:
                 return subclass
 
-        return RomanDataModel
+        return DataModel
 
 
-class _WfiMode(RomanExtendedDataModel):
+class _WfiMode(ExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/wfi_mode-1.0.0"
 
     _grating_optical_elements: ClassVar[frozenset[str]] = frozenset({"GRISM", "PRISM"})
@@ -54,7 +54,7 @@ class _WfiMode(RomanExtendedDataModel):
         return self.optical_element if self.optical_element in self._grating_optical_elements else None
 
 
-class _RampModel(RomanExtendedDataModel):
+class _RampModel(ExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/data_products/ramp-1.0.0"
 
     # The data array which needs to be coerced to the correct dtype has to be annotated now, so that
@@ -81,7 +81,7 @@ class _RampModel(RomanExtendedDataModel):
         return quantity
 
     @classmethod
-    def from_science_raw(cls, model: RomanDataModel, **kwargs) -> _RampModel:
+    def from_science_raw(cls, model: DataModel, **kwargs) -> _RampModel:
         """
         Construct a RampModel from a ScienceRawModel
 
@@ -101,7 +101,7 @@ class _RampModel(RomanExtendedDataModel):
         return cls.make_default(data=model.model_dump(), **kwargs)
 
 
-class _AssociationsModel(RomanExtendedDataModel):
+class _AssociationsModel(ExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/data_products/associations-1.0.0"
 
     @classmethod
@@ -117,7 +117,7 @@ class _AssociationsModel(RomanExtendedDataModel):
         return isinstance(asn_data, dict) and "asn_id" in asn_data and "asn_pool" in asn_data
 
 
-class _LinearityRefModel(RomanExtendedDataModel):
+class _LinearityRefModel(ExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/linearity-1.0.0"
 
     def get_primary_array_name(self):
@@ -127,7 +127,7 @@ class _LinearityRefModel(RomanExtendedDataModel):
         return "coeffs"
 
 
-class _InverselinearityRefModel(RomanExtendedDataModel):
+class _InverselinearityRefModel(ExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/inverselinearity-1.0.0"
 
     def get_primary_array_name(self):
@@ -137,7 +137,7 @@ class _InverselinearityRefModel(RomanExtendedDataModel):
         return "coeffs"
 
 
-class _MaskRefModel(RomanExtendedDataModel):
+class _MaskRefModel(ExtendedDataModel):
     _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/mask-1.0.0"
 
     def get_primary_array_name(self):

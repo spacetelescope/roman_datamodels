@@ -9,7 +9,7 @@ from asdf.extension import Converter, Extension
 from asdf_astropy.converters.time import TimeConverter
 from pydantic import RootModel
 
-from roman_datamodels.core import RomanDataModel
+from roman_datamodels.core import DataModel
 
 # Import all the models so they get registered
 from roman_datamodels.datamodels import _generated
@@ -35,7 +35,7 @@ class RomanDataModelConverter(Converter):
         written before reorganizing RAD. This is to ease the transition period.
     """
 
-    _tag_to_model: ClassVar[dict[str, type[RomanDataModel]] | None] = None
+    _tag_to_model: ClassVar[dict[str, type[DataModel]] | None] = None
     _removed_tags: ClassVar[tuple(str)] = (
         "asdf://stsci.edu/datamodels/roman/tags/calibration_software_version-1.0.0",
         "asdf://stsci.edu/datamodels/roman/tags/filename-1.0.0",
@@ -68,7 +68,7 @@ class RomanDataModelConverter(Converter):
         self = _ROMAN_DATAMODEL_CONVERTER
 
     @classmethod
-    def from_registry(cls, registry: dict[str, type[RomanDataModel]]) -> RomanDataModelConverter:
+    def from_registry(cls, registry: dict[str, type[DataModel]]) -> RomanDataModelConverter:
         cls._tag_to_model = registry if cls._tag_to_model is None else {**cls._tag_to_model, **registry}
         return cls()
 
@@ -76,7 +76,7 @@ class RomanDataModelConverter(Converter):
     def build_converter(cls) -> RomanDataModelConverter:
         models = {}
         for name in _generated.__all__:
-            if issubclass(model := getattr(_generated, name), RomanDataModel) and model.tag_uri is not None:
+            if issubclass(model := getattr(_generated, name), DataModel) and model.tag_uri is not None:
                 models[model.tag_uri] = model
 
         return cls.from_registry(models)
@@ -89,13 +89,13 @@ class RomanDataModelConverter(Converter):
     def types(self) -> tuple(type):
         return tuple(self._tag_to_model.values())
 
-    def select_tag(self, obj: RomanDataModel, tags: Any, ctx: Any) -> str:
+    def select_tag(self, obj: DataModel, tags: Any, ctx: Any) -> str:
         return obj.tag_uri
 
-    def to_yaml_tree(self, obj: RomanDataModel, tag: Any, ctx: Any) -> dict:
+    def to_yaml_tree(self, obj: DataModel, tag: Any, ctx: Any) -> dict:
         return obj.to_asdf_tree()
 
-    def from_yaml_tree(self, node: Any, tag: Any, ctx: Any) -> RomanDataModel:
+    def from_yaml_tree(self, node: Any, tag: Any, ctx: Any) -> DataModel:
         if tag in self._removed_tags:
             warnings.warn(
                 f"The tag: {tag} has been removed as a stand alone tag, if this data is written the tag will not be included",

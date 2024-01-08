@@ -7,7 +7,7 @@ from unittest import mock
 import asdf
 import pytest
 
-from roman_datamodels.core import RomanDataModel
+from roman_datamodels.core import DataModel
 from roman_datamodels.datamodels import _generated
 
 from ._helpers import BaseTest, roman_models
@@ -227,7 +227,7 @@ class TestFromAsdf(BaseTest):
         filename = self.create_asdf(model, tmp_path)
 
         # Read back using RomanDataModel.from_asdf
-        with RomanDataModel.from_asdf(str(filename)) as instance:
+        with DataModel.from_asdf(str(filename)) as instance:
             assert isinstance(instance, model)
             assert instance._asdf_external is False
             assert instance._asdf is not None
@@ -248,7 +248,7 @@ class TestFromAsdf(BaseTest):
         assert isinstance(filename, Path)
 
         # Read back using RomanDataModel.from_asdf
-        with RomanDataModel.from_asdf(filename) as instance:
+        with DataModel.from_asdf(filename) as instance:
             assert isinstance(instance, model)
             assert instance._asdf_external is False
             assert instance._asdf is not None
@@ -270,7 +270,7 @@ class TestFromAsdf(BaseTest):
         # Get the ASDF file
         with asdf.open(filename) as af:
             # Read back using from_asdf (asdf.AsdfFile)
-            with RomanDataModel.from_asdf(af) as instance:
+            with DataModel.from_asdf(af) as instance:
                 assert isinstance(instance, model)
                 assert instance._asdf_external is True
                 assert instance._asdf is af
@@ -288,7 +288,7 @@ class TestFromAsdf(BaseTest):
 
         # RomanDataModel can't actually create a default instance, so this should fail
         with pytest.raises(TypeError, match=r"Can't instantiate abstract class.* with abstract method.*"):
-            RomanDataModel.from_asdf()
+            DataModel.from_asdf()
 
         # Open using the model class directly (this will raise a warning).
         with pytest.warns(UserWarning, match=r"No file provided, creating default model"), model.from_asdf() as instance:
@@ -303,7 +303,7 @@ class TestFromAsdf(BaseTest):
 
         # Using RomanDataModel.from_asdf
         with pytest.raises(TypeError, match=r"Expected file to be a string, Path, asdf.AsdfFile, or None; not.*"):
-            RomanDataModel.from_asdf(mock.MagicMock())
+            DataModel.from_asdf(mock.MagicMock())
 
         # Using model.from_asdf
         with pytest.raises(TypeError, match=r"Expected file to be a string, Path, asdf.AsdfFile, or None; not.*"):
@@ -333,7 +333,7 @@ class TestFromAsdf(BaseTest):
 
         # Try to open the file with RomanDataModel.from_asdf
         with pytest.raises(KeyError, match=r".*from_asdf expects a file with a 'roman' key"):
-            RomanDataModel.from_asdf(filename)
+            DataModel.from_asdf(filename)
 
         # Try to open the file with model.from_asdf
         with pytest.raises(KeyError, match=r".*from_asdf expects a file with a 'roman' key"):
@@ -349,7 +349,7 @@ class TestFromAsdf(BaseTest):
         with asdf.open(filename) as af:
             # Try to open the file with RomanDataModel.from_asdf
             with pytest.raises(KeyError, match=r".*from_asdf expects a file with a 'roman' key"):
-                RomanDataModel.from_asdf(af)
+                DataModel.from_asdf(af)
 
             # Try to open the file with model.from_asdf
             with pytest.raises(KeyError, match=r".*from_asdf expects a file with a 'roman' key"):
@@ -373,7 +373,7 @@ class TestCreateModel(BaseTest):
         existing = self.create_instance(model)
 
         # Call create model from RomanDataModel
-        with RomanDataModel.create_model(existing) as instance:
+        with DataModel.create_model(existing) as instance:
             assert instance is existing
 
         # Call create model from model
@@ -402,7 +402,7 @@ class TestCreateModel(BaseTest):
         filename = self.create_asdf(model, tmp_path)
 
         # str/Path
-        with RomanDataModel.create_model(str(filename)) as instance:
+        with DataModel.create_model(str(filename)) as instance:
             assert isinstance(instance, model)
             assert instance._asdf_external is False
             assert instance._asdf is not None
@@ -416,7 +416,7 @@ class TestCreateModel(BaseTest):
 
         # asdf.AsdfFile
         with asdf.open(filename) as af:
-            with RomanDataModel.create_model(af) as instance:
+            with DataModel.create_model(af) as instance:
                 assert isinstance(instance, model)
                 assert instance._asdf_external is True
                 assert instance._asdf is af
@@ -460,7 +460,7 @@ class TestSave(BaseTest):
         assert instance.save(str(filename)) == filename
 
         # Check that the written file is then readable
-        with RomanDataModel.from_asdf(filename) as instance:
+        with DataModel.from_asdf(filename) as instance:
             assert isinstance(instance, model)
 
     def test_str_dir_path(self, model, tmp_path):
@@ -477,7 +477,7 @@ class TestSave(BaseTest):
         assert (output_path := instance.save(str(filename), dir_path=dir_path)) == dir_path / filename.name
 
         # Check that the written file is then readable
-        with RomanDataModel.from_asdf(output_path) as instance:
+        with DataModel.from_asdf(output_path) as instance:
             assert isinstance(instance, model)
 
     def test_path(self, model, tmp_path):
@@ -490,7 +490,7 @@ class TestSave(BaseTest):
         assert instance.save(filename) == filename
 
         # Check that the written file is then readable
-        with RomanDataModel.from_asdf(filename) as instance:
+        with DataModel.from_asdf(filename) as instance:
             assert isinstance(instance, model)
 
     def test_path_dir_path(self, model, tmp_path):
@@ -507,7 +507,7 @@ class TestSave(BaseTest):
         assert (output_path := instance.save(filename, dir_path=dir_path)) == dir_path / filename.name
 
         # Check that the written file is then readable
-        with RomanDataModel.from_asdf(output_path) as instance:
+        with DataModel.from_asdf(output_path) as instance:
             assert isinstance(instance, model)
 
     def test_callable(self, model, tmp_path):
@@ -523,7 +523,7 @@ class TestSave(BaseTest):
             assert (output_path := instance.save(path)) == tmp_path / "dummy_value.asdf"
 
             # Check that the written file is then readable
-            with RomanDataModel.from_asdf(output_path) as instance:
+            with DataModel.from_asdf(output_path) as instance:
                 assert isinstance(instance, model)
         else:
             # Test that we raise an error if the model doesn't have a filename attribute
@@ -547,7 +547,7 @@ class TestSave(BaseTest):
             assert (output_path := instance.save(path, dir_path=dir_path)) == dir_path / "dummy_value.asdf"
 
             # Check that the written file is then readable
-            with RomanDataModel.from_asdf(output_path) as instance:
+            with DataModel.from_asdf(output_path) as instance:
                 assert isinstance(instance, model)
         else:
             # Test that we raise an error if the model doesn't have a filename attribute
@@ -587,7 +587,7 @@ class TestAsdfPassThrough(BaseTest):
         filename = self.create_asdf(model, tmp_path)
 
         # Read the model via ASDF
-        with RomanDataModel.from_asdf(filename) as instance:
+        with DataModel.from_asdf(filename) as instance:
             # Check the state of the AsdfFile object
             assert instance._asdf is not None
             assert instance._asdf_external is False

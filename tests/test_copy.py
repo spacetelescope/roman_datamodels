@@ -4,7 +4,7 @@ Test copying data models
 
 import pytest
 
-from roman_datamodels.core import RomanDataModel
+from roman_datamodels.core import DataModel
 
 from ._helpers import BaseTest, models, roman_models
 
@@ -30,7 +30,7 @@ class TestCopy(BaseTest):
         self.check_deep_copy(instance, instance_copy)
 
         # Check additional features of RomanDataModel
-        if issubclass(model, RomanDataModel):
+        if issubclass(model, DataModel):
             instance_copy._asdf_external = True
             instance_copy._asdf is None
 
@@ -45,7 +45,7 @@ class TestCopy(BaseTest):
         self.check_shallow_copy(instance, instance_copy)
 
         # Check additional features of RomanDataModel
-        if issubclass(model, RomanDataModel):
+        if issubclass(model, DataModel):
             instance_copy._asdf_external = True
             instance_copy._asdf is None
 

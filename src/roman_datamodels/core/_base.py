@@ -6,7 +6,7 @@ they can be directly serialized to ASDF (tagged) or not.
 """
 from __future__ import annotations
 
-__all__ = ["BaseRomanDataModel"]
+__all__ = ["BaseDataModel"]
 
 import abc
 import warnings
@@ -29,7 +29,7 @@ from ._utils import annotation_type, field_name, merge_dicts
 from .adaptors import get_adaptor
 
 
-class BaseRomanDataModel(BaseModel, abc.ABC):
+class BaseDataModel(BaseModel, abc.ABC):
     """
     This is the base class to support all RDM features needed by all Pydantic-based data models used.
 
@@ -75,7 +75,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
         """
 
         # Avoid circular import
-        from roman_datamodels.core import RomanDataModel
+        from roman_datamodels.core import DataModel
 
         def recurse_tree(field: Any) -> Any:
             """
@@ -92,7 +92,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
             The sub tree for the field
             """
             # Recurse into sub-RomanDataModels that are not TaggedDataModels (so ASDF can tag them)
-            if isinstance(field, BaseRomanDataModel) and not isinstance(field, RomanDataModel):
+            if isinstance(field, BaseDataModel) and not isinstance(field, DataModel):
                 return field.to_asdf_tree()
 
             # Recurse into sub-RootModels
@@ -159,7 +159,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
 
             # Handle the case of field being a RomanDataModel
             #    Note that we do not add the archive metadata if the model has no archive metadata
-            if issubclass(field_type, BaseRomanDataModel) and (archive := field_type.get_archive_metadata()):
+            if issubclass(field_type, BaseDataModel) and (archive := field_type.get_archive_metadata()):
                 metadata[name] = archive
 
             # Handle the case we have a root model
@@ -173,7 +173,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
         return metadata
 
     @classmethod
-    def make_default(cls, *, data: dict[str, Any] | None = None, **kwargs) -> BaseRomanDataModel:
+    def make_default(cls, *, data: dict[str, Any] | None = None, **kwargs) -> BaseDataModel:
         """
         Create a default instance of this model
             Note all arguments to this method are keyword-only.
@@ -228,7 +228,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
             """
 
             # Recurse into sub-models
-            if issubclass(field_type, BaseRomanDataModel):
+            if issubclass(field_type, BaseDataModel):
                 return field_type.make_default(**kwargs)
 
             # Set default numerical scalars
@@ -359,7 +359,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
                 path = []
 
             # Recurse into sub-RomanDataModels that are not TaggedDataModels (so ASDF can tag them)
-            if isinstance(field, BaseRomanDataModel):
+            if isinstance(field, BaseDataModel):
                 for name, value in field:
                     yield from recurse(value, path + [name])
 
@@ -418,7 +418,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
     def __contains__(self, item: str) -> bool:
         return item in self.model_fields or item in self.model_extra
 
-    def copy(self, deepcopy: bool = True) -> BaseRomanDataModel:
+    def copy(self, deepcopy: bool = True) -> BaseDataModel:
         """
         Copy method
         """

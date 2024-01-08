@@ -3,7 +3,7 @@ Test general aspects of the RomanDataModel class.
 """
 import pytest
 
-from roman_datamodels.core import BaseRomanDataModel, RomanDataModel, RomanExtendedDataModel
+from roman_datamodels.core import BaseDataModel, DataModel, ExtendedDataModel
 
 from ._helpers import roman_models
 
@@ -39,9 +39,7 @@ def test_get_primary_array_name(model):
 
     # Check that the the primary array name has not been overridden.
     #    This is explicitly done for some of the extended models, these are explicitly tested in test_extended_models.py
-    if not (
-        issubclass(model, RomanExtendedDataModel) and model.get_primary_array_name is not RomanDataModel.get_primary_array_name
-    ):
+    if not (issubclass(model, ExtendedDataModel) and model.get_primary_array_name is not DataModel.get_primary_array_name):
         instance = model.make_default(_shrink=True)
 
         if "data" in instance:
@@ -91,7 +89,7 @@ def test_to_flat_dict(model):
                 assert False, f"Field {field_name} not found in flat_dict"
 
             # Do the same for sub-models
-            if isinstance(sub_instance := instance[field_name], BaseRomanDataModel):
+            if isinstance(sub_instance := instance[field_name], BaseDataModel):
                 for sub_field_name, sub_field in sub_instance.model_fields.items():
                     if sub_field.is_required():
                         for key in flat_dict:

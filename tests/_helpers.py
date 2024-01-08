@@ -6,13 +6,13 @@ from asdf.tags.core import NDArrayType
 from astropy.modeling import Model
 from astropy.time import Time
 
-from roman_datamodels.core import BaseRomanDataModel, RomanDataModel
+from roman_datamodels.core import BaseDataModel, DataModel
 from roman_datamodels.datamodels import _generated
 
 __all__ = ["BaseTest", "models", "roman_models"]
 
-models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseRomanDataModel)]
-roman_models = [mdl for mdl in models if issubclass(mdl, RomanDataModel)]
+models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseDataModel)]
+roman_models = [mdl for mdl in models if issubclass(mdl, DataModel)]
 
 
 class BaseTest:
@@ -86,7 +86,7 @@ class BaseTest:
             assert isinstance(instance, type(instance_copy))
 
         # Loop over attributes if the instance is a data model
-        if isinstance(instance, BaseRomanDataModel):
+        if isinstance(instance, BaseDataModel):
             assert instance is not instance_copy
 
             for name, value in instance:
@@ -160,7 +160,7 @@ class BaseTest:
         #    Note that if the model does not have any sub-models, then the copy
         #    will be a deep copy.
         for _, value in instance:
-            if isinstance(value, BaseRomanDataModel):
+            if isinstance(value, BaseDataModel):
                 with pytest.raises(AssertionError):
                     # Check that the copy is not a deep copy
                     self.check_deep_copy(instance, instance_copy)

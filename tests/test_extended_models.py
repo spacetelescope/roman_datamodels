@@ -3,12 +3,12 @@ Tests of the extended models functionality
 """
 import pytest
 
-from roman_datamodels.core import RomanExtendedDataModel
+from roman_datamodels.core import ExtendedDataModel
 from roman_datamodels.datamodels import _generated
 
 from ._helpers import roman_models
 
-models = [mdl for mdl in roman_models if issubclass(mdl, RomanExtendedDataModel)]
+models = [mdl for mdl in roman_models if issubclass(mdl, ExtendedDataModel)]
 
 
 @pytest.mark.parametrize("model", models)
@@ -17,7 +17,7 @@ def test_extended_model_base_class_name(model):
     Check the name of the base class won't cause issues, this enforces the naming convention.
     """
 
-    assert (base_cls := model.__bases__[0]) is RomanExtendedDataModel.model_from_schema_uri(model.schema_uri)
+    assert (base_cls := model.__bases__[0]) is ExtendedDataModel.model_from_schema_uri(model.schema_uri)
     assert base_cls.__name__.startswith("_")
     assert base_cls.__name__[1:] == model.__name__
 

@@ -4,7 +4,7 @@ models can be independently serialized and deserialized using the ASDF library.
 """
 from __future__ import annotations
 
-__all__ = ["RomanDataModel"]
+__all__ = ["DataModel"]
 
 import abc
 import sys
@@ -16,12 +16,12 @@ from typing import Any, ClassVar
 
 import asdf
 
-from roman_datamodels.core._base import BaseRomanDataModel
+from ._base import BaseDataModel
 
 asdf_file = str | Path | asdf.AsdfFile | None
 
 
-class RomanDataModel(BaseRomanDataModel):
+class DataModel(BaseDataModel):
     """
     Base class for all ASDF serializable Roman data models.
         Provides all the interfaces necessary for CRDS and stpipe to use the model.
@@ -118,7 +118,7 @@ class RomanDataModel(BaseRomanDataModel):
             return af
 
     @classmethod
-    def from_asdf(cls, file: asdf_file = None, **kwargs) -> RomanDataModel:
+    def from_asdf(cls, file: asdf_file = None, **kwargs) -> DataModel:
         """
         Read a RomanDataModel from an ASDF file.
 
@@ -178,7 +178,7 @@ class RomanDataModel(BaseRomanDataModel):
         raise TypeError(f"Expected file containing model of type {cls.__name__}, got {type(new_cls).__name__}")
 
     @classmethod
-    def create_model(cls, init: dict[str, Any] | RomanDataModel | asdf_file = None, **kwargs) -> RomanDataModel:
+    def create_model(cls, init: dict[str, Any] | DataModel | asdf_file = None, **kwargs) -> DataModel:
         """
         Create a new model from a dictionary, another model, or an ASDF file.
 
@@ -191,7 +191,7 @@ class RomanDataModel(BaseRomanDataModel):
             from the file. Otherwise it is assumed to be a dictionary, which is passed
             to the normal Pydantic initializer.
         """
-        if isinstance(init, RomanDataModel):
+        if isinstance(init, DataModel):
             if isinstance(init, cls):
                 return init
 
@@ -374,9 +374,7 @@ class RomanDataModel(BaseRomanDataModel):
         return self._asdf_file.schema_info(*args, **kwargs)
 
     @classmethod
-    def make_default(
-        cls, *, data: dict[str, Any] | None = None, filepath: str | Path | None = None, **kwargs
-    ) -> BaseRomanDataModel:
+    def make_default(cls, *, data: dict[str, Any] | None = None, filepath: str | Path | None = None, **kwargs) -> BaseDataModel:
         """
         Create a new model with the default values.
             This extends the existing make_default functionality by allowing us to write the model
@@ -407,7 +405,7 @@ class RomanDataModel(BaseRomanDataModel):
 
         return
 
-    def copy(self, deepcopy: bool = True) -> RomanDataModel:
+    def copy(self, deepcopy: bool = True) -> DataModel:
         """
         Copy the model.
             This extends the existing copy functionality by allowing us to copy the asdf file

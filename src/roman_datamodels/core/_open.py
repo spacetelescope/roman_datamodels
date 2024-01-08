@@ -4,10 +4,10 @@ from pathlib import Path
 
 import asdf
 
-from ._model import RomanDataModel
+from ._model import DataModel
 
 
-def rdm_open(init: RomanDataModel | str | Path | asdf.AsdfFile, memmap: bool = False, **kwargs) -> RomanDataModel:
+def rdm_open(init: DataModel | str | Path | asdf.AsdfFile, memmap: bool = False, **kwargs) -> DataModel:
     """
     Datamodel open/create function.
         This function opens a Roman datamodel from an asdf file or generates
@@ -45,8 +45,8 @@ def rdm_open(init: RomanDataModel | str | Path | asdf.AsdfFile, memmap: bool = F
         if extensions[0] == ".json":
             return init
 
-    if isinstance(init, RomanDataModel):
+    if isinstance(init, DataModel):
         # Shallow the object so it won't close when this exits if it is used as a context
         init = init.copy(deepcopy=False)
 
-    return RomanDataModel.create_model(init, **kwargs)
+    return DataModel.create_model(init, **kwargs)

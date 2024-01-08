@@ -1,6 +1,6 @@
 import pytest
 
-from roman_datamodels.core import BaseRomanDataModel, RomanDataModel, RomanExtendedDataModel
+from roman_datamodels.core import BaseDataModel, DataModel, ExtendedDataModel
 
 from ._helpers import models
 
@@ -12,7 +12,7 @@ def test_roman_data_model_abstract():
     """
 
     with pytest.raises(TypeError, match=r"Can't instantiate abstract class.* with abstract method.*"):
-        BaseRomanDataModel()
+        BaseDataModel()
 
 
 def test_tagged_data_model_abstract():
@@ -22,7 +22,7 @@ def test_tagged_data_model_abstract():
     """
 
     with pytest.raises(TypeError, match=r"Can't instantiate abstract class.* with abstract method.*"):
-        RomanDataModel()
+        DataModel()
 
 
 def test_extended_data_model_abstract():
@@ -32,10 +32,10 @@ def test_extended_data_model_abstract():
     """
 
     with pytest.raises(TypeError, match=r"Can't instantiate abstract class.* with abstract method.*"):
-        RomanExtendedDataModel()
+        ExtendedDataModel()
 
 
-@pytest.mark.parametrize("model", RomanExtendedDataModel.__subclasses__())
+@pytest.mark.parametrize("model", ExtendedDataModel.__subclasses__())
 def test_extension_models(model):
     """
     Test to make sure the extended models is an abstract class so that it cannot
@@ -57,7 +57,7 @@ def test_cannot_override_classvar(model):
     with pytest.raises(AttributeError, match=r"'schema_uri' is a ClassVar of `.*` and cannot be set on an instance."):
         instance.schema_uri = "test"
 
-    if issubclass(model, RomanDataModel):
+    if issubclass(model, DataModel):
         # Check that we cannot accidentally override the tag_uri on an instance
         with pytest.raises(AttributeError, match=r"'tag_uri' is a ClassVar of `.*` and cannot be set on an instance."):
             instance.tag_uri = "test"
