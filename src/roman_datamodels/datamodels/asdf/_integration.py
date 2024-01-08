@@ -2,6 +2,8 @@
 This exists so that ASDF import performance is not adversely affected by roman_datamodels.
 """
 
+__all__ = ["get_extensions"]
+
 
 def get_extensions():
     """
@@ -13,6 +15,6 @@ def get_extensions():
     -------
     List[`asdf.extension.Extension`]
     """
-    from roman_datamodels.datamodels.extension import RomanPydanticExtension
+    from ._extension import RomanPydanticExtension
 
     return [RomanPydanticExtension()]

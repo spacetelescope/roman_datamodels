@@ -1,21 +1,23 @@
-"""
-The ASDF converter here is based on the one in the asdf-pydantic package, but
-that one required too many modifications to be viable for our use case.
-"""
 from __future__ import annotations
 
 import warnings
 from typing import Any, ClassVar
 
-from asdf.extension import Converter
+from asdf.extension import Converter, Extension
 from asdf_astropy.converters.time import TimeConverter
 from pydantic import RootModel
 
 from roman_datamodels.core import RomanDataModel
 
+# Import all the models so they get registered
+from roman_datamodels.datamodels import _generated
+
 _ROMAN_DATAMODEL_CONVERTER: RomanDataModelConverter | None = None
 _ROMAN_ROOTMODEL_CONVERTER: RomanRootModelConverter | None = None
 _TIME_CONVERTER = TimeConverter()
+
+
+__all__ = ["RomanPydanticExtension"]
 
 
 class RomanDataModelConverter(Converter):
@@ -70,6 +72,15 @@ class RomanDataModelConverter(Converter):
     def from_registry(cls, registry: dict[str, type[RomanDataModel]]) -> RomanDataModelConverter:
         cls._tag_to_model = registry if cls._tag_to_model is None else {**cls._tag_to_model, **registry}
         return cls()
+
+    @classmethod
+    def build_converter(cls) -> RomanDataModelConverter:
+        models = {}
+        for name in _generated.__all__:
+            if issubclass(model := getattr(_generated, name), RomanDataModel) and model.tag_uri is not None:
+                models[model.tag_uri] = model
+
+        return cls.from_registry(models)
 
     @property
     def tags(self) -> tuple(str):
@@ -127,6 +138,19 @@ class RomanRootModelConverter(Converter):
         cls._tag_to_model = registry if cls._tag_to_model is None else {**cls._tag_to_model, **registry}
         return cls()
 
+    @classmethod
+    def build_converter(cls) -> RomanRootModelConverter:
+        models = {}
+        for name in _generated.__all__:
+            if (
+                issubclass(model := getattr(_generated, name), RootModel)
+                and hasattr(model, "tag_uri")
+                and model.tag_uri is not None
+            ):
+                models[model.tag_uri] = model
+
+        return cls.from_registry(models)
+
     @property
     def tags(self) -> tuple(str):
         return tuple(self._tag_to_model.keys())
@@ -143,3 +167,12 @@ class RomanRootModelConverter(Converter):
 
     def from_yaml_tree(self, node: Any, tag: Any, ctx: Any) -> RootModel:
         return self._tag_to_model[tag](node)
+
+
+class RomanPydanticExtension(Extension):
+    extension_uri = "asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0"
+    converters = [
+        datamodel_converter := RomanDataModelConverter.build_converter(),
+        rootmodel_converter := RomanRootModelConverter.build_converter(),
+    ]
+    tags = list(datamodel_converter.tags + rootmodel_converter.tags)
