@@ -1,7 +1,6 @@
 """
 This exists so that ASDF import performance is not adversely affected by roman_datamodels.
 """
-
 __all__ = ["get_extensions"]
 
 

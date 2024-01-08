@@ -1,12 +1,12 @@
 """
 Define the custom model resolver so ASDF can resolve the schema references if needed.
 """
+__all__ = ["RadModelResolver"]
+
 from collections.abc import Sequence
 
 from asdf.config import get_config
 from datamodel_code_generator.reference import ModelResolver, get_relative_path
-
-__all__ = ["RadModelResolver"]
 
 
 class RadModelResolver(ModelResolver):

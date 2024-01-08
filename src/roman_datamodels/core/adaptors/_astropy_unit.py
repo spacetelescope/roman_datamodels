@@ -1,3 +1,8 @@
+"""
+This module contains the pydantic adaptor for an astropy units.
+"""
+__all__ = ["Unit", "AstropyUnit"]
+
 import warnings
 from typing import Annotated, Any, ClassVar, Optional, Union
 
@@ -8,9 +13,6 @@ from pydantic_core import core_schema
 
 from ._adaptor_tags import asdf_tags
 from ._base import Adaptor
-
-__all__ = ["Unit", "AstropyUnit"]
-
 
 # This is due to the annoying fact that there is no root class for astropy units.
 #     This covers all the types supported by ASDF

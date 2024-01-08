@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__all__ = ["RomanPydanticExtension"]
+
 import warnings
 from typing import Any, ClassVar
 
@@ -15,9 +17,6 @@ from roman_datamodels.datamodels import _generated
 _ROMAN_DATAMODEL_CONVERTER: RomanDataModelConverter | None = None
 _ROMAN_ROOTMODEL_CONVERTER: RomanRootModelConverter | None = None
 _TIME_CONVERTER = TimeConverter()
-
-
-__all__ = ["RomanPydanticExtension"]
 
 
 class RomanDataModelConverter(Converter):

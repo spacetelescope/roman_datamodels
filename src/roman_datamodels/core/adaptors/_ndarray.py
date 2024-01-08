@@ -1,6 +1,8 @@
 """
 Define a Pydantic adaptor for a numpy ndarray (and asdf NDArrayType).
 """
+__all__ = ["NdArray"]
+
 from collections.abc import Callable
 from typing import Annotated, Any, ClassVar, TypedDict, Union
 
@@ -13,8 +15,6 @@ from pydantic_core import core_schema
 
 from ._adaptor_tags import asdf_tags
 from ._base import Adaptor
-
-__all__ = ["NdArray"]
 
 NDArrayLike = Union[np.ndarray, NDArrayType]
 

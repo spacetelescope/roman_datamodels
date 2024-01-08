@@ -4,13 +4,13 @@ context of the FieldInfo data encoded into a Pydantic model.
 """
 from __future__ import annotations
 
+__all__ = ["Adaptor", "get_adaptor", "is_adaptor"]
+
 import abc
 from inspect import isclass
 from typing import Annotated, get_args, get_origin
 
 from pydantic.fields import FieldInfo
-
-__all__ = ["Adaptor", "get_adaptor", "is_adaptor"]
 
 
 class Adaptor(abc.ABC):

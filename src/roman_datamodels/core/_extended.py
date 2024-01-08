@@ -11,14 +11,14 @@ it clear that the model is an extension of the underlying model.
 """
 from __future__ import annotations
 
+__all__ = ["RomanExtendedDataModel"]
+
 from typing import Annotated, Any, ClassVar
 
 import astropy.units as u
 from pydantic import Field, field_validator
 
 from ._model import RomanDataModel
-
-__all__ = ["RomanExtendedDataModel"]
 
 
 class RomanExtendedDataModel(RomanDataModel):

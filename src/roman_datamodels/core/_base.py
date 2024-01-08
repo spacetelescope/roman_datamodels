@@ -6,6 +6,8 @@ they can be directly serialized to ASDF (tagged) or not.
 """
 from __future__ import annotations
 
+__all__ = ["BaseRomanDataModel"]
+
 import abc
 import warnings
 from collections.abc import Generator
@@ -28,6 +30,20 @@ from .adaptors import get_adaptor
 
 
 class BaseRomanDataModel(BaseModel, abc.ABC):
+    """
+    This is the base class to support all RDM features needed by all Pydantic-based data models used.
+
+        This includes:
+            A model configuration to enable/disable certain pydantic features
+            A method to convert the model to an ASDF tree
+            A method to get the archive metadata for the model
+            A method to create a default instance of the model
+            A method to get a flattened dictionary representation of the model
+            A context manager to pause validation of the model
+            Methods for dict-like access to the model
+            A method to copy the model
+    """
+
     model_config = ConfigDict(
         # model_* is a protected namespace for Pydantic, so we have to remove that protection
         # because Basic.model_type is a field we want to use

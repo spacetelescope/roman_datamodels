@@ -4,6 +4,8 @@ models can be independently serialized and deserialized using the ASDF library.
 """
 from __future__ import annotations
 
+__all__ = ["RomanDataModel"]
+
 import abc
 import sys
 import warnings
@@ -15,8 +17,6 @@ from typing import Any, ClassVar
 import asdf
 
 from roman_datamodels.core._base import BaseRomanDataModel
-
-__all__ = ["RomanDataModel"]
 
 asdf_file = str | Path | asdf.AsdfFile | None
 
@@ -422,7 +422,3 @@ class RomanDataModel(BaseRomanDataModel):
                 new_model._asdf = asdf.AsdfFile({"roman": new_model})
 
             return new_model
-
-
-# TODO:
-#  - Migrate rdm.open functionality

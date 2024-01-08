@@ -3,6 +3,14 @@ Utilities used by the code generator
 """
 from __future__ import annotations
 
+__all__ = [
+    "remove_uri_version",
+    "class_name_from_uri",
+    "get_manifest_maps",
+    "get_rad_schema_path",
+    "class_name_from_module",
+]
+
 from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
@@ -12,8 +20,6 @@ from asdf.config import get_config
 
 if TYPE_CHECKING:
     from rad.integration import RadResourceMapping
-
-__all__ = ["remove_uri_version", "class_name_from_uri", "get_manifest_maps", "get_rad_schema_path", "class_name_from_module"]
 
 
 def remove_uri_version(uri: str) -> str:

@@ -1,3 +1,5 @@
+__all__ = ["rdm_open"]
+
 from pathlib import Path
 
 import asdf

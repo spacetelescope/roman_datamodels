@@ -1,4 +1,8 @@
-# from .util import open
-from ._version import version as __version__
+__all__ = [
+    "__version__",
+    "DataModel",
+    "open",
+]
 
-__all__ = ["__version__"]
+from ._version import version as __version__
+from .datamodels import DataModel, open

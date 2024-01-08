@@ -1,13 +1,13 @@
 """
 Module for all the code to activate the code generation
 """
+__all__ = ["setup_files"]
+
 from pathlib import Path
 
 from ._parser import RadSchemaParser
 from ._utils import get_rad_schema_path
 from ._writer import write_files
-
-__all__ = ["setup_files"]
 
 
 def setup_files():

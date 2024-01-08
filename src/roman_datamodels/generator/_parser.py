@@ -3,6 +3,8 @@ The datamodel-code-generator based parser for the RAD schemas.
 """
 from __future__ import annotations
 
+__all__ = ["RadSchemaParser"]
+
 from pathlib import Path
 from typing import Any
 from urllib.parse import ParseResult
@@ -20,8 +22,6 @@ from ._adaptor import adaptor_factory, has_adaptor
 from ._reslover import RadModelResolver
 from ._schema import RadSchemaObject
 from ._utils import class_name_from_uri, remove_uri_version
-
-__all__ = ["RadSchemaParser"]
 
 
 class RadSchemaParser(JsonSchemaParser):

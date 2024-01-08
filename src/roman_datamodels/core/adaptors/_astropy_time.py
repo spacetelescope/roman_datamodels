@@ -1,6 +1,8 @@
 """
 Define a Pydantic adaptor for an astropy Time.
 """
+__all__ = ["AstropyTime"]
+
 from typing import Annotated, Any
 
 from astropy.time import Time
@@ -10,8 +12,6 @@ from pydantic_core import core_schema
 
 from ._adaptor_tags import asdf_tags
 from ._base import Adaptor
-
-__all__ = ["AstropyTime"]
 
 
 class _AstropyTimePydanticAnnotation(Adaptor):

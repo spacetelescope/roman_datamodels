@@ -3,10 +3,10 @@ Basic utility functions used in the core sub-package
 """
 from __future__ import annotations
 
+__all__ = ["annotation_type", "field_name", "merge_dicts"]
+
 from inspect import isclass
 from typing import Any, get_args
-
-__all__ = ["annotation_type", "field_name", "merge_dicts"]
 
 
 def annotation_type(annotation: type) -> type:

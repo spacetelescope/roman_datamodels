@@ -1,6 +1,8 @@
 """
 Handle writing the parser results to python files.
 """
+__all__ = ["write_files"]
+
 from datetime import datetime
 from pathlib import Path
 from textwrap import dedent
@@ -9,8 +11,6 @@ from datamodel_code_generator.parser.base import Result
 from datamodel_code_generator.reference import get_relative_path
 
 from ._utils import class_name_from_module
-
-__all__ = ["write_files"]
 
 
 def write_files(

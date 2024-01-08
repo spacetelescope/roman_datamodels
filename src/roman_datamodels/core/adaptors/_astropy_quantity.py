@@ -1,6 +1,8 @@
 """
 Define a Pydantic adaptor for an astropy Quantity.
 """
+__all__ = ["AstropyQuantity"]
+
 from typing import Annotated, Any, Optional, TypedDict, Union
 
 import astropy.units as u
@@ -13,8 +15,6 @@ from ._adaptor_tags import asdf_tags
 from ._astropy_unit import Unit, Units, _AstropyUnitPydanticAnnotation
 from ._base import Adaptor
 from ._ndarray import NDArrayLike, _AsdfNdArrayPydanticAnnotation
-
-__all__ = ["AstropyQuantity"]
 
 
 class _QuantitySplit(TypedDict):

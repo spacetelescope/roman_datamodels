@@ -4,9 +4,9 @@ schemas easier in a more organized way.
 """
 from __future__ import annotations
 
-from pydantic import BaseModel
-
 __all__ = ["Archive", "Archives"]
+
+from pydantic import BaseModel
 
 
 class SdfOrigin(BaseModel):

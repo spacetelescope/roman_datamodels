@@ -3,6 +3,8 @@ Defines the schema object for the RAD schema.
 """
 from __future__ import annotations
 
+__all__ = ["RadSchemaObject"]
+
 from typing import Any
 
 from datamodel_code_generator.parser.jsonschema import JsonSchemaObject
@@ -10,8 +12,6 @@ from datamodel_code_generator.parser.jsonschema import JsonSchemaObject
 from roman_datamodels.core import RomanExtendedDataModel
 
 from ._utils import get_manifest_maps
-
-__all__ = ["RadSchemaObject"]
 
 
 class RadSchemaObject(JsonSchemaObject):

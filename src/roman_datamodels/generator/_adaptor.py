@@ -4,6 +4,8 @@ that have Pydatnic adaptors into the python code using those adaptors.
 """
 from __future__ import annotations
 
+__all__ = ["has_adaptor", "adaptor_factory"]
+
 from typing import TYPE_CHECKING
 
 from datamodel_code_generator.imports import Import
@@ -15,8 +17,6 @@ if TYPE_CHECKING:
     # Prevent a runtime import loop for the sake of type annotations
     from ._schema import RadSchemaObject
 
-
-__all__ = ["has_adaptor", "adaptor_factory"]
 
 FROM_ = adaptors.__name__  # string representing the import of adaptors
 IMPORT_ = adaptors.ADAPTORS
