@@ -4,7 +4,7 @@ import pytest
 from astropy.time import Time
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.pydantic.adaptors import AstropyTime, asdf_tags
+from roman_datamodels.core.adaptors import AstropyTime, asdf_tags
 
 
 def test_time_validate():

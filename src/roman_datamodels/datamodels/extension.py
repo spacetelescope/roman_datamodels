@@ -1,10 +1,11 @@
 from asdf.extension import Extension
 from pydantic import RootModel
 
+from roman_datamodels.core import RomanDataModel
+
 # Import all the models so they get registered
 from . import _generated  # noqa: F401
 from .converter import RomanDataModelConverter, RomanRootModelConverter
-from .datamodel import RomanDataModel
 
 # Populate dictionaries to register into the converters
 _TAGGED_MODELS = {}

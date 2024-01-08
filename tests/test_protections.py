@@ -1,7 +1,7 @@
 import pytest
 
-from roman_datamodels.datamodels import RomanDataModel, RomanExtendedDataModel, _generated
-from roman_datamodels.pydantic import BaseRomanDataModel
+from roman_datamodels.core import BaseRomanDataModel, RomanDataModel, RomanExtendedDataModel
+from roman_datamodels.datamodels import _generated
 
 models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseRomanDataModel)]
 

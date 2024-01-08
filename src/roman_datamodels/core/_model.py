@@ -14,7 +14,7 @@ from typing import Any, ClassVar
 
 import asdf
 
-from roman_datamodels.pydantic import BaseRomanDataModel
+from roman_datamodels.core._base import BaseRomanDataModel
 
 asdf_file = str | Path | asdf.AsdfFile | None
 

@@ -11,7 +11,7 @@ from asdf.extension import Converter
 from asdf_astropy.converters.time import TimeConverter
 from pydantic import RootModel
 
-from .datamodel import RomanDataModel
+from roman_datamodels.core import RomanDataModel
 
 _ROMAN_DATAMODEL_CONVERTER: RomanDataModelConverter | None = None
 _ROMAN_ROOTMODEL_CONVERTER: RomanRootModelConverter | None = None

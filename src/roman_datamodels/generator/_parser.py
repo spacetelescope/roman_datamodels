@@ -14,7 +14,7 @@ from datamodel_code_generator.parser.base import get_special_path
 from datamodel_code_generator.parser.jsonschema import JsonSchemaParser, get_model_by_path
 from datamodel_code_generator.types import DataType
 
-from roman_datamodels.pydantic import BaseRomanDataModel
+from roman_datamodels.core import BaseRomanDataModel
 
 from ._adaptor import adaptor_factory, has_adaptor
 from ._reslover import RadModelResolver

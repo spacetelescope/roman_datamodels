@@ -2,8 +2,8 @@ import astropy.units as u
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.pydantic.adaptors._adaptor_tags import asdf_tags
-from roman_datamodels.pydantic.adaptors._astropy_unit import AstropyUnit, _get_unit_symbol
+from roman_datamodels.core.adaptors._adaptor_tags import asdf_tags
+from roman_datamodels.core.adaptors._astropy_unit import AstropyUnit, _get_unit_symbol
 
 units_no_dimensionless = (u.s, u.DN, u.DN / u.s, (u.DN / u.s) ** 2, u.electron)
 # units_no_dimensionless = tuple(

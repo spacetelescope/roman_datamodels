@@ -7,8 +7,8 @@ import pytest
 from astropy import modeling
 from astropy.time import Time
 
+from roman_datamodels.core import BaseRomanDataModel
 from roman_datamodels.datamodels import _generated
-from roman_datamodels.pydantic import BaseRomanDataModel
 
 models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseRomanDataModel)]
 
@@ -300,7 +300,7 @@ def test_override_default_data(model):
     """
     Test overriding the default data during default construction
     """
-    from roman_datamodels.pydantic.datamodel import _merge_dicts
+    from roman_datamodels.core._base import _merge_dicts
 
     def unflatten_dict(flat_dict):
         """

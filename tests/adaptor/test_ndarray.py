@@ -3,8 +3,8 @@ import numpy as np
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.pydantic.adaptors._adaptor_tags import asdf_tags
-from roman_datamodels.pydantic.adaptors._ndarray import NdArray
+from roman_datamodels.core.adaptors._adaptor_tags import asdf_tags
+from roman_datamodels.core.adaptors._ndarray import NdArray
 
 dtypes = (
     None,

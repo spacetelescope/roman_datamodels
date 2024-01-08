@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from datamodel_code_generator.imports import Import
 from datamodel_code_generator.types import DataType
 
-from roman_datamodels.pydantic import adaptors
+from roman_datamodels.core import adaptors
 
 if TYPE_CHECKING:
     # Prevent a runtime import loop for the sake of type annotations

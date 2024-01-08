@@ -16,7 +16,7 @@ from typing import Annotated, Any, ClassVar
 import astropy.units as u
 from pydantic import Field, field_validator
 
-from .datamodel import RomanDataModel
+from ._model import RomanDataModel
 
 __all__ = ["RomanExtendedDataModel"]
 

@@ -4,8 +4,8 @@ Run tests on the data model validation
 import pytest
 from pydantic import ValidationError
 
+from roman_datamodels.core import BaseRomanDataModel
 from roman_datamodels.datamodels import _generated
-from roman_datamodels.pydantic import BaseRomanDataModel
 
 models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseRomanDataModel)]
 

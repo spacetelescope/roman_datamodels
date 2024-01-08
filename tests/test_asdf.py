@@ -7,7 +7,8 @@ from unittest import mock
 import asdf
 import pytest
 
-from roman_datamodels.datamodels import RomanDataModel, _generated
+from roman_datamodels.core import RomanDataModel
+from roman_datamodels.datamodels import _generated
 
 models = [
     getattr(_generated, name) for name in _generated.__all__ if issubclass(mdl := getattr(_generated, name), RomanDataModel)

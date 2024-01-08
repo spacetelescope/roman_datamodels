@@ -22,8 +22,8 @@ from pydantic import BaseModel, ConfigDict, RootModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 
+from ._metadata import Archive, Archives
 from .adaptors import get_adaptor
-from .metadata import Archive, Archives
 
 
 class BaseRomanDataModel(BaseModel, abc.ABC):
@@ -58,7 +58,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
         """
 
         # Avoid circular import
-        from roman_datamodels.datamodels.datamodel import RomanDataModel
+        from roman_datamodels.core import RomanDataModel
 
         def recurse_tree(field: Any) -> Any:
             """

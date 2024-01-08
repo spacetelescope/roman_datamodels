@@ -8,8 +8,8 @@ import pytest
 from astropy.modeling import Model
 from astropy.time import Time
 
+from roman_datamodels.core import BaseRomanDataModel
 from roman_datamodels.datamodels import _generated
-from roman_datamodels.pydantic import BaseRomanDataModel
 
 models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseRomanDataModel)]
 

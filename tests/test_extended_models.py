@@ -3,7 +3,8 @@ Tests of the extended models functionality
 """
 import pytest
 
-from roman_datamodels.datamodels import RomanExtendedDataModel, _generated
+from roman_datamodels.core import RomanExtendedDataModel
+from roman_datamodels.datamodels import _generated
 
 models = [
     getattr(_generated, name)
