@@ -7,10 +7,9 @@ import pytest
 from astropy import modeling
 from astropy.time import Time
 
-from roman_datamodels.core import BaseRomanDataModel
 from roman_datamodels.datamodels import _generated
 
-models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseRomanDataModel)]
+from ._helpers import models
 
 
 @pytest.mark.parametrize("model", models)

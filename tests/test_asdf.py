@@ -10,73 +10,11 @@ import pytest
 from roman_datamodels.core import RomanDataModel
 from roman_datamodels.datamodels import _generated
 
-models = [
-    getattr(_generated, name) for name in _generated.__all__ if issubclass(mdl := getattr(_generated, name), RomanDataModel)
-]
+from ._helpers import BaseTest, roman_models
 
 
-class _TestAsdf:
-    """
-    Base class to contain useful methods for testing the ASDF interface
-    """
-
-    def create_instance(self, model):
-        """
-        Instantiate the model using the make_default
-        """
-        return model.make_default(_shrink=True)
-
-    def create_filename(self, tmp_path):
-        """
-        Create a file path to write to
-        """
-        return tmp_path / "test.asdf"
-
-    def create_model(self, model, tmp_path):
-        """
-        Instantiate the model and create a file path to write it to
-        """
-        return self.create_instance(model), self.create_filename(tmp_path)
-
-    def create_asdf(self, model, tmp_path):
-        """Create an ASDF file with the model in it"""
-        instance, filename = self.create_model(model, tmp_path)
-        instance.to_asdf(filename)
-
-        return filename
-
-    def create_dict(self, model):
-        """
-        Return a dictionary representation of a model instance
-        """
-
-        # Use Pydantic model_dump method to get a dictionary representation
-        return self.create_instance(model).model_dump()
-
-    def create_dummy_asdf(self, model, tmp_path):
-        """
-        Create a dummy ASDF file (not containing a RomanDataModel)
-        """
-        instance, filename = self.create_model(model, tmp_path)
-
-        # Create a file with a non-data model in it
-        asdf.AsdfFile({"foo": "bar"}).write_to(filename)
-
-        return instance, filename
-
-    def create_callable_path(self, tmp_path):
-        """
-        Create a dummy that returns a callable path
-        """
-
-        def dummy(path: str):
-            return tmp_path / f"{path.replace(' ', '_')}.asdf"
-
-        return dummy
-
-
-@pytest.mark.parametrize("model", models)
-class TestOpenAsdf(_TestAsdf):
+@pytest.mark.parametrize("model", roman_models)
+class TestOpenAsdf(BaseTest):
     """
     Test the open_asdf method
     """
@@ -136,8 +74,8 @@ class TestOpenAsdf(_TestAsdf):
         assert af.tree == {}
 
 
-@pytest.mark.parametrize("model", models)
-class TestToAsdf(_TestAsdf):
+@pytest.mark.parametrize("model", roman_models)
+class TestToAsdf(BaseTest):
     """
     Test the to_asdf method
     """
@@ -276,8 +214,8 @@ def test_observation(tmp_path):
         assert af.tree["roman"]["pass"] == -999999 == model.pass_
 
 
-@pytest.mark.parametrize("model", models)
-class TestFromAsdf(_TestAsdf):
+@pytest.mark.parametrize("model", roman_models)
+class TestFromAsdf(BaseTest):
     """
     Test the from_asdf class method
     """
@@ -378,7 +316,7 @@ class TestFromAsdf(_TestAsdf):
         filename = self.create_asdf(model, tmp_path)
 
         # Get a different model class
-        other_model = models[models.index(model) - 1]
+        other_model = roman_models[roman_models.index(model) - 1]
         assert other_model is not model  # Sanity check
 
         # Try to open the file with the wrong model class
@@ -422,8 +360,8 @@ class TestFromAsdf(_TestAsdf):
             assert af._closed is False
 
 
-@pytest.mark.parametrize("model", models)
-class TestCreateModel(_TestAsdf):
+@pytest.mark.parametrize("model", roman_models)
+class TestCreateModel(BaseTest):
     """
     Test the create_model class method
     """
@@ -449,7 +387,7 @@ class TestCreateModel(_TestAsdf):
         existing = self.create_instance(model)
 
         # Get a different model class
-        other_model = models[models.index(model) - 1]
+        other_model = roman_models[roman_models.index(model) - 1]
         assert other_model is not model  # Sanity check
 
         # Try to open the file with the wrong model class
@@ -506,8 +444,8 @@ class TestCreateModel(_TestAsdf):
             assert instance._asdf is None
 
 
-@pytest.mark.parametrize("model", models)
-class TestSave(_TestAsdf):
+@pytest.mark.parametrize("model", roman_models)
+class TestSave(BaseTest):
     """
     Test the save interface for stpipe
     """
@@ -617,8 +555,8 @@ class TestSave(_TestAsdf):
                 instance.save(path, dir_path=dir_path)
 
 
-@pytest.mark.parametrize("model", models)
-class TestAsdfPassThrough(_TestAsdf):
+@pytest.mark.parametrize("model", roman_models)
+class TestAsdfPassThrough(BaseTest):
     """
     Test all the passthrough methods to ASDF
     """

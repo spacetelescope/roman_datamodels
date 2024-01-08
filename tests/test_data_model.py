@@ -4,14 +4,11 @@ Test general aspects of the RomanDataModel class.
 import pytest
 
 from roman_datamodels.core import BaseRomanDataModel, RomanDataModel, RomanExtendedDataModel
-from roman_datamodels.datamodels import _generated
 
-models = [
-    getattr(_generated, name) for name in _generated.__all__ if issubclass(mdl := getattr(_generated, name), RomanDataModel)
-]
+from ._helpers import roman_models
 
 
-@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("model", roman_models)
 def test_model_type(model):
     """
     Test that model type is set correctly
@@ -25,7 +22,7 @@ def test_model_type(model):
         assert "meta" not in instance or "model_type" not in instance.meta
 
 
-@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("model", roman_models)
 def test_override_handle(model):
     """
     Test the override_handle method
@@ -34,7 +31,7 @@ def test_override_handle(model):
     assert model.make_default(_shrink=True).override_handle == f"override://{model.__name__}"
 
 
-@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("model", roman_models)
 def test_get_primary_array_name(model):
     """
     Test the primary_array_name method
@@ -53,7 +50,7 @@ def test_get_primary_array_name(model):
             assert instance.get_primary_array_name() is None
 
 
-@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("model", roman_models)
 def test_shape(model):
     """
     Test the shape property
@@ -74,7 +71,7 @@ def test_shape(model):
         assert instance._shape == instance[instance.get_primary_array_name()].shape
 
 
-@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("model", roman_models)
 def test_to_flat_dict(model):
     """
     Partially test the to_flat_dict method
@@ -104,7 +101,7 @@ def test_to_flat_dict(model):
                             assert False, f"Field {field_name}.{sub_field_name} not found in flat_dict"
 
 
-@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("model", roman_models)
 def test_get_crds_parameters(model):
     """
     Test that the get_crds_parameters method works

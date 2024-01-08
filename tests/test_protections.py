@@ -1,9 +1,8 @@
 import pytest
 
 from roman_datamodels.core import BaseRomanDataModel, RomanDataModel, RomanExtendedDataModel
-from roman_datamodels.datamodels import _generated
 
-models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseRomanDataModel)]
+from ._helpers import models
 
 
 def test_roman_data_model_abstract():

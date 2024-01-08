@@ -4,10 +4,7 @@ Run tests on the data model validation
 import pytest
 from pydantic import ValidationError
 
-from roman_datamodels.core import BaseRomanDataModel
-from roman_datamodels.datamodels import _generated
-
-models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseRomanDataModel)]
+from ._helpers import models
 
 
 # Create a value that should not be valid for the majority of fields

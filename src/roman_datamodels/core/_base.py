@@ -402,7 +402,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
     def __contains__(self, item: str) -> bool:
         return item in self.model_fields or item in self.model_extra
 
-    def copy(self, deepcopy=True):
+    def copy(self, deepcopy: bool = True) -> BaseRomanDataModel:
         """
         Copy method
         """

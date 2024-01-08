@@ -3,10 +3,10 @@ Run tests on the archive metadata retrieval for datamodels
 """
 import pytest
 
-from roman_datamodels.core import Archive, BaseRomanDataModel
+from roman_datamodels.core import Archive
 from roman_datamodels.datamodels import _generated
 
-models = [getattr(_generated, name) for name in _generated.__all__ if issubclass(getattr(_generated, name), BaseRomanDataModel)]
+from ._helpers import models
 
 
 @pytest.mark.parametrize("model", models)

@@ -118,7 +118,7 @@ class RomanDataModel(BaseRomanDataModel):
             return af
 
     @classmethod
-    def from_asdf(cls, file: asdf_file = None) -> RomanDataModel:
+    def from_asdf(cls, file: asdf_file = None, **kwargs) -> RomanDataModel:
         """
         Read a RomanDataModel from an ASDF file.
 
@@ -151,7 +151,7 @@ class RomanDataModel(BaseRomanDataModel):
         else:
             # Attempt to open a file if necessary
             if isinstance(file, (str, Path)):
-                file = asdf.open(file)
+                file = asdf.open(file, **kwargs)
                 opened_file = True
                 external_asdf = False
 
@@ -178,7 +178,7 @@ class RomanDataModel(BaseRomanDataModel):
         raise TypeError(f"Expected file containing model of type {cls.__name__}, got {type(new_cls).__name__}")
 
     @classmethod
-    def create_model(cls, init: dict[str, Any] | RomanDataModel | asdf_file = None) -> RomanDataModel:
+    def create_model(cls, init: dict[str, Any] | RomanDataModel | asdf_file = None, **kwargs) -> RomanDataModel:
         """
         Create a new model from a dictionary, another model, or an ASDF file.
 
@@ -198,7 +198,7 @@ class RomanDataModel(BaseRomanDataModel):
             raise TypeError(f"Expected model of type {cls.__name__}, got {type(init).__name__}")
 
         if isinstance(init, asdf_file):
-            return cls.from_asdf(init)
+            return cls.from_asdf(init, **kwargs)
 
         return cls(**init)
 
@@ -390,7 +390,39 @@ class RomanDataModel(BaseRomanDataModel):
 
         return new_model
 
+    @contextmanager
+    def _temporary_asdf(self) -> bool:
+        """
+        Context manager to temporally remove the asdf file associated with the model (if it exists), then
+        restore it,
+        This returns if the asdf file was removed or not.
+        """
+        if self._asdf is None:
+            yield False
+        else:
+            old_asdf = self._asdf
+            self._asdf = None
+            yield True
+            self._asdf = old_asdf
+
+        return
+
+    def copy(self, deepcopy: bool = True) -> RomanDataModel:
+        """
+        Copy the model.
+            This extends the existing copy functionality by allowing us to copy the asdf file
+            associated with the model.
+        """
+
+        with self._temporary_asdf() as asdf_removed:
+            new_model = super().copy(deepcopy=deepcopy)
+
+            if asdf_removed:
+                new_model._asdf_external = True
+                new_model._asdf = asdf.AsdfFile({"roman": new_model})
+
+            return new_model
+
 
 # TODO:
 #  - Migrate rdm.open functionality
-#  - Write update_asdf method

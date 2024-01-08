@@ -6,11 +6,9 @@ import pytest
 from roman_datamodels.core import RomanExtendedDataModel
 from roman_datamodels.datamodels import _generated
 
-models = [
-    getattr(_generated, name)
-    for name in _generated.__all__
-    if issubclass(mdl := getattr(_generated, name), RomanExtendedDataModel)
-]
+from ._helpers import roman_models
+
+models = [mdl for mdl in roman_models if issubclass(mdl, RomanExtendedDataModel)]
 
 
 @pytest.mark.parametrize("model", models)
