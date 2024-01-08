@@ -300,7 +300,7 @@ def test_override_default_data(model):
     """
     Test overriding the default data during default construction
     """
-    from roman_datamodels.core._base import _merge_dicts
+    from roman_datamodels.core._utils import merge_dicts
 
     def unflatten_dict(flat_dict):
         """
@@ -311,7 +311,7 @@ def test_override_default_data(model):
             key_value = value
             for key_part in key.split(".")[-1::-1]:
                 key_value = {key_part: key_value}
-            unflattened = _merge_dicts(unflattened, key_value)
+            unflattened = merge_dicts(unflattened, key_value)
         return unflattened
 
     # Create a default instance

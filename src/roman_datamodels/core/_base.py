@@ -23,6 +23,7 @@ from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 
 from ._metadata import Archive, Archives
+from ._utils import annotation_type, field_name, merge_dicts
 from .adaptors import get_adaptor
 
 
@@ -101,11 +102,11 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
         tree = dict(self)
         # loop over loop over the results and recurse into sub-trees converting
         #    as needed
-        for field_name, field in tree.items():
-            tree[field_name] = recurse_tree(field)
+        for name, field in tree.items():
+            tree[name] = recurse_tree(field)
 
         # Handle the case that we have a conflicting keyword with Python
-        return {_field_name(field_name): field for field_name, field in tree.items()}
+        return {field_name(name): field for name, field in tree.items()}
 
     @classmethod
     def get_archive_metadata(cls) -> dict[str, Archive | Archives]:
@@ -129,21 +130,21 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
         metadata = {}
 
         # loop over the fields in this model
-        for field_name, field in cls.model_fields.items():
-            field_name = _field_name(field_name)
+        for name, field in cls.model_fields.items():
+            name = field_name(name)
 
             # Build archive metadata for this field
             if (archive := get_archive(field.json_schema_extra)).has_info:
-                metadata[field_name] = archive
+                metadata[name] = archive
                 continue  # If there is archive metadata, we are done
 
             # Recurse into sub-models
-            field_type = _annotation_type(field.annotation)
+            field_type = annotation_type(field.annotation)
 
             # Handle the case of field being a RomanDataModel
             #    Note that we do not add the archive metadata if the model has no archive metadata
             if issubclass(field_type, BaseRomanDataModel) and (archive := field_type.get_archive_metadata()):
-                metadata[field_name] = archive
+                metadata[name] = archive
 
             # Handle the case we have a root model
             #    Currently only used for the cal_logs field
@@ -151,7 +152,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
                 # RootModels will encode their archive metadata in the root field
                 extra = field_type.model_fields["root"].json_schema_extra
                 if (archive := get_archive(extra)).has_info:
-                    metadata[field_name] = archive
+                    metadata[name] = archive
 
         return metadata
 
@@ -175,19 +176,19 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
         A constructed version of the model using defaults
         """
 
-        def special_cases(field_name: str) -> Any:
+        def special_cases(name: str) -> Any:
             """
             Handle the special cases for fields that cannot be easily handled by
             the general logic.
             """
             # Read pattern is a list of lists of integers which significantly complicates
             # the generalized logic to implement, it is easier to just hard code it
-            if field_name == "read_pattern":
+            if name == "read_pattern":
                 return [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]]
 
             # The cal_logs is currently the only RootModel, it also requires significant
             # complications to implement the general logic, so we hard code it
-            if field_name == "cal_logs":
+            if name == "cal_logs":
                 return [
                     "2021-11-15T09:15:07.12Z :: FlatFieldStep :: INFO :: Completed",
                     "2021-11-15T10:22.55.55Z :: RampFittingStep :: WARNING :: Wow, lots of Cosmic Rays detected",
@@ -195,12 +196,12 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
 
             # The p_exptype field is a string, but it has to follow a regular expression
             #  so it cannot be the nominal string default
-            if field_name == "p_exptype":
+            if name == "p_exptype":
                 return "WFI_IMAGE|WFI_GRISM|WFI_PRISM|"
 
             # The coordinate_distortion_transform field is a compound model, but it is not
             #     currently directly specified in the schemas, so we hard code it for now.
-            if field_name == "coordinate_distortion_transform":
+            if name == "coordinate_distortion_transform":
                 return models.Shift(1) & models.Shift(2)
 
             return None
@@ -239,7 +240,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
             # Loop over the types listed in the annotation to get the default values
             return [get_default(type_, **kwargs) for type_ in get_args(field.annotation)]
 
-        def default_dict(field: FieldInfo, field_name: str, **kwargs) -> dict:
+        def default_dict(field: FieldInfo, name: str, **kwargs) -> dict:
             """
             Handle default values for dicts
             """
@@ -252,7 +253,7 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
             #    all the normal expected values here. This will be required even if
             #    the generator is updated to encode the regular expression as it will
             #    not be default strings.
-            if field_name == "phot_table":
+            if name == "phot_table":
                 keys = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK")
 
             # Loop over the keys generating a default for each value
@@ -260,8 +261,8 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
 
         # Build a dict of default values
         defaults = {}
-        for field_name, field in cls.model_fields.items():
-            field_name = _field_name(field_name)
+        for name, field in cls.model_fields.items():
+            name = field_name(name)
 
             # Only bother setting defaults for required fields
             if field.is_required():
@@ -270,39 +271,39 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
                 #    schema via the `default` keyword, but ASDF discourages doing so.
                 # The default is set to PydanticUndefined if there is no default
                 if field.default is not PydanticUndefined:
-                    defaults[field_name] = field.default
+                    defaults[name] = field.default
                     continue
 
                 # Handle the case of fields that are defined via a PydanticAdaptor
                 if (adaptor := get_adaptor(field)) is not None:
-                    defaults[field_name] = adaptor.make_default(**kwargs)
+                    defaults[name] = adaptor.make_default(**kwargs)
                     continue
 
                 # Handle the special cases that cannot be easily handled by the general logic
-                if (value := special_cases(field_name)) is not None:
-                    defaults[field_name] = value
+                if (value := special_cases(name)) is not None:
+                    defaults[name] = value
                     continue
 
                 # Handle the list/dict cases
                 if isclass(origin := get_origin(field.annotation)):
                     if issubclass(origin, dict):
-                        defaults[field_name] = default_dict(field, field_name, **kwargs)
+                        defaults[name] = default_dict(field, name, **kwargs)
                         continue
 
                     if issubclass(origin, list):
-                        defaults[field_name] = default_list(field, **kwargs)
+                        defaults[name] = default_list(field, **kwargs)
                         continue
 
                 # Handle all other cases
-                if (value := get_default(_annotation_type(field.annotation), **kwargs)) is not None:
-                    defaults[field_name] = value
+                if (value := get_default(annotation_type(field.annotation), **kwargs)) is not None:
+                    defaults[name] = value
                     continue
 
         # Mix in supplied data with the defaults.
         #    This leverages the Pydantic model_dump() method, which dumps the model
         #    to a nested dictionary. We then merge the supplied data into the defaults
         #    and then pass that dictionary back to the model initializer method.
-        return cls(**_merge_dicts(cls(**defaults).model_dump(), data or {}))
+        return cls(**merge_dicts(cls(**defaults).model_dump(), data or {}))
 
     def to_flat_dict(self, include_arrays: bool = True) -> dict[str, Any]:
         """
@@ -343,8 +344,8 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
 
             # Recurse into sub-RomanDataModels that are not TaggedDataModels (so ASDF can tag them)
             if isinstance(field, BaseRomanDataModel):
-                for field_name, value in field:
-                    yield from recurse(value, path + [field_name])
+                for name, value in field:
+                    yield from recurse(value, path + [name])
 
             # Recurse into sub-RootModels
             elif isinstance(field, RootModel):
@@ -406,51 +407,3 @@ class BaseRomanDataModel(BaseModel, abc.ABC):
         Copy method
         """
         return self.model_copy(deep=deepcopy)
-
-
-def _annotation_type(annotation: type) -> type:
-    """Recursively discover the actual type of an annotation"""
-
-    if isclass(annotation):
-        return annotation
-
-    # Required for Python 3.10 support because Any is not a "class" in python < 3.11
-    if annotation is Any:
-        return object
-
-    return _annotation_type(get_args(annotation)[0])
-
-
-def _field_name(field_name: str) -> str:
-    """
-    Remove the trailing underscore from a field name if it exists
-
-    This is because a trailing underscore is added to any field name that conflicts
-    with a Python keyword, but the schemas do not have the trailing underscore.
-    """
-    return field_name[:-1] if field_name.endswith("_") else field_name
-
-
-def _merge_dicts(base_dict: dict[str, Any], new_dict: dict[str, Any]) -> dict[str, Any]:
-    """
-    Merge two dicts together, recursively merging sub-dicts
-    """
-    # Loop over the new_dict and merge it into the base_dict
-    for key, value in new_dict.items():
-        if key in base_dict and isinstance(value, dict):
-            # If the new_dict key is present, recursively merge the data down.
-            if isinstance(base_dict[key], dict):
-                # _merge_dicts needs base_dict to be an actual dict
-                base_dict[key] = _merge_dicts(base_dict[key], value)
-            elif not isinstance(base_dict[key], dict) and not isinstance(value, dict):
-                # This is where we are updating a plane value
-                base_dict[key] = value
-            else:
-                # Something went wrong here
-                raise ValueError(f"Cannot merge {type(base_dict[key])} and {type(value)}")
-        else:
-            # If the new_dict key is not present, just set it.
-            #    We do allow extras, so this can set these if necessary
-            base_dict[key] = value
-
-    return base_dict

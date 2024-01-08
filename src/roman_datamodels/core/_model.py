@@ -16,6 +16,8 @@ import asdf
 
 from roman_datamodels.core._base import BaseRomanDataModel
 
+__all__ = ["RomanDataModel"]
+
 asdf_file = str | Path | asdf.AsdfFile | None
 
 
