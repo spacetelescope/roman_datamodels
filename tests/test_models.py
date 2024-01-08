@@ -807,6 +807,14 @@ def test_ramp_from_science_raw():
         if isinstance(ramp_value, np.ndarray):
             assert_array_equal(ramp_value, raw_value.astype(ramp_value.dtype))
 
+        elif key == "meta":
+            for meta_key in ramp_value:
+                if meta_key == "model_type":
+                    ramp_value[meta_key] = ramp.__class__.__name__
+                    raw_value[meta_key] = raw.__class__.__name__
+                    continue
+                assert_node_equal(ramp_value[meta_key], raw_value[meta_key])
+
         elif isinstance(ramp_value, stnode.DNode):
             assert_node_equal(ramp_value, raw_value)
 
@@ -839,3 +847,15 @@ def test_datamodel_construct_like_from_like(model):
     new_mdl = model(mdl)
     assert new_mdl is mdl
     assert new_mdl._iscopy == "foo"  # Verify that the constructor didn't override stuff
+
+
+def test_datamodel_save_filename(tmp_path):
+    filename = tmp_path / "fancy_filename.asdf"
+    ramp = utils.mk_datamodel(datamodels.RampModel, shape=(2, 8, 8))
+    assert ramp.meta.filename != filename.name
+
+    ramp.save(filename)
+    assert ramp.meta.filename != filename.name
+
+    with datamodels.open(filename) as new_ramp:
+        assert new_ramp.meta.filename == filename.name
