@@ -220,7 +220,7 @@ class DataModel(abc.ABC):
     def to_asdf(self, init, *args, **kwargs):
         with validate.nuke_validation(), _temporary_update_filename(self, Path(init).name):
             asdf_file = self.open_asdf(**kwargs)
-            asdf_file.tree = {"roman": self._instance}
+            asdf_file["roman"] = self._instance
             asdf_file.write_to(init, *args, **kwargs)
 
     def get_primary_array_name(self):
