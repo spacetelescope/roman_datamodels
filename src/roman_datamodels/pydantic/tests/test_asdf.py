@@ -44,6 +44,14 @@ class _TestAsdf:
 
         return filename
 
+    def create_dict(self, model):
+        """
+        Return a dictionary representation of a model instance
+        """
+
+        # Use Pydantic model_dump method to get a dictionary representation
+        return self.create_instance(model).model_dump()
+
     def create_dummy_asdf(self, model, tmp_path):
         """
         Create a dummy ASDF file (not containing a RomanDataModel)
@@ -233,6 +241,9 @@ class TestToAsdf(_TestAsdf):
     def test_make_default(self, model, tmp_path):
         """
         Test saving the model to an asdf file as part of model generation
+            Basically this method is an extension of previously tested functionality
+            byt the tests in test_default.py. The extension is just calling to_asdf
+            on the resulting default model.
         """
         filename = self.create_filename(tmp_path)
 
@@ -408,6 +419,90 @@ class TestFromAsdf(_TestAsdf):
             # Check if ASDF believes the file is closed (it shouldn't be)
             #    Note that it has been requested that this be made public in asdf
             assert af._closed is False
+
+
+@pytest.mark.parametrize("model", models)
+class TestCreateModel(_TestAsdf):
+    """
+    Test the create_model class method
+    """
+
+    def test_data_model(self, model):
+        """
+        Test that if we pass an existing model, we get the same model back
+        """
+        existing = self.create_instance(model)
+
+        # Call create model from RomanDataModel
+        with RomanDataModel.create_model(existing) as instance:
+            assert instance is existing
+
+        # Call create model from model
+        with model.create_model(existing) as instance:
+            assert instance is existing
+
+    def test_wrong_model_type(self, model):
+        """
+        Test that we raise an error if the model is not of the correct type (when opening with a specific model class)
+        """
+        existing = self.create_instance(model)
+
+        # Get a different model class
+        other_model = models[models.index(model) - 1]
+        assert other_model is not model  # Sanity check
+
+        # Try to open the file with the wrong model class
+        with pytest.raises(TypeError, match=r"Expected model of type.*, got.*"):
+            other_model.create_model(existing)
+
+    def test_asdf_file_like(self, model, tmp_path):
+        """
+        Test that if we pass a str/Path/asdf-file/None, we get the correct model back
+            This is a pass down to the from_asdf class method.
+        """
+        filename = self.create_asdf(model, tmp_path)
+
+        # str/Path
+        with RomanDataModel.create_model(str(filename)) as instance:
+            assert isinstance(instance, model)
+            assert instance._asdf_external is False
+            assert instance._asdf is not None
+            assert isinstance(instance._asdf, asdf.AsdfFile)
+
+        with model.create_model(str(filename)) as instance:
+            assert isinstance(instance, model)
+            assert instance._asdf_external is False
+            assert instance._asdf is not None
+            assert isinstance(instance._asdf, asdf.AsdfFile)
+
+        # asdf.AsdfFile
+        with asdf.open(filename) as af:
+            with RomanDataModel.create_model(af) as instance:
+                assert isinstance(instance, model)
+                assert instance._asdf_external is True
+                assert instance._asdf is af
+
+            with model.create_model(af) as instance:
+                assert isinstance(instance, model)
+                assert instance._asdf_external is True
+                assert instance._asdf is af
+
+        # None
+        with pytest.warns(UserWarning, match=r"No file provided, creating default model"), model.create_model(None) as instance:
+            assert isinstance(instance, model)
+            assert instance._asdf_external is True
+            assert instance._asdf is None
+
+    def test_dict(self, model):
+        """
+        Test that if we pass a dictionary, we get the correct model back
+        """
+        dict = self.create_dict(model)
+
+        with model.create_model(dict) as instance:
+            assert isinstance(instance, model)
+            assert instance._asdf_external is True
+            assert instance._asdf is None
 
 
 @pytest.mark.parametrize("model", models)

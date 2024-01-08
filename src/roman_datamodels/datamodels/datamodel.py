@@ -175,6 +175,31 @@ class RomanDataModel(BaseRomanDataModel):
 
         raise TypeError(f"Expected file containing model of type {cls.__name__}, got {type(new_cls).__name__}")
 
+    @classmethod
+    def create_model(cls, init: dict[str, Any] | RomanDataModel | asdf_file = None) -> RomanDataModel:
+        """
+        Create a new model from a dictionary, another model, or an ASDF file.
+
+        Parameters
+        ----------
+        init : dict, RomanDataModel, str, Path, asdf.AsdfFile, or None
+            The data to initialize the model with. Note that if init is a RomanDataModel
+            matching the type of the model, it is returned as is (no copies). If init
+            is asdf_file-like (str, Path, asdf.AsdfFile, or None), the model is read
+            from the file. Otherwise it is assumed to be a dictionary, which is passed
+            to the normal Pydantic initializer.
+        """
+        if isinstance(init, RomanDataModel):
+            if isinstance(init, cls):
+                return init
+
+            raise TypeError(f"Expected model of type {cls.__name__}, got {type(init).__name__}")
+
+        if isinstance(init, asdf_file):
+            return cls.from_asdf(init)
+
+        return cls(**init)
+
     ###############################################################################################################
     #     Allow the data model to be used as a context manager to manage if it's asdf file is open or closed      #
     ###############################################################################################################
@@ -366,5 +391,5 @@ class RomanDataModel(BaseRomanDataModel):
 
 # TODO:
 #  - Address copy/clone of the model
-#  - Migrate the init and rdm.open functionality
+#  - Migrate rdm.open functionality
 #  - Write update_asdf method
