@@ -3,10 +3,29 @@ Basic utility functions used in the core sub-package
 """
 from __future__ import annotations
 
-__all__ = ["annotation_type", "field_name", "merge_dicts"]
+__all__ = [
+    "remove_uri_version",
+    "annotation_type",
+    "field_name",
+    "merge_dicts",
+]
 
 from inspect import isclass
 from typing import Any, get_args
+
+
+def remove_uri_version(uri: str) -> str:
+    """
+    Remove the version from the uri, this is helpful because the version number forces
+    module names to not be valid python module names, and we don't need the version
+    for the models anyway.
+
+    Parameters
+    ----------
+    uri:
+        An ASDF uri string
+    """
+    return uri.split("-")[0]
 
 
 def annotation_type(annotation: type) -> type:

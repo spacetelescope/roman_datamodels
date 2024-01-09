@@ -18,26 +18,10 @@ from typing import TYPE_CHECKING, NamedTuple
 import yaml
 from asdf.config import get_config
 
+from roman_datamodels.core._utils import remove_uri_version
+
 if TYPE_CHECKING:
     from rad.integration import RadResourceMapping
-
-
-def remove_uri_version(uri: str) -> str:
-    """
-    Remove the version from the uri, this is helpful because the version number forces
-    module names to not be valid python module names, and we don't need the version
-    for the models anyway.
-
-    Parameters
-    ----------
-    uri: str
-        An ASDF uri string
-
-    Returns
-    -------
-    A uri string with the version removed
-    """
-    return uri.split("-")[0]
 
 
 def _base_class_name(name: str) -> str:
