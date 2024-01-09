@@ -11,7 +11,7 @@ def test_roman_data_model_abstract():
     be directly instantiated.
     """
 
-    with pytest.raises(TypeError, match=r"Can't instantiate abstract class.* with abstract method.*"):
+    with pytest.raises(TypeError, match=r"Can't instantiate abstract class.*"):
         BaseDataModel()
 
 
@@ -21,7 +21,7 @@ def test_tagged_data_model_abstract():
     be directly instantiated.
     """
 
-    with pytest.raises(TypeError, match=r"Can't instantiate abstract class.* with abstract method.*"):
+    with pytest.raises(TypeError, match=r"Can't instantiate abstract class.*"):
         DataModel()
 
 
@@ -31,7 +31,7 @@ def test_extended_data_model_abstract():
     be directly instantiated.
     """
 
-    with pytest.raises(TypeError, match=r"Can't instantiate abstract class.* with abstract method.*"):
+    with pytest.raises(TypeError, match=r"Can't instantiate abstract class.*"):
         ExtendedDataModel()
 
 
@@ -42,7 +42,7 @@ def test_extension_models(model):
     be directly instantiated.
     """
 
-    with pytest.raises(TypeError, match=r"Can't instantiate abstract class.* with abstract method.*"):
+    with pytest.raises(TypeError, match=r"Can't instantiate abstract class.*"):
         model()
 
 

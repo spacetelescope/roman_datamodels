@@ -287,7 +287,7 @@ class TestFromAsdf(BaseTest):
         """
 
         # RomanDataModel can't actually create a default instance, so this should fail
-        with pytest.raises(TypeError, match=r"Can't instantiate abstract class.* with abstract method.*"):
+        with pytest.raises(TypeError, match=r"Can't instantiate abstract class.*"):
             DataModel.from_asdf()
 
         # Open using the model class directly (this will raise a warning).
