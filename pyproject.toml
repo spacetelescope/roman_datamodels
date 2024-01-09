@@ -38,13 +38,12 @@ aws = [
     'stsci-aws-utils >= 0.1.2',
 ]
 docs = [
-    'sphinx',
-    'sphinx-automodapi',
-    'sphinx-rtd-theme',
-    'stsci-rtd-theme',
-    'sphinx-astropy',
+    "sphinx-astropy[confv2]>=1.9.1",
+    "sphinx_design",
     'sphinx-asdf',
     'tomli; python_version <"3.11"',
+    'autodoc_pydantic',
+    'sphinx-autodoc-typehints',
 ]
 
 [project.urls]

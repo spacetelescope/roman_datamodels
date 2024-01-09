@@ -18,7 +18,7 @@ from distutils.version import LooseVersion
 from pathlib import Path
 
 import sphinx
-import stsci_rtd_theme
+import sphinx_rtd_theme  # noqa: F401
 
 if sys.version_info < (3, 11):
     import tomli as tomllib
@@ -68,6 +68,7 @@ intersphinx_mapping = {
     "astropy": ("https://docs.astropy.org/en/stable/", None),
     "asdf": ("https://asdf.readthedocs.io/en/stable/", None),
     "psutil": ("https://psutil.readthedocs.io/en/stable/", None),
+    "pydantic": ("https://docs.pydantic.dev/latest/", None),
 }
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -89,6 +90,8 @@ extensions = [
     "sphinx_automodapi.smart_resolver",
     "sphinx_asdf",
     "sphinxcontrib.jquery",
+    "sphinxcontrib.autodoc_pydantic",
+    "sphinx_autodoc_typehints",
 ]
 
 if on_rtd:
@@ -216,7 +219,7 @@ asdf_schema_reference_mappings = [
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "stsci_rtd_theme"
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -229,8 +232,8 @@ html_theme_options = {"collapse_navigation": True}
 #        "headbgcolor": "white",
 #        }
 
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [stsci_rtd_theme.get_html_theme_path()]
+# # Add any paths that contain custom themes here, relative to this directory.
+# html_theme_path = [stsci_rtd_theme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -453,4 +456,10 @@ epub_exclude_files = ["search.html"]
 nitpicky = True
 nitpick_ignore = [
     ("py:class", "_io.FileIO"),
+    ("py:class", "type"),
 ]
+
+autodoc_pydantic_model_show_json = False
+autodoc_pydantic_model_show_config_summary = False
+autodoc_pydantic_model_show_field_summary = False
+autoclass_content = "class"

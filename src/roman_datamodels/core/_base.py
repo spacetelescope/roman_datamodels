@@ -32,16 +32,15 @@ from .adaptors import get_adaptor
 class BaseDataModel(BaseModel, abc.ABC):
     """
     This is the base class to support all RDM features needed by all Pydantic-based data models used.
-
         This includes:
-            A model configuration to enable/disable certain pydantic features
-            A method to convert the model to an ASDF tree
-            A method to get the archive metadata for the model
-            A method to create a default instance of the model
-            A method to get a flattened dictionary representation of the model
-            A context manager to pause validation of the model
-            Methods for dict-like access to the model
-            A method to copy the model
+            - A model configuration to enable/disable certain pydantic features
+            - A method to convert the model to an ASDF tree
+            - A method to get the archive metadata for the model
+            - A method to create a default instance of the model
+            - A method to get a flattened dictionary representation of the model
+            - A context manager to pause validation of the model
+            - Methods for dict-like access to the model
+            - A method to copy the model
     """
 
     model_config = ConfigDict(
@@ -68,10 +67,6 @@ class BaseDataModel(BaseModel, abc.ABC):
     def to_asdf_tree(self) -> dict[str, Any]:
         """
         Convert to an ASDF tree, stopping at tags
-
-        Returns
-        -------
-        An ASDF tree (dict) representation of this model, it
         """
 
         # Avoid circular import
@@ -81,15 +76,6 @@ class BaseDataModel(BaseModel, abc.ABC):
             """
             Find the sub-tree for a field
                 Note, we do not recurse into tagged models because that will be handled by ASDF
-
-            Parameters
-            ----------
-            field : Any
-                The field to recurse into
-
-            Returns
-            -------
-            The sub tree for the field
             """
             # Recurse into sub-RomanDataModels that are not TaggedDataModels (so ASDF can tag them)
             if isinstance(field, BaseDataModel) and not isinstance(field, DataModel):
@@ -131,15 +117,6 @@ class BaseDataModel(BaseModel, abc.ABC):
         def get_archive(extra: dict[str, Any]) -> Archive:
             """
             Create an archive object
-
-            Parameters
-            ----------
-            extra : dict[str, Any]
-                The json_schema_extra data for a field
-
-            Returns
-            -------
-            An archive model for this field (it may have no information in it)
             """
             return Archive(**({} if extra is None else extra))
 
@@ -180,16 +157,12 @@ class BaseDataModel(BaseModel, abc.ABC):
 
         Parameters
         ----------
-        data : dict, optional
+        data :
             Data in the form of a fully nested dictionary representation of the model, specifying
             the overrides to the default values.
         **kwargs :
             The arguments which can be passed down into the specific default value
             construction logic.
-
-        Returns
-        -------
-        A constructed version of the model using defaults
         """
 
         def special_cases(name: str) -> Any:
@@ -324,6 +297,11 @@ class BaseDataModel(BaseModel, abc.ABC):
     def to_flat_dict(self, include_arrays: bool = True) -> dict[str, Any]:
         """
         Get a flattened dictionary representation of the model.
+
+        Parameters
+        ----------
+        include_arrays :
+            If true, arrays are included in the dictionary, otherwise they are skipped.
         """
 
         def convert_value(value: Any) -> Any:
@@ -346,12 +324,8 @@ class BaseDataModel(BaseModel, abc.ABC):
 
         Parameters
         ----------
-        flatten_lists : bool
+        flatten_lists :
             If true, lists are flattened with their index acting as the key.
-
-        Returns
-        -------
-        A generator for a flattened dictionary representation of the model.
         """
 
         def recurse(field: Any, path=None) -> Generator[tuple[str, Any], None, None]:
@@ -389,7 +363,14 @@ class BaseDataModel(BaseModel, abc.ABC):
 
     @contextmanager
     def pause_validation(self, *, revalidate_on_exit: bool = True) -> None:
-        """Context manager to pause validation of the model within the context."""
+        """
+        Context manager to pause validation of the model within the context.
+
+        Parameters
+        ----------
+        revalidate_on_exit :
+            If true, revalidate the model on exit of the context manager. Default is True.
+        """
         self.model_config["validate_assignment"] = False
         self.model_config["revalidate_instances"] = "never"
 
@@ -421,5 +402,10 @@ class BaseDataModel(BaseModel, abc.ABC):
     def copy(self, deepcopy: bool = True) -> BaseDataModel:
         """
         Copy method
+
+        Parameters
+        ----------
+        deepcopy :
+            If true, perform a deep copy, otherwise perform a shallow copy. Default is True.
         """
         return self.model_copy(deep=deepcopy)

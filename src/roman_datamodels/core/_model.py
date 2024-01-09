@@ -84,18 +84,14 @@ class DataModel(BaseDataModel):
 
         Parameters
         ----------
-        file: str, Path, asdf.AsdfFile, or None
+        file :
             The "file" to open, default is None.
             - If None, a new ASDF file is created.
             - If str or Path, the file is opened using asdf.open().
             - If asdf.AsdfFile, the object is still passed through to asdf.AsdfFile(), but that
-              should just return the same object back.
+            should just return the same object back.
         **kwargs :
             Additional keyword arguments passed to asdf.open() or asdf.AsdfFile().
-
-        Returns
-        -------
-        An asdf.AsdfFile object.
         """
         if not isinstance(file, asdf_file):
             raise TypeError(f"Expected file to be a string, Path, asdf.AsdfFile, or None; not {type(file).__name__}")
@@ -105,6 +101,15 @@ class DataModel(BaseDataModel):
     def to_asdf(self, file: str | Path, *args, **kwargs) -> asdf.AsdfFile:
         """
         Write the model to an ASDF file.
+
+        Parameters
+        ----------
+        file :
+            The file to write the model to.
+        *args :
+            Additional positional arguments passed to self.open_asdf().
+        **kwargs :
+            Additional keyword arguments passed to self.open_asdf().
         """
         if not isinstance(file, str | Path):
             raise TypeError(f"Expected file to be a string or Path; not {type(file).__name__}")
@@ -124,18 +129,16 @@ class DataModel(BaseDataModel):
 
         Parameters
         ----------
-        file : str, Path, asdf.AsdfFile, or None
+        file :
             The ASDF file to read from.
             - If None, a new model is created using the default values.
             - If str or Path, the file is opened using asdf.open(). Note the model
-              will attempt to close the file when it is "closed".
+            will attempt to close the file when it is "closed".
             - If asdf.AsdfFile, that file is assumed to contain the model. Note
-              that if a file is directly passed in, the resulting model will not
-              attempt to close the file when it is closed.
-
-        Returns
-        -------
-        A RomanDataModel from the ASDF file.
+            that if a file is directly passed in, the resulting model will not
+            attempt to close the file when it is closed.
+        **kwargs :
+            Additional keyword arguments passed to asdf.open().
         """
         if not isinstance(file, asdf_file):
             raise TypeError(f"Expected file to be a string, Path, asdf.AsdfFile, or None; not {type(file).__name__}")
@@ -184,12 +187,14 @@ class DataModel(BaseDataModel):
 
         Parameters
         ----------
-        init : dict, RomanDataModel, str, Path, asdf.AsdfFile, or None
+        init :
             The data to initialize the model with. Note that if init is a RomanDataModel
             matching the type of the model, it is returned as is (no copies). If init
             is asdf_file-like (str, Path, asdf.AsdfFile, or None), the model is read
             from the file. Otherwise it is assumed to be a dictionary, which is passed
             to the normal Pydantic initializer.
+        **kwargs :
+            Additional keyword arguments passed to asdf.open().
         """
         if isinstance(init, DataModel):
             if isinstance(init, cls):
@@ -229,19 +234,15 @@ class DataModel(BaseDataModel):
 
         Parameters
         ----------
-        path: str, Path, or Callable
+        path:
             The path to save the model to. If a Callable is provided, it should return a path or filename.
-        dir_path: str or Path, optional
+        dir_path:
             The directory to save the model to. If None, the current working directory,
             typically this is where the code is run from, is used.
         *args :
             Additional positional arguments passed to self.to_asdf().
         **kwargs :
             Additional keyword arguments passed to self.to_asdf().
-
-        Returns
-        -------
-        The path ultimately saved to
         """
         if not isinstance(path, str | Path | Callable):
             raise TypeError(f"Expected path to be a string, Path, or Callable; not {type(path).__name__}")
@@ -270,17 +271,13 @@ class DataModel(BaseDataModel):
 
         return output_path
 
-    def get_crds_parameters(self):
+    def get_crds_parameters(self) -> dict[str, str | int | float | complex | bool]:
         """
         Get parameters used by CRDS to select references for this model.
 
             Note this is the interface used directly by stpipe when running STScI's pipeline to
             to pull reference files. The interface here is constrained to the interface defined by
             the stpipe DataModel protocol.
-
-        Returns
-        -------
-        dict
         """
         return {
             key: val
@@ -351,6 +348,13 @@ class DataModel(BaseDataModel):
         Call down into the info method for ASDF.
             This allows one to leverage ASDF's info functionality to get information about the data
             in the model.
+
+        Parameters
+        ----------
+        *args :
+            Positional arguments passed to ASDF's info method.
+        **kwargs :
+            Keyword arguments passed to ASDF's info method.
         """
 
         return self._asdf_file.info(*args, **kwargs)
@@ -360,6 +364,13 @@ class DataModel(BaseDataModel):
         Call down into the search method for ASDF.
             This allows one to leverage ASDF's search functionality to get information about the data
             in the model.
+
+        Parameters
+        ----------
+        *args :
+            Positional arguments passed to ASDF's search method.
+        **kwargs :
+            Keyword arguments passed to ASDF's search schema method.
         """
 
         return self._asdf_file.search(*args, **kwargs)
@@ -369,6 +380,13 @@ class DataModel(BaseDataModel):
         Call down into the schema_info method for ASDF.
             This allows one to leverage ASDF's schema_info functionality to get information about the data
             in the model.
+
+        Parameters
+        ----------
+        *args :
+            Positional arguments passed to ASDF's schema_info method.
+        **kwargs :
+            Keyword arguments passed to ASDF's search schema_info method.
         """
 
         return self._asdf_file.schema_info(*args, **kwargs)
@@ -379,6 +397,15 @@ class DataModel(BaseDataModel):
         Create a new model with the default values.
             This extends the existing make_default functionality by allowing us to write the model
             to an asdf file in addition to returning the model.
+
+        Parameters
+        ----------
+        data :
+            The input data to initialize the model with, if any.
+        filepath :
+            Path to file to write the model to, if any.
+        **kwargs :
+            Additional keyword arguments passed to the default constructors.
         """
         new_model = super().make_default(data=data, **kwargs)
 
@@ -410,6 +437,11 @@ class DataModel(BaseDataModel):
         Copy the model.
             This extends the existing copy functionality by allowing us to copy the asdf file
             associated with the model.
+
+        Parameters
+        ----------
+        deepcopy :
+            If True, a deep copy is made. Otherwise a shallow copy is made.
         """
 
         with self._temporary_asdf() as asdf_removed:
