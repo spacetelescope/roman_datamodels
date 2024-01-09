@@ -413,3 +413,15 @@ There are a few known issues with RDM, at this time:
    extensive modifications in order to properly function. This however has been fixed upstream in this
    `PR <https://github.com/koxudaxi/datamodel-code-generator/pull/1783>`_ which has not appeared in a release yet.
    Once it appears, this issue will be resolved.
+
+#. Data models can no-longer have arbitrary names. Instead, their names are derived from the names of their schemas.
+   While technically possible to allow arbitrary names for the generated data models. This would simply perpetuate
+   the current issue that some data models have names consistent with their schema names while others do not.
+   By forcing this consistency it helps make the code easier to understand and maintain while requiring only
+   limited updates in RCAL.
+
+#. The ``rad_schema-1.0.0`` had to be moved in ``rad``. Again while it was possible to work around having this
+   schema mixed in with the rest of the schemas it did not make sense and created exceptions elsewhere in testing
+   for ``rad``. This is because ``rad_schema-1.0.0`` is the meta-schema (schema for the schemas) for the ``rad``
+   rather than a "true" schema for some data product. Isolating it from the rest of the schemas makes this distinction
+   easier to infer.
