@@ -21,7 +21,7 @@ class RadModelResolver(ModelResolver):
             joined_path = self.join_path(path)
 
         if joined_path in manager:
-            # Note we need to be able to directly access the manager, issue opened on githug
+            # Note we need to be able to directly access the manager, issue opened on github
             resolved_file_path = manager._mappings_by_uri[joined_path].delegate.get_file_path(joined_path)
 
             return get_relative_path(self._base_path, resolved_file_path).as_posix() + "#"
