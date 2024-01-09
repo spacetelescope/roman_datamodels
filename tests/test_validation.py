@@ -22,62 +22,104 @@ class BadValue:
 
 
 @pytest.mark.parametrize("model", models)
-def test_construct_with_invalid(model):
+class TestValidateField:
     """
-    Test that if we construct a model with an invalid value, it fails to validate
+    Test validation of individual fields
     """
-    input_dict = dict(model.make_default(_shrink=True))
 
-    # Choose a field to modify
-    field_name = list(model.model_fields.keys())[0]
+    def test_construct_with_invalid(self, model):
+        """
+        Test that if we construct a model with an invalid value, it fails to validate
+        """
+        input_dict = dict(model.make_default(_shrink=True))
 
-    # Create input dict with bad value
-    input_dict[field_name] = BadValue()
+        # Choose a field to modify
+        field_name = list(model.model_fields.keys())[0]
 
-    # Attempt to construct the model
-    with pytest.raises(ValidationError, match=r".* validation error for .*"):
-        model(**input_dict)
+        # Create input dict with bad value
+        input_dict[field_name] = BadValue()
+
+        # Attempt to construct the model
+        with pytest.raises(ValidationError, match=r".* validation error for .*"):
+            model(**input_dict)
+
+    def test_invalidate_field(self, model):
+        """
+        Test that if we change a field to an invalid value, the model fails to validate
+        """
+
+        instance = model.make_default(_shrink=True)
+
+        # Choose a field to modify
+        field_name = list(model.model_fields.keys())[0]
+
+        # Modify the field to the bad value
+        with pytest.raises(ValidationError, match=r".* validation error for .*"):
+            # Use setattr instead of __setitem__ interface to avoid the warning
+            #    and be independent of the implementation of __setitem__
+            setattr(instance, field_name, BadValue())
 
 
 @pytest.mark.parametrize("model", models)
-def test_invalidate_field(model):
+class TestPauseValidation:
     """
-    Test that if we change a field to an invalid value, the model fails to validate
+    Test the Pause Validation method
     """
 
-    instance = model.make_default(_shrink=True)
+    def test_model_pause_validation(self, model):
+        """
+        Test that the model's paused validation works.
+            Note by default the model is revalidated after pause_validation context exits.
+        """
+        instance = model.make_default(_shrink=True)
 
-    # Choose a field to modify
-    field_name = list(model.model_fields.keys())[0]
+        for field_name in model.model_fields:
+            # Track if the field has been set as pytest.raises will not allow any code
+            #   inside the context manager to run after the error is raised.
+            # This check will occur outside the pytest.raises context, but the value
+            #    will be adjusted inside the context.
+            has_been_set = False
 
-    # Modify the field to the bad value
-    with pytest.raises(ValidationError, match=r".* validation error for .*"):
-        # Use setattr instead of __setitem__ interface to avoid the warning
-        #    and be independent of the implementation of __setitem__
-        setattr(instance, field_name, BadValue())
+            # Check the validation configuration for the model
+            assert instance.model_config["validate_assignment"] is True
+            assert instance.model_config["revalidate_instances"] == "always"
 
+            with pytest.raises(ValidationError):
+                with instance.pause_validation():
+                    # Check the validation configuration for the model as been relaxed
+                    assert instance.model_config["validate_assignment"] is False
+                    assert instance.model_config["revalidate_instances"] == "never"
 
-@pytest.mark.parametrize("model", models)
-def test_model_pause_validation(model):
-    """
-    Test that the model's paused validation works.
-        Note by default the model is revalidated after pause_validation context exits.
-    """
-    instance = model.make_default(_shrink=True)
+                    # Set the value to a bad value
+                    #    Use setattr instead of __setitem__ interface to avoid the warning
+                    #    and be independent of the implementation of __setitem__
+                    setattr(instance, field_name, bad_value := BadValue())
+                    # Check that the value is bad
+                    #    Use getattr instead of __getitem__ interface to be independent
+                    #    of the implementation of __getitem__
+                    assert getattr(instance, field_name) is bad_value
+                    has_been_set = True
 
-    for field_name in model.model_fields:
-        # Track if the field has been set as pytest.raises will not allow any code
-        #   inside the context manager to run after the error is raised.
-        # This check will occur outside the pytest.raises context, but the value
-        #    will be adjusted inside the context.
-        has_been_set = False
+            # Check that the validation configuration for the model is restored
+            assert instance.model_config["validate_assignment"] is True
+            assert instance.model_config["revalidate_instances"] == "always"
 
-        # Check the validation configuration for the model
-        assert instance.model_config["validate_assignment"] is True
-        assert instance.model_config["revalidate_instances"] == "always"
+            # Check that has_been_set is updated
+            assert has_been_set
 
-        with pytest.raises(ValidationError):
-            with instance.pause_validation():
+    def test_model_pause_validation_no_revalidate(self, model):
+        """
+        Test that the model's paused validation works, and does not revalidate if that
+            option is set.
+        """
+        instance = model.make_default(_shrink=True)
+
+        for field_name in model.model_fields:
+            # Check the validation configuration for the model
+            assert instance.model_config["validate_assignment"] is True
+            assert instance.model_config["revalidate_instances"] == "always"
+
+            with instance.pause_validation(revalidate_on_exit=False):
                 # Check the validation configuration for the model as been relaxed
                 assert instance.model_config["validate_assignment"] is False
                 assert instance.model_config["revalidate_instances"] == "never"
@@ -90,98 +132,105 @@ def test_model_pause_validation(model):
                 #    Use getattr instead of __getitem__ interface to be independent
                 #    of the implementation of __getitem__
                 assert getattr(instance, field_name) is bad_value
-                has_been_set = True
 
-        # Check that the validation configuration for the model is restored
-        assert instance.model_config["validate_assignment"] is True
-        assert instance.model_config["revalidate_instances"] == "always"
+            # Check that the validation configuration for the model is restored
+            assert instance.model_config["validate_assignment"] is True
+            assert instance.model_config["revalidate_instances"] == "always"
 
-        # Check that has_been_set is updated
-        assert has_been_set
-
-
-@pytest.mark.parametrize("model", models)
-def test_model_pause_validation_no_revalidate(model):
-    """
-    Test that the model's paused validation works, and does not revalidate if that
-        option is set.
-    """
-    instance = model.make_default(_shrink=True)
-
-    for field_name in model.model_fields:
-        # Check the validation configuration for the model
-        assert instance.model_config["validate_assignment"] is True
-        assert instance.model_config["revalidate_instances"] == "always"
-
-        with instance.pause_validation(revalidate_on_exit=False):
-            # Check the validation configuration for the model as been relaxed
-            assert instance.model_config["validate_assignment"] is False
-            assert instance.model_config["revalidate_instances"] == "never"
-
-            # Set the value to a bad value
-            #    Use setattr instead of __setitem__ interface to avoid the warning
-            #    and be independent of the implementation of __setitem__
-            setattr(instance, field_name, bad_value := BadValue())
-            # Check that the value is bad
-            #    Use getattr instead of __getitem__ interface to be independent
-            #    of the implementation of __getitem__
+            # Check the value is still bad
             assert getattr(instance, field_name) is bad_value
 
-        # Check that the validation configuration for the model is restored
-        assert instance.model_config["validate_assignment"] is True
-        assert instance.model_config["revalidate_instances"] == "always"
-
-        # Check the value is still bad
-        assert getattr(instance, field_name) is bad_value
-
 
 @pytest.mark.parametrize("model", models)
-def test_model_getitem(model):
+class TestDictAccess:
     """
-    Test that we can access model fields via the "dictionary-like" access interface.
+    Test the dictionary-like access interface
     """
-    instance = model.make_default(_shrink=True)
 
-    for field_name in model.model_fields:
-        assert instance[field_name] is getattr(instance, field_name)
-
-
-@pytest.mark.parametrize("model", models)
-def test_model_setitem(model):
-    """
-    Test that we can set model fields via the "dictionary-like" access interface.
-    """
-    for field_name in model.model_fields:
-        if field_name == "coordinate_distortion_transform":
-            continue
-
+    def test_model_getitem(self, model):
+        """
+        Test that we can access model fields via the "dictionary-like" access interface.
+        """
         instance = model.make_default(_shrink=True)
-        bad_value = BadValue()
 
-        with pytest.warns(RuntimeWarning, match=r".*RomanDataModel.__setitem__.*"):
-            instance[field_name] = bad_value
+        for field_name in model.model_fields:
+            assert instance[field_name] is getattr(instance, field_name)
 
-        assert instance[field_name] is bad_value
+    def test_model_setitem(self, model):
+        """
+        Test that we can set model fields via the "dictionary-like" access
+        """
+        for field_name in model.model_fields:
+            instance = model.make_default(_shrink=True)
 
-        with pytest.raises(ValidationError):
-            instance.model_validate(instance)
+            # Create a new distinct value
+            if isinstance(value := instance[field_name], str) and value == "dummpy value":
+                new_value = "new value"
+            elif isinstance(value, bool):
+                new_value = not value
+            elif isinstance(value, int | float):
+                new_value = value + 1
+            else:
+                # It is easier to only test for "simple" fields
+                continue
 
+            # sanity check
+            assert new_value != value
 
-@pytest.mark.parametrize("model", models)
-def test_model_contains(model):
-    """
-    Test that we can use the "in" operator to check if a field is in the model.
-    """
-    instance = model.make_default(_shrink=True)
+            # Set the value
+            instance[field_name] = new_value
+            assert instance[field_name] == new_value
+            assert value != new_value
 
-    # Check all the fields defined for the model are in the model
-    for field_name in model.model_fields:
-        assert field_name in instance
+    def test_model_setitem_no_validate(self, model):
+        """
+        Test that we can set model fields via the "dictionary-like" access interface without
+        validation.
+        """
+        for field_name in model.model_fields:
+            if field_name == "coordinate_distortion_transform":
+                continue
 
-    # Check that a field not defined for the model is not in the model
-    assert "not_a_field" not in instance
+            instance = model.make_default(_shrink=True)
 
-    # Check that an extra field added to the model is in the model
-    instance.not_a_field = "test"
+            # Make sure model does not validate setitem
+            instance.set_validate_setitem(False)
+            instance._validate_setitem = False
 
-    assert "not_a_field" in instance
+            bad_value = BadValue()
+
+            with pytest.warns(RuntimeWarning, match=r".*RomanDataModel.__setitem__.*"):
+                instance[field_name] = bad_value
+
+            assert instance[field_name] is bad_value
+
+            with pytest.raises(ValidationError):
+                instance.model_validate(instance)
+
+    def test_model_set_extra(self, model):
+        """
+        Test setting an extra field via the "dictionary-like" access interface.
+        """
+        instance = model.make_default(_shrink=True)
+        instance["not_a_field"] = "test"
+
+        assert instance.not_a_field == "test"
+        assert "not_a_field" in instance.model_extra
+
+    def test_model_contains(self, model):
+        """
+        Test that we can use the "in" operator to check if a field is in the model.
+        """
+        instance = model.make_default(_shrink=True)
+
+        # Check all the fields defined for the model are in the model
+        for field_name in model.model_fields:
+            assert field_name in instance
+
+        # Check that a field not defined for the model is not in the model
+        assert "not_a_field" not in instance
+
+        # Check that an extra field added to the model is in the model
+        instance.not_a_field = "test"
+
+        assert "not_a_field" in instance

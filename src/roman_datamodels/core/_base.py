@@ -11,7 +11,7 @@ __all__ = ["BaseDataModel"]
 import abc
 import warnings
 from collections.abc import Generator
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from datetime import datetime
 from enum import Enum
 from inspect import isclass
@@ -60,9 +60,17 @@ class BaseDataModel(BaseModel, abc.ABC):
         revalidate_instances="always",
     )
 
+    _validate_setitem: bool = True
+
     @abc.abstractproperty
     def schema_uri(cls) -> str:
         ...
+
+    def set_validate_setitem(self, value: bool) -> None:
+        """
+        Change the setitem validation state of the model
+        """
+        self._validate_setitem = value
 
     def to_asdf_tree(self) -> dict[str, Any]:
         """
@@ -387,13 +395,22 @@ class BaseDataModel(BaseModel, abc.ABC):
         return getattr(self, item)
 
     def __setitem__(self, key: str, value: Any) -> None:
-        warnings.warn(
-            "RomanDataModel.__setitem__ circumvents validation, and does not re-validate the model. "
-            "This can lead to an invalid model for serialization. Thus this should not be used in "
-            "production code.",
-            RuntimeWarning,
-        )
-        with self.pause_validation(revalidate_on_exit=False):
+        # Use a null-context rather than using _validate_setitem as the value for
+        # revalidate_on_exit because we do not want to revalidate the entire model
+        # during this method as other fields may be set purposefully in an invalid
+        # fashion.
+        if self._validate_setitem:
+            context = nullcontext()
+        else:
+            warnings.warn(
+                "RomanDataModel.__setitem__ is circumventing validation, and does not re-validate the model. "
+                "This can lead to an invalid model for serialization. To make sure validation occurs, call "
+                ".set_validate_setitem(True) on the model",
+                RuntimeWarning,
+            )
+            context = self.pause_validation(revalidate_on_exit=False)
+
+        with context:
             setattr(self, key, value)
 
     def __contains__(self, item: str) -> bool:

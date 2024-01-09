@@ -142,6 +142,7 @@ class TestToAsdf(BaseTest):
         #    Note this shows the `extra="allow"` configuration option is enabled
         instance.foo = "bar"
         assert instance.foo == "bar"
+        assert "foo" in instance.model_extra
 
         # Write to ASDF
         instance.to_asdf(filename)
