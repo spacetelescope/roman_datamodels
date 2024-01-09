@@ -103,7 +103,7 @@ def mk_observation(**kwargs):
     obs["visit_id"] = kwargs.get("visit_id", NOSTR)
     obs["program"] = kwargs.get("program", str(NONUM))
     obs["execution_plan"] = kwargs.get("execution_plan", NONUM)
-    obs["pass"] = kwargs.get("pass", NONUM)
+    obs["pass_number"] = kwargs.get("pass_number", NONUM)
     obs["segment"] = kwargs.get("segment", NONUM)
     obs["observation"] = kwargs.get("observation", NONUM)
     obs["visit"] = kwargs.get("visit", NONUM)
@@ -665,7 +665,7 @@ def mk_mosaic_basic(**kwargs):
     mosbasic["mean_exposure_time"] = kwargs.get("mean_exposure_time", NONUM)
     mosbasic["visit"] = kwargs.get("visit", NONUM)
     mosbasic["segment"] = kwargs.get("segment", NONUM)
-    mosbasic["pass"] = kwargs.get("pass", NONUM)
+    mosbasic["pass_number"] = kwargs.get("pass_number", NONUM)
     mosbasic["program"] = kwargs.get("program", NOSTR)
     mosbasic["survey"] = kwargs.get("survey", NOSTR)
     mosbasic["optical_element"] = kwargs.get("optical_element", "F158")
@@ -708,7 +708,7 @@ def mk_mosaic_wcsinfo(**kwargs):
     moswcsi["dec_corn4"] = kwargs.get("dec_corn4", NONUM)
     moswcsi["orientat_local"] = kwargs.get("orientat_local", NONUM)
     moswcsi["orientat"] = kwargs.get("orientat", NONUM)
-    moswcsi["projection"] = kwargs.get("projection", ["RA---TAN", "DEC--TAN"])
+    moswcsi["projection"] = kwargs.get("projection", "TAN")
     moswcsi["s_region"] = kwargs.get("s_region", NOSTR)
 
     return moswcsi
