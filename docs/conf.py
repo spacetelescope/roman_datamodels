@@ -455,8 +455,10 @@ epub_exclude_files = ["search.html"]
 # Enable nitpicky mode - which ensures that all references in the docs resolve.
 nitpicky = True
 nitpick_ignore = [
-    ("py:class", "_io.FileIO"),
-    ("py:class", "type"),
+    # Apparently the sphinx type annotation references cannot handle Generics used in a class definition
+    #    This is caused by CalLogs.
+    ("py:class", "pydantic.root_model.RootModel[List[str]]"),
+    ("WARNING", "roman_datamodels.core.DataModel.model_post_init"),
 ]
 
 autodoc_pydantic_model_show_json = False
