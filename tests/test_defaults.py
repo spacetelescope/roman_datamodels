@@ -267,17 +267,6 @@ class TestDefaultCornerCases:
         assert isinstance(model.pass_, int)
         assert model.pass_ == -999999
 
-    def test_optional_field(self):
-        """
-        This is an arbitrary test for default model construction
-            WfiScienceRawModel is used purely as an example for something with an optional field
-        """
-
-        model = _generated.WfiScienceRawModel.make_default(_shrink=True)
-
-        # resultantdq is optional
-        assert model.resultantdq is None
-
 
 @pytest.mark.parametrize("model", models)
 def test_override_default_data(model):

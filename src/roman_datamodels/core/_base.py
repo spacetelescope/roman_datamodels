@@ -241,40 +241,38 @@ class BaseDataModel(BaseModel, abc.ABC):
         for name, field in cls.model_fields.items():
             name = field_name(name)
 
-            # Only bother setting defaults for required fields
-            if field.is_required():
-                # Check if the field has a default value defined by Pydantic,
-                #    if so, use that. That value can technically be set in the
-                #    schema via the `default` keyword, but ASDF discourages doing so.
-                # The default is set to PydanticUndefined if there is no default
-                if field.default is not PydanticUndefined:
-                    defaults[name] = field.default
+            # Check if the field has a default value defined by Pydantic,
+            #    if so, use that. That value can technically be set in the
+            #    schema via the `default` keyword, but ASDF discourages doing so.
+            # The default is set to PydanticUndefined if there is no default
+            if field.default is not PydanticUndefined and field.default is not None:
+                defaults[name] = field.default
+                continue
+
+            # Handle the case of fields that are defined via a PydanticAdaptor
+            if (adaptor := get_adaptor(field)) is not None:
+                defaults[name] = adaptor.make_default(**kwargs)
+                continue
+
+            # Handle the special cases that cannot be easily handled by the general logic
+            if (value := special_cases(name)) is not None:
+                defaults[name] = value
+                continue
+
+            # Handle the list/dict cases
+            if isclass(origin := get_origin(field.annotation)):
+                if issubclass(origin, dict):
+                    defaults[name] = default_dict(field, name, **kwargs)
                     continue
 
-                # Handle the case of fields that are defined via a PydanticAdaptor
-                if (adaptor := get_adaptor(field)) is not None:
-                    defaults[name] = adaptor.make_default(**kwargs)
+                if issubclass(origin, list):
+                    defaults[name] = default_list(field, **kwargs)
                     continue
 
-                # Handle the special cases that cannot be easily handled by the general logic
-                if (value := special_cases(name)) is not None:
-                    defaults[name] = value
-                    continue
-
-                # Handle the list/dict cases
-                if isclass(origin := get_origin(field.annotation)):
-                    if issubclass(origin, dict):
-                        defaults[name] = default_dict(field, name, **kwargs)
-                        continue
-
-                    if issubclass(origin, list):
-                        defaults[name] = default_list(field, **kwargs)
-                        continue
-
-                # Handle all other cases
-                if (value := get_default(annotation_type(field.annotation), **kwargs)) is not None:
-                    defaults[name] = value
-                    continue
+            # Handle all other cases
+            if (value := get_default(annotation_type(field.annotation), **kwargs)) is not None:
+                defaults[name] = value
+                continue
 
         # Mix in supplied data with the defaults.
         #    This leverages the Pydantic model_dump() method, which dumps the model
