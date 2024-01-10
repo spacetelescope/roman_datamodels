@@ -343,6 +343,13 @@ class DataModel(BaseDataModel):
         """Run ASDF validation on the model"""
         self._asdf_file.validate()
 
+    def validate(self) -> None:
+        """Run all validation checks on the model"""
+        self.model_validate(self)
+        self.asdf_validate()
+
+        # TODO: add a test for this
+
     def info(self, *args, **kwargs) -> str:
         """
         Call down into the info method for ASDF.
