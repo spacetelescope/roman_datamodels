@@ -42,21 +42,6 @@ class TestDefaultCornerCases:
         assert isinstance(model.read_pattern, list)
         assert model.read_pattern == [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]]
 
-    def test_cal_logs(self):
-        """
-        This is an arbitrary test for default model construction.
-            WfiMosaicModel is used purely as an example for something with CalLogs
-        """
-
-        model = _generated.WfiMosaicModel.make_default(_shrink=True)
-
-        # check cal_logs
-        assert isinstance(model.cal_logs, _generated.cal_logs.CalLogs)
-        assert model.cal_logs.root == [
-            "2021-11-15T09:15:07.12Z :: FlatFieldStep :: INFO :: Completed",
-            "2021-11-15T10:22.55.55Z :: RampFittingStep :: WARNING :: Wow, lots of Cosmic Rays detected",
-        ]
-
     def test_p_exptype(self):
         """
         This is an arbitrary test for default model construction.
@@ -366,7 +351,7 @@ def test_override_default_data(model):
                 old_value = old_value[key_part]
 
             # Check that the skipped data is the same
-            if key.endswith("read_pattern") or key.endswith("cal_logs"):
+            if key.endswith("read_pattern"):
                 # These are skipped because they are annoying to check
                 continue
             elif isinstance(old_value, modeling.Model):

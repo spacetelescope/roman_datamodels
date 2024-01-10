@@ -7,7 +7,6 @@ from typing import Any, ClassVar
 
 from asdf.extension import Converter, Extension
 from asdf_astropy.converters.time import TimeConverter
-from pydantic import RootModel
 
 from roman_datamodels.core import DataModel
 
@@ -15,7 +14,6 @@ from roman_datamodels.core import DataModel
 from roman_datamodels.datamodels import _generated
 
 _ROMAN_DATAMODEL_CONVERTER: RomanDataModelConverter | None = None
-_ROMAN_ROOTMODEL_CONVERTER: RomanRootModelConverter | None = None
 _TIME_CONVERTER = TimeConverter()
 
 
@@ -47,6 +45,7 @@ class RomanDataModelConverter(Converter):
         "asdf://stsci.edu/datamodels/roman/tags/telescope-1.0.0",
         "asdf://stsci.edu/datamodels/roman/tags/source_detection-1.0.0",
         "asdf://stsci.edu/datamodels/roman/tags/resample-1.0.0",
+        "asdf://stsci.edu/datamodels/roman/tags/cal_logs-1.0.0",
     )
     _updated_tags: ClassVar[dict[str, str]] = {
         "asdf://stsci.edu/datamodels/roman/tags/guidewindow-1.0.0": "asdf://stsci.edu/datamodels/roman/tags/data_products/guidewindow-1.0.0",
@@ -116,62 +115,9 @@ class RomanDataModelConverter(Converter):
         return self._tag_to_model[tag](**node)
 
 
-class RomanRootModelConverter(Converter):
-    """
-    Converter for tagged RootModel objects.
-        - Currently this is only to support CalLogs
-    """
-
-    _tag_to_model: ClassVar[dict[str, type[RootModel]] | None] = None
-
-    def __init__(self) -> None:
-        global _ROMAN_ROOTMODEL_CONVERTER
-
-        if _ROMAN_ROOTMODEL_CONVERTER is not None:
-            _ROMAN_ROOTMODEL_CONVERTER = self
-
-        self = _ROMAN_ROOTMODEL_CONVERTER
-
-    @classmethod
-    def from_registry(cls, registry: dict[str, type[RootModel]]) -> RomanRootModelConverter:
-        cls._tag_to_model = registry if cls._tag_to_model is None else {**cls._tag_to_model, **registry}
-        return cls()
-
-    @classmethod
-    def build_converter(cls) -> RomanRootModelConverter:
-        models = {}
-        for name in _generated.__all__:
-            if (
-                issubclass(model := getattr(_generated, name), RootModel)
-                and hasattr(model, "tag_uri")
-                and model.tag_uri is not None
-            ):
-                models[model.tag_uri] = model
-
-        return cls.from_registry(models)
-
-    @property
-    def tags(self) -> tuple(str):
-        return tuple(self._tag_to_model.keys())
-
-    @property
-    def types(self) -> tuple(type):
-        return tuple(self._tag_to_model.values())
-
-    def select_tag(self, obj: RootModel, tags: Any, ctx: Any) -> str:
-        return obj.tag_uri
-
-    def to_yaml_tree(self, obj: RootModel, tag: Any, ctx: Any) -> dict:
-        return obj.root
-
-    def from_yaml_tree(self, node: Any, tag: Any, ctx: Any) -> RootModel:
-        return self._tag_to_model[tag](node)
-
-
 class RomanPydanticExtension(Extension):
     extension_uri = "asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0"
     converters = [
         datamodel_converter := RomanDataModelConverter.build_converter(),
-        rootmodel_converter := RomanRootModelConverter.build_converter(),
     ]
-    tags = list(datamodel_converter.tags + rootmodel_converter.tags)
+    tags = list(datamodel_converter.tags)

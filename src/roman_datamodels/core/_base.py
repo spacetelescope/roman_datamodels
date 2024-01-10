@@ -20,7 +20,7 @@ from typing import Any, get_args, get_origin
 import numpy as np
 from astropy.modeling import models
 from astropy.time import Time
-from pydantic import BaseModel, ConfigDict, RootModel
+from pydantic import BaseModel, ConfigDict
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 
@@ -89,10 +89,6 @@ class BaseDataModel(BaseModel, abc.ABC):
             if isinstance(field, BaseDataModel) and not isinstance(field, DataModel):
                 return field.to_asdf_tree()
 
-            # Recurse into sub-RootModels
-            if isinstance(field, RootModel) and (not hasattr(field, "_tag_uri") or field._tag_uri is None):
-                return field.root
-
             # Recurse into sub-dicts
             if isinstance(field, dict):
                 return {key: recurse_tree(value) for key, value in field.items()}
@@ -147,14 +143,6 @@ class BaseDataModel(BaseModel, abc.ABC):
             if issubclass(field_type, BaseDataModel) and (archive := field_type.get_archive_metadata()):
                 metadata[name] = archive
 
-            # Handle the case we have a root model
-            #    Currently only used for the cal_logs field
-            elif issubclass(field_type, RootModel):
-                # RootModels will encode their archive metadata in the root field
-                extra = field_type.model_fields["root"].json_schema_extra
-                if (archive := get_archive(extra)).has_info:
-                    metadata[name] = archive
-
         return metadata
 
     @classmethod
@@ -182,14 +170,6 @@ class BaseDataModel(BaseModel, abc.ABC):
             # the generalized logic to implement, it is easier to just hard code it
             if name == "read_pattern":
                 return [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]]
-
-            # The cal_logs is currently the only RootModel, it also requires significant
-            # complications to implement the general logic, so we hard code it
-            if name == "cal_logs":
-                return [
-                    "2021-11-15T09:15:07.12Z :: FlatFieldStep :: INFO :: Completed",
-                    "2021-11-15T10:22.55.55Z :: RampFittingStep :: WARNING :: Wow, lots of Cosmic Rays detected",
-                ]
 
             # The p_exptype field is a string, but it has to follow a regular expression
             #  so it cannot be the nominal string default
@@ -344,10 +324,6 @@ class BaseDataModel(BaseModel, abc.ABC):
             if isinstance(field, BaseDataModel):
                 for name, value in field:
                     yield from recurse(value, path + [name])
-
-            # Recurse into sub-RootModels
-            elif isinstance(field, RootModel):
-                yield from recurse(field.root, path)
 
             # Recurse into sub-dicts
             elif isinstance(field, dict):

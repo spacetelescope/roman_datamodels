@@ -338,10 +338,10 @@ adding additional extra information to the ``jinja2`` templates used by the code
 python code.
 
 .. note::
-   The ``BaseModel.jinja2``, ``ConfigDict.jinja2``, and ``RootModel.jinja2`` templates (found in
-   ``src/roman_datamodels/generator/custom_templates``) are direct copies of the templates employed by the ``datamodel-code-generator``
-   with changes to ``BaseModel.jinja2`` and ``RootModel.jinja2`` to inject the ``schema_uri`` and ``tag_uri`` information
-   (``ConfigDict.jinja2`` is a direct copy needed because of how the templates reference each other).
+   The ``BaseModel.jinja2`` and ``ConfigDict.jinja2`` templates (found in ``src/roman_datamodels/generator/custom_templates``)
+   are direct copies of the templates employed by the ``datamodel-code-generator`` with small additions to ``BaseModel.jinja2``
+   (``ConfigDict.jinja2`` is a direct copy needed because of how the templates reference each other) in order to introduce
+   class variables into the python classes representing ``schema_uri`` and ``tag_uri``.
 
 
 Known Issues with RDM
@@ -425,3 +425,14 @@ There are a few known issues with RDM, at this time:
    for ``rad``. This is because ``rad_schema-1.0.0`` is the meta-schema (schema for the schemas) for the ``rad``
    rather than a "true" schema for some data product. Isolating it from the rest of the schemas makes this distinction
    easier to infer.
+
+#. The ``cal_logs-1.0.0`` schema had to be eliminated, and replaced with directly adding the array data to the appropriate
+   data model schemas. This is because the code generator wants to treat the ``CalLogs`` object as a ``pydantic.RootModel``
+   instead of the simple array that it is. This causes issues with stpipe attempting to log information to the ``cal_logs``
+   attribute of data models.
+
+#. The ``source_detection-1.0.0`` and ``resample-1.0.0`` schemas had to be merged directly into the schemas representing
+   them. This is due to a name collision of the generated module for each of these datamodels with the name of the field
+   in data models referencing them. This is due to how names of modules and fields are derived from the schema names. Since
+   these data models are only used in ``WfiImageModel`` or ``WfiMosaicModel`` they do not have to be standalone models to
+   function properly.
