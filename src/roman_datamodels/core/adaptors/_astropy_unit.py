@@ -84,14 +84,15 @@ class _AstropyUnitPydanticAnnotation(Adaptor):
         # This handles if a single unit is passed
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
+        else:
+            unit = list(unit)
 
-        # Remove duplicates an any None values, leaving only the units
-        units = set(unit)
-        if None in units:
-            units.remove(None)
-            units.add(u.dimensionless_unscaled)
+        # Remove any None values, leaving only the units
+        if None in unit:
+            unit.remove(None)
+            unit.append(u.dimensionless_unscaled)
 
-        return list(units)
+        return unit
 
     @classmethod
     def _get_unit_name(cls, units: Units | None) -> str:
