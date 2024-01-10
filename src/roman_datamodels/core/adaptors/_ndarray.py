@@ -131,10 +131,11 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
         if _shrink:
             shape = tuple((s if s < 8 else 8) for s in shape)
 
-        if len(shape) != cls.ndim:
+        # TODO: Add default unit tests messing with the shape
+        if len(shape) < cls.ndim:
             raise ValueError(f"Shape {shape} does not have the expected ndim {cls.ndim}.")
 
-        return np.full(shape, fill, dtype=cls.dtype)
+        return np.full(shape[-cls.ndim :], fill, dtype=cls.dtype)
 
     @classmethod
     def _dtype_schema(cls) -> core_schema.CoreSchema:
