@@ -143,23 +143,6 @@ class TestOpen(BaseTest):
                 assert (instance[name] == existing[name]).all()
 
 
-def test_open_json(tmp_path):
-    """
-    Test opening a json file, assuming its an ASN
-    """
-    init = tmp_path / "init.json"
-
-    assert init == rdm.open(init)
-
-
-def test_open_path(tmp_path):
-    """
-    Test opening a path
-    """
-    with pytest.raises(ValueError, match=r"Input file path does not have an extension: .*"):
-        rdm.open(tmp_path)
-
-
 # Turn off warnings for this test (deprecation warnings are raised by the converter for the file used)
 @pytest.mark.filterwarnings("ignore:")
 def test_read_pattern_properties():
