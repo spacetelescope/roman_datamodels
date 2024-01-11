@@ -5,7 +5,9 @@ __all__ = ["RomanPydanticExtension"]
 import warnings
 from typing import Any, ClassVar
 
+import numpy as np
 from asdf.extension import Converter, Extension
+from asdf.tags.core import NDArrayType
 from asdf_astropy.converters.time import TimeConverter
 
 from roman_datamodels.core import DataModel
@@ -111,6 +113,15 @@ class RomanDataModelConverter(Converter):
                 DeprecationWarning,
             )
             tag = self._updated_tags[tag]
+
+        # Handle update to CONTEXT keyword in mosaic
+        if tag == "asdf://stsci.edu/datamodels/roman/tags/data_products/wfi_mosaic-1.0.0":
+            if "context" in node and isinstance(value := node["context"], np.ndarray | NDArrayType) and value.dtype != np.int32:
+                warnings.warn(
+                    "The mosaic context has been updated to be an int32 from a uint32, the value will be converted",
+                    DeprecationWarning,
+                )
+                node["context"] = value.astype(np.int32)
 
         return self._tag_to_model[tag](**node)
 
