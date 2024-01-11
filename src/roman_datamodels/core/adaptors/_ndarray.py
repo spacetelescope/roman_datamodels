@@ -100,7 +100,7 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
 
     @classmethod
     def make_default(
-        cls, *, shape: tuple[PositiveInt, ...] | None = None, fill: float = 0, _shrink: bool = False, **kwargs
+        cls, *, shape: tuple[PositiveInt, ...] | None = None, fill: float | None = None, _shrink: bool = False, **kwargs
     ) -> np.ndarray:
         """
         Create a default instance of the array.
@@ -134,6 +134,12 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
         # TODO: Add default unit tests messing with the shape
         if len(shape) < cls.ndim:
             raise ValueError(f"Shape {shape} does not have the expected ndim {cls.ndim}.")
+
+        # Set the fill value to the default number when passed a scalar value
+        #   This is to keep generated data fields in regression files consistent
+        #   with the default values.
+        if fill is None:
+            fill = -999999 if len(shape) == 0 else 0
 
         return np.full(shape[-cls.ndim :], fill, dtype=cls.dtype)
 

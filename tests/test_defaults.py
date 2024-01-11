@@ -186,9 +186,9 @@ class TestDefaultCornerCases:
         assert tuple(model.phot_table.keys()) == keys
         for value in model.phot_table.values():
             assert isinstance(value, wfi_img_photom.PhotTable)
-            assert value.photmjsr.value == 0.0
-            assert value.uncertainty.value == 0.0
-            assert value.pixelareasr.value == 0.0
+            assert value.photmjsr.value == -999999.0
+            assert value.uncertainty.value == -999999.0
+            assert value.pixelareasr.value == -999999.0
 
     def test_quantity(self):
         """
@@ -217,7 +217,7 @@ class TestDefaultCornerCases:
         assert isinstance(model.conversion_megajanskys, u.Quantity)
         assert model.conversion_megajanskys.isscalar
         assert model.conversion_megajanskys.unit == u.MJy / u.sr
-        assert model.conversion_megajanskys.value == 0.0
+        assert model.conversion_megajanskys.value == -999999.0
 
     def test_time(self):
         """
