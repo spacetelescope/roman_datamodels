@@ -3,8 +3,7 @@ import numpy as np
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.core.adaptors._adaptor_tags import asdf_tags
-from roman_datamodels.core.adaptors._ndarray import NdArray
+from roman_datamodels.core.adaptors import NdArray, asdf_tags, get_adaptor
 
 dtypes = (
     None,
@@ -201,3 +200,81 @@ def test_json_schema_return(dtype, ndim):
 
     # Grab the json schema produced by the annotation
     assert truth == TestModel.model_json_schema()["properties"]["array"]
+
+
+@pytest.mark.parametrize("dtype", dtypes)
+@pytest.mark.parametrize("ndim", [0, 2, 3])
+@pytest.mark.parametrize("default_shape", [(7, 8), (7, 8, 9)])
+class TestMakeDefault:
+    """Test default creation"""
+
+    def test_default(self, dtype, ndim, default_shape):
+        """No arguments"""
+        adaptor = get_adaptor(NdArray[dtype, ndim, default_shape])
+
+        # This will produce an error as a default cannot be made that satisfies the annotation
+        if len(default_shape) < ndim:
+            with pytest.raises(ValueError, match=r"Shape .* does not have the expected ndim .*"):
+                adaptor.make_default()
+
+            # Return early
+            return
+
+        # Test the default
+        default = adaptor.make_default()
+        assert isinstance(default, np.ndarray)
+
+        # Default for dtype=None in np.fill is np.int64
+        assert default.dtype == np.int64 if dtype is None else dtype
+        assert default.ndim == ndim
+        # When zero dimensional the shape is empty
+        assert default.shape == (default_shape[-ndim:] if ndim > 0 else ())
+        assert (default == 0).all()
+
+    def test_fill(self, dtype, ndim, default_shape):
+        """Pass a fill value"""
+        adaptor = get_adaptor(NdArray[dtype, ndim, default_shape])
+        fill = np.int64(4) if dtype is None else dtype(4)
+
+        # This will produce an error as a default cannot be made that satisfies the annotation
+        if len(default_shape) < ndim:
+            with pytest.raises(ValueError, match=r"Shape .* does not have the expected ndim .*"):
+                adaptor.make_default(fill=fill)
+
+            # Return early
+            return
+
+        # Test with the fill value
+        default = adaptor.make_default(fill=fill)
+        assert isinstance(default, np.ndarray)
+
+        # Default for dtype=None in np.fill is np.int64
+        assert default.dtype == np.int64 if dtype is None else dtype
+        assert default.ndim == ndim
+        # When zero dimensional the shape is empty
+        assert default.shape == (default_shape[-ndim:] if ndim > 0 else ())
+        assert (default == fill).all()
+
+    @pytest.mark.parametrize("shape", [(1, 2), (3, 4, 5)])
+    def test_shape(self, dtype, ndim, default_shape, shape):
+        """Pass a shape"""
+        adaptor = get_adaptor(NdArray[dtype, ndim, default_shape])
+
+        # This will produce an error as a default cannot be made that satisfies the annotation
+        if len(shape) < ndim:
+            with pytest.raises(ValueError, match=r"Shape .* does not have the expected ndim .*"):
+                adaptor.make_default(shape=shape)
+
+            # Return early
+            return
+
+        # Test with the fill value
+        default = adaptor.make_default(shape=shape)
+        assert isinstance(default, np.ndarray)
+
+        # Default for dtype=None in np.fill is np.int64
+        assert default.dtype == np.int64 if dtype is None else dtype
+        assert default.ndim == ndim
+        # When zero dimensional the shape is empty
+        assert default.shape == (shape[-ndim:] if ndim > 0 else ())
+        assert (default == 0).all()

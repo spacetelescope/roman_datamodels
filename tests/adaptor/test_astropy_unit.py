@@ -2,16 +2,10 @@ import astropy.units as u
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.core.adaptors._adaptor_tags import asdf_tags
-from roman_datamodels.core.adaptors._astropy_unit import AstropyUnit, _get_unit_symbol
+from roman_datamodels.core.adaptors import AstropyUnit, asdf_tags, get_adaptor
+from roman_datamodels.core.adaptors._astropy_unit import _get_unit_symbol
 
 units_no_dimensionless = (u.s, u.DN, u.DN / u.s, (u.DN / u.s) ** 2, u.electron)
-# units_no_dimensionless = tuple(
-#     sorted(
-#         {unit for unit in list(u.__dict__.values()) if isinstance(unit, u.UnitBase) and unit != u.dimensionless_unscaled},
-#         key=_get_unit_symbol,
-#     )
-# )
 units = units_no_dimensionless + (u.dimensionless_unscaled,)
 
 
@@ -251,3 +245,49 @@ def test_json_schema_return(unit_type):
         **truth_base,
         "enum": [_get_unit_symbol(unit_type[0] ** 2)],
     }
+
+
+@pytest.mark.parametrize("unit_type", units)
+class TestMakeDefault:
+    """Test making default units"""
+
+    def test_default(self, unit_type):
+        """Test with all defaults"""
+
+        # Test normal unit
+        assert get_adaptor(AstropyUnit[unit_type]).make_default() == unit_type
+
+        # Make sure the None works too
+        assert get_adaptor(AstropyUnit[None]).make_default() == u.dimensionless_unscaled
+
+    @pytest.mark.parametrize("other_unit_type", units[1:] + units[:1])
+    def test_default_with_multiple_units(self, unit_type, other_unit_type):
+        """Test with multiple units"""
+
+        # Iterate to make sure we always get the first unit
+        # There was a bug where if there was two or more units it would be essentially random for which
+        # unit was returned
+        for _ in range(100):
+            assert get_adaptor(AstropyUnit[(unit_type, other_unit_type)]).make_default() == unit_type
+            assert get_adaptor(AstropyUnit[(other_unit_type, unit_type)]).make_default() == other_unit_type
+
+    @pytest.mark.parametrize("other_unit_type", units[1:] + units[:1])
+    def test_pass_unit(self, unit_type, other_unit_type):
+        """Test passing a unit"""
+
+        # Iterate to ensure consistency
+        for _ in range(100):
+            # Check all the combinations
+            assert get_adaptor(AstropyUnit[unit_type]).make_default(unit=unit_type) == unit_type
+            assert get_adaptor(AstropyUnit[(unit_type, other_unit_type)]).make_default(unit=unit_type) == unit_type
+            assert get_adaptor(AstropyUnit[(other_unit_type, unit_type)]).make_default(unit=unit_type) == unit_type
+            assert get_adaptor(AstropyUnit[(unit_type, other_unit_type)]).make_default(unit=other_unit_type) == other_unit_type
+            assert get_adaptor(AstropyUnit[(other_unit_type, unit_type)]).make_default(unit=other_unit_type) == other_unit_type
+
+            # Check the None case
+            with pytest.raises(ValueError, match=r"Unit .* is not in the list of valid units .*"):
+                get_adaptor(AstropyUnit[None]).make_default(unit=unit_type)
+
+            if unit_type != other_unit_type:
+                with pytest.raises(ValueError, match=r"Unit .* is not in the list of valid units .*"):
+                    get_adaptor(AstropyUnit[unit_type]).make_default(unit=other_unit_type)

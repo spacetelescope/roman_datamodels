@@ -79,7 +79,13 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
 
     @classmethod
     def make_default(
-        cls, *, shape: tuple[PositiveInt, ...] | None = None, fill: float | None = None, _shrink: bool = False, **kwargs
+        cls,
+        *,
+        shape: tuple[PositiveInt, ...] | None = None,
+        fill: float | None = None,
+        unit: Unit | None = None,
+        _shrink: bool = False,
+        **kwargs,
     ) -> u.Quantity:
         """
         Create a default instance of the Quantity with unit being the first unit listed.
@@ -100,7 +106,7 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
         unit listed in the annotation.
         """
         array = super().make_default(shape=shape, fill=fill, _shrink=_shrink)
-        unit = super(_AsdfNdArrayPydanticAnnotation, cls).make_default(**kwargs)
+        unit = super(_AsdfNdArrayPydanticAnnotation, cls).make_default(unit=unit, **kwargs)
 
         return u.Quantity(array, unit=unit, dtype=cls.dtype)
 

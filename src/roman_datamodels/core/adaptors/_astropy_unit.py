@@ -110,7 +110,7 @@ class _AstropyUnitPydanticAnnotation(Adaptor):
         )
 
     @classmethod
-    def make_default(cls, **kwargs) -> u.Unit:
+    def make_default(cls, *, unit: Unit = None, **kwargs) -> u.Unit:
         """
         Return the default unit, this is assumed to be the first unit listed
 
@@ -118,6 +118,14 @@ class _AstropyUnitPydanticAnnotation(Adaptor):
         -------
         Returns the first unit
         """
+
+        if unit is not None:
+            for default in [] if cls.units is None else cls.units:
+                if default == unit:
+                    return unit
+            else:
+                raise ValueError(f"Unit {unit} is not in the list of valid units {cls.units}")
+
         if cls.units is None:
             return u.dimensionless_unscaled
 

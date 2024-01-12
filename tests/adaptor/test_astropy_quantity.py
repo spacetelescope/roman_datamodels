@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.core.adaptors import AstropyQuantity, asdf_tags
+from roman_datamodels.core.adaptors import AstropyQuantity, asdf_tags, get_adaptor
 from roman_datamodels.core.adaptors._astropy_unit import _get_unit_symbol
 
 dtypes = (
@@ -192,3 +192,142 @@ def test_json_schema_return(dtype, ndim, unit):
         quantity: AstropyQuantity[dtype, ndim, unit]
 
     assert TestModel.model_json_schema()["properties"]["quantity"] == truth
+
+
+@pytest.mark.parametrize("dtype", dtypes)
+@pytest.mark.parametrize("ndim", [0, 2, 3])
+@pytest.mark.parametrize("unit", units)
+@pytest.mark.parametrize("default_shape", [(7, 8), (7, 8, 9)])
+class TestMakeDefault:
+    """Test creating a default value"""
+
+    def test_default(self, dtype, ndim, unit, default_shape):
+        """No arguments"""
+        adaptor = get_adaptor(AstropyQuantity[dtype, ndim, unit, default_shape])
+
+        # This will produce an error as a default cannot be made that satisfies the annotation
+        if len(default_shape) < ndim:
+            with pytest.raises(ValueError, match=r"Shape .* does not have the expected ndim .*"):
+                adaptor.make_default()
+
+            # Return early
+            return
+
+        unit_truth = unit[0] if isinstance(unit, tuple) else unit
+        if unit_truth is None:
+            unit_truth = u.dimensionless_unscaled
+
+        # Test the default
+        default = adaptor.make_default()
+        assert isinstance(default, np.ndarray)
+
+        # Default for dtype=None in np.fill is np.int64
+        assert default.dtype == np.int64 if dtype is None else dtype
+        assert default.ndim == ndim
+        # When zero dimensional the shape is empty
+        assert default.shape == (default_shape[-ndim:] if ndim > 0 else ())
+        assert default.unit == unit_truth
+        if ndim == 0:
+            assert default == 0 * unit_truth
+        else:
+            assert (default == 0 * unit_truth).all()
+
+    def test_fill(self, dtype, ndim, unit, default_shape):
+        """Pass a fill value"""
+        adaptor = get_adaptor(AstropyQuantity[dtype, ndim, unit, default_shape])
+        fill = np.int64(4) if dtype is None else dtype(4)
+
+        # This will produce an error as a default cannot be made that satisfies the annotation
+        if len(default_shape) < ndim:
+            with pytest.raises(ValueError, match=r"Shape .* does not have the expected ndim .*"):
+                adaptor.make_default(fill=fill)
+
+            # Return early
+            return
+
+        unit_truth = unit[0] if isinstance(unit, tuple) else unit
+        if unit_truth is None:
+            unit_truth = u.dimensionless_unscaled
+
+        # Test the default
+        default = adaptor.make_default(fill=fill)
+        assert isinstance(default, np.ndarray)
+
+        # Default for dtype=None in np.fill is np.int64
+        assert default.dtype == np.int64 if dtype is None else dtype
+        assert default.ndim == ndim
+        # When zero dimensional the shape is empty
+        assert default.shape == (default_shape[-ndim:] if ndim > 0 else ())
+        assert default.unit == unit_truth
+        if ndim == 0:
+            assert default == fill * unit_truth
+        else:
+            assert (default == fill * unit_truth).all()
+
+    @pytest.mark.parametrize("shape", [(1, 2), (3, 4, 5)])
+    def test_shape(self, dtype, ndim, unit, default_shape, shape):
+        """Pass a shape value"""
+        adaptor = get_adaptor(AstropyQuantity[dtype, ndim, unit, default_shape])
+
+        # This will produce an error as a default cannot be made that satisfies the annotation
+        if len(shape) < ndim:
+            with pytest.raises(ValueError, match=r"Shape .* does not have the expected ndim .*"):
+                adaptor.make_default(shape=shape)
+
+            # Return early
+            return
+
+        unit_truth = unit[0] if isinstance(unit, tuple) else unit
+        if unit_truth is None:
+            unit_truth = u.dimensionless_unscaled
+
+        # Test the default
+        default = adaptor.make_default(shape=shape)
+        assert isinstance(default, np.ndarray)
+
+        # Default for dtype=None in np.fill is np.int64
+        assert default.dtype == np.int64 if dtype is None else dtype
+        assert default.ndim == ndim
+        # When zero dimensional the shape is empty
+        assert default.shape == (shape[-ndim:] if ndim > 0 else ())
+        assert default.unit == unit_truth
+        if ndim == 0:
+            assert default == 0 * unit_truth
+        else:
+            assert (default == 0 * unit_truth).all()
+
+    def test_unit(self, dtype, ndim, unit, default_shape):
+        """Pass a unit value"""
+        adaptor = get_adaptor(AstropyQuantity[dtype, ndim, unit, default_shape])
+
+        unit_ = unit[0] if isinstance(unit, tuple) else unit
+
+        # This will produce an error as a default cannot be made that satisfies the annotation
+        if len(default_shape) < ndim:
+            with pytest.raises(ValueError, match=r"Shape .* does not have the expected ndim .*"):
+                adaptor.make_default(unit=unit_)
+
+            # Return early
+            return
+
+        unit_truth = unit[0] if isinstance(unit, tuple) else unit
+        if unit_truth is None:
+            unit_truth = u.dimensionless_unscaled
+
+        # Test the default
+        default = adaptor.make_default(unit=unit_)
+        assert isinstance(default, np.ndarray)
+
+        # Default for dtype=None in np.fill is np.int64
+        assert default.dtype == np.int64 if dtype is None else dtype
+        assert default.ndim == ndim
+        # When zero dimensional the shape is empty
+        assert default.shape == (default_shape[-ndim:] if ndim > 0 else ())
+        assert default.unit == unit_truth
+        if ndim == 0:
+            assert default == 0 * unit_truth
+        else:
+            assert (default == 0 * unit_truth).all()
+
+        with pytest.raises(ValueError, match=r"Unit .* is not in the list of valid units .*"):
+            adaptor.make_default(unit=u.s)

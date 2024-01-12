@@ -141,6 +141,9 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
         if fill is None:
             fill = -999999 if len(shape) == 0 else 0
 
+        if cls.ndim == 0:
+            return np.array(fill, dtype=cls.dtype)
+
         return np.full(shape[-cls.ndim :], fill, dtype=cls.dtype)
 
     @classmethod

@@ -4,7 +4,7 @@ import pytest
 from astropy.time import Time
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.core.adaptors import AstropyTime, asdf_tags
+from roman_datamodels.core.adaptors import AstropyTime, asdf_tags, get_adaptor
 
 
 def test_time_validate():
@@ -51,3 +51,8 @@ def test_json_schema_return():
         "title": None,
         "tag": asdf_tags.ASTROPY_TIME.value,
     }
+
+
+def test_make_default():
+    """Test make a default"""
+    assert get_adaptor(AstropyTime).make_default() == Time("2020-01-01T00:00:00.000", format="isot", scale="utc")
