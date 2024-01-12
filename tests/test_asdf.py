@@ -562,7 +562,7 @@ class TestAsdfPassThrough(BaseTest):
     Test all the passthrough methods to ASDF
     """
 
-    def test_asdf_validate(self, model):
+    def test_validate(self, model):
         """
         Test that we can run validate on the model via ASDF
         """
@@ -573,7 +573,7 @@ class TestAsdfPassThrough(BaseTest):
         assert instance._asdf_external is True
 
         # Run validate via ASDF
-        instance.asdf_validate()
+        instance.validate()
 
         # There should now be an associated ASDF file
         assert instance._asdf is not None

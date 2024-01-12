@@ -339,16 +339,10 @@ class DataModel(BaseDataModel):
 
         return self._asdf
 
-    def asdf_validate(self) -> None:
-        """Run ASDF validation on the model"""
-        self._asdf_file.validate()
-
     def validate(self) -> None:
         """Run all validation checks on the model"""
         self.model_validate(self)
-        self.asdf_validate()
-
-        # TODO: add a test for this
+        self._asdf_file.validate()
 
     def info(self, *args, **kwargs) -> str:
         """
