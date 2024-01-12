@@ -80,23 +80,24 @@ def test_to_flat_dict(model):
 
     # Check first and second levels for data models
     for field_name, field in instance.model_fields.items():
+        name = f"roman.{field_name}"
         # We only check required fields
         if field.is_required():
             for key in flat_dict:
-                if key.startswith(field_name):
+                if key.startswith(name):
                     break
             else:
-                assert False, f"Field {field_name} not found in flat_dict"
+                assert False, f"Field {name} not found in flat_dict"
 
             # Do the same for sub-models
             if isinstance(sub_instance := instance[field_name], BaseDataModel):
                 for sub_field_name, sub_field in sub_instance.model_fields.items():
                     if sub_field.is_required():
                         for key in flat_dict:
-                            if key.startswith(f"{field_name}.{sub_field_name}"):
+                            if key.startswith(f"{name}.{sub_field_name}"):
                                 break
                         else:
-                            assert False, f"Field {field_name}.{sub_field_name} not found in flat_dict"
+                            assert False, f"Field {name}.{sub_field_name} not found in flat_dict"
 
 
 @pytest.mark.parametrize("model", roman_models)
@@ -109,3 +110,18 @@ def test_get_crds_parameters(model):
     for key, value in instance.get_crds_parameters().items():
         assert isinstance(key, str)
         assert isinstance(value, (str, int, float, bool, complex))
+
+
+@pytest.mark.parametrize("name", ["ImageModel", "MosaicModel", "ScienceRawModel"])
+def test_deprecated_model_names(name):
+    """
+    Test that the deprecated model names are still available
+    """
+    from roman_datamodels import datamodels
+
+    with pytest.warns(DeprecationWarning, match=r"Use of deprecated model .* is discouraged, use .* instead."):
+        model = getattr(datamodels, name)
+
+    # Test the model name and class is the new model
+    assert model.__name__ == f"Wfi{name}"
+    assert model is getattr(datamodels, f"Wfi{name}")

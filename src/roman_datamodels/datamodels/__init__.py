@@ -10,3 +10,22 @@ except ImportError:
     import warnings
 
     warnings.warn("Failed to import the data model objects, re-run the generator or reinstall the package.")
+
+
+def __getattr__(name):
+    """Allow use of deprecated model names"""
+    import warnings
+
+    # These models have have be renamed to be consistent with their schema names,
+    #    but we want to allow the old names to be used for now.
+    deprecated_models = {
+        "ImageModel": WfiImageModel,  # noqa: F405
+        "MosaicModel": WfiMosaicModel,  # noqa: F405
+        "ScienceRawModel": WfiScienceRawModel,  # noqa: F405
+    }
+
+    if name in deprecated_models:
+        warnings.warn(
+            f"Use of deprecated model {name} is discouraged, use {deprecated_models[name].__name__} instead.", DeprecationWarning
+        )
+        return deprecated_models[name]
