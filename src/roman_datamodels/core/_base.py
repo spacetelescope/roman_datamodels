@@ -181,6 +181,10 @@ class BaseDataModel(BaseModel, abc.ABC):
             if name == "coordinate_distortion_transform":
                 return models.Shift(1) & models.Shift(2)
 
+            # Because of the regression tests, we will set the default value for the catalog name
+            if name == "tweakreg_catalog_name":
+                return "filename_tweakreg_catalog.asdf"
+
             return None
 
         def get_default(field_type: type, **kwargs) -> Any:
@@ -301,7 +305,9 @@ class BaseDataModel(BaseModel, abc.ABC):
             return value
 
         return {
-            name: convert_value(value) for name, value in self.flat_items() if include_arrays or not isinstance(value, np.ndarray)
+            f"roman.{name}": convert_value(value)
+            for name, value in self.flat_items()
+            if include_arrays or not isinstance(value, np.ndarray)
         }
 
     def flat_items(self, *, flatten_lists: bool = True) -> Generator[tuple[str, Any], None, None]:

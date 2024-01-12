@@ -280,7 +280,7 @@ class DataModel(BaseDataModel):
             the stpipe DataModel protocol.
         """
         return {
-            f"roman.{key}": val
+            key: val
             for key, val in self.to_flat_dict(include_arrays=False).items()
             if isinstance(val, (str, int, float, complex, bool))
         }
