@@ -1,3 +1,6 @@
+.. _Pydantic: https://docs.pydantic.dev/latest/
+.. _datamodel-code-generator: https://koxudaxi.github.io/datamodel-code-generator/
+
 .. _rdm_overview:
 
 ===========================
@@ -68,19 +71,19 @@ RDM Core
 --------
 
 RDM core defines the primary Python API and overall structure of the RDM data models. Instead of using
-a bespoke "data model" implementation, RDM core instead uses the ``pydantic`` package to define its
-data models. This is for three reasons:
+a bespoke "data model" implementation, RDM core instead uses the `Pydantic`_
+package to define its data models. This is for three reasons:
 
-#. There is a ready-made implementation of a JSON-schema to Python code generation package, ``datamodel-code-generator``.
-#. ``pydantic`` is a well-tested and well-supported package, which is specifically designed to be used
-   for data validation. This means that once the code is generated, pydantic can handle all of the
+#. There is a ready-made implementation of a JSON-schema to Python code generation package, `datamodel-code-generator`_.
+#. `Pydantic`_ is a well-tested and well-supported package, which is specifically designed to be used
+   for data validation. This means that once the code is generated, `Pydantic`_ can handle all of the
    data validation for RDM.
-#. ``pydantic`` has many useful built in features, which can be leveraged by RDM. For example, it has
+#. `Pydantic`_ has many useful built in features, which can be leveraged by RDM. For example, it has
    several introspection features which can be used by RDM to assist with things such as ASDF serialization
-   and retrieval of metadata from the ``rad`` schemas. Moreover, ``pydantic`` is extremely well optimized
+   and retrieval of metadata from the ``rad`` schemas. Moreover, `Pydantic`_ is extremely well optimized
    and efficient which should help with the performance of RDM.
 
-RDM core defines two main pydantic models:
+RDM core defines two main `Pydantic`_ models:
 
 #. `roman_datamodels.core.BaseDataModel`, which forms the foundation for all data models in RDM. In particular it defines
    all of the recursive functionality needed to support the RDM Python API, even for data models which are not direct
@@ -125,9 +128,10 @@ In addition to the ASDF serialization and deserialization support `roman_datamod
 methods for working with data models:
 
 - `roman_datamodels.core.DataModel.copy`: which enables shallow and deep copying of data models. Note that this should be
-  used instead of the standard Python ``copy/deepcopy`` functions or the Pydantic ``.model_copy`` method. This is because
+  used instead of the standard Python ``copy/deepcopy`` functions or the `Pydantic`_
+  `.model_copy <https://docs.pydantic.dev/latest/api/base_model/#pydantic.main.BaseModel.model_copy>`_ method. This is because
   if the `roman_datamodels.core.DataModel` is built directly from an ASDF file it will contain a reference to the ASDF file
-  object. Copying this reference will interfere with the ``.model_copy`` method employed by Pydantic and setting a ``__copy__``
+  object. Copying this reference will interfere with the ``.model_copy`` method employed by `Pydantic`_ and setting a ``__copy__``
   or ``__deepcopy__`` method on the data model creates issues with ``.model_copy``, which is employed by the
   `roman_datamodels.core.BaseDataModel` in several places.
 
@@ -141,7 +145,7 @@ methods for working with data models:
 
   #. To provide a way to create a data model before all the information intended for that data model is available. This
      occurs often in RCAL as each step needs to a place to put the values it computes before all the values are ready.
-     The convention there is to simply "fill-in" the data model as the step(s) progress. However, both Pydantic and ASDF
+     The convention there is to simply "fill-in" the data model as the step(s) progress. However, both `Pydantic`_ and ASDF
      validation methods will take issue with any required fields that have not been "filled-in" yet.
   #. To provide an easy way to create "dummy" models for the purposes of testing RDM, RCAL, or other code that uses RDM.
      This allows one to realize a model that one is only interacting with via the Python API without having to create a
@@ -179,10 +183,6 @@ methods for working with data models:
   (and a warning will be issued). Turning off revalidation should only really be employed during development of code but
   not in finalized code.
 
-- `roman_datamodels.core.DataModel.asdf_validate`: Call ASDF's validation system on the data model. There are currently
-  a few edge cases where the code generator does not full encode the schema's restrictions into the resulting Pydantic
-  model, but which ASDF will still catch. See discussion below.
-
 - `roman_datamodels.core.DataModel.create_model`: The general constructor/initializer for RDM data models. This method
   will attempt to construct a data model given any of the normal ways one may try to construct the data model. In particular,
   it accepts other data models, paths to ASDF files, ASDF file objects, and nested dictionaries. It will then attempt to
@@ -214,19 +214,20 @@ as if the data model were a dictionary.
    However, in this case a warning will be issued to indicate that it is possible the model maybe in an invalid state.
 
 Furthermore, one can set any non-schema defined field on the model using either the Python "dot" interface. e.g. ``model.my_extra_field =...``
-or the ``[]`` operator. e.g. ``model['my_extra_field'] = ...``. Note that these fields will not be validated by Pydantic or
+or the ``[]`` operator. e.g. ``model['my_extra_field'] = ...``. Note that these fields will not be validated by `Pydantic`_ or
 ASDF but they will be serialized to and from ASDF files (if the field's type is supported by ASDF). Moreover, in addition
 to allowing extra fields, the existence of a field under a given string name can be checked using the usual Python ``in``
 operator. e.g. ``'my_field' in model``.
 
-Finally, since all RDM data models are based on Pydantic models, the entire Pydantic model API is available to RDM data, see
+Finally, since all RDM data models are based on `Pydantic`_ models, the entire
+`Pydantic model API <https://docs.pydantic.dev/latest/api/base_model/>`_ is available to RDM data, see
 the Pydantic API documentation for details.
 
 RDM Core Pydantic Adaptors
 **************************
 
 In addition to the ``roman_datamodels.core.DataModel`` and ``roman_datamodels.core.BaseDataModel`` classes, RDM core also
-defines a number of Pydantic type adaptors in ``roman_datamodels.core.adaptors``. These adaptors are used to enable Pydantic
+defines a number of `Pydantic`_ type adaptors in ``roman_datamodels.core.adaptors``. These adaptors are used to enable Pydantic
 to handle and validate types outside its normally supported types (see, here for native types). Currently, RDM needs adaptors
 for:
 
@@ -238,13 +239,15 @@ for:
 However, if types which are not defined using Pydantic or one of its supported types are needed in addition to the above
 types one can create a type adaptor in the similar fashion to the existing adaptors. Effectively this is creating a
 class with a ``__get_pydantic_core_schema__`` and ``__get_pydantic_json_schema__`` method which can be annotated using
-the `typing.Annotated` type annotation onto the type that needs to be adapted. The Pydantic documentation has more details.
+the `typing.Annotated` type annotation onto the type that needs to be adapted. The
+`Pydantic documentation <https://docs.pydantic.dev/latest/concepts/types/#handling-third-party-types>`_ has more details.
 
 .. note::
 
    Pydantic does support having arbitrary types directly annotated in fields of a model if the ``arbitrary_types_allowed``
-   (see here) configuration option is set to ``True``. However, this will significantly limit RDM's ability to perform
-   validation of the data models, so it is currently avoided.
+   (`see here <https://docs.pydantic.dev/latest/api/config/#pydantic.config.ConfigDict.arbitrary_types_allowed>`_)
+   configuration option is set to ``True``. However, this will significantly limit RDM's ability to perform validation
+   of the data models, so it is currently avoided.
 
 RDM Data Models
 ---------------
@@ -270,36 +273,37 @@ The code generator for RDM is a sub-package of RDM, which is not needed at runti
 or when models need to be regenerated during development (it is also needed during testing). Its purpose is to take the schemas
 in ``rad`` and generate Python code based of `roman_datamodels.core` which represent the data formatting encoded in the schemas.
 
-The code generator itself is not a bespoke code generator, instead is an extension of the ``datamodel-code-generator`` package.
+The code generator itself is not a bespoke code generator, instead is an extension of the `datamodel-code-generator`_ package.
 It was chosen as the basis for the code generator because:
 
 #. It supports generating Python code from JSON schemas.
-#. It is the package recommended by Pydantic for generating Pydantic models from JSON schemas.
+#. It is the package `recommended by Pydantic <https://docs.pydantic.dev/latest/integrations/datamodel_code_generator/>`_
+   for generating Pydantic models from JSON schemas.
 #. It is well supported and widely used package for generating Python code from JSON schemas.
 
-Overview of ``datamodel-code-generator``
-****************************************
+Overview of `datamodel-code-generator`_
+***************************************
 
-The main downside to ``datamodel-code-generator`` is that its extension interface is not well documented, as it was
+The main downside to `datamodel-code-generator`_ is that its extension interface is not well documented, as it was
 originally imagined as a self-contained CLI tool. However, extensions are needed to support extensions of JSON-schema
 like what ASDF employs with its tag system.
 
-Effectively, the ``datamodel-code-generator`` is divided into two main parts:
+Effectively, the `datamodel-code-generator`_ is divided into two main parts:
 
 #. A JSON-schema parser which parses the JSON-schema into a usable Python object.
 #. A code generator which takes the parsed JSON-schema and writes Python code.
 
 RDM's code generator's extensions are mainly focused on the JSON-schema parser rather than the code generator itself.
-This is because most of the specifics requiring extensions to ``datamodel-code-generator`` are due to the ASDF
+This is because most of the specifics requiring extensions to `datamodel-code-generator`_ are due to the ASDF
 JSON-schema extension. In particular, "teaching" the JSON-schema parser how to handle ASDF tags.
 
-The extensions to the ``datamodel-code-generator``'s JSON-schema parser are:
+The extensions to the `datamodel-code-generator`_'s JSON-schema parser are:
 
 #. Extensions to the the ``datamodel_code_generator.parser.json_schema.JsonSchemaObject``, which is what the parser uses
    to make the initial read of a JSON-schema. RDM extends this object to ``roman_datamodels.generator._schema.RadSchemaObject``
    to add the following functionality:
 
-   - ``id``: is needed because the JSON-schema draft specification that ``datamodel-code-generator`` is based on is a
+   - ``id``: is needed because the JSON-schema draft specification that `datamodel-code-generator`_ is based on is a
      newer version that the one used by ASDF. In particular, in later JSON-schema drafts, the ``id`` key word was changed
      to ``$id`` to signify that it is used for references between schemas. Currently, ADSF does not support this newer
      ``id`` keyword. So the code generator needs to know to look for the ``id`` keyword and interpret it as the ``$id``.
@@ -320,7 +324,7 @@ The extensions to the ``datamodel-code-generator``'s JSON-schema parser are:
 #. Extensions to the ``datamodel_code_generator.reference.ModelResolver``, which is what the parser uses to resolve references
    between different schemas and models. That is determine things like what ``$ref`` refers to in the Python code and any
    inheritance relationships in the Python code. Unfortunately, both ASDF and ``rad`` make different assumptions on how to
-   turn ``$ref`` into file locations for schemas than the ``datamodel-code-generator`` does, in particular it uses the
+   turn ``$ref`` into file locations for schemas than the `datamodel-code-generator`_ does, in particular it uses the
    `Swagger $ref <https://swagger.io/docs/specification/using-ref/>`_ convention. So an the extension
    ``roman_datamodels.generator._reference.RadModelResolver`` to the ``ModelResolver`` is needed in order to "plug-in"
    ASDF's schema-reference system into the ``datamodel-code-generator``'s schema-reference system.
@@ -343,6 +347,92 @@ python code.
    (``ConfigDict.jinja2`` is a direct copy needed because of how the templates reference each other) in order to introduce
    class variables into the python classes representing ``schema_uri`` and ``tag_uri``.
 
+
+Validation and RDM
+==================
+
+There are two kinds of validation at work in RDM:
+
+#. ASDF validation, which is handled by ASDF as part of reading and writing ASDF files containing RDM
+   data models.
+#. Pydantic validation, which is handled by Pydantic as part of creating and updating RDM data models.
+
+These two validation systems perform similar functions; namely, attempting to ensure that the data in
+the data model is "valid" with respect to what has been defined as the data standard by the RAD schemas.
+However, in practice they do not quite perform the same function.
+
+ASDF Validation
+---------------
+
+ASDF validation is performed by ASDF directly on the final YAML tree representation of the data which
+will be written to an ASDF file or has been read from an ASDF file. This means that ASDF validation
+is performed on the "raw" data, and so it "completely" checks that the data being written to or read
+conforms to the schemas in ``rad`` and the schemas referenced by ``rad``. However, it is important to
+note that it is not performed on the Python objects themselves, but rather the results of converting
+those objects via the lens of the ASDF converters to the YAML tree representation. This means that
+ASDF validation is actually a check on the validity of the models with respect to the ASDF files they
+result in.
+
+Pydantic Validation
+-------------------
+
+By contrast, Pydantic validation is performed on the Python objects themselves. This means that it
+makes some assumptions about the validity of the Python objects. In particular, this means that it
+implicitly makes the assumption that all non-Pydantic types (i.e. those types not directly supported
+by Pydantic or not composed of Pydantic models or Python ``dataclass`` es) are valid with respect to
+themselves. Effectively, this means Pydantic has the expectation that the "third-party" types supported
+by the adaptors police their own validity. This is not an unreasonable assumption as it is not practical
+for Pydantic to know how to validate all possible types. However, it does mean that Pydantic validation
+has the possibility of missing invalid states that are not directly checked by the adaptors. Note that
+instead the adaptors are expected to check that the restrictions placed on the third-party types by
+the ``rad`` schemas are met; meaning that, even if an adaptor successfully validates a third-party type
+it is still possible for that type to be flagged as invalid by ASDF validation. Effectively, this means
+that Pydantic is assuming that the third-party types we support via the adaptors are "well-behaved" and
+either not allowing invalid states themselves or that they are properly created by the code that uses them
+up to the subset of data that is being used by the adaptor to validate that the type instance in question
+meets the restrictions placed on it by the ``rad`` schemas.
+
+Why both ASDF and Pydantic Validation?
+--------------------------------------
+
+On the surface, ASDF validation appears to be superior to Pydantic validation in this context. While in
+terms of accuracy this is true, there are several reasons why Pydantic validation is employed.
+
+#. Pydantic validation is extremely fast relative to ASDF validation. This is because Pydantic validation
+   does not require the conversion of the data into the YAML tree representation before running checks
+   using the relatively slow Python JSON-schema library. Instead, Pydantic validation is performed directly
+   on the data use the type information encoded into the Python type itself. This validation takes place
+   in the ``rust`` -based ``pydantic-core`` library, which is extremely fast and efficient.
+
+#. Pydantic validation validates that the types match the type annotations specified on the data fields
+   in the Python code itself. Essentially, this means that Pydantic validation is checking that the data
+   in question is valid at runtime with respect to what static analysis of the code indicates that the
+   data should be. By contrast ASDF validation is only checking that the data when written to ASDF is
+   valid with respect to the schemas in ``rad``. This information is not noted directly in the Python
+   code itself; meaning that, for developers working with the datamodels, it is not immediately obvious
+   what fields are have what restrictions placed on them by the ``rad`` schemas.
+
+#. Outside of third-party types, Pydantic validation is equivalent to ASDF validation, provided that
+   the annotations on the data fields in the Python code properly encode the restrictions placed on
+   the matching data by the ``rad`` schemas. This means that if we "trust" that the third-party adapted
+   types are playing nicely, then we can realistically trust Pydantic validation to catch the vast
+   majority of invalid data states. Even when it does not, ASDF still validates the data as it is being
+   both written to and read from ASDF files; meaning that, invalid data will be caught at these points.
+
+In summary, Pydantic validation is faster, enables the Python code to be correctly self-documenting,
+and is "good enough" to be trusted to catch the vast majority of invalid data states. Thus there is little
+real downside to employing Pydantic validation, as part of the goal of the RDM code-generator was to
+make it simpler for developers and end users to work with the Python code itself; including understanding
+what different fields were expected to contain or be restricted to. The natural mechanism built into Python
+for this purpose is type annotations, which Pydantic validation leverages. Moreover, Pydantic itself
+provides several additional non-validation-related API features which are extremely useful for working
+with the data models.
+
+Moreover, Pydantic validation also acts as a reasonable self-consistency check on the ``rad`` schemas
+themselves. In particular, if ASDF and Pydantic validation disagree on the validity of a data model,
+then outside of third-party types, this is an indication of a bug in the ``rad`` schemas themselves,
+a bug in the generator, or a "bug" in the logical structure of the code. In any case, it acts as a
+useful, but incomplete, face-validity check on the ``rad`` schemas and the code generated from them.
 
 Known Issues with RDM
 =====================
