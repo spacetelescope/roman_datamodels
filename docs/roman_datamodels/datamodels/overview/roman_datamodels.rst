@@ -107,12 +107,13 @@ In addition to `roman_datamodels.core.BaseDataModel` and `roman_datamodels.core.
 ``rad`` schema. This is useful when one needs specific functionality for a particular data model, but that functionality
 is not applicable to all data models. To create an extended data model, one simply creates a subclass of
 `roman_datamodels.core.ExtendedDataModel` in ``roman_datamodels.core.extended``, which specifically defines the
-``schema_uri`` class attribute to match the ``id`` (schema uri) for the schema describing the data in RAD omitting the version
-number encoded in the ``id``. That is if the ``id`` is ``asdf://something/my_schema-1.0.0```, then the ``schema_uri`` will
-be ``asdf://something/my_schema``. This is to enable support for multiple versions of the same schema. Note that RDM enforces
-via unit tests the convention that the extended data model class name is the same name as the expected name for the generated
-model prefixed with a ``_``. For example, if the expected name for the generated model is ``MyModel`` then the extended data
-model class name should be ``_MyModel``. This is to prevent name collisions with the generated model.
+``schema_uri`` class attribute to match the ``id`` (schema uri) for the schema describing the data in RAD adjusting the
+version number encoded in the ``id`` to ``-*`` (wild card). That is if the ``id`` is ``asdf://something/my_schema-1.0.0```,
+then the ``schema_uri`` will be ``asdf://something/my_schema-*``. This is to enable support for multiple versions of the
+same schema. Note that RDM enforces via unit tests the convention that the extended data model class name is the same name
+as the expected name for the generated model prefixed with a ``_``. For example, if the expected name for the generated
+model is ``MyModel`` then the extended data model class name should be ``_MyModel``. This is to prevent name collisions
+with the generated model.
 
 Once an `roman_datamodels.core.ExtendedDataModel` is defined for a given schema, then the code generator will automatically
 select it as a base class for the data model(s) matching the provided ``schema_uri``. Any additional functionality that needs

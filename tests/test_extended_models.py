@@ -4,6 +4,7 @@ Tests of the extended models functionality
 import pytest
 
 from roman_datamodels.core import ExtendedDataModel
+from roman_datamodels.core._utils import remove_uri_version
 from roman_datamodels.datamodels import _generated
 
 from ._helpers import roman_models
@@ -17,9 +18,27 @@ def test_extended_model_base_class_name(model):
     Check the name of the base class won't cause issues, this enforces the naming convention.
     """
 
+    # Check that the base class is the extended model
     assert (base_cls := model.__bases__[0]) is ExtendedDataModel.model_from_schema_uri(model.schema_uri)
+
+    # Check the base class name
     assert base_cls.__name__.startswith("_")
     assert base_cls.__name__[1:] == model.__name__
+
+
+@pytest.mark.parametrize("model", models)
+def test_extended_model_schema_uri(model):
+    """
+    Check that the schema_uri is set correctly
+    """
+
+    base_cls = model.__bases__[0]
+
+    # check the URI is right
+    assert remove_uri_version(base_cls._schema_uri) == remove_uri_version(model.schema_uri)
+
+    # check the uri ends with a "-*"
+    assert base_cls._schema_uri.endswith("-*")
 
 
 class TestWfiMode:

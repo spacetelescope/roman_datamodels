@@ -13,6 +13,7 @@ from __future__ import annotations
 
 __all__ = ["ExtendedDataModel"]
 
+import abc
 from typing import Annotated, Any, ClassVar
 
 import astropy.units as u
@@ -28,19 +29,23 @@ class ExtendedDataModel(DataModel):
         This is intended to act as a base class only.
     """
 
+    @abc.abstractproperty
+    def _schema_uri(self) -> str:
+        ...
+
     @classmethod
     def model_from_schema_uri(cls, schema_uri: str) -> type[DataModel]:
         """Grab a subclass of this model corresponding to the schema_uri."""
 
         for subclass in cls.__subclasses__():
-            if subclass._schema_uri == remove_uri_version(schema_uri):
+            if remove_uri_version(subclass._schema_uri) == remove_uri_version(schema_uri):
                 return subclass
 
         return DataModel
 
 
 class _WfiMode(ExtendedDataModel):
-    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/wfi_mode"
+    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/wfi_mode-*"
 
     _grating_optical_elements: ClassVar[frozenset[str]] = frozenset({"GRISM", "PRISM"})
 
@@ -56,7 +61,7 @@ class _WfiMode(ExtendedDataModel):
 
 
 class _RampModel(ExtendedDataModel):
-    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/data_products/ramp"
+    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/data_products/ramp-*"
 
     # The data array which needs to be coerced to the correct dtype has to be annotated now, so that
     #    Pydantic can compute this model correctly. This will be overridden by the generated model.
@@ -103,7 +108,7 @@ class _RampModel(ExtendedDataModel):
 
 
 class _AssociationsModel(ExtendedDataModel):
-    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/data_products/associations"
+    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/data_products/associations-*"
 
     @classmethod
     def is_association(cls, asn_data) -> bool:
@@ -119,7 +124,7 @@ class _AssociationsModel(ExtendedDataModel):
 
 
 class _LinearityRefModel(ExtendedDataModel):
-    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/linearity"
+    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/linearity-*"
 
     def get_primary_array_name(self):
         """
@@ -129,7 +134,7 @@ class _LinearityRefModel(ExtendedDataModel):
 
 
 class _InverselinearityRefModel(ExtendedDataModel):
-    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/inverselinearity"
+    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/inverselinearity-*"
 
     def get_primary_array_name(self):
         """
@@ -139,7 +144,7 @@ class _InverselinearityRefModel(ExtendedDataModel):
 
 
 class _MaskRefModel(ExtendedDataModel):
-    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/mask"
+    _schema_uri: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/schemas/reference_files/mask-*"
 
     def get_primary_array_name(self):
         """
