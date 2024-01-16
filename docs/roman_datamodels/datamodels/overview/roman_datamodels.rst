@@ -435,6 +435,44 @@ then outside of third-party types, this is an indication of a bug in the ``rad``
 a bug in the generator, or a "bug" in the logical structure of the code. In any case, it acts as a
 useful, but incomplete, face-validity check on the ``rad`` schemas and the code generated from them.
 
+Validation During Runtime
+-------------------------
+
+ASDF validation will only occur during the reading and writing of ASDF files. This is the default
+behavior of ASDF and is done to ensure the integrity of the file data. However, Pydantic validation
+is currently occurring any time a field is set or reset in a data model. This includes when ASDF
+passes its "already-validated" data to the data model. This is because this enables Pydantic to
+recursively build the data model from the data tree passed to it by ASDF. While this validation
+should not explicitly be necessarily it currently invokes a trivial amount of overhead, and does
+not act to load any data from disk that is normally being lazy-loaded.
+
+Note that the Pydantic validation at runtime can be modified by the
+`roman_datamodels.core.BaseDataModel.pause_validation` context manager. This context manager suspends
+the normal validation of setting data in the all models while the context is active (this is because
+the validation control configuration is a class variable shared by all data models). As already noted
+this can be used when data is in a transition period and is not yet valid, or when performance is
+significantly impacted by Pydantic validation. By default, the context manager will revalidate the
+entire model on exit.
+
+.. note::
+
+   The validation behavior of RDM is influenced by two configuration options in Pydantic:
+
+   #. `validate_assignment <https://docs.pydantic.dev/latest/api/config/#pydantic.config.ConfigDict.validate_assignment>`_,
+      which controls whether or not Pydantic will validate data when it is set on a model. By default,
+      Pydantic will only validate data during model construction not when it is updated after construction.
+      However, to replicate the previous RDM behavior this has been turned on so that validation occurs
+      whenever a field is set or reset on a model.
+
+   #. `revalidate_instances <https://docs.pydantic.dev/latest/api/config/#pydantic.config.ConfigDict.revalidate_instances>`_
+      which controls whether or not Pydantic will recursively validate things in sub models when one of those
+      models is updated. By default, Pydantic never does this (even when ``validate_assignment`` is turned on).
+      Again in order to replicate the previous RDM behavior this has been turned on so that nested sub-models
+      are revalidated if they have fields set or reset on them via the interface of a parent model.
+
+   Note that these configuration make Pydantic extremely aggressive about validation, which may not be
+   desirable. This aggressive behavior is subject to change in the future.
+
 Known Issues with RDM
 =====================
 
