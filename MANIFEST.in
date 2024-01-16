@@ -1,1 +1,1 @@
-graft src/roman_datamodels/datamodels/_generated/**.py
+graft src/roman_datamodels/datamodels/_generated/**/*.py
