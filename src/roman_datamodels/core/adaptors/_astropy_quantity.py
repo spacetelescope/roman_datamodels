@@ -12,9 +12,12 @@ from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
 from ._adaptor_tags import asdf_tags
-from ._astropy_unit import Unit, Units, _AstropyUnitPydanticAnnotation
-from ._base import Adaptor
-from ._ndarray import NDArrayLike, _AsdfNdArrayPydanticAnnotation
+from ._astropy_unit import AstropyUnit, Unit, Units
+from ._ndarray import NdArray, NDArrayLike
+
+_Factory = Union[
+    DTypeLike, tuple[Optional[DTypeLike], Optional[PositiveInt]], tuple[Optional[DTypeLike], Optional[PositiveInt], Units]
+]
 
 
 class _QuantitySplit(TypedDict):
@@ -47,7 +50,7 @@ def _validate_scalar(
     return scalar.dtype.type
 
 
-class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _AstropyUnitPydanticAnnotation):
+class AstropyQuantity(NdArray, AstropyUnit):
     """
     The pydantic adaptor for an astropy Quantity.
 
@@ -106,7 +109,7 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
         unit listed in the annotation.
         """
         array = super().make_default(shape=shape, fill=fill, _shrink=_shrink)
-        unit = super(_AsdfNdArrayPydanticAnnotation, cls).make_default(unit=unit, **kwargs)
+        unit = super(NdArray, cls).make_default(unit=unit, **kwargs)
 
         return u.Quantity(array, unit=unit, dtype=cls.dtype)
 
@@ -133,7 +136,7 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
         _handler: GetCoreSchemaHandler,
     ) -> core_schema.CoreSchema:
         """Create the pydantic_core schema to validate the unit part of a quantity."""
-        return super(_AsdfNdArrayPydanticAnnotation, cls).__get_pydantic_core_schema__(_source_type, _handler)["python_schema"]
+        return super(NdArray, cls).__get_pydantic_core_schema__(_source_type, _handler)["python_schema"]
 
     @classmethod
     def _quantity_schema(
@@ -196,9 +199,7 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
         properties_schema = {}
 
         if cls.units is not None:
-            properties_schema["unit"] = super(_AsdfNdArrayPydanticAnnotation, cls).__get_pydantic_json_schema__(
-                _core_schema, handler
-            )
+            properties_schema["unit"] = super(NdArray, cls).__get_pydantic_json_schema__(_core_schema, handler)
 
         if cls.dtype is not None or cls.ndim is not None:
             properties_schema["value"] = super().__get_pydantic_json_schema__(_core_schema, handler)
@@ -207,24 +208,7 @@ class _AstropyQuantityPydanticAnnotation(_AsdfNdArrayPydanticAnnotation, _Astrop
 
         return schema
 
-
-_Factory = Union[
-    DTypeLike, tuple[Optional[DTypeLike], Optional[PositiveInt]], tuple[Optional[DTypeLike], Optional[PositiveInt], Units]
-]
-
-
-class _AstropyQuantity(Adaptor):
-    """
-    This is a Hack class to make the AstropyQuantity annotation "look" like how python annotations
-    typically look
-    """
-
-    @classmethod
-    def make_default(cls, **kwargs):
-        raise NotImplementedError("This cannot be called on this class")
-
-    @staticmethod
-    def __getitem__(factory: _Factory) -> type:
+    def __class_getitem__(cls, factory: _Factory) -> type:
         """Turn the typical python annotation style something suitable for Pydantic."""
         if not isinstance(factory, tuple):
             factory = (factory,)
@@ -239,9 +223,5 @@ class _AstropyQuantity(Adaptor):
 
         return Annotated[
             u.Quantity,
-            _AstropyQuantityPydanticAnnotation.factory(dtype=dtype, ndim=ndim, unit=unit, default_shape=default_shape),
+            cls.factory(dtype=dtype, ndim=ndim, unit=unit, default_shape=default_shape),
         ]
-
-
-# Turn the Hack into a singleton instance
-AstropyQuantity = _AstropyQuantity()

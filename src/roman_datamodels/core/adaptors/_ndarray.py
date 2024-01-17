@@ -17,6 +17,7 @@ from ._adaptor_tags import asdf_tags
 from ._base import Adaptor
 
 NDArrayLike = Union[np.ndarray, NDArrayType]
+_Factory = Union[DTypeLike, tuple[DTypeLike, PositiveInt]]
 
 
 class _NDArrayMeta(TypedDict):
@@ -58,7 +59,7 @@ def _validate_array(
     return array
 
 
-class _AsdfNdArrayPydanticAnnotation(Adaptor):
+class NdArray(Adaptor):
     """
     The pydantic adaptor for an numpy ndarray (and asdf NdArrayType).
 
@@ -214,22 +215,7 @@ class _AsdfNdArrayPydanticAnnotation(Adaptor):
             schema["ndim"] = cls.ndim
         return schema
 
-
-_Factory = Union[DTypeLike, tuple[DTypeLike, PositiveInt]]
-
-
-class _NdArray(Adaptor):
-    """
-    This is a Hack class to make the NdArray annotation "look" like how python annotations
-    typically look
-    """
-
-    @classmethod
-    def make_default(cls, **kwargs):
-        raise NotImplementedError("This cannot be called on this class")
-
-    @staticmethod
-    def __getitem__(factory: _Factory) -> type:
+    def __class_getitem__(cls, factory: _Factory) -> type:
         """Turn the typical python annotation style something suitable for Pydantic."""
         if not isinstance(factory, tuple):
             factory = (factory,)
@@ -246,9 +232,5 @@ class _NdArray(Adaptor):
                 NDArrayType,
                 np.ndarray[ndim if ndim else Any, dtype if dtype else dtype],
             ],
-            _AsdfNdArrayPydanticAnnotation.factory(dtype=dtype, ndim=ndim, default_shape=default_shape),
+            cls.factory(dtype=dtype, ndim=ndim, default_shape=default_shape),
         ]
-
-
-# Turn the Hack into a singleton instance
-NdArray = _NdArray()

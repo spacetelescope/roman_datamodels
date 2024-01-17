@@ -61,7 +61,7 @@ astropy_unit_schema = core_schema.no_info_wrap_validator_function(
 )
 
 
-class _AstropyUnitPydanticAnnotation(Adaptor):
+class AstropyUnit(Adaptor):
     """
     The pydantic adaptor for an astropy Unit.
 
@@ -179,19 +179,6 @@ class _AstropyUnitPydanticAnnotation(Adaptor):
 
         return {**schema, "enum": sorted(_get_unit_symbol(unit) for unit in cls.units)}
 
-
-class _AstropyUnit(Adaptor):
-    """Hack to make it look like it has the style of a type annotation."""
-
-    @classmethod
-    def make_default(cls, **kwargs):
-        raise NotImplementedError("This cannot be called on this class")
-
-    @staticmethod
-    def __getitem__(unit: Units = None) -> type:
+    def __class_getitem__(cls, unit: Units = None) -> type:
         """Turn the typical python annotation style something suitable for Pydantic."""
-        return Annotated[Unit, _AstropyUnitPydanticAnnotation.factory(unit=unit)]
-
-
-# Turn the Hack into a singleton instance
-AstropyUnit = _AstropyUnit()
+        return Annotated[Unit, cls.factory(unit=unit)]
