@@ -9,7 +9,9 @@ try:
 except ImportError:
     import warnings
 
-    warnings.warn("Failed to import the data model objects, attempting to run the generator.")
+    warnings.warn(
+        "Failed to import the data model objects.\nPlease re-run the generator or re-install roman_datamodels", ImportWarning
+    )
 
 
 def __getattr__(name):
