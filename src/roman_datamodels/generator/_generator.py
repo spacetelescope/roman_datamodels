@@ -10,7 +10,7 @@ from ._utils import get_rad_schema_path
 from ._writer import write_files
 
 
-def setup_files():
+def setup_files(write_path: Path | None = None):
     """
     Setup the pydantic models from the schemas.
 
@@ -18,8 +18,9 @@ def setup_files():
     -------
     Setup all the generated files
     """
-    write_path = Path(__file__).parent.parent / "datamodels" / "_generated"
-    write_path.mkdir(exist_ok=True)
+    if write_path is None:
+        write_path = Path(__file__).parent.parent / "datamodels" / "_generated"
+        write_path.mkdir(exist_ok=True)
 
     _generate_files(write_path, use_timestamp=False)
 
