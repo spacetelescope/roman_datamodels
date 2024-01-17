@@ -20,14 +20,14 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       envs: |
-        - linux: py39-oldestdeps-cov
+        - linux: py310-oldestdeps-cov
           coverage: codecov
-        - linux: py39
-        - linux: py310
+        - linux: py10
         - linux: py311
         - macos: py311
         - linux: py311-cov
           coverage: codecov
+        - linux: py312
   test_upstream:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
