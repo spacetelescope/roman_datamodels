@@ -1,18 +1,22 @@
 """
 This module contains the pydantic adaptor for an astropy units.
 """
+from __future__ import annotations
+
 __all__ = ["Unit", "AstropyUnit"]
 
 import warnings
-from typing import Annotated, Any, ClassVar, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Optional, Union
 
 import astropy.units as u
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
-from ._adaptor_tags import asdf_tags
-from ._base import Adaptor
+from ._base import Adaptor, AdaptorGen
+
+if TYPE_CHECKING:
+    from roman_datamodels.generator._schema import RadSchemaObject
 
 # This is due to the annoying fact that there is no root class for astropy units.
 #     This covers all the types supported by ASDF
@@ -69,6 +73,11 @@ class AstropyUnit(Adaptor):
     validate that a field is the right unit. Note that it supports a list of possible units
     """
 
+    _tags: ClassVar[tuple[str]] = (
+        "tag:astropy.org:astropy/units/unit-*",
+        "tag:stsci.edu:asdf/unit/unit-*",
+    )
+
     units: ClassVar[list[Unit] | None] = None
 
     @classmethod
@@ -109,6 +118,10 @@ class AstropyUnit(Adaptor):
             {"units": units},
         )
 
+    def __class_getitem__(cls, unit: Units = None) -> type:
+        """Turn the typical python annotation style something suitable for Pydantic."""
+        return Annotated[Unit, cls.factory(unit=unit)]
+
     @classmethod
     def make_default(cls, *, unit: Unit = None, **kwargs) -> u.Unit:
         """
@@ -130,6 +143,47 @@ class AstropyUnit(Adaptor):
             return u.dimensionless_unscaled
 
         return cls.units[0]
+
+    @classmethod
+    def _extract_code(cls, obj: RadSchemaObject, import_: str) -> tuple(str, str):
+        """
+        Partially write the code for this adaptor based on the parsed schema
+        """
+        # it is possible for there to be no additional unit specification
+        # it is also assumed that unit specification will be an enumerated list of
+        # valid astropy unit string(s)
+        type_ = None
+        if obj is not None and obj.enum is not None:
+            import_ += ", Unit"
+
+            # Transform the enum units into a python code snippet
+            units = [f'Unit("{u}")' for u in obj.enum]
+
+            if len(units) == 1:
+                # Reduce the units to a single unit if possible
+                type_ = units[0]
+            else:
+                # Otherwise join the units into a tuple
+                type_ = f"({', '.join(units)})"
+
+        # This is (
+        #   "<unit(s)>",
+        #   "<imports needed>", (note we assume AstropyUnit is fed into the import_ already, so this can
+        #                        be reused for AstropyQuantity)
+        # )
+        return type_, import_
+
+    @classmethod
+    def code_generator(cls, obj: RadSchemaObject) -> AdaptorGen:
+        """Create a representation of this adaptor for the schema generator."""
+        name = cls.__name__
+
+        # extract the base code for this adaptor
+        type_, import_ = cls._extract_code(obj, name)
+
+        # This is the code for the adaptor
+        #    AstropyUnit[<unit(s)>]
+        return AdaptorGen(type_=f"{name}[{type_}]", import_=import_)
 
     @classmethod
     def _units_schema(cls) -> core_schema.CoreSchema:
@@ -172,13 +226,9 @@ class AstropyUnit(Adaptor):
         """
         schema = {
             "title": None,
-            "tag": asdf_tags.ASTROPY_UNIT.value,
+            "tag": AstropyUnit._tags[0],
         }
         if cls.units is None:
             return schema
 
         return {**schema, "enum": sorted(_get_unit_symbol(unit) for unit in cls.units)}
-
-    def __class_getitem__(cls, unit: Units = None) -> type:
-        """Turn the typical python annotation style something suitable for Pydantic."""
-        return Annotated[Unit, cls.factory(unit=unit)]

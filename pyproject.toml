@@ -21,7 +21,6 @@ dependencies = [
     'rad @ git+https://github.com/WilliamJamieson/rad.git@feature/autogen_schema',
     'asdf-standard >=1.0.3',
     'pydantic >=2.5',
-    'StrEnum >=0.4; python_version <"3.11"',
 
 ]
 dynamic = ['version']
@@ -58,7 +57,6 @@ requires = [
     'asdf-astropy >=0.4.0',
     'datamodel-code-generator >=0.25',
     'pydantic >=2.5',
-    'StrEnum >=0.4; python_version <"3.11"',
     'rad @ git+https://github.com/WilliamJamieson/rad.git@feature/autogen_schema',
     "wheel",
 ]

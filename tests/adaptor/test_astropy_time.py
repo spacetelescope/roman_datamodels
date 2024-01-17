@@ -4,7 +4,7 @@ import pytest
 from astropy.time import Time
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.core.adaptors import AstropyTime, asdf_tags, get_adaptor
+from roman_datamodels.core.adaptors import AstropyTime, get_adaptor
 
 
 def test_time_validate():
@@ -49,7 +49,7 @@ def test_json_schema_return():
 
     TestModel.model_json_schema()["properties"]["time"] == {
         "title": None,
-        "tag": asdf_tags.ASTROPY_TIME.value,
+        "tag": AstropyTime._tags[0],
     }
 
 

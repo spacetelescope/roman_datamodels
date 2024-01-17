@@ -1,10 +1,12 @@
 """
 Define a Pydantic adaptor for a numpy ndarray (and asdf NDArrayType).
 """
+from __future__ import annotations
+
 __all__ = ["NdArray"]
 
 from collections.abc import Callable
-from typing import Annotated, Any, ClassVar, TypedDict, Union
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, TypedDict, Union
 
 import numpy as np
 from asdf.tags.core import NDArrayType
@@ -13,8 +15,10 @@ from pydantic import GetJsonSchemaHandler, PositiveInt
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
-from ._adaptor_tags import asdf_tags
-from ._base import Adaptor
+from ._base import Adaptor, AdaptorGen
+
+if TYPE_CHECKING:
+    from roman_datamodels.generator._schema import RadSchemaObject
 
 NDArrayLike = Union[np.ndarray, NDArrayType]
 _Factory = Union[DTypeLike, tuple[DTypeLike, PositiveInt]]
@@ -67,6 +71,8 @@ class NdArray(Adaptor):
     validate that a field is the right ndarray.
     """
 
+    _tags: ClassVar[tuple[str]] = ("tag:stsci.edu:asdf/core/ndarray-*",)
+
     dtype: ClassVar[DTypeLike | None]
     ndim: ClassVar[PositiveInt | None]
     default_shape: ClassVar[tuple[PositiveInt, ...] | None]
@@ -98,6 +104,26 @@ class NdArray(Adaptor):
                 "default_shape": default_shape,
             },
         )
+
+    def __class_getitem__(cls, factory: _Factory) -> type:
+        """Turn the typical python annotation style something suitable for Pydantic."""
+        if not isinstance(factory, tuple):
+            factory = (factory,)
+
+        if len(factory) < 1 or len(factory) > 3:
+            raise TypeError("NdArray requires a dtype and optionally a dimension.")
+
+        dtype: DTypeLike = factory[0]
+        ndim: int | None = factory[1] if len(factory) > 1 else None
+        default_shape: tuple[PositiveInt, ...] | None = factory[2] if len(factory) > 2 else None
+
+        return Annotated[
+            Union[
+                NDArrayType,
+                np.ndarray[ndim if ndim else Any, dtype if dtype else dtype],
+            ],
+            cls.factory(dtype=dtype, ndim=ndim, default_shape=default_shape),
+        ]
 
     @classmethod
     def make_default(
@@ -146,6 +172,48 @@ class NdArray(Adaptor):
             return np.array(fill, dtype=cls.dtype)
 
         return np.full(shape[-cls.ndim :], fill, dtype=cls.dtype)
+
+    @classmethod
+    def _extract_code(cls, obj: RadSchemaObject, import_: str) -> tuple(str, str, str):
+        """
+        Partially write the code for this adaptor based on the parsed schema
+        """
+        extras = obj.extras
+
+        # dtype is listed under "datatype"
+        dtype = extras.get("datatype", None)
+
+        # datatype may not be specified, in which case we don't need to import numpy
+        if dtype is not None:
+            # Turn the dtype string into a python code snippet
+            dtype = f"np.{dtype}"
+
+            # Include numpy in the imports
+            import_ += ", np"
+
+        default_shape = extras.get("default_shape", None)
+        if default_shape is not None:
+            default_shape = tuple(default_shape)
+
+        # This is (
+        #   "<dtype>, <ndim>",
+        #   "<default_shape>"",
+        #   "<imports needed>", (note we assume NdArray is fed into the import_ already, so this can
+        #                        be reused for AstropyQuantity)
+        # )
+        return f"{dtype}, {extras.get('ndim', None)}", default_shape, import_
+
+    @classmethod
+    def code_generator(cls, obj: RadSchemaObject) -> AdaptorGen:
+        """Create a representation of this adaptor for the schema generator."""
+        name = cls.__name__
+
+        # extract the base code for this adaptor
+        type_, default_shape, import_ = cls._extract_code(obj, name)
+
+        # This creates a string representation of the adaptor:
+        #    NdArray[<dtype>, <ndim>, <default_shape>]
+        return AdaptorGen(type_=f"{name}[{type_}, {default_shape}]", import_=import_)
 
     @classmethod
     def _dtype_schema(cls) -> core_schema.CoreSchema:
@@ -206,7 +274,7 @@ class NdArray(Adaptor):
         """
         schema = {
             "title": None,
-            "tag": asdf_tags.ND_ARRAY.value,
+            "tag": NdArray._tags[0],
         }
         if cls.dtype is not None:
             schema["datatype"] = cls.dtype.__name__
@@ -214,23 +282,3 @@ class NdArray(Adaptor):
         if cls.ndim is not None:
             schema["ndim"] = cls.ndim
         return schema
-
-    def __class_getitem__(cls, factory: _Factory) -> type:
-        """Turn the typical python annotation style something suitable for Pydantic."""
-        if not isinstance(factory, tuple):
-            factory = (factory,)
-
-        if len(factory) < 1 or len(factory) > 3:
-            raise TypeError("NdArray requires a dtype and optionally a dimension.")
-
-        dtype: DTypeLike = factory[0]
-        ndim: int | None = factory[1] if len(factory) > 1 else None
-        default_shape: tuple[PositiveInt, ...] | None = factory[2] if len(factory) > 2 else None
-
-        return Annotated[
-            Union[
-                NDArrayType,
-                np.ndarray[ndim if ndim else Any, dtype if dtype else dtype],
-            ],
-            cls.factory(dtype=dtype, ndim=ndim, default_shape=default_shape),
-        ]

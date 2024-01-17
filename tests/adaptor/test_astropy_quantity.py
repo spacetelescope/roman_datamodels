@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.core.adaptors import AstropyQuantity, asdf_tags, get_adaptor
+from roman_datamodels.core.adaptors import AstropyQuantity, AstropyUnit, NdArray, get_adaptor
 from roman_datamodels.core.adaptors._astropy_unit import _get_unit_symbol
 
 dtypes = (
@@ -169,7 +169,7 @@ def test_json_schema_return(dtype, ndim, unit):
     """
     truth = {
         "title": None,
-        "tag": asdf_tags.ASTROPY_QUANTITY.value,
+        "tag": AstropyQuantity._tags[0],
     }
     properties = {}
     value = {}
@@ -178,11 +178,11 @@ def test_json_schema_return(dtype, ndim, unit):
     if ndim is not None:
         value["ndim"] = ndim
     if value:
-        properties["value"] = {"title": None, "tag": asdf_tags.ND_ARRAY.value, **value}
+        properties["value"] = {"title": None, "tag": NdArray._tags[0], **value}
     if unit is not None:
         properties["unit"] = {
             "title": None,
-            "tag": asdf_tags.ASTROPY_UNIT.value,
+            "tag": AstropyUnit._tags[0],
             "enum": sorted(unit, key=_get_unit_symbol) if isinstance(unit, tuple) else [unit],
         }
     if properties:

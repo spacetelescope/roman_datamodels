@@ -2,7 +2,7 @@ import astropy.units as u
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.core.adaptors import AstropyUnit, asdf_tags, get_adaptor
+from roman_datamodels.core.adaptors import AstropyUnit, get_adaptor
 from roman_datamodels.core.adaptors._astropy_unit import _get_unit_symbol
 
 units_no_dimensionless = (u.s, u.DN, u.DN / u.s, (u.DN / u.s) ** 2, u.electron)
@@ -203,7 +203,7 @@ def test_json_schema_return(unit_type):
     print(unit_type)
     truth_base = {
         "title": None,
-        "tag": asdf_tags.ASTROPY_UNIT.value,
+        "tag": AstropyUnit._tags[0],
     }
 
     class TestModel0(BaseModel):

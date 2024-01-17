@@ -1,9 +1,11 @@
 """
 Define a Pydantic adaptor for an astropy Quantity.
 """
+from __future__ import annotations
+
 __all__ = ["AstropyQuantity"]
 
-from typing import Annotated, Any, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Optional, TypedDict, Union
 
 import astropy.units as u
 from numpy.typing import DTypeLike
@@ -11,9 +13,12 @@ from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler, PositiveInt
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
-from ._adaptor_tags import asdf_tags
 from ._astropy_unit import AstropyUnit, Unit, Units
+from ._base import AdaptorGen
 from ._ndarray import NdArray, NDArrayLike
+
+if TYPE_CHECKING:
+    from roman_datamodels.generator._schema import RadSchemaObject
 
 _Factory = Union[
     DTypeLike, tuple[Optional[DTypeLike], Optional[PositiveInt]], tuple[Optional[DTypeLike], Optional[PositiveInt], Units]
@@ -58,6 +63,8 @@ class AstropyQuantity(NdArray, AstropyUnit):
     validate that a field is the right quantity.
     """
 
+    _tags: ClassVar[tuple[str]] = ("tag:stsci.edu:asdf/unit/quantity-*",)
+
     @classmethod
     def factory(
         cls,
@@ -79,6 +86,24 @@ class AstropyQuantity(NdArray, AstropyUnit):
             (cls,),
             {"units": units, "dtype": dtype, "ndim": ndim, "default_shape": default_shape},
         )
+
+    def __class_getitem__(cls, factory: _Factory) -> type:
+        """Turn the typical python annotation style something suitable for Pydantic."""
+        if not isinstance(factory, tuple):
+            factory = (factory,)
+
+        if len(factory) < 1 or len(factory) > 4:
+            raise TypeError("AstropyQuantity requires a dtype.")
+
+        dtype: DTypeLike | None = factory[0]
+        ndim: PositiveInt | None = factory[1] if len(factory) > 2 else None
+        unit: Units = factory[2] if len(factory) > 1 else None
+        default_shape: tuple[PositiveInt, ...] | None = factory[3] if len(factory) > 3 else None
+
+        return Annotated[
+            u.Quantity,
+            cls.factory(dtype=dtype, ndim=ndim, unit=unit, default_shape=default_shape),
+        ]
 
     @classmethod
     def make_default(
@@ -112,6 +137,50 @@ class AstropyQuantity(NdArray, AstropyUnit):
         unit = super(NdArray, cls).make_default(unit=unit, **kwargs)
 
         return u.Quantity(array, unit=unit, dtype=cls.dtype)
+
+    @classmethod
+    def _extract_code(cls, obj: RadSchemaObject, import_: str) -> tuple(str, str):
+        """
+        Partially write the code for this adaptor based on the parsed schema
+        """
+        default_shape = None
+
+        # Scalar quantities are represented using only "datatype" and "unit", with no "value" key.
+        # Non-scalar quantities are represented using "value" and "unit", with no "datatype" key.
+        #   the "value" key is an ndarray representation
+        if "datatype" in obj:
+            # Scalar case
+            import_ += ", np"
+
+            # Scalar quantities have datatype defined as an enum and ndim = 0
+            value = f"np.{obj['datatype'].enum[0]}, 0"  # scalar ndim = 0
+        else:
+            # Non-scalar case -> treat the value as an ndarray
+            value = obj.get("value", "None, None")
+            if value is not None:
+                # Get the information for an NdArray annotation
+                value, default_shape, import_ = super()._extract_code(value, import_)
+
+        # Get the information for a unit annotation
+        unit = obj.get("unit", None)
+        unit, import_ = super(NdArray, cls)._extract_code(unit, import_)
+
+        # Build arguments for AstropyQuantity
+        type_ = f"{value}, {unit}, {default_shape}"
+
+        return type_, import_
+
+    @classmethod
+    def code_generator(cls, obj: RadSchemaObject) -> AdaptorGen:
+        """Create a representation of this adaptor for the schema generator."""
+        name = cls.__name__
+
+        # extract the base code for this adaptor
+        type_, import_ = cls._extract_code(obj.properties, name)
+
+        # This is the code for the adaptor
+        #    AstropyQuantity[<dtype>, <ndim>, <unit>, <default_shape>]
+        return AdaptorGen(type_=f"{name}[{type_}]", import_=import_)
 
     @classmethod
     def _value_schema(
@@ -191,7 +260,7 @@ class AstropyQuantity(NdArray, AstropyUnit):
         """
         schema = {
             "title": None,
-            "tag": asdf_tags.ASTROPY_QUANTITY.value,
+            "tag": AstropyQuantity._tags[0],
         }
         if cls.units is None and cls.dtype is None and cls.ndim is None:
             return schema
@@ -207,21 +276,3 @@ class AstropyQuantity(NdArray, AstropyUnit):
         schema["properties"] = properties_schema
 
         return schema
-
-    def __class_getitem__(cls, factory: _Factory) -> type:
-        """Turn the typical python annotation style something suitable for Pydantic."""
-        if not isinstance(factory, tuple):
-            factory = (factory,)
-
-        if len(factory) < 1 or len(factory) > 4:
-            raise TypeError("AstropyQuantity requires a dtype.")
-
-        dtype: DTypeLike | None = factory[0]
-        ndim: PositiveInt | None = factory[1] if len(factory) > 2 else None
-        unit: Units = factory[2] if len(factory) > 1 else None
-        default_shape: tuple[PositiveInt, ...] | None = factory[3] if len(factory) > 3 else None
-
-        return Annotated[
-            u.Quantity,
-            cls.factory(dtype=dtype, ndim=ndim, unit=unit, default_shape=default_shape),
-        ]

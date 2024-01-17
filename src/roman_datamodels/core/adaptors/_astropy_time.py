@@ -1,25 +1,75 @@
 """
 Define a Pydantic adaptor for an astropy Time.
 """
+from __future__ import annotations
+
 __all__ = ["AstropyTime"]
 
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar
 
 from astropy.time import Time
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
-from ._adaptor_tags import asdf_tags
-from ._base import Adaptor
+from ._base import Adaptor, AdaptorGen
+
+if TYPE_CHECKING:
+    from roman_datamodels.generator._schema import RadSchemaObject
 
 
-class _AstropyTimePydanticAnnotation(Adaptor):
+class AstropyTime(Adaptor):
     """
     The pydantic adaptor for an astropy Time.
 
     This does not allow any constraints on the time, it basically does an isinstance check.
     """
+
+    _tags: ClassVar[tuple[str]] = ("tag:stsci.edu:asdf/time/time-*",)
+
+    @classmethod
+    def factory(cls, **kwargs) -> type:
+        """
+        Generate a new AstropyTime type constrained to the values given.
+
+        Parameters
+        ----------
+        kwargs
+            The values to constrain the type to.
+
+        Returns
+        -------
+        The new type.
+        """
+
+        return cls
+
+    @classmethod
+    def __class_getitem__(cls, factory: None) -> type:
+        """Make this consistent with the other adaptors."""
+
+        return Annotated[Time, cls.factory()]
+
+    @classmethod
+    def make_default(cls, **kwargs) -> Time:
+        """
+        Create a default instance of the time
+
+        Returns
+        -------
+        The default time: 2020-01-01T00:00:00.0
+        """
+
+        return Time("2020-01-01T00:00:00.000", format="isot", scale="utc")
+
+    @classmethod
+    def code_generator(cls, obj: RadSchemaObject) -> AdaptorGen:
+        """Create a representation of this adaptor for the schema generator."""
+        name = cls.__name__
+
+        # This is the code for the adaptor
+        #    AstropyTime[None]
+        return AdaptorGen(type_=f"{name}[None]", import_=name)
 
     @classmethod
     def __get_pydantic_core_schema__(
@@ -61,21 +111,5 @@ class _AstropyTimePydanticAnnotation(Adaptor):
         """
         return {
             "title": None,
-            "tag": asdf_tags.ASTROPY_TIME.value,
+            "tag": AstropyTime._tags[0],
         }
-
-    @classmethod
-    def make_default(cls, **kwargs) -> Time:
-        """
-        Create a default instance of the time
-
-        Returns
-        -------
-        The default time: 2020-01-01T00:00:00.0
-        """
-
-        return Time("2020-01-01T00:00:00.000", format="isot", scale="utc")
-
-
-# Create an annotated type alias for the annotation
-AstropyTime = Annotated[Time, _AstropyTimePydanticAnnotation]

@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from roman_datamodels.core.adaptors import NdArray, asdf_tags, get_adaptor
+from roman_datamodels.core.adaptors import NdArray, get_adaptor
 
 dtypes = (
     None,
@@ -188,7 +188,7 @@ def test_type_annotation_fails():
 def test_json_schema_return(dtype, ndim):
     truth = {
         "title": None,
-        "tag": asdf_tags.ND_ARRAY.value,
+        "tag": NdArray._tags[0],
     }
     if dtype is not None:
         truth["datatype"] = dtype.__name__
