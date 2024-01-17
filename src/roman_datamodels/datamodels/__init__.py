@@ -11,12 +11,6 @@ except ImportError:
 
     warnings.warn("Failed to import the data model objects, attempting to run the generator.")
 
-    from roman_datamodels.generator import setup_files
-
-    setup_files()
-
-    from ._generated import *  # noqa: F403
-
 
 def __getattr__(name):
     """Allow use of deprecated model names"""
