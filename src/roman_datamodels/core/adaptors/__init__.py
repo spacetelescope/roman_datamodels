@@ -6,6 +6,7 @@ __all__ = [
     "AstropyUnit",
     "AstropyQuantity",
     "NdArray",
+    "GwcsWcs",
     "Units",
     "np",
     "Unit",
@@ -22,6 +23,7 @@ from ._astropy_quantity import AstropyQuantity
 from ._astropy_time import AstropyTime
 from ._astropy_unit import AstropyUnit, Units
 from ._base import Adaptor, get_adaptor, is_adaptor
+from ._gwcs_wcs import GwcsWcs
 from ._ndarray import NdArray
 
 # Auto build map from tag key to adaptor name

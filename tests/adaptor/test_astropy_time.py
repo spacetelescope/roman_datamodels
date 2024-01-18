@@ -13,7 +13,7 @@ def test_time_validate():
     """
 
     class TestModel(BaseModel):
-        time: AstropyTime
+        time: AstropyTime[None]
 
     time = Time("2020-01-01T00:00:00.000")
     model = TestModel(time=time)
@@ -27,7 +27,7 @@ def test_non_time():
     """
 
     class TestModel(BaseModel):
-        time: AstropyTime
+        time: AstropyTime[None]
 
     with pytest.raises(ValidationError):
         TestModel(time="2020-01-01T00:00:00.000")
@@ -45,7 +45,7 @@ def test_json_schema_return():
     """
 
     class TestModel(BaseModel):
-        time: AstropyTime
+        time: AstropyTime[None]
 
     TestModel.model_json_schema()["properties"]["time"] == {
         "title": None,
@@ -55,4 +55,4 @@ def test_json_schema_return():
 
 def test_make_default():
     """Test make a default"""
-    assert get_adaptor(AstropyTime).make_default() == Time("2020-01-01T00:00:00.000", format="isot", scale="utc")
+    assert get_adaptor(AstropyTime[None]).make_default() == Time("2020-01-01T00:00:00.000", format="isot", scale="utc")
