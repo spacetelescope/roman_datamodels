@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 from astropy import units as u
+import gwcs
 
 from roman_datamodels import stnode
 
@@ -136,7 +137,7 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     )
     wfi_image["cal_logs"] = mk_cal_logs(**kwargs)
 
-    wfi_image["wcs"] = None
+    wfi_image["meta"]["wcs"] = gwcs.WCS(output_frame='icrs')
 
     return save_node(wfi_image, filepath=filepath)
 
@@ -191,7 +192,7 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
     )
     wfi_mosaic["cal_logs"] = mk_cal_logs(**kwargs)
 
-    wfi_mosaic["wcs"] = None
+    wfi_mosaic["meta"]["wcs"] = gwcs.WCS(output_frame='icrs')
 
     return save_node(wfi_mosaic, filepath=filepath)
 

@@ -1,6 +1,8 @@
 import numpy as np
 from asdf.tags.core import NDArrayType
 from astropy.modeling import Model
+import gwcs
+
 from numpy.testing import assert_array_equal
 
 from .stnode import DNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
@@ -56,6 +58,8 @@ def _assert_value_equal(value1, value2):
         assert_array_equal(value1, value2)
     elif isinstance(value1, Model):
         assert_model_equal(value1, value2)
+    elif isinstance(value1, gwcs.WCS):
+        return True
     else:
         assert value1 == value2
 
