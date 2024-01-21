@@ -22,8 +22,12 @@ __all__ = [
 # Load the manifest directly from the rad resources and not from ASDF.
 #   This is because the ASDF extensions have to be created before they can be registered
 #   and this module creates the classes used by the ASDF extension.
-DATAMODELS_MANIFEST_PATH = importlib.resources.files(resources) / "manifests" / "datamodels-1.0.yaml"
-DATAMODELS_MANIFEST = yaml.safe_load(DATAMODELS_MANIFEST_PATH.read_bytes())
+DATAMODELS_MANIFEST_PATHS = [
+    importlib.resources.files(resources) / "manifests" / "datamodels-1.0.yaml",
+    importlib.resources.files(resources) / "manifests" / "datamodels-2.0.0.dev.yaml",
+]
+DATAMODELS_MANIFESTS = [yaml.safe_load(manifest.read_bytes()) for manifest in DATAMODELS_MANIFEST_PATHS]
+TAG_DEFS_BY_TAG = {tag_def["tag_uri"]: tag_def for manifest in DATAMODELS_MANIFESTS for tag_def in manifest["tags"]}
 
 
 def _factory(tag):
@@ -40,8 +44,8 @@ def _factory(tag):
 
 # Main dynamic class creation loop
 #   Reads each tag entry from the manifest and creates a class for it
-for tag in DATAMODELS_MANIFEST["tags"]:
-    _factory(tag)
+for tag_def in TAG_DEFS_BY_TAG.values():
+    _factory(tag_def)
 
 
 # List of node classes made available by this library.

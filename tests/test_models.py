@@ -14,7 +14,7 @@ from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode, validate
 from roman_datamodels.testing import assert_node_equal
 
-from .conftest import MANIFEST
+from .conftest import MANIFESTS
 
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
@@ -23,12 +23,13 @@ def datamodel_names():
     names = []
 
     extension_manager = asdf.AsdfFile().extension_manager
-    for tag in MANIFEST["tags"]:
-        schema_uri = extension_manager.get_tag_definition(tag["tag_uri"]).schema_uris[0]
-        schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
+    for manifest in MANIFESTS:
+        for tag in manifest["tags"]:
+            schema_uri = extension_manager.get_tag_definition(tag["tag_uri"]).schema_uris[0]
+            schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
 
-        if "datamodel_name" in schema:
-            names.append(schema["datamodel_name"])
+            if "datamodel_name" in schema:
+                names.append(schema["datamodel_name"])
 
     return names
 

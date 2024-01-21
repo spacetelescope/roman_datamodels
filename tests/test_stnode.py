@@ -12,10 +12,10 @@ from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode, validate
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
-from .conftest import MANIFEST
+from .conftest import MANIFESTS
 
 
-@pytest.mark.parametrize("tag", MANIFEST["tags"])
+@pytest.mark.parametrize("tag", [tag for manifest in MANIFESTS for tag in manifest["tags"]])
 def test_generated_node_classes(tag):
     class_name = stnode._factories.class_name_from_tag_uri(tag["tag_uri"])
     node_class = getattr(stnode, class_name)
