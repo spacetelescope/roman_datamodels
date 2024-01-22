@@ -8,7 +8,6 @@ import copy
 import asdf
 
 from ._node import DNode, LNode
-from ._registry import SCALAR_NODE_CLASSES_BY_KEY
 
 __all__ = [
     "TaggedObjectNode",
@@ -31,18 +30,6 @@ def get_schema_from_tag(ctx, tag):
     schema_uri = ctx.extension_manager.get_tag_definition(tag).schema_uris[0]
 
     return asdf.schema.load_schema(schema_uri, resolve_references=True)
-
-
-def name_from_tag_uri(tag_uri):
-    """
-    Compute the name of the schema from the tag_uri.
-
-    Parameters
-    ----------
-    tag_uri : str
-        The tag_uri to find the name from
-    """
-    return tag_uri.split("/")[-1].split("-")[0]
 
 
 class TaggedObjectNode(DNode):
@@ -103,7 +90,6 @@ class TaggedScalarNode:
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedScalarNode":
             cls.__module__ = "roman_datamodels.stnode"
-            SCALAR_NODE_CLASSES_BY_KEY[name_from_tag_uri(cls._tag)] = cls
 
     @property
     def ctx(self):
@@ -117,10 +103,6 @@ class TaggedScalarNode:
     @property
     def tag(self):
         return self._tag
-
-    @property
-    def key(self):
-        return name_from_tag_uri(self._tag)
 
     def get_schema(self):
         return get_schema_from_tag(self.ctx, self._tag)

@@ -1,5 +1,6 @@
 from astropy.time import Time
 
+from ._registry import SCALAR_NODE_CLASSES_BY_KEY
 from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 
@@ -34,6 +35,22 @@ class SdfSoftwareVersion(str, TaggedScalarNode):
 
 class Telescope(str, TaggedScalarNode):
     _tag = "asdf://stsci.edu/datamodels/roman/tags/telescope-1.0.0"
+
+
+# these keys are special and cannot be used anywhere as the value
+# stored with the key will be converted to the following nodes
+SCALAR_NODE_CLASSES_BY_KEY.update(
+    {
+        "calibration_software_version": CalibrationSoftwareVersion,
+        "filename": Filename,
+        "file_date": FileDate,
+        "model_type": ModelType,
+        "origin": Origin,
+        "prd_software_version": PrdSoftwareVersion,
+        "sdf_software_version": SdfSoftwareVersion,
+        "telescope": Telescope,
+    }
+)
 
 
 # lnodes
