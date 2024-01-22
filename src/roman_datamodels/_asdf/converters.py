@@ -1,10 +1,11 @@
 """
 The ASDF Converters to handle the serialization/deseialization of the STNode classes to ASDF.
 """
-from asdf.extension import Converter, ManifestExtension
-from astropy.time import Time
+import importlib
 
-from roman_datamodels.stnode._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
+from asdf.extension import Converter, ManifestExtension
+from asdf.util import uri_match
+from astropy.time import Time
 
 from .manifest import MANIFESTS
 
@@ -15,7 +16,16 @@ __all__ = [
 ]
 
 
-class TaggedObjectNodeConverter(Converter):
+class _RomanConverter(Converter):
+    def lookup_type(self, tag):
+        for tag_pattern in self.tag_pattern_to_type_string:
+            if uri_match(tag_pattern, tag):
+                type_string = self.tag_pattern_to_type_string[tag_pattern]
+                module_name, class_name = type_string.rsplit(".", maxsplit=1)
+                return getattr(importlib.import_module(module_name), class_name)
+
+
+class TaggedObjectNodeConverter(_RomanConverter):
     """
     Converter for all subclasses of TaggedObjectNode.
     """
@@ -106,13 +116,7 @@ class TaggedObjectNodeConverter(Converter):
         "roman_datamodels.stnode.MsosStack",
     )
 
-    @property
-    def tags(self):
-        return list(OBJECT_NODE_CLASSES_BY_TAG.keys())
-
-    @property
-    def types(self):
-        return list(OBJECT_NODE_CLASSES_BY_TAG.values())
+    tag_pattern_to_type_string = dict(zip(tags, types))
 
     def select_tag(self, obj, tags, ctx):
         return obj.tag
@@ -121,10 +125,10 @@ class TaggedObjectNodeConverter(Converter):
         return obj._data
 
     def from_yaml_tree(self, node, tag, ctx):
-        return OBJECT_NODE_CLASSES_BY_TAG[tag](node)
+        return self.lookup_type(tag)(node)
 
 
-class TaggedListNodeConverter(Converter):
+class TaggedListNodeConverter(_RomanConverter):
     """
     Converter for all subclasses of TaggedListNode.
     """
@@ -133,6 +137,8 @@ class TaggedListNodeConverter(Converter):
 
     types = ("roman_datamodels.stnode.CalLogs",)
 
+    tag_pattern_to_type_string = dict(zip(tags, types))
+
     def select_tag(self, obj, tags, ctx):
         return obj.tag
 
@@ -140,10 +146,10 @@ class TaggedListNodeConverter(Converter):
         return list(obj)
 
     def from_yaml_tree(self, node, tag, ctx):
-        return LIST_NODE_CLASSES_BY_TAG[tag](node)
+        return self.lookup_type(tag)(node)
 
 
-class TaggedScalarNodeConverter(Converter):
+class TaggedScalarNodeConverter(_RomanConverter):
     """
     Converter for all subclasses of TaggedScalarNode.
     """
@@ -170,6 +176,8 @@ class TaggedScalarNodeConverter(Converter):
         "roman_datamodels.stnode.Telescope",
     )
 
+    tag_pattern_to_type_string = dict(zip(tags, types))
+
     def select_tag(self, obj, tags, ctx):
         return obj.tag
 
@@ -185,13 +193,11 @@ class TaggedScalarNodeConverter(Converter):
         return node
 
     def from_yaml_tree(self, node, tag, ctx):
-        from roman_datamodels.stnode._nodes import FileDate
-
-        if tag == FileDate._tag:
+        if "file_date" in tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
 
-        return SCALAR_NODE_CLASSES_BY_TAG[tag](node)
+        return self.lookup_type(tag)(node)
 
 
 NODE_CONVERTERS = [TaggedObjectNodeConverter(), TaggedListNodeConverter(), TaggedScalarNodeConverter()]
