@@ -52,7 +52,7 @@ def test_node_type_matches_model(model):
     """
     node_type = model._node_type
     node = utils.mk_node(node_type, shape=(8, 8, 8))
-    schema = node.get_schema()
+    schema = node._schema()
     name = schema["datamodel_name"]
 
     assert model.__name__ == name

@@ -24,6 +24,18 @@ class _RomanConverter(Converter):
                 module_name, class_name = type_string.rsplit(".", maxsplit=1)
                 return getattr(importlib.import_module(module_name), class_name)
 
+    def select_tag(self, obj, tags, ctx):
+        class_ = obj.__class__
+        type_string = ".".join((class_.__module__, class_.__name__))
+        tag_pattern = self.type_string_to_tag_pattern[type_string]
+        for tag in tags:
+            if uri_match(tag_pattern, tag):
+                return tag
+        return obj.tag
+
+    def from_yaml_tree(self, node, tag, ctx):
+        return self.lookup_type(tag)(node)
+
 
 class TaggedObjectNodeConverter(_RomanConverter):
     """
@@ -117,15 +129,10 @@ class TaggedObjectNodeConverter(_RomanConverter):
     )
 
     tag_pattern_to_type_string = dict(zip(tags, types))
-
-    def select_tag(self, obj, tags, ctx):
-        return obj.tag
+    type_string_to_tag_pattern = {v: k for k, v in tag_pattern_to_type_string.items()}
 
     def to_yaml_tree(self, obj, tag, ctx):
         return obj._data
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return self.lookup_type(tag)(node)
 
 
 class TaggedListNodeConverter(_RomanConverter):
@@ -138,15 +145,10 @@ class TaggedListNodeConverter(_RomanConverter):
     types = ("roman_datamodels.stnode.CalLogs",)
 
     tag_pattern_to_type_string = dict(zip(tags, types))
-
-    def select_tag(self, obj, tags, ctx):
-        return obj.tag
+    type_string_to_tag_pattern = {v: k for k, v in tag_pattern_to_type_string.items()}
 
     def to_yaml_tree(self, obj, tag, ctx):
         return list(obj)
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return self.lookup_type(tag)(node)
 
 
 class TaggedScalarNodeConverter(_RomanConverter):
@@ -177,16 +179,12 @@ class TaggedScalarNodeConverter(_RomanConverter):
     )
 
     tag_pattern_to_type_string = dict(zip(tags, types))
-
-    def select_tag(self, obj, tags, ctx):
-        return obj.tag
+    type_string_to_tag_pattern = {v: k for k, v in tag_pattern_to_type_string.items()}
 
     def to_yaml_tree(self, obj, tag, ctx):
-        from roman_datamodels.stnode._nodes import FileDate
-
         node = obj.__class__.__bases__[0](obj)
 
-        if tag == FileDate._tag:
+        if "file_date" in tag:
             converter = ctx.extension_manager.get_converter_for_type(type(node))
             node = converter.to_yaml_tree(node, tag, ctx)
 
@@ -197,7 +195,7 @@ class TaggedScalarNodeConverter(_RomanConverter):
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
 
-        return self.lookup_type(tag)(node)
+        return super().from_yaml_tree(node, tag, ctx)
 
 
 NODE_CONVERTERS = [TaggedObjectNodeConverter(), TaggedListNodeConverter(), TaggedScalarNodeConverter()]

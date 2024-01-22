@@ -16,22 +16,6 @@ __all__ = [
 ]
 
 
-def get_schema_from_tag(ctx, tag):
-    """
-    Look up and load ASDF's schema corresponding to the tag_uri.
-
-    Parameters
-    ----------
-    ctx :
-        An ASDF file context.
-    tag : str
-        The tag_uri of the schema to load.
-    """
-    schema_uri = ctx.extension_manager.get_tag_definition(tag).schema_uris[0]
-
-    return asdf.schema.load_schema(schema_uri, resolve_references=True)
-
-
 class TaggedObjectNode(DNode):
     """
     Base class for all tagged objects defined by RAD
@@ -50,12 +34,9 @@ class TaggedObjectNode(DNode):
 
     def _schema(self):
         if self._x_schema is None:
-            self._x_schema = self.get_schema()
+            schema_uri = self.ctx.extension_manager.get_tag_definition(self._tag).schema_uris[0]
+            self._x_schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
         return self._x_schema
-
-    def get_schema(self):
-        """Retrieve the schema associated with this tag"""
-        return get_schema_from_tag(self.ctx, self._tag)
 
 
 class TaggedListNode(LNode):
@@ -103,9 +84,6 @@ class TaggedScalarNode:
     @property
     def tag(self):
         return self._tag
-
-    def get_schema(self):
-        return get_schema_from_tag(self.ctx, self._tag)
 
     def copy(self):
         return copy.copy(self)
