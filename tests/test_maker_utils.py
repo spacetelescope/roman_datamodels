@@ -12,8 +12,10 @@ from roman_datamodels.datamodels._datamodels import _RomanDataModel
 from roman_datamodels.maker_utils import _ref_files as ref_files
 from roman_datamodels.testing import assert_node_equal
 
+from .conftest import NODE_CLASSES, TAGGED_OBJECT_NODES
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+
+@pytest.mark.parametrize("node_class", NODE_CLASSES)
 def test_maker_utility_implemented(node_class):
     """
     Confirm that a subclass of TaggedObjectNode has a maker utility.
@@ -24,7 +26,7 @@ def test_maker_utility_implemented(node_class):
     assert isinstance(instance, node_class)
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.parametrize("node_class", NODE_CLASSES)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_instance_valid(node_class):
@@ -37,7 +39,7 @@ def test_instance_valid(node_class):
         af.validate()
 
 
-@pytest.mark.parametrize("node_class", [c for c in stnode.NODE_CLASSES if issubclass(c, stnode.TaggedObjectNode)])
+@pytest.mark.parametrize("node_class", TAGGED_OBJECT_NODES)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_no_extra_fields(node_class, manifest):
@@ -58,7 +60,7 @@ def test_no_extra_fields(node_class, manifest):
     assert len(diff) == 0, "Dummy instance has extra keys: " + ", ".join(diff)
 
 
-@pytest.mark.parametrize("name", [c.__name__ for c in stnode.NODE_CLASSES if c.__name__.endswith("Ref")])
+@pytest.mark.parametrize("name", [c.__name__ for c in NODE_CLASSES if c.__name__.endswith("Ref")])
 def test_ref_files_all(name):
     """
     Meta test to confirm that the __all__ in _ref_files.py has an entry for every ref file maker.

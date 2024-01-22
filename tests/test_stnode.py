@@ -12,8 +12,10 @@ from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode, validate
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
+from .conftest import NODE_CLASSES
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+
+@pytest.mark.parametrize("node_class", NODE_CLASSES)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_copy(node_class):
@@ -69,7 +71,7 @@ def test_wfi_mode():
     assert isinstance(node, stnode.DNode)
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.parametrize("node_class", NODE_CLASSES)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_serialization(node_class, tmp_path):
