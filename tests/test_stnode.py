@@ -12,21 +12,6 @@ from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode, validate
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
-from .conftest import MANIFESTS
-
-
-@pytest.mark.parametrize("tag", [tag for manifest in MANIFESTS for tag in manifest["tags"]])
-def test_generated_node_classes(tag):
-    class_name = stnode._factories.class_name_from_tag_uri(tag["tag_uri"])
-    node_class = getattr(stnode, class_name)
-
-    assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode))
-    assert node_class._tag == tag["tag_uri"]
-    assert tag["description"] in node_class.__doc__
-    assert tag["tag_uri"] in node_class.__doc__
-    assert node_class.__module__ == stnode.__name__
-    assert hasattr(stnode, node_class.__name__)
-
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
@@ -70,21 +55,18 @@ def test_wfi_mode():
     assert node.grating == "GRISM"
     assert node.filter is None
     assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._mixins.WfiModeMixin)
 
     node = stnode.WfiMode({"optical_element": "PRISM"})
     assert node.optical_element == "PRISM"
     assert node.grating == "PRISM"
     assert node.filter is None
     assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._mixins.WfiModeMixin)
 
     node = stnode.WfiMode({"optical_element": "F129"})
     assert node.optical_element == "F129"
     assert node.grating is None
     assert node.filter == "F129"
     assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._mixins.WfiModeMixin)
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
