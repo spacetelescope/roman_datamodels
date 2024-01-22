@@ -49,7 +49,7 @@ docs = [
 'repository' = 'https://github.com/spacetelescope/roman_datamodels'
 
 [project.entry-points]
-'asdf.extensions' = { roman_datamodels = 'roman_datamodels.stnode._integration:get_extensions' }
+'asdf.extensions' = { roman_datamodels = 'roman_datamodels._asdf.integration:get_extensions' }
 
 [build-system]
 requires = ["setuptools >=61", "setuptools_scm[toml] >=3.4", "wheel"]

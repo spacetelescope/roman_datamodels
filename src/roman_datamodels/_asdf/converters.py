@@ -4,7 +4,12 @@ The ASDF Converters to handle the serialization/deseialization of the STNode cla
 from asdf.extension import Converter, ManifestExtension
 from astropy.time import Time
 
-from ._registry import LIST_NODE_CLASSES_BY_TAG, NODE_CONVERTERS, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
+from roman_datamodels.stnode._registry import (
+    LIST_NODE_CLASSES_BY_TAG,
+    NODE_CONVERTERS,
+    OBJECT_NODE_CLASSES_BY_TAG,
+    SCALAR_NODE_CLASSES_BY_TAG,
+)
 
 __all__ = [
     "TaggedObjectNodeConverter",
@@ -95,7 +100,7 @@ class TaggedScalarNodeConverter(_RomanConverter):
         return obj.tag
 
     def to_yaml_tree(self, obj, tag, ctx):
-        from ._nodes import FileDate
+        from roman_datamodels.stnode._nodes import FileDate
 
         node = obj.__class__.__bases__[0](obj)
 
@@ -106,7 +111,7 @@ class TaggedScalarNodeConverter(_RomanConverter):
         return node
 
     def from_yaml_tree(self, node, tag, ctx):
-        from ._nodes import FileDate
+        from roman_datamodels.stnode._nodes import FileDate
 
         if tag == FileDate._tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
