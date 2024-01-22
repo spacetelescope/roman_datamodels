@@ -7,6 +7,8 @@
 
 - Added documentation for ``stnode``. [#316]
 
+- Change ``pass`` keyword to ``pass_number`` to avoid keyword collision with python syntax. [#306]
+
 0.19.0 (2024-02-09)
 ===================
 
