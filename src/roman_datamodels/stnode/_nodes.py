@@ -6,35 +6,35 @@ from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 # define scalars
 class CalibrationSoftwareVersion(str, TaggedScalarNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/calibration_software_version-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/calibration_software_version-*"
 
 
 class Filename(str, TaggedScalarNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/filename-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/filename-*"
 
 
 class FileDate(Time, TaggedScalarNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/file_date-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/file_date-*"
 
 
 class ModelType(str, TaggedScalarNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/model_type-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/model_type-*"
 
 
 class Origin(str, TaggedScalarNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/origin-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/origin-*"
 
 
 class PrdSoftwareVersion(str, TaggedScalarNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/prd_software_version-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/prd_software_version-*"
 
 
 class SdfSoftwareVersion(str, TaggedScalarNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/sdf_software_version-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/sdf_software_version-*"
 
 
 class Telescope(str, TaggedScalarNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/telescope-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/telescope-*"
 
 
 # these keys are special and cannot be used anywhere as the value
@@ -55,37 +55,37 @@ SCALAR_NODE_CLASSES_BY_KEY.update(
 
 # lnodes
 class CalLogs(TaggedListNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/cal_logs-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/cal_logs-*"
 
 
 # dnodes
 class Guidewindow(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/guidewindow-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/guidewindow-*"
 
 
 class Ramp(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/ramp-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/ramp-*"
 
 
 class RampFitOutput(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/ramp_fit_output-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/ramp_fit_output-*"
 
 
 class WfiScienceRaw(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_science_raw-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/wfi_science_raw-*"
 
 
 class WfiImage(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_image-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/wfi_image-*"
 
 
 class WfiMosaic(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_mosaic-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/wfi_mosaic-*"
 
 
 class WfiMode(TaggedObjectNode):
     _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-*"
 
     @property
     def filter(self):
@@ -103,132 +103,132 @@ class WfiMode(TaggedObjectNode):
 
 
 class Exposure(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/exposure-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/exposure-*"
 
 
 class Program(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/program-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/program-*"
 
 
 class Observation(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/observation-*"
 
 
 class Ephemeris(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/ephemeris-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/ephemeris-*"
 
 
 class Visit(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/visit-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/visit-*"
 
 
 class Photometry(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/photometry-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/photometry-*"
 
 
 class SourceDetection(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/source_detection-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/source_detection-*"
 
 
 class Coordinates(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/coordinates-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/coordinates-*"
 
 
 class Aperture(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/aperture-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/aperture-*"
 
 
 class Pointing(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/pointing-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/pointing-*"
 
 
 class Target(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/target-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/target-*"
 
 
 class VelocityAberration(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/velocity_aberration-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/velocity_aberration-*"
 
 
 class Wcsinfo(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/wcsinfo-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/wcsinfo-*"
 
 
 class Guidestar(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/guidestar-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/guidestar-*"
 
 
 class CalStep(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/cal_step-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/cal_step-*"
 
 
 class Resample(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/resample-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/resample-*"
 
 
 class DarkRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/dark-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/dark-*"
 
 
 class DistortionRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/distortion-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/distortion-*"
 
 
 class FlatRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/flat-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/flat-*"
 
 
 class GainRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/gain-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/gain-*"
 
 
 class InverselinearityRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/inverselinearity-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/inverselinearity-*"
 
 
 class IpcRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/ipc-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/ipc-*"
 
 
 class LinearityRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/linearity-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/linearity-*"
 
 
 class MaskRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/mask-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/mask-*"
 
 
 class PixelareaRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/pixelarea-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/pixelarea-*"
 
 
 class ReadnoiseRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/readnoise-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/readnoise-*"
 
 
 class RefpixRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/refpix-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/refpix-*"
 
 
 class SaturationRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/saturation-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/saturation-*"
 
 
 class SuperbiasRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/superbias-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/superbias-*"
 
 
 class WfiImgPhotomRef(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/reference_files/wfi_img_photom-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/reference_files/wfi_img_photom-*"
 
 
 class Associations(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/associations-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/associations-*"
 
 
 class RefFile(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/ref_file-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/ref_file-*"
 
 
 class MsosStack(TaggedObjectNode):
-    _tag = "asdf://stsci.edu/datamodels/roman/tags/msos_stack-1.0.0"
+    _tag_pattern = "asdf://stsci.edu/datamodels/roman/tags/msos_stack-*"

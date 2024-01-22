@@ -126,7 +126,6 @@ class DNode(MutableMapping):
     Base class describing all "object" (dict-like) data nodes for STNode classes.
     """
 
-    _tag = None
     _ctx = None
 
     def __init__(self, node=None, parent=None, name=None):
@@ -281,8 +280,6 @@ class LNode(UserList):
     """
     Base class describing all "array" (list-like) data nodes for STNode classes.
     """
-
-    _tag = None
 
     def __init__(self, node=None):
         if node is None:

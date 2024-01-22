@@ -7,6 +7,8 @@ import copy
 
 import asdf
 
+from roman_datamodels._asdf.manifest import MANIFESTS
+
 from ._node import DNode, LNode
 
 __all__ = [
@@ -14,6 +16,15 @@ __all__ = [
     "TaggedListNode",
     "TaggedScalarNode",
 ]
+
+
+def _lookup_latest_tag(pattern):
+    for manifest in MANIFESTS:
+        for tag_def in manifest["tags"]:
+            tag_uri = tag_def["tag_uri"]
+            if asdf.util.uri_match(pattern, tag_uri):
+                return tag_uri
+    raise Exception("pattern no matchy")
 
 
 class TaggedObjectNode(DNode):
@@ -30,11 +41,17 @@ class TaggedObjectNode(DNode):
 
     @property
     def tag(self):
+        if not hasattr(self, "_tag"):
+            self._tag = _lookup_latest_tag(self._tag_pattern)
         return self._tag
+
+    def __asdf_traverse__(self):
+        self.tag  # trigger tag lookup to generate a _tag attr
+        return super().__asdf_traverse__()
 
     def _schema(self):
         if self._x_schema is None:
-            schema_uri = self.ctx.extension_manager.get_tag_definition(self._tag).schema_uris[0]
+            schema_uri = self.ctx.extension_manager.get_tag_definition(self.tag).schema_uris[0]
             self._x_schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
         return self._x_schema
 
@@ -53,7 +70,13 @@ class TaggedListNode(LNode):
 
     @property
     def tag(self):
+        if not hasattr(self, "_tag"):
+            self._tag = _lookup_latest_tag(self._tag_pattern)
         return self._tag
+
+    def __asdf_traverse__(self):
+        self.tag  # trigger tag lookup to generate a _tag attr
+        return super().__asdf_traverse__()
 
 
 class TaggedScalarNode:
@@ -64,7 +87,6 @@ class TaggedScalarNode:
         These will all be in the tagged_scalars directory.
     """
 
-    _tag = None
     _ctx = None
 
     def __init_subclass__(cls, **kwargs) -> None:
@@ -79,10 +101,13 @@ class TaggedScalarNode:
         return self._ctx
 
     def __asdf_traverse__(self):
+        self.tag  # trigger tag lookup to generate a _tag attr
         return self
 
     @property
     def tag(self):
+        if not hasattr(self, "_tag"):
+            self._tag = _lookup_latest_tag(self._tag_pattern)
         return self._tag
 
     def copy(self):

@@ -34,7 +34,9 @@ class _RomanConverter(Converter):
         return obj.tag
 
     def from_yaml_tree(self, node, tag, ctx):
-        return self.lookup_type(tag)(node)
+        instance = self.lookup_type(tag)(node)
+        instance._tag = tag
+        return instance
 
 
 class TaggedObjectNodeConverter(_RomanConverter):

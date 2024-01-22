@@ -21,7 +21,6 @@ from asdf.exceptions import ValidationError
 from astropy.time import Time
 
 from roman_datamodels import stnode, validate
-from roman_datamodels._asdf.converters import NODE_EXTENSIONS
 
 __all__ = ["DataModel", "MODEL_REGISTRY"]
 
@@ -162,8 +161,11 @@ class DataModel(abc.ABC):
 
     @property
     def schema_uri(self):
-        # Determine the schema corresponding to this model's tag
-        return next(t for t in NODE_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uris[0]
+        # Determine the schema corresponding to this model's node
+        em = self._asdf.extension_manager
+        # TODO tag property?
+        tag = em.get_converter_for_type(self._instance.__class__).select_tag(self._instance, None)
+        return em.get_tag_definition(tag).schema_uris[0]
 
     def close(self):
         if not (self._iscopy or self._asdf is None):
