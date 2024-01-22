@@ -1,8 +1,7 @@
+import gwcs
 import numpy as np
 from asdf.tags.core import NDArrayType
 from astropy.modeling import Model
-import gwcs
-
 from numpy.testing import assert_array_equal
 
 from .stnode import DNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
