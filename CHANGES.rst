@@ -8,6 +8,8 @@
 
 - Bugfix for ``meta.model_type`` not being set to match the model writing the file. [#296]
 
+- Add ``meta.wcs`` to ``maker_utils``. [#302]
+
 0.18.0 (2023-11-06)
 ===================
 

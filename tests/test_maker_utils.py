@@ -2,6 +2,7 @@ import inspect
 from unittest import mock
 
 import asdf
+import gwcs
 import pytest
 from astropy import units as u
 from astropy.time import Time
@@ -146,6 +147,9 @@ def test_override_data(node_class):
         """
         if isinstance(value, Time):
             return value + 1 * u.day
+
+        if isinstance(value, gwcs.WCS):
+            return gwcs.WCS(output_frame="fk5")
 
         if isinstance(value, stnode.TaggedScalarNode):
             return value.__class__(mutate_value(value.__class__.__bases__[0](value)))
