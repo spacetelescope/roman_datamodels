@@ -399,7 +399,7 @@ of meta will consist of the same attributes with few variations between data fil
     │ │ ├─visit_id (str): 0000201001001001002 # A unique identifier for a visit. The format is 'PPPPPCCAAASSSOOOVVV' where 'PPPPP' is the Program, 'CC' is the execution plan, 'AAA' is the pass, 'SSS' is the segment number, 'OOO' is the Observation and 'VVV' is the Visit.
     │ │ ├─program (int): 2 # Program number, defined range is 1..18445; included in obs_id and visit_id as 'PPPPP'.
     │ │ ├─execution_plan (int): 1 # Execution plan within the program, defined range is 1..99; included in obs_id and visit_id as 'CC'.
-    │ │ ├─pass (int): 1 # Pass number within execution plan, defined range is 1..999; included in obs_id and visit_id as 'AA'.
+    │ │ ├─pass_number (int): 1 # Pass number within execution plan, defined range is 1..999; included in obs_id and visit_id as 'AA'.
     │ │ ├─observation (int): 1 # Observation number within the segment, defined range is 1..999; included in obs_id and visit_id as 'OOO'.
     │ │ ├─segment (int): 1 # Segment Number within pass, defined range is 1..999; included in obs_id and visit_id as 'SSS'.
     │ │ ├─visit (int): 2 # Visit number within the observation, defined range of values is 1..999; included in obs_id and visit_id as 'VVV'.
