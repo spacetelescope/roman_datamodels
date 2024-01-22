@@ -4,43 +4,107 @@ The ASDF Converters to handle the serialization/deseialization of the STNode cla
 from asdf.extension import Converter, ManifestExtension
 from astropy.time import Time
 
-from roman_datamodels.stnode._registry import (
-    LIST_NODE_CLASSES_BY_TAG,
-    NODE_CONVERTERS,
-    OBJECT_NODE_CLASSES_BY_TAG,
-    SCALAR_NODE_CLASSES_BY_TAG,
-)
+from roman_datamodels.stnode._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
+
+from .manifest import MANIFESTS
 
 __all__ = [
     "TaggedObjectNodeConverter",
     "TaggedListNodeConverter",
     "TaggedScalarNodeConverter",
-    "NODE_EXTENSIONS",
 ]
 
 
-class _RomanConverter(Converter):
-    """
-    Base class for the roman_datamodels converters.
-    """
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        """
-        Automatically create the converter objects.
-        """
-        super().__init_subclass__(**kwargs)
-
-        if not cls.__name__.startswith("_"):
-            if cls.__name__ in NODE_CONVERTERS:
-                raise ValueError(f"Duplicate converter for {cls.__name__}")
-
-            NODE_CONVERTERS[cls.__name__] = cls()
-
-
-class TaggedObjectNodeConverter(_RomanConverter):
+class TaggedObjectNodeConverter(Converter):
     """
     Converter for all subclasses of TaggedObjectNode.
     """
+
+    tags = (
+        "asdf://stsci.edu/datamodels/roman/tags/guidewindow-*",
+        "asdf://stsci.edu/datamodels/roman/tags/ramp-*",
+        "asdf://stsci.edu/datamodels/roman/tags/ramp_fit_output-*",
+        "asdf://stsci.edu/datamodels/roman/tags/wfi_science_raw-*",
+        "asdf://stsci.edu/datamodels/roman/tags/wfi_image-*",
+        "asdf://stsci.edu/datamodels/roman/tags/wfi_mosaic-*",
+        "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-*",
+        "asdf://stsci.edu/datamodels/roman/tags/exposure-*",
+        "asdf://stsci.edu/datamodels/roman/tags/program-*",
+        "asdf://stsci.edu/datamodels/roman/tags/observation-*",
+        "asdf://stsci.edu/datamodels/roman/tags/ephemeris-*",
+        "asdf://stsci.edu/datamodels/roman/tags/visit-*",
+        "asdf://stsci.edu/datamodels/roman/tags/photometry-*",
+        "asdf://stsci.edu/datamodels/roman/tags/source_detection-*",
+        "asdf://stsci.edu/datamodels/roman/tags/coordinates-*",
+        "asdf://stsci.edu/datamodels/roman/tags/aperture-*",
+        "asdf://stsci.edu/datamodels/roman/tags/pointing-*",
+        "asdf://stsci.edu/datamodels/roman/tags/target-*",
+        "asdf://stsci.edu/datamodels/roman/tags/velocity_aberration-*",
+        "asdf://stsci.edu/datamodels/roman/tags/wcsinfo-*",
+        "asdf://stsci.edu/datamodels/roman/tags/guidestar-*",
+        "asdf://stsci.edu/datamodels/roman/tags/cal_step-*",
+        "asdf://stsci.edu/datamodels/roman/tags/resample-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/dark-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/distortion-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/flat-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/gain-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/inverselinearity-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/ipc-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/linearity-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/mask-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/pixelarea-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/readnoise-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/refpix-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/saturation-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/superbias-*",
+        "asdf://stsci.edu/datamodels/roman/tags/reference_files/wfi_img_photom-*",
+        "asdf://stsci.edu/datamodels/roman/tags/associations-*",
+        "asdf://stsci.edu/datamodels/roman/tags/ref_file-*",
+        "asdf://stsci.edu/datamodels/roman/tags/msos_stack-*",
+    )
+
+    types = (
+        "roman_datamodels.stnode.Guidewindow",
+        "roman_datamodels.stnode.Ramp",
+        "roman_datamodels.stnode.RampFitOutput",
+        "roman_datamodels.stnode.WfiScienceRaw",
+        "roman_datamodels.stnode.WfiImage",
+        "roman_datamodels.stnode.WfiMosaic",
+        "roman_datamodels.stnode.WfiMode",
+        "roman_datamodels.stnode.Exposure",
+        "roman_datamodels.stnode.Program",
+        "roman_datamodels.stnode.Observation",
+        "roman_datamodels.stnode.Ephemeris",
+        "roman_datamodels.stnode.Visit",
+        "roman_datamodels.stnode.Photometry",
+        "roman_datamodels.stnode.SourceDetection",
+        "roman_datamodels.stnode.Coordinates",
+        "roman_datamodels.stnode.Aperture",
+        "roman_datamodels.stnode.Pointing",
+        "roman_datamodels.stnode.Target",
+        "roman_datamodels.stnode.VelocityAberration",
+        "roman_datamodels.stnode.Wcsinfo",
+        "roman_datamodels.stnode.Guidestar",
+        "roman_datamodels.stnode.CalStep",
+        "roman_datamodels.stnode.Resample",
+        "roman_datamodels.stnode.DarkRef",
+        "roman_datamodels.stnode.DistortionRef",
+        "roman_datamodels.stnode.FlatRef",
+        "roman_datamodels.stnode.GainRef",
+        "roman_datamodels.stnode.InverselinearityRef",
+        "roman_datamodels.stnode.IpcRef",
+        "roman_datamodels.stnode.LinearityRef",
+        "roman_datamodels.stnode.MaskRef",
+        "roman_datamodels.stnode.PixelareaRef",
+        "roman_datamodels.stnode.ReadnoiseRef",
+        "roman_datamodels.stnode.RefpixRef",
+        "roman_datamodels.stnode.SaturationRef",
+        "roman_datamodels.stnode.SuperbiasRef",
+        "roman_datamodels.stnode.WfiImgPhotomRef",
+        "roman_datamodels.stnode.Associations",
+        "roman_datamodels.stnode.RefFile",
+        "roman_datamodels.stnode.MsosStack",
+    )
 
     @property
     def tags(self):
@@ -60,18 +124,14 @@ class TaggedObjectNodeConverter(_RomanConverter):
         return OBJECT_NODE_CLASSES_BY_TAG[tag](node)
 
 
-class TaggedListNodeConverter(_RomanConverter):
+class TaggedListNodeConverter(Converter):
     """
     Converter for all subclasses of TaggedListNode.
     """
 
-    @property
-    def tags(self):
-        return list(LIST_NODE_CLASSES_BY_TAG.keys())
+    tags = ("asdf://stsci.edu/datamodels/roman/tags/cal_logs-*",)
 
-    @property
-    def types(self):
-        return list(LIST_NODE_CLASSES_BY_TAG.values())
+    types = ("roman_datamodels.stnode.CalLogs",)
 
     def select_tag(self, obj, tags, ctx):
         return obj.tag
@@ -83,18 +143,32 @@ class TaggedListNodeConverter(_RomanConverter):
         return LIST_NODE_CLASSES_BY_TAG[tag](node)
 
 
-class TaggedScalarNodeConverter(_RomanConverter):
+class TaggedScalarNodeConverter(Converter):
     """
     Converter for all subclasses of TaggedScalarNode.
     """
 
-    @property
-    def tags(self):
-        return list(SCALAR_NODE_CLASSES_BY_TAG.keys())
+    tags = (
+        "asdf://stsci.edu/datamodels/roman/tags/calibration_software_version-*",
+        "asdf://stsci.edu/datamodels/roman/tags/filename-*",
+        "asdf://stsci.edu/datamodels/roman/tags/file_date-*",
+        "asdf://stsci.edu/datamodels/roman/tags/model_type-*",
+        "asdf://stsci.edu/datamodels/roman/tags/origin-*",
+        "asdf://stsci.edu/datamodels/roman/tags/prd_software_version-*",
+        "asdf://stsci.edu/datamodels/roman/tags/sdf_software_version-*",
+        "asdf://stsci.edu/datamodels/roman/tags/telescope-*",
+    )
 
-    @property
-    def types(self):
-        return list(SCALAR_NODE_CLASSES_BY_TAG.values())
+    types = (
+        "roman_datamodels.stnode.CalibrationSoftwareVersion",
+        "roman_datamodels.stnode.Filename",
+        "roman_datamodels.stnode.FileDate",
+        "roman_datamodels.stnode.ModelType",
+        "roman_datamodels.stnode.Origin",
+        "roman_datamodels.stnode.PrdSoftwareVersion",
+        "roman_datamodels.stnode.SdfSoftwareVersion",
+        "roman_datamodels.stnode.Telescope",
+    )
 
     def select_tag(self, obj, tags, ctx):
         return obj.tag
@@ -120,10 +194,7 @@ class TaggedScalarNodeConverter(_RomanConverter):
         return SCALAR_NODE_CLASSES_BY_TAG[tag](node)
 
 
+NODE_CONVERTERS = [TaggedObjectNodeConverter(), TaggedListNodeConverter(), TaggedScalarNodeConverter()]
+
 # Create the ASDF extension for the STNode classes.
-NODE_EXTENSIONS = [
-    ManifestExtension.from_uri(
-        "asdf://stsci.edu/datamodels/roman/manifests/datamodels-2.0.0.dev", converters=NODE_CONVERTERS.values()
-    ),
-    ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0", converters=NODE_CONVERTERS.values()),
-]
+NODE_EXTENSIONS = [ManifestExtension.from_uri(manifest["id"], converters=NODE_CONVERTERS) for manifest in MANIFESTS]
