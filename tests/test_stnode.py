@@ -332,7 +332,6 @@ def test_node_representation(model):
 
     if hasattr(mdl, "meta"):
         if isinstance(mdl, datamodels.MosaicModel):
-            # pass
             assert repr(mdl.meta.basic) == repr(
                 {
                     "time_first_mjd": -999999,

@@ -66,7 +66,7 @@ class MosaicModel(_RomanDataModel):
             meta_dict = meta.to_flat_dict()
         else:
             meta_dict = meta
-        
+
         # Storage for keys and values in the base meta layer
         basic_cols = []
         basic_vals = []
@@ -76,11 +76,11 @@ class MosaicModel(_RomanDataModel):
             # Skip wcs objects
             if (key == 'wcs'):
                 continue
-            
+
             # Keys that are themselves Dnodes (subdirectories)
-            # neccessitate a new table 
+            # neccessitate a new table
             if isinstance(value, stnode.DNode):
-                # Collect key names 
+                # Collect key names
                 subtable_cols = meta_dict[key].keys()
 
                 # Collect values (lists converted to strings)

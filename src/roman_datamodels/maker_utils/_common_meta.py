@@ -1,6 +1,6 @@
 from astropy import time
 from astropy import units as u
-from astropy.table import Table, QTable
+from astropy.table import QTable
 
 from roman_datamodels import stnode
 
