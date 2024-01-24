@@ -7,6 +7,7 @@ import pytest
 from asdf.exceptions import ValidationError
 from astropy import units as u
 from astropy.modeling import Model
+from astropy.table import QTable
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
@@ -686,21 +687,25 @@ def test_append_individual_image_meta_level3_mosaic():
     wfi_mosaic_model.append_individual_image_meta(wfi_image2.meta.to_flat_dict())
     wfi_mosaic_model.append_individual_image_meta(wfi_image3_model.meta)
 
-    # Test that each entry contains the same instrument name
-    assert wfi_mosaic_model.meta.individual_image_meta.all_meta[0]["instrument"]["name"] == "WFI"
+    # Test that basic is a QTable
+    assert isinstance(wfi_mosaic_model.meta.individual_image_meta.basic, QTable)
+
+    # Test that each image entry in the instrument table contains the same instrument name
+    assert wfi_mosaic_model.meta.individual_image_meta.instrument["name"][0] == "WFI"
     assert (
-        wfi_mosaic_model.meta.individual_image_meta.all_meta[0]["instrument"]["name"]
-        == wfi_mosaic_model.meta.individual_image_meta.all_meta[1]["instrument"]["name"]
+        wfi_mosaic_model.meta.individual_image_meta.instrument["name"][0]
+        == wfi_mosaic_model.meta.individual_image_meta.instrument["name"][1]
     )
     assert (
-        wfi_mosaic_model.meta.individual_image_meta.all_meta[1]["instrument"]["name"]
-        == wfi_mosaic_model.meta.individual_image_meta.all_meta[2]["instrument"]["name"]
+        wfi_mosaic_model.meta.individual_image_meta.instrument["name"][1]
+        == wfi_mosaic_model.meta.individual_image_meta.instrument["name"][2]
     )
 
-    # Test that each entry contains the correct (different) PI name
-    assert wfi_mosaic_model.meta.individual_image_meta.all_meta[0]["program"]["pi_name"] == "Nancy"
-    assert wfi_mosaic_model.meta.individual_image_meta.all_meta[1]["program"]["pi_name"] == "Grace"
-    assert wfi_mosaic_model.meta.individual_image_meta.all_meta[2]["program"]["pi_name"] == "Roman"
+    # Test that each image entry in the program table contains the correct (different) PI name
+    assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][0] == "Nancy"
+    assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][1] == "Grace"
+    assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][2] == "Roman"
+
 
 
 def test_datamodel_info_search(capsys):

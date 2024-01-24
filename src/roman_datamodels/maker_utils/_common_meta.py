@@ -1,5 +1,6 @@
 from astropy import time
 from astropy import units as u
+from astropy.table import Table, QTable
 
 from roman_datamodels import stnode
 
@@ -663,6 +664,7 @@ def mk_mosaic_basic(**kwargs):
     mosbasic["time_mean_mjd"] = kwargs.get("time_mean_mjd", NONUM)
     mosbasic["max_exposure_time"] = kwargs.get("max_exposure_time", NONUM)
     mosbasic["mean_exposure_time"] = kwargs.get("mean_exposure_time", NONUM)
+    mosbasic["model_type"] = kwargs.get("model_type", NOSTR)
     mosbasic["visit"] = kwargs.get("visit", NONUM)
     mosbasic["segment"] = kwargs.get("segment", NONUM)
     mosbasic["pass_number"] = kwargs.get("pass_number", NONUM)
@@ -673,6 +675,7 @@ def mk_mosaic_basic(**kwargs):
     mosbasic["telescope"] = kwargs.get("telescope", "ROMAN")
     mosbasic["location_name"] = kwargs.get("location_name", NOSTR)
     mosbasic["product_type"] = kwargs.get("product_type", NOSTR)
+
 
     return mosbasic
 
@@ -726,6 +729,25 @@ def mk_individual_image_meta(**kwargs):
     """
 
     imm = stnode.IndividualImageMeta()
-    imm["all_meta"] = kwargs.get("all_meta", [])
+
+    table_dct = {"dummy":[NONUM]}
+
+    imm["basic"] = kwargs.get("basic", QTable(table_dct))
+    imm["aperture"] = kwargs.get("aperture", QTable(table_dct))
+    imm["cal_step"] = kwargs.get("cal_step", QTable(table_dct))
+    imm["coordinates"] = kwargs.get("coordinates", QTable(table_dct))
+    imm["ephemeris"] = kwargs.get("ephemeris", QTable(table_dct))
+    imm["exposure"] = kwargs.get("exposure", QTable(table_dct))
+    imm["guidestar"] = kwargs.get("guidestar", QTable(table_dct))
+    imm["instrument"] = kwargs.get("instrument", QTable(table_dct))
+    imm["observation"] = kwargs.get("observation", QTable(table_dct))
+    imm["photometry"] = kwargs.get("photometry", QTable(table_dct))
+    imm["pointing"] = kwargs.get("pointing", QTable(table_dct))
+    imm["program"] = kwargs.get("program", QTable(table_dct))
+    imm["ref_file"] = kwargs.get("ref_file", QTable(table_dct))
+    imm["target"] = kwargs.get("target", QTable(table_dct))
+    imm["velocity_aberration"] = kwargs.get("velocity_aberration", QTable(table_dct))
+    imm["visit"] = kwargs.get("visit", QTable(table_dct))
+    imm["wcsinfo"] = kwargs.get("wcsinfo", QTable(table_dct))
 
     return imm
