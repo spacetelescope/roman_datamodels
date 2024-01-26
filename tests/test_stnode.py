@@ -342,7 +342,7 @@ def test_node_representation(model):
                     "model_type": "MosaicModel",
                     "visit": -999999,
                     "segment": -999999,
-                    "pass_number": -999999,
+                    "pass": -999999,
                     "program": "dummy value",
                     "survey": "dummy value",
                     "optical_element": "F158",
