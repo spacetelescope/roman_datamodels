@@ -102,7 +102,7 @@ class MosaicModel(_RomanDataModel):
                 basic_cols.append(key)
 
                 # Store value (lists converted to strings)
-                if isinstance(value, list):
+                if isinstance(value.strip(), list):
                     basic_vals.append([str(value)])
                 else:
                     basic_vals.append([value])
