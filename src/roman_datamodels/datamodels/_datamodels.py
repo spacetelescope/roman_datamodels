@@ -6,6 +6,7 @@ This module provides all the specific datamodels used by the Roman pipeline.
     from the schema manifest defined by RAD.
 """
 
+import asdf
 import numpy as np
 from astropy.table import QTable
 
@@ -80,24 +81,39 @@ class MosaicModel(_RomanDataModel):
             # Keys that are themselves Dnodes (subdirectories)
             # neccessitate a new table
             if isinstance(value, stnode.DNode):
-                # Collect key names
-                subtable_cols = meta_dict[key].keys()
-
-                # Collect values (lists converted to strings)
+                # Storage for keys and values
+                subtable_cols = []
                 subtable_vals = []
-                for value in meta_dict[key].values():
-                    if isinstance(value, list):
-                        subtable_vals.append([str(value)])
+
+                # Loop over items within the node
+                for subkey, subvalue in meta_dict[key].items():
+                    # Skip ndarrays
+                    if isinstance(subvalue, asdf.tags.core.ndarray.NDArrayType):
+                        continue
+
+                    subtable_cols.append(subkey)
+
+                    if isinstance(subvalue, list):
+                        subtable_vals.append([str(subvalue)])
                     else:
-                        subtable_vals.append([value])
+                        subtable_vals.append([subvalue])
+
+                # Skip this Table if it would be empty
+                if len(subtable_vals) == 0:
+                    continue
 
                 # Make new Keyword Table if needed
-                if self.meta.individual_image_meta[key].colnames == ["dummy"]:
+                if ((key not in self.meta.individual_image_meta) or
+                    (self.meta.individual_image_meta[key].colnames == ["dummy"])):
                     self.meta.individual_image_meta[key] = QTable(names=subtable_cols, data=subtable_vals)
                 else:
                     # Append to existing table
                     self.meta.individual_image_meta[key].add_row(subtable_vals)
             else:
+                # Skip ndarrays
+                if isinstance(value.strip(), asdf.tags.core.ndarray.NDArrayType):
+                    continue
+
                 # Store Basic keyword
                 basic_cols.append(key)
 
