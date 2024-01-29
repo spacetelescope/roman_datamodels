@@ -350,6 +350,7 @@ def test_node_representation(model):
                     "telescope": "ROMAN",
                     "location_name": "dummy value",
                     "product_type": "dummy value",
+                    "filename": "dummy value",
                 }
             )
         else:

@@ -675,7 +675,7 @@ def mk_mosaic_basic(**kwargs):
     mosbasic["telescope"] = kwargs.get("telescope", "ROMAN")
     mosbasic["location_name"] = kwargs.get("location_name", NOSTR)
     mosbasic["product_type"] = kwargs.get("product_type", NOSTR)
-
+    mosbasic["filename"] = kwargs.get("filename", NOSTR)
 
     return mosbasic
 
