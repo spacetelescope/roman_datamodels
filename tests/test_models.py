@@ -707,7 +707,6 @@ def test_append_individual_image_meta_level3_mosaic():
     assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][2] == "Roman"
 
 
-
 def test_datamodel_info_search(capsys):
     wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
     af = asdf.AsdfFile()

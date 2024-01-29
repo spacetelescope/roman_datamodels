@@ -731,7 +731,7 @@ def mk_individual_image_meta(**kwargs):
 
     imm = stnode.IndividualImageMeta()
 
-    table_dct = {"dummy":[NONUM]}
+    table_dct = {"dummy": [NONUM]}
 
     imm["basic"] = kwargs.get("basic", QTable(table_dct))
     imm["aperture"] = kwargs.get("aperture", QTable(table_dct))
