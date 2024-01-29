@@ -446,6 +446,7 @@ def mk_mosaic_meta(**kwargs):
 
     meta = {}
     meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
+    meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
     meta["individual_image_meta"] = mk_individual_image_meta(**kwargs.get("individual_image_meta", {}))
     meta["program"] = mk_program(**kwargs.get("program", {}))
     meta["resample"] = mk_resample(**kwargs.get("resample", {}))
