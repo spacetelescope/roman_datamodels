@@ -1,10 +1,13 @@
+import warnings
+
 import astropy.units as u
 import numpy as np
 from astropy import time
 
 from roman_datamodels import stnode
 
-from ._base import NONUM, NOSTR
+from ._base import NONUM, NOSTR, save_node
+from ._basic_meta import mk_basic_meta
 
 
 def mk_ground_exposure(**kwargs):
@@ -92,3 +95,83 @@ def mk_ground_groundtest(**kwargs):
     ground["sensor_error"] = kwargs.get("sensor_error", np.zeros(6, dtype=np.float32))
 
     return ground
+
+
+def mk_ground_common_meta(**kwargs):
+    """
+    Create a dummy common metadata dictionary with valid values for attributes
+
+    Returns
+    -------
+    dict (defined by the ground_common-1.0.0 schema)
+    """
+    # prevent circular import
+    from ._common_meta import mk_cal_step, mk_ref_file, mk_wfi_mode
+
+    meta = mk_basic_meta(**kwargs)
+    meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
+    meta["exposure"] = mk_ground_exposure(**kwargs.get("exposure", {}))
+    meta["guidestar"] = mk_ground_guidestar(**kwargs.get("guidestar", {}))
+    meta["groundtest"] = mk_ground_groundtest(**kwargs.get("groundtest", {}))
+    meta["instrument"] = mk_wfi_mode(**kwargs.get("instrument", {}))
+    meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
+    meta["hdf5_meta"] = kwargs.get("hdf5_meta", {"test": NOSTR})
+    meta["hdf5_telemetry"] = kwargs.get("hdf5_telemetry", NOSTR)
+    meta["gw_meta"] = kwargs.get("gw_meta", {"test": NOSTR})
+
+    return meta
+
+
+def mk_fps(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
+    """
+    Create a dummy Fps instance (or file) with arrays and valid
+    values for attributes required by the schema.
+
+    Parameters
+    ----------
+    shape : tuple, int
+        (optional, keyword-only) (z, y, x) Shape of data array. This includes a
+        four-pixel border representing the reference pixels. Default is
+            (8, 4096, 4096)
+        (8 integrations, 4088 x 4088 represent the science pixels, with the
+        additional being the border reference pixels).
+
+    filepath : str
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.WfiScienceRaw
+    """
+    if len(shape) != 3:
+        shape = (8, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
+
+    fps = stnode.Fps()
+    fps["meta"] = mk_ground_common_meta(**kwargs.get("meta", {}))
+
+    n_groups = shape[0]
+
+    fps["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16))
+
+    # add amp 33 ref pix
+    fps["amp33"] = kwargs.get("amp33", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16))
+    fps["amp33_reset_reads"] = kwargs.get(
+        "amp33_reset_reads", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    )
+    fps["amp33_reference_read"] = kwargs.get(
+        "amp33_reference_read", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    )
+
+    # add guidewindow and reference
+    fps["guidewindow"] = kwargs.get(
+        "guidewindow", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    )
+    fps["reference_read"] = kwargs.get(
+        "reference_read", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    )
+    fps["reset_reads"] = kwargs.get(
+        "reset_reads", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    )
+
+    return save_node(fps, filepath=filepath)

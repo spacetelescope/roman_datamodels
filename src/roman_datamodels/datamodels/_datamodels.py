@@ -287,3 +287,7 @@ class WfiImgPhotomRefModel(_DataModel):
 
 class RefpixRefModel(_DataModel):
     _node_type = stnode.RefpixRef
+
+
+class FpsModel(_DataModel):
+    _node_type = stnode.Fps
