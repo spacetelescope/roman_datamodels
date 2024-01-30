@@ -9,7 +9,7 @@ from roman_datamodels import stnode
 
 from ._base import NONUM, NOSTR
 from ._basic_meta import mk_basic_meta
-from ._ground import mk_ground_exposure
+from ._ground import mk_ground_exposure, mk_ground_guidestar
 from ._tagged_nodes import mk_photometry, mk_resample
 
 
@@ -328,18 +328,15 @@ def mk_guidestar(**kwargs):
     roman_datamodels.stnode.Guidestar
     """
     guide = stnode.Guidestar()
-    guide["gw_id"] = kwargs.get("gw_id", NOSTR)
+    guide._data = mk_ground_guidestar(**kwargs)._data
     guide["gs_ra"] = kwargs.get("gs_ra", NONUM)
     guide["gs_dec"] = kwargs.get("gs_dec", NONUM)
     guide["gs_ura"] = kwargs.get("gs_ura", NONUM)
     guide["gs_udec"] = kwargs.get("gs_udec", NONUM)
     guide["gs_mag"] = kwargs.get("gs_mag", NONUM)
     guide["gs_umag"] = kwargs.get("gs_umag", NONUM)
-    guide["gw_fgs_mode"] = kwargs.get("gw_fgs_mode", "WSM-ACQ-2")
     guide["gs_id"] = kwargs.get("gs_id", NOSTR)
     guide["gs_catalog_version"] = kwargs.get("gs_catalog_version", NOSTR)
-    guide["data_start"] = kwargs.get("data_start", NONUM)
-    guide["data_end"] = kwargs.get("data_end", NONUM)
     guide["gs_ctd_x"] = kwargs.get("gs_ctd_x", NONUM)
     guide["gs_ctd_y"] = kwargs.get("gs_ctd_y", NONUM)
     guide["gs_ctd_ux"] = kwargs.get("gs_ctd_ux", NONUM)
@@ -349,12 +346,6 @@ def mk_guidestar(**kwargs):
     guide["gs_mudec"] = kwargs.get("gs_mudec", NONUM)
     guide["gs_para"] = kwargs.get("gs_para", NONUM)
     guide["gs_pattern_error"] = kwargs.get("gs_pattern_error", NONUM)
-    guide["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
-    guide["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
-    guide["gw_window_xstop"] = kwargs.get("gw_window_xstop", guide["gw_window_xstart"] + 170)
-    guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
-    guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
-    guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
 
     return guide
 
