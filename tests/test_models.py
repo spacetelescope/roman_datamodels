@@ -710,14 +710,27 @@ def test_append_individual_image_meta_level3_mosaic():
 # FPS tests
 def test_make_fps():
     shape = (2, 8, 8)
-    fps = utils.mk_fps(shape=shape, dq=True)
+    fps = utils.mk_fps(shape=shape)
 
     assert fps.data.dtype == np.uint16
     assert fps.data.unit == u.DN
 
     # Test validation
-    fps_mode = datamodels.FpsModel(fps)
-    assert fps_mode.validate() is None
+    fps_model = datamodels.FpsModel(fps)
+    assert fps_model.validate() is None
+
+
+# TVAC tests
+def test_make_tvac():
+    shape = (2, 8, 8)
+    tvac = utils.mk_tvac(shape=shape)
+
+    assert tvac.data.dtype == np.uint16
+    assert tvac.data.unit == u.DN
+
+    # Test validation
+    tvac_model = datamodels.TvacModel(tvac)
+    assert tvac_model.validate() is None
 
 
 def test_datamodel_info_search(capsys):

@@ -291,3 +291,7 @@ class RefpixRefModel(_DataModel):
 
 class FpsModel(_DataModel):
     _node_type = stnode.Fps
+
+
+class TvacModel(_DataModel):
+    _node_type = stnode.Tvac

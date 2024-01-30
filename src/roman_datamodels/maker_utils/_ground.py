@@ -97,6 +97,70 @@ def mk_ground_groundtest(**kwargs):
     return ground
 
 
+def mk_tvac_groundtest(**kwargs):
+    """
+    Create a dummy GroundGroundtest instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    This adds the tvac fields
+
+    Returns
+    -------
+    roman_datamodels.stnode.GroundGroundtest
+    """
+
+    ground = mk_ground_groundtest(**kwargs)
+
+    ground["activity_number"] = kwargs.get("activity_number", NONUM)
+    ground["led_bank1_band_number_on"] = kwargs.get("led_bank1_band_number_on", [NONUM])
+    ground["led_bank2_band_number_on"] = kwargs.get("led_bank2_band_number_on", [NONUM])
+    ground["led_bank1_approx_wlen"] = kwargs.get(
+        "led_bank1_approx_wlen", u.Quantity(np.zeros(6, dtype=np.uint32), unit=u.nm, dtype=np.uint32)
+    )
+    ground["led_bank2_approx_wlen"] = kwargs.get(
+        "led_bank2_approx_wlen", u.Quantity(np.zeros(6, dtype=np.uint32), unit=u.nm, dtype=np.uint32)
+    )
+    ground["srcs_pd_voltage"] = kwargs.get("srcs_pd_voltage", NONUM)
+    ground["srcs_led_flux"] = kwargs.get("srcs_led_flux", NONUM)
+    ground["wfi_mce_srcs_bank1_led_i"] = kwargs.get(
+        "wfi_mce_srcs_bank1_led_i", u.Quantity(np.zeros(6, dtype=np.uint32), unit=u.cm, dtype=np.uint32)
+    )
+    ground["wfi_mce_srcs_bank1_led_range"] = kwargs.get("wfi_mce_srcs_bank1_led_range", NOSTR)
+    ground["wfi_mce_srcs_bank2_led_i"] = kwargs.get(
+        "wfi_mce_srcs_bank2_led_i", u.Quantity(np.zeros(6, dtype=np.uint32), unit=u.cm, dtype=np.uint32)
+    )
+    ground["wfi_mce_srcs_bank2_led_range"] = kwargs.get("wfi_mce_srcs_bank2_led_range", NOSTR)
+    ground["srcs_led_current"] = kwargs.get("srcs_led_current", NONUM)
+    ground["wfi_opt_targettype"] = kwargs.get("wfi_opt_targettype", "FLAT-sRCS")
+    ground["anaysis_tag"] = kwargs.get("anaysis_tag", NOSTR)
+    ground["gsorc_pose_mode"] = kwargs.get("gsorc_pose_mode", NOSTR)
+    ground["gsorc_pose_target"] = kwargs.get("gsorc_pose_target", NOSTR)
+    ground["gsorc_sds_active_atten"] = kwargs.get("gsorc_sds_active_atten", NONUM)
+    ground["gsorc_sds_lltfir_wave"] = kwargs.get("gsorc_sds_lltfir_wave", NONUM)
+    ground["gsorc_sds_sorc_on"] = kwargs.get("gsorc_sds_sorc_on", False)
+    ground["gsorc_sds_sorc_wlen"] = kwargs.get("gsorc_sds_sorc_wlen", NONUM)
+    ground["gsorc_sds_active_source"] = kwargs.get("gsorc_sds_active_source", NOSTR)
+    ground["gsorc_sds_dq_pulse"] = kwargs.get("gsorc_sds_dq_pulse", "pulse")
+    ground["gsorc_sds_daq_pw"] = kwargs.get("gsorc_sds_daq_pw", u.Quantity(NONUM, u.ms))
+    ground["gsorc_heater1_setpt"] = kwargs.get("gsorc_heater1_setpt", NONUM)
+    ground["wfi_opt_wfi_ewa"] = kwargs.get("wfi_opt_wfi_ewa", NOSTR)
+    ground["sca_temp"] = kwargs.get("sca_temp", u.Quantity(NONUM, u.K))
+    ground["mpa_temp"] = kwargs.get("mpa_temp", u.Quantity(NONUM, u.K))
+    ground["ewa_temp"] = kwargs.get("ewa_temp", u.Quantity(NONUM, u.K))
+    ground["ewta_outer_heater_temp"] = kwargs.get("ewta_outer_heater_temp", u.Quantity(NONUM, u.K))
+    ground["ewta_inner_heater_temp"] = kwargs.get("ewta_inner_heater_temp", u.Quantity(NONUM, u.K))
+    ground["coba_temp_near_ewta"] = kwargs.get("coba_temp_near_ewta", u.Quantity(NONUM, u.K))
+    ground["scea_temp"] = kwargs.get("scea_temp", u.Quantity(NONUM, u.K))
+    ground["wfi_sce_1_vbiasgate_v"] = kwargs.get("wfi_sce_1_vbiasgate_v", u.Quantity(NONUM, u.V))
+    ground["wfi_sce_1_vbiaspwr_i"] = kwargs.get("wfi_sce_1_vbiaspwr_i", u.Quantity(NONUM, u.A))
+    ground["wfi_sce_1_vbiaspwr_v"] = kwargs.get("wfi_sce_1_vbiaspwr_v", u.Quantity(NONUM, u.V))
+    ground["wfi_sce_1_vreset_v"] = kwargs.get("wfi_sce_1_vreset_v", u.Quantity(NONUM, u.V))
+    ground["wfi_sce_1_vreset_i"] = kwargs.get("wfi_sce_1_vreset_i", u.Quantity(NONUM, u.A))
+    ground["wfi_mcu_a_offs_csense_fpessen"] = kwargs.get("wfi_mcu_a_offs_csense_fpessen", u.Quantity(NONUM, u.K))
+
+    return ground
+
+
 def mk_ground_common_meta(**kwargs):
     """
     Create a dummy common metadata dictionary with valid values for attributes
@@ -141,7 +205,7 @@ def mk_fps(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
 
     Returns
     -------
-    roman_datamodels.stnode.WfiScienceRaw
+    roman_datamodels.stnode.Fps
     """
     if len(shape) != 3:
         shape = (8, 4096, 4096)
@@ -175,3 +239,74 @@ def mk_fps(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     )
 
     return save_node(fps, filepath=filepath)
+
+
+def mk_tvac_meta(**kwargs):
+    """
+    Create a dummy tvac metadata dictionary with valid values for attributes
+
+    Returns
+    -------
+    dict (defined by the tvac-1.0.0.meta schema)
+    """
+
+    meta = mk_ground_common_meta(**kwargs)
+    meta["groundtest"] = mk_tvac_groundtest(**kwargs.get("groundtest", {}))
+
+    return meta
+
+
+def mk_tvac(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
+    """
+    Create a dummy Tvac instance (or file) with arrays and valid
+    values for attributes required by the schema.
+
+    Parameters
+    ----------
+    shape : tuple, int
+        (optional, keyword-only) (z, y, x) Shape of data array. This includes a
+        four-pixel border representing the reference pixels. Default is
+            (8, 4096, 4096)
+        (8 integrations, 4088 x 4088 represent the science pixels, with the
+        additional being the border reference pixels).
+
+    filepath : str
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Tvac
+    """
+
+    if len(shape) != 3:
+        shape = (8, 4096, 4096)
+        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
+
+    tvac = stnode.Tvac()
+    tvac["meta"] = mk_ground_common_meta(**kwargs.get("meta", {}))
+
+    n_groups = shape[0]
+
+    tvac["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16))
+
+    # add amp 33 ref pix
+    tvac["amp33"] = kwargs.get("amp33", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16))
+    tvac["amp33_reset_reads"] = kwargs.get(
+        "amp33_reset_reads", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    )
+    tvac["amp33_reference_read"] = kwargs.get(
+        "amp33_reference_read", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    )
+
+    # add guidewindow and reference
+    tvac["guidewindow"] = kwargs.get(
+        "guidewindow", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    )
+    tvac["reference_read"] = kwargs.get(
+        "reference_read", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    )
+    tvac["reset_reads"] = kwargs.get(
+        "reset_reads", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+    )
+
+    return save_node(tvac, filepath=filepath)
