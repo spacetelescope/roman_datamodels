@@ -12,7 +12,7 @@ def mk_ground_exposure(**kwargs):
 
     Returns
     -------
-    roman_datamodels.stnode.Exposure
+    roman_datamodels.stnode.GroundExposure
     """
     exp = stnode.GroundExposure()
     exp["type"] = kwargs.get("type", "WFI_IMAGE")
@@ -30,3 +30,27 @@ def mk_ground_exposure(**kwargs):
     exp["read_pattern"] = kwargs.get("read_pattern", [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]])
 
     return exp
+
+
+def mk_ground_guidestar(**kwargs):
+    """
+    Create a dummy GroundGuidestar instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.GroundGuidestar
+    """
+    guide = stnode.GroundGuidestar()
+    guide["gw_id"] = kwargs.get("gw_id", NOSTR)
+    guide["gw_fgs_mode"] = kwargs.get("gw_fgs_mode", "WSM-ACQ-2")
+    guide["data_start"] = kwargs.get("data_start", NONUM)
+    guide["data_end"] = kwargs.get("data_end", NONUM)
+    guide["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
+    guide["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
+    guide["gw_window_xstop"] = kwargs.get("gw_window_xstop", guide["gw_window_xstart"] + 170)
+    guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
+    guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
+    guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
+
+    return guide

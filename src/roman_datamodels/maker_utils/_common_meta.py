@@ -320,7 +320,7 @@ def mk_cal_step(**kwargs):
 
 def mk_guidestar(**kwargs):
     """
-    Create a dummy Guide Star instance with valid values for attributes
+    Create a dummy Guidestar instance with valid values for attributes
     required by the schema. Utilized by the model maker utilities below.
 
     Returns
