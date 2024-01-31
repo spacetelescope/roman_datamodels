@@ -445,12 +445,28 @@ def mk_mosaic_meta(**kwargs):
     """
 
     meta = {}
+    meta["asn"] = mk_mosaic_associations(**kwargs.get("asn", {}))
     meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
     meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
     meta["individual_image_meta"] = mk_individual_image_meta(**kwargs.get("individual_image_meta", {}))
     meta["program"] = mk_program(**kwargs.get("program", {}))
     meta["resample"] = mk_resample(**kwargs.get("resample", {}))
     meta["wcsinfo"] = mk_mosaic_wcsinfo(**kwargs.get("wcsinfo", {}))
+
+    return meta
+
+
+def mk_mosaic_associations(**kwargs):
+    """
+    Create a dummy metadata dictionary with valid values for mosaic associations attributes.
+
+    Returns
+    -------
+    dict (defined by the wfi_mosaic-1.0.0 schema)
+    """
+    meta = {}
+    meta["pool_name"] = kwargs.get("pool_name", NOSTR)
+    meta["table_name"] = kwargs.get("pool_name", NOSTR)
 
     return meta
 
