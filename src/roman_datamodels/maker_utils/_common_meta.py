@@ -458,17 +458,19 @@ def mk_mosaic_meta(**kwargs):
 
 def mk_mosaic_associations(**kwargs):
     """
-    Create a dummy metadata dictionary with valid values for mosaic associations attributes.
+    Create a dummy mosaic associations instance with valid values for 
+    mosaic associations attributes. Utilized by the model maker utilities.
 
     Returns
     -------
-    dict (defined by the wfi_mosaic-1.0.0 schema)
+    roman_datamodels.stnode.MosaicAssociations
     """
-    meta = {}
-    meta["pool_name"] = kwargs.get("pool_name", NOSTR)
-    meta["table_name"] = kwargs.get("pool_name", NOSTR)
 
-    return meta
+    mosass = stnode.MosaicAssociations()
+    mosass["pool_name"] = kwargs.get("pool_name", NOSTR)
+    mosass["table_name"] = kwargs.get("table_name", NOSTR)
+
+    return mosass
 
 
 def mk_guidewindow_meta(**kwargs):
