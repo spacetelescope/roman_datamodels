@@ -6,7 +6,9 @@ This module provides all the specific datamodels used by the Roman pipeline.
     from the schema manifest defined by RAD.
 """
 
+import asdf
 import numpy as np
+from astropy.table import QTable
 
 from roman_datamodels import stnode
 
@@ -41,11 +43,91 @@ class _RomanDataModel(_DataModel):
         super().__init__(init, **kwargs)
 
         if init is not None:
-            self.meta.model_type = self.__class__.__name__
+            if self._node_type == stnode.WfiMosaic:
+                self.meta.basic.model_type = self.__class__.__name__
+            else:
+                self.meta.model_type = self.__class__.__name__
 
 
 class MosaicModel(_RomanDataModel):
     _node_type = stnode.WfiMosaic
+
+    def append_individual_image_meta(self, meta):
+        """
+        Add the contents of meta to the appropriate keyword in individual_image_meta as an astropy QTable.
+
+        Parameters
+        ----------
+        meta : stnode or dict
+            Metadata from a component image of the mosiac.
+        """
+
+        # Convert input to a dictionary, if necessary
+        if not isinstance(meta, dict):
+            meta_dict = meta.to_flat_dict()
+        else:
+            meta_dict = meta
+
+        # Storage for keys and values in the base meta layer
+        basic_cols = []
+        basic_vals = []
+
+        # Sift through meta items to place in tables
+        for key, value in meta_dict.items():
+            # Skip wcs objects
+            if key == "wcs":
+                continue
+
+            # Keys that are themselves Dnodes (subdirectories)
+            # neccessitate a new table
+            if isinstance(value, stnode.DNode):
+                # Storage for keys and values
+                subtable_cols = []
+                subtable_vals = []
+
+                # Loop over items within the node
+                for subkey, subvalue in meta_dict[key].items():
+                    # Skip ndarrays
+                    if isinstance(subvalue, asdf.tags.core.ndarray.NDArrayType):
+                        continue
+
+                    subtable_cols.append(subkey)
+
+                    if isinstance(subvalue, list):
+                        subtable_vals.append([str(subvalue)])
+                    else:
+                        subtable_vals.append([subvalue])
+
+                # Skip this Table if it would be empty
+                if len(subtable_vals) == 0:
+                    continue
+
+                # Make new Keyword Table if needed
+                if (key not in self.meta.individual_image_meta) or (self.meta.individual_image_meta[key].colnames == ["dummy"]):
+                    self.meta.individual_image_meta[key] = QTable(names=subtable_cols, data=subtable_vals)
+                else:
+                    # Append to existing table
+                    self.meta.individual_image_meta[key].add_row(subtable_vals)
+            else:
+                # Skip ndarrays
+                if isinstance(value.strip(), asdf.tags.core.ndarray.NDArrayType):
+                    continue
+
+                # Store Basic keyword
+                basic_cols.append(key)
+
+                # Store value (lists converted to strings)
+                if isinstance(value.strip(), list):
+                    basic_vals.append([str(value)])
+                else:
+                    basic_vals.append([value])
+
+        # Make Basic Table if needed
+        if self.meta.individual_image_meta.basic.colnames == ["dummy"]:
+            self.meta.individual_image_meta.basic = QTable(names=basic_cols, data=basic_vals)
+        else:
+            # Append to existing basic table
+            self.meta.individual_image_meta.basic.add_row(basic_vals)
 
 
 class ImageModel(_RomanDataModel):

@@ -1,5 +1,6 @@
 from astropy import time
 from astropy import units as u
+from astropy.table import QTable
 
 from roman_datamodels import stnode
 
@@ -434,20 +435,45 @@ def mk_photometry_meta(**kwargs):
     return meta
 
 
-def mk_resample_meta(**kwargs):
+def mk_mosaic_meta(**kwargs):
     """
-    Create a dummy common metadata dictionary with valid values for attributes and add
-    the additional photometry AND resample metadata
+    Create a dummy metadata dictionary with valid values for mosaic attributes.
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema with additional photometry and resample metadata)
+    dict (defined by the wfi_mosaic-1.0.0 schema)
     """
 
-    meta = mk_photometry_meta(**kwargs)
+    meta = {}
+    meta["asn"] = mk_mosaic_associations(**kwargs.get("asn", {}))
+    meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
+    meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
+    meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
+    meta["individual_image_meta"] = mk_individual_image_meta(**kwargs.get("individual_image_meta", {}))
+    meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
+    meta["program"] = mk_program(**kwargs.get("program", {}))
+    meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
     meta["resample"] = mk_resample(**kwargs.get("resample", {}))
+    meta["wcsinfo"] = mk_mosaic_wcsinfo(**kwargs.get("wcsinfo", {}))
 
     return meta
+
+
+def mk_mosaic_associations(**kwargs):
+    """
+    Create a dummy mosaic associations instance with valid values for
+    mosaic associations attributes. Utilized by the model maker utilities.
+
+    Returns
+    -------
+    roman_datamodels.stnode.MosaicAssociations
+    """
+
+    mosass = stnode.MosaicAssociations()
+    mosass["pool_name"] = kwargs.get("pool_name", NOSTR)
+    mosass["table_name"] = kwargs.get("table_name", NOSTR)
+
+    return mosass
 
 
 def mk_guidewindow_meta(**kwargs):
@@ -642,3 +668,108 @@ def mk_ref_readnoise_meta(**kwargs):
     meta["exposure"] = _mk_ref_exposure(**kwargs.get("exposure", {}))
 
     return meta
+
+
+def mk_mosaic_basic(**kwargs):
+    """
+    Create a dummy mosaic basic instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities.
+
+    Returns
+    -------
+    roman_datamodels.stnode.MosaicBasic
+    """
+
+    mosbasic = stnode.MosaicBasic()
+    mosbasic["time_first_mjd"] = kwargs.get("time_first_mjd", NONUM)
+    mosbasic["time_last_mjd"] = kwargs.get("time_last_mjd", NONUM)
+    mosbasic["time_mean_mjd"] = kwargs.get("time_mean_mjd", NONUM)
+    mosbasic["max_exposure_time"] = kwargs.get("max_exposure_time", NONUM)
+    mosbasic["mean_exposure_time"] = kwargs.get("mean_exposure_time", NONUM)
+    mosbasic["model_type"] = kwargs.get("model_type", NOSTR)
+    mosbasic["visit"] = kwargs.get("visit", NONUM)
+    mosbasic["segment"] = kwargs.get("segment", NONUM)
+    mosbasic["pass"] = kwargs.get("pass", NONUM)
+    mosbasic["program"] = kwargs.get("program", NOSTR)
+    mosbasic["survey"] = kwargs.get("survey", NOSTR)
+    mosbasic["optical_element"] = kwargs.get("optical_element", "F158")
+    mosbasic["instrument"] = kwargs.get("instrument", "WFI")
+    mosbasic["telescope"] = kwargs.get("telescope", "ROMAN")
+    mosbasic["location_name"] = kwargs.get("location_name", NOSTR)
+    mosbasic["product_type"] = kwargs.get("product_type", NOSTR)
+    mosbasic["filename"] = kwargs.get("filename", NOSTR)
+
+    return mosbasic
+
+
+def mk_mosaic_wcsinfo(**kwargs):
+    """
+    Create a dummy mosaic WCS Info instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities.
+
+    Returns
+    -------
+    roman_datamodels.stnode.MosaicWcsinfo
+    """
+
+    moswcsi = stnode.MosaicWcsinfo()
+    moswcsi["ra_ref"] = kwargs.get("ra_ref", NONUM)
+    moswcsi["dec_ref"] = kwargs.get("dec_ref", NONUM)
+    moswcsi["x_ref"] = kwargs.get("x_ref", NONUM)
+    moswcsi["y_ref"] = kwargs.get("y_ref", NONUM)
+    moswcsi["rotation_matrix"] = kwargs.get("rotation_matrix", [[NONUM, NONUM], [NONUM, NONUM]])
+    moswcsi["pixel_scale"] = kwargs.get("pixel_scale", NONUM)
+    moswcsi["pixel_scale_local"] = kwargs.get("pixel_scale_local", NONUM)
+    moswcsi["pixel_shape"] = kwargs.get("pixel_shape", [NONUM, NONUM])
+    moswcsi["ra_center"] = kwargs.get("ra_center", NONUM)
+    moswcsi["dec_center"] = kwargs.get("dec_center", NONUM)
+    moswcsi["ra_corn1"] = kwargs.get("ra_corn1", NONUM)
+    moswcsi["dec_corn1"] = kwargs.get("dec_corn1", NONUM)
+    moswcsi["ra_corn2"] = kwargs.get("ra_corn2", NONUM)
+    moswcsi["dec_corn2"] = kwargs.get("dec_corn2", NONUM)
+    moswcsi["ra_corn3"] = kwargs.get("ra_corn3", NONUM)
+    moswcsi["dec_corn3"] = kwargs.get("dec_corn3", NONUM)
+    moswcsi["ra_corn4"] = kwargs.get("ra_corn4", NONUM)
+    moswcsi["dec_corn4"] = kwargs.get("dec_corn4", NONUM)
+    moswcsi["orientat_local"] = kwargs.get("orientat_local", NONUM)
+    moswcsi["orientat"] = kwargs.get("orientat", NONUM)
+    moswcsi["projection"] = kwargs.get("projection", "TAN")
+    moswcsi["s_region"] = kwargs.get("s_region", NOSTR)
+
+    return moswcsi
+
+
+def mk_individual_image_meta(**kwargs):
+    """
+    Create a dummy component image metadata storage instance for mosaics
+    with valid values for attributes required by the schema.
+    Utilized by the model maker utilities.
+
+    Returns
+    -------
+    roman_datamodels.stnode.IndividualImageMeta
+    """
+
+    imm = stnode.IndividualImageMeta()
+
+    table_dct = {"dummy": [NONUM]}
+
+    imm["basic"] = kwargs.get("basic", QTable(table_dct))
+    imm["aperture"] = kwargs.get("aperture", QTable(table_dct))
+    imm["cal_step"] = kwargs.get("cal_step", QTable(table_dct))
+    imm["coordinates"] = kwargs.get("coordinates", QTable(table_dct))
+    imm["ephemeris"] = kwargs.get("ephemeris", QTable(table_dct))
+    imm["exposure"] = kwargs.get("exposure", QTable(table_dct))
+    imm["guidestar"] = kwargs.get("guidestar", QTable(table_dct))
+    imm["instrument"] = kwargs.get("instrument", QTable(table_dct))
+    imm["observation"] = kwargs.get("observation", QTable(table_dct))
+    imm["photometry"] = kwargs.get("photometry", QTable(table_dct))
+    imm["pointing"] = kwargs.get("pointing", QTable(table_dct))
+    imm["program"] = kwargs.get("program", QTable(table_dct))
+    imm["ref_file"] = kwargs.get("ref_file", QTable(table_dct))
+    imm["target"] = kwargs.get("target", QTable(table_dct))
+    imm["velocity_aberration"] = kwargs.get("velocity_aberration", QTable(table_dct))
+    imm["visit"] = kwargs.get("visit", QTable(table_dct))
+    imm["wcsinfo"] = kwargs.get("wcsinfo", QTable(table_dct))
+
+    return imm

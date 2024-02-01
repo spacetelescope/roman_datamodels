@@ -7,7 +7,7 @@ from astropy import units as u
 from roman_datamodels import stnode
 
 from ._base import MESSAGE, save_node
-from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_msos_stack_meta, mk_photometry_meta, mk_resample_meta
+from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_mosaic_meta, mk_msos_stack_meta, mk_photometry_meta
 from ._tagged_nodes import mk_cal_logs
 
 
@@ -174,21 +174,21 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
         )
 
     wfi_mosaic = stnode.WfiMosaic()
-    wfi_mosaic["meta"] = mk_resample_meta(**kwargs.get("meta", {}))
+    wfi_mosaic["meta"] = mk_mosaic_meta(**kwargs.get("meta", {}))
 
-    wfi_mosaic["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32))
-    wfi_mosaic["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32))
+    wfi_mosaic["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy / u.sr, dtype=np.float32))
+    wfi_mosaic["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy / u.sr, dtype=np.float32))
     wfi_mosaic["context"] = kwargs.get("context", np.zeros((n_images,) + shape, dtype=np.uint32))
     wfi_mosaic["weight"] = kwargs.get("weight", np.zeros(shape, dtype=np.float32))
 
     wfi_mosaic["var_poisson"] = kwargs.get(
-        "var_poisson", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+        "var_poisson", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy**2 / u.sr**2, dtype=np.float32)
     )
     wfi_mosaic["var_rnoise"] = kwargs.get(
-        "var_rnoise", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+        "var_rnoise", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy**2 / u.sr**2, dtype=np.float32)
     )
     wfi_mosaic["var_flat"] = kwargs.get(
-        "var_flat", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+        "var_flat", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy**2 / u.sr**2, dtype=np.float32)
     )
     wfi_mosaic["cal_logs"] = mk_cal_logs(**kwargs)
 

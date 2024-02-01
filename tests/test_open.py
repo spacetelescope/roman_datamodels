@@ -236,6 +236,8 @@ def test_opening_model(tmp_path, node_class):
         # Check that some of read data is correct
         if node_class == stnode.Associations:
             assert model.asn_type == "image"
+        elif node_class == stnode.WfiMosaic:
+            assert model.meta.basic.optical_element == "F158"
         else:
             assert model.meta.instrument.optical_element == "F158"
 

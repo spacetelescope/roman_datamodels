@@ -30,6 +30,8 @@
 
 - Added optional dq array to science raw maker utility and test. [#282]
 
+- Updated the WFI_Mosaic datamodel, maker utilities, and tests to a more streamlined metadata design for level 3 products. [#288]
+
 
 0.17.1 (2023-08-03)
 ===================

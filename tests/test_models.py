@@ -7,6 +7,7 @@ import pytest
 from asdf.exceptions import ValidationError
 from astropy import units as u
 from astropy.modeling import Model
+from astropy.table import QTable
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
@@ -650,22 +651,60 @@ def test_make_level3_mosaic():
     wfi_mosaic = utils.mk_level3_mosaic(shape=(8, 8))
 
     assert wfi_mosaic.data.dtype == np.float32
-    assert wfi_mosaic.data.unit == u.electron / u.s
+    assert wfi_mosaic.data.unit == u.MJy / u.sr
 
     assert wfi_mosaic.err.dtype == np.float32
-    assert wfi_mosaic.err.unit == u.electron / u.s
+    assert wfi_mosaic.err.unit == u.MJy / u.sr
     assert wfi_mosaic.context.dtype == np.uint32
     assert wfi_mosaic.weight.dtype == np.float32
     assert wfi_mosaic.var_poisson.dtype == np.float32
-    assert wfi_mosaic.var_poisson.unit == u.electron**2 / u.s**2
+    assert wfi_mosaic.var_poisson.unit == u.MJy**2 / u.sr**2
     assert wfi_mosaic.var_rnoise.dtype == np.float32
-    assert wfi_mosaic.var_rnoise.unit == u.electron**2 / u.s**2
+    assert wfi_mosaic.var_rnoise.unit == u.MJy**2 / u.sr**2
     assert wfi_mosaic.var_flat.dtype == np.float32
     assert isinstance(wfi_mosaic.cal_logs[0], str)
 
     # Test validation
     wfi_mosaic_model = datamodels.MosaicModel(wfi_mosaic)
     assert wfi_mosaic_model.validate() is None
+
+
+# WFI Level 3 Mosaic tests
+def test_append_individual_image_meta_level3_mosaic():
+    wfi_mosaic = utils.mk_level3_mosaic(shape=(8, 8))
+    wfi_mosaic_model = datamodels.MosaicModel(wfi_mosaic)
+
+    wfi_image1 = utils.mk_level2_image(shape=(8, 8))
+    wfi_image2 = utils.mk_level2_image(shape=(8, 8))
+    wfi_image3 = utils.mk_level2_image(shape=(8, 8))
+
+    wfi_image1.meta.program.pi_name = "Nancy"
+    wfi_image2.meta.program.pi_name = "Grace"
+    wfi_image3.meta.program.pi_name = "Roman"
+    wfi_image3_model = datamodels.ImageModel(wfi_image3)
+
+    wfi_mosaic_model.append_individual_image_meta(wfi_image1.meta)
+    wfi_mosaic_model.append_individual_image_meta(wfi_image2.meta.to_flat_dict())
+    wfi_mosaic_model.append_individual_image_meta(wfi_image3_model.meta)
+
+    # Test that basic is a QTable
+    assert isinstance(wfi_mosaic_model.meta.individual_image_meta.basic, QTable)
+
+    # Test that each image entry in the instrument table contains the same instrument name
+    assert wfi_mosaic_model.meta.individual_image_meta.instrument["name"][0] == "WFI"
+    assert (
+        wfi_mosaic_model.meta.individual_image_meta.instrument["name"][0]
+        == wfi_mosaic_model.meta.individual_image_meta.instrument["name"][1]
+    )
+    assert (
+        wfi_mosaic_model.meta.individual_image_meta.instrument["name"][1]
+        == wfi_mosaic_model.meta.individual_image_meta.instrument["name"][2]
+    )
+
+    # Test that each image entry in the program table contains the correct (different) PI name
+    assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][0] == "Nancy"
+    assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][1] == "Grace"
+    assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][2] == "Roman"
 
 
 def test_datamodel_info_search(capsys):
