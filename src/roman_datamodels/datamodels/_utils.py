@@ -2,6 +2,7 @@
 This module contains the utility functions for the datamodels sub-package. Mainly
     the open/factory function for creating datamodels
 """
+
 import warnings
 from pathlib import Path
 
