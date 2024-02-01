@@ -7,6 +7,7 @@ This provides the abstract base class ``Datamodel`` for all the specific datamod
     used for Roman. This dataclass is intended to be subclassed to form all of the actual
     working datamodels.
 """
+
 import abc
 import copy
 import datetime

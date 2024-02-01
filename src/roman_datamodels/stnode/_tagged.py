@@ -3,6 +3,7 @@ Base classes for all the tagged objects defined by RAD.
     Each tagged object will be dynamically created at runtime by _stnode.py
     from RAD's manifest.
 """
+
 import copy
 
 import asdf
