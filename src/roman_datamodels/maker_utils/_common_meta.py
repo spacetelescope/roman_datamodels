@@ -459,7 +459,7 @@ def mk_mosaic_meta(**kwargs):
 
 def mk_mosaic_associations(**kwargs):
     """
-    Create a dummy mosaic associations instance with valid values for 
+    Create a dummy mosaic associations instance with valid values for
     mosaic associations attributes. Utilized by the model maker utilities.
 
     Returns
