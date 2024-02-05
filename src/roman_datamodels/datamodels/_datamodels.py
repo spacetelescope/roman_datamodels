@@ -58,7 +58,7 @@ class MosaicModel(_RomanDataModel):
 
         Parameters
         ----------
-        meta : stnode or dict
+        meta : roman_datamodels.stnode._node.DNode or dict
             Metadata from a component image of the mosiac.
         """
 

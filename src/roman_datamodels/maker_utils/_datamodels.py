@@ -1,13 +1,12 @@
 import warnings
 
-import gwcs
 import numpy as np
 from astropy import units as u
 
 from roman_datamodels import stnode
 
 from ._base import MESSAGE, save_node
-from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_mosaic_meta, mk_msos_stack_meta, mk_photometry_meta
+from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_mosaic_meta, mk_msos_stack_meta, mk_photometry_meta, mk_wcs
 from ._tagged_nodes import mk_cal_logs
 
 
@@ -137,7 +136,7 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     )
     wfi_image["cal_logs"] = mk_cal_logs(**kwargs)
 
-    wfi_image["meta"]["wcs"] = gwcs.WCS(output_frame="icrs")
+    wfi_image["meta"]["wcs"] = mk_wcs()
 
     return save_node(wfi_image, filepath=filepath)
 
@@ -192,7 +191,7 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
     )
     wfi_mosaic["cal_logs"] = mk_cal_logs(**kwargs)
 
-    wfi_mosaic["meta"]["wcs"] = gwcs.WCS(output_frame="icrs")
+    wfi_mosaic["meta"]["wcs"] = mk_wcs()
 
     return save_node(wfi_mosaic, filepath=filepath)
 
