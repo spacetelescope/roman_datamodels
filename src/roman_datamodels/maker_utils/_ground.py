@@ -32,7 +32,7 @@ def mk_ground_exposure(**kwargs):
     exp["exposure_time"] = kwargs.get("exposure_time", NONUM)
     exp["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
     exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
-    exp["read_pattern"] = kwargs.get("read_pattern", [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]])
+    exp["read_pattern"] = kwargs.get("read_pattern", np.arange(1, 56).reshape((-1, 1)).tolist())
 
     return exp
 
@@ -124,11 +124,11 @@ def mk_tvac_groundtest(**kwargs):
     ground["srcs_pd_voltage"] = kwargs.get("srcs_pd_voltage", NONUM)
     ground["srcs_led_flux"] = kwargs.get("srcs_led_flux", NONUM)
     ground["wfi_mce_srcs_bank1_led_i"] = kwargs.get(
-        "wfi_mce_srcs_bank1_led_i", u.Quantity(np.zeros(6, dtype=np.uint32), unit=u.cm, dtype=np.uint32)
+        "wfi_mce_srcs_bank1_led_i", u.Quantity(np.zeros(6, dtype=np.uint32), unit=u.A, dtype=np.uint32)
     )
     ground["wfi_mce_srcs_bank1_led_range"] = kwargs.get("wfi_mce_srcs_bank1_led_range", NOSTR)
     ground["wfi_mce_srcs_bank2_led_i"] = kwargs.get(
-        "wfi_mce_srcs_bank2_led_i", u.Quantity(np.zeros(6, dtype=np.uint32), unit=u.cm, dtype=np.uint32)
+        "wfi_mce_srcs_bank2_led_i", u.Quantity(np.zeros(6, dtype=np.uint32), unit=u.A, dtype=np.uint32)
     )
     ground["wfi_mce_srcs_bank2_led_range"] = kwargs.get("wfi_mce_srcs_bank2_led_range", NOSTR)
     ground["srcs_led_current"] = kwargs.get("srcs_led_current", NONUM)

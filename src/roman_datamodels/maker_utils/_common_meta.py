@@ -24,6 +24,7 @@ def mk_exposure(**kwargs):
     """
     exp = stnode.Exposure()
     exp._data = mk_ground_exposure(**kwargs)._data
+    exp["read_pattern"] = kwargs.get("read_pattern", [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]])
     exp["id"] = kwargs.get("id", NONUM)
     exp["mid_time"] = kwargs.get("mid_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
     exp["end_time"] = kwargs.get("end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
