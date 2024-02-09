@@ -39,7 +39,10 @@ def _set_default_asdf(func):
         if self._asdf is None:
             try:
                 with validate.nuke_validation():
-                    self._asdf = asdf.AsdfFile({"roman": self._instance})
+                    af = asdf.AsdfFile()
+                    af["roman"] = self._instance
+                    af.validate()
+                    self._asdf = af
             except ValidationError as err:
                 raise ValueError(f"DataModel needs to have all its data flushed out before calling {func.__name__}") from err
 
@@ -126,8 +129,10 @@ class DataModel(abc.ABC):
                 )
             with validate.nuke_validation():
                 self._instance = init
-                self._asdf = asdf.AsdfFile({"roman": init})
-
+                af = asdf.AsdfFile()
+                af["roman"] = self._instance
+                af.validate()
+                self._asdf = af
                 return
 
         if init is None:
@@ -220,7 +225,7 @@ class DataModel(abc.ABC):
     def to_asdf(self, init, *args, **kwargs):
         with validate.nuke_validation(), _temporary_update_filename(self, Path(init).name):
             asdf_file = self.open_asdf(**kwargs)
-            asdf_file.tree = {"roman": self._instance}
+            asdf_file["roman"] = self._instance
             asdf_file.write_to(init, *args, **kwargs)
 
     def get_primary_array_name(self):

@@ -10,6 +10,9 @@
 
 - Add ``meta.wcs`` to ``maker_utils``. [#302]
 
+- Remove duplicate validation during ``DataModel.to_asdf``, replace assumed validation
+  during ``AsdfFile.__init__`` with call to ``AsdfFile.validate``  [#301]
+
 0.18.0 (2023-11-06)
 ===================
 
