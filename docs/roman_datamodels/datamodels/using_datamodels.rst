@@ -1,3 +1,5 @@
+.. _using-datamodels:
+
 Using Roman Datamodels
 ======================
 
