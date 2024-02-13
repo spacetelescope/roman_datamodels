@@ -5,6 +5,8 @@
 
 - Move ``dqflags`` from ``romancal`` to ``roman_datamodels``. [#293]
 
+- Added documentation for ``stnode``. [#316]
+
 0.19.0 (2024-02-09)
 ===================
 
