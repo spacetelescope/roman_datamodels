@@ -122,19 +122,36 @@ def test_schema_info():
         "wfimode": {
             "detector": {
                 "archive_catalog": (
-                    {"datatype": "nvarchar(10)", "destination": ["ScienceCommon.detector", "GuideWindow.detector"]},
+                    {
+                        "datatype": "nvarchar(10)",
+                        "destination": ["ScienceCommon.detector", "GuideWindow.detector", "WFICommon.detector"],
+                    },
                     "WFI18",
                 )
             },
             "name": {
                 "archive_catalog": (
-                    {"datatype": "nvarchar(5)", "destination": ["ScienceCommon.instrument_name", "GuideWindow.instrument_name"]},
+                    {
+                        "datatype": "nvarchar(5)",
+                        "destination": [
+                            "ScienceCommon.instrument_name",
+                            "GuideWindow.instrument_name",
+                            "WFICommon.instrument_name",
+                        ],
+                    },
                     "WFI",
                 )
             },
             "optical_element": {
                 "archive_catalog": (
-                    {"datatype": "nvarchar(20)", "destination": ["ScienceCommon.optical_element", "GuideWindow.optical_element"]},
+                    {
+                        "datatype": "nvarchar(20)",
+                        "destination": [
+                            "ScienceCommon.optical_element",
+                            "GuideWindow.optical_element",
+                            "WFICommon.optical_element",
+                        ],
+                    },
                     "GRISM",
                 )
             },

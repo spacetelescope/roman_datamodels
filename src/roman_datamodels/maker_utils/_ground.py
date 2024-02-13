@@ -85,14 +85,14 @@ def mk_groundtest(**kwargs):
     ground["filename_l1a"] = kwargs.get("filename_l1a", NOSTR)
     ground["detector_id"] = kwargs.get("detector_id", NOSTR)
     ground["detector_temp"] = kwargs.get("detector_temp", NONUM)
-    ground["frames_temp"] = kwargs.get("frames_temp", np.zeros(6, dtype=np.float32))
+    ground["frames_temp"] = kwargs.get("frames_temp", np.zeros(6, dtype=np.float64))
     ground["ota_temp"] = kwargs.get("ota_temp", NONUM)
     ground["rcs_on"] = kwargs.get("rcs_on", False)
     ground["readout_col_num"] = kwargs.get("readout_col_num", NONUM)
     ground["detector_pixel_size"] = kwargs.get(
-        "detector_pixel_size", u.Quantity(np.zeros(6, dtype=np.float32), unit=u.cm, dtype=np.float32)
+        "detector_pixel_size", u.Quantity(np.zeros(6, dtype=np.float64), unit=u.cm, dtype=np.float64)
     )
-    ground["sensor_error"] = kwargs.get("sensor_error", np.zeros(6, dtype=np.float32))
+    ground["sensor_error"] = kwargs.get("sensor_error", np.zeros(6, dtype=np.float64))
 
     return ground
 
@@ -116,10 +116,10 @@ def mk_tvac_groundtest(**kwargs):
     ground["led_bank1_band_number_on"] = kwargs.get("led_bank1_band_number_on", [NONUM])
     ground["led_bank2_band_number_on"] = kwargs.get("led_bank2_band_number_on", [NONUM])
     ground["led_bank1_approx_wlen"] = kwargs.get(
-        "led_bank1_approx_wlen", u.Quantity(np.zeros(6, dtype=np.uint32), unit=u.nm, dtype=np.uint32)
+        "led_bank1_approx_wlen", u.Quantity(np.zeros(6, dtype=np.float64), unit=u.nm, dtype=np.float64)
     )
     ground["led_bank2_approx_wlen"] = kwargs.get(
-        "led_bank2_approx_wlen", u.Quantity(np.zeros(6, dtype=np.uint32), unit=u.nm, dtype=np.uint32)
+        "led_bank2_approx_wlen", u.Quantity(np.zeros(6, dtype=np.float64), unit=u.nm, dtype=np.float64)
     )
     ground["srcs_pd_voltage"] = kwargs.get("srcs_pd_voltage", NONUM)
     ground["srcs_led_flux"] = kwargs.get("srcs_led_flux", NONUM)
