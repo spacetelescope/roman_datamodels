@@ -7,7 +7,7 @@ import pytest
 from asdf.exceptions import ValidationError
 from astropy import units as u
 from astropy.modeling import Model
-from astropy.table import QTable
+from astropy.table import QTable, Table
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
@@ -755,6 +755,12 @@ def test_make_tvac():
     tvac_model = datamodels.TvacModel(tvac)
     assert tvac_model.validate() is None
 
+
+def test_make_source_catalog():
+    source_catalog = utils.mk_source_catalog()
+    source_catalog_model = datamodels.SourceCatalogModel(source_catalog)
+
+    assert isinstance(source_catalog_model.source_catalog, Table)
 
 def test_datamodel_info_search(capsys):
     wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))

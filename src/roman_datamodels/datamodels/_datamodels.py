@@ -292,3 +292,7 @@ class FpsModel(_DataModel):
 
 class TvacModel(_DataModel):
     _node_type = stnode.Tvac
+
+
+class SourceCatalogModel(_DataModel):
+    _node_type = stnode.SourceCatalog
