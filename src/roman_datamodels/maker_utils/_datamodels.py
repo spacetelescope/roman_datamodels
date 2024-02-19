@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 from astropy import units as u
+from astropy.table import Table
 
 from roman_datamodels import stnode
 
@@ -430,3 +431,26 @@ def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
     guidewindow["amp33"] = kwargs.get("amp33", u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16))
 
     return save_node(guidewindow, filepath=filepath)
+
+
+def mk_source_catalog(*, filepath=None, **kwargs):
+    """
+    Create a dummy Source Catalog instance (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SourceCatalog
+    """
+    source_catalog = stnode.SourceCatalog()
+    # There currently is no meta attribute for SourceCatalog
+    #   This is likely to change once metadata has been added
+    # source_catalog["meta"] = kwargs.get("meta", {})
+    source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
+
+    return save_node(source_catalog, filepath=filepath)
