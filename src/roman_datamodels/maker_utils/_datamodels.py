@@ -447,9 +447,33 @@ def mk_source_catalog(*, filepath=None, **kwargs):
     roman_datamodels.stnode.SourceCatalog
     """
     source_catalog = stnode.SourceCatalog()
-    # There currently is no meta attribute for SourceCatalog
-    #   This is likely to change once metadata has been added
-    # source_catalog["meta"] = kwargs.get("meta", {})
+
     source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
+    source_catalog["meta"] = mk_common_meta()
+    source_catalog["meta"].update(kwargs.get("meta", dict(segmentation_map='')))
 
     return save_node(source_catalog, filepath=filepath)
+
+
+def mk_segmentation_map(*, filepath=None, shape=(4096, 4096), **kwargs):
+    """
+    Create a dummy Segmentation Map (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SegmentationMap
+    """
+    segmentation_map = stnode.SegmentationMap()
+
+    segmentation_map["data"] = kwargs.get("data", np.zeros(shape, dtype=np.uint32))
+    segmentation_map["meta"] = mk_common_meta()
+    segmentation_map["meta"].update(kwargs.get("meta", dict(filename='')))
+
+    return save_node(segmentation_map, filepath=filepath)
+
