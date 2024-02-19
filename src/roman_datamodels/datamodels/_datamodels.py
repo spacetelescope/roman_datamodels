@@ -296,3 +296,7 @@ class TvacModel(_DataModel):
 
 class SourceCatalogModel(_DataModel):
     _node_type = stnode.SourceCatalog
+
+
+class SegmentationMapModel(_DataModel):
+    _node_type = stnode.SegmentationMap
