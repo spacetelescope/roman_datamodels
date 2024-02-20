@@ -515,7 +515,19 @@ def test_add_model_attribute(tmp_path):
         readnoise2.new_attribute = 88
         assert readnoise2.new_attribute == 88
         with pytest.raises(ValidationError):
-            readnoise["data"] = "bad_data_value"
+            readnoise.data = "bad_data_value"
+
+
+def test_model_subscribable(tmp_path):
+    """
+    Test that __getitem__ exists
+    """
+    file_path = tmp_path / "testreadnoise.asdf"
+
+    utils.mk_readnoise(shape=(8, 8), filepath=file_path)
+    with datamodels.open(file_path) as readnoise:
+        assert readnoise["data"].shape == (8, 8)
+        assert readnoise.data is readnoise["data"]
 
 
 # Saturation tests

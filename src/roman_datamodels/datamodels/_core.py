@@ -266,10 +266,10 @@ class DataModel(abc.ABC):
     def __setitem__(self, key, value):
         if key.startswith("_"):
             raise ValueError("May not specify attributes/keys that start with _")
-        if hasattr(self._instance, key):
-            setattr(self._instance, key, value)
-        else:
-            self._instance._data[key] = value
+        self._instance[key] = value
+
+    def __getitem__(self, key):
+        return self._instance[key]
 
     def __iter__(self):
         return iter(self._instance)
