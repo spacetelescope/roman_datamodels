@@ -7,6 +7,9 @@
 
 - Added documentation for ``stnode``. [#316]
 
+- Make datamodels follow the same subscription pattern as the ``stnode`` based
+  objects. [#322]
+
 0.19.0 (2024-02-09)
 ===================
 
