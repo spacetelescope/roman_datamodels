@@ -450,8 +450,7 @@ def mk_source_catalog(*, filepath=None, **kwargs):
     source_catalog = stnode.SourceCatalog()
 
     source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
-    source_catalog["meta"] = mk_common_meta()
-    source_catalog["meta"].update(kwargs.get("meta", dict(segmentation_map='')))
+    source_catalog["meta"] = mk_common_meta(**kwargs.get("meta", {}))
 
     return save_node(source_catalog, filepath=filepath)
 
@@ -466,15 +465,24 @@ def mk_segmentation_map(*, filepath=None, shape=(4096, 4096), **kwargs):
     filepath
         (optional, keyword-only) File name and path to write model to.
 
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+
     Returns
     -------
     roman_datamodels.stnode.SegmentationMap
     """
-    segmentation_map = stnode.SegmentationMap()
+    if len(shape) > 2:
+        shape = shape[1:3]
 
+        warnings.warn(
+            f"{MESSAGE} assuming the first entry is n_groups followed by y, x. The remaining is thrown out!", UserWarning
+        )
+
+    segmentation_map = stnode.SegmentationMap()
     segmentation_map["data"] = kwargs.get("data", np.zeros(shape, dtype=np.uint32))
     segmentation_map["meta"] = mk_common_meta()
-    segmentation_map["meta"].update(kwargs.get("meta", dict(filename='')))
+    segmentation_map["meta"].update(kwargs.get("meta", {}))
 
     return save_node(segmentation_map, filepath=filepath)
 

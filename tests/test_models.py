@@ -715,6 +715,13 @@ def test_make_source_catalog():
     assert isinstance(source_catalog_model.source_catalog, Table)
 
 
+def test_make_segmentation_map():
+    segmentation_map = utils.mk_segmentation_map()
+    segmentation_map_model = datamodels.SegmentationMapModel(segmentation_map)
+
+    assert isinstance(segmentation_map_model.data, np.ndarray)
+
+
 def test_datamodel_info_search(capsys):
     wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
     af = asdf.AsdfFile()

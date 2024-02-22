@@ -226,9 +226,6 @@ def test_node_round_trip(tmp_path, node_class):
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_opening_model(tmp_path, node_class):
-    if node_class == stnode.SourceCatalog:
-        pytest.xfail("SourceCatalog does not have a meta attribute yet")
-
     file_path = tmp_path / "test.asdf"
 
     # Create a node and write it to disk
