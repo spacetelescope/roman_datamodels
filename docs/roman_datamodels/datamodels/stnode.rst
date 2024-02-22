@@ -16,7 +16,7 @@ Unfortunately, the stnode objects are not directly written in the roman
 datamodels codebase. Instead, they are dynamically generated from the schema
 files defined in the RAD schema package. The reason for this is that the schema
 files are treated as the "truth" for how the data should be stored rather than
-any Python code. The dynamically generate object types are a way to facilitate
+any Python code. The dynamically generated object types are a way to facilitate
 this without massive code duplication. This of course means that issues
 concerning the stnode objects such as schema violations can be difficult to
 debug, without an understanding of the schema files and their connection with
@@ -35,13 +35,14 @@ two classes so that all stnode objects can inherit from them.
 
 Currently, there these two objects are implemented so that they follow the
 dictionary or list interface; meaning that, they can be accessed via the ``[]``
-operator (``node["keyword]"`` or ``node[0]``). However, for the case of the
+operator (``node["keyword"]`` or ``node[0]``). However, for the case of the
 `~roman_datamodels.stnode.DNode` objects, keys can also be used to directly
 access the data attributes of the object via the Python ``.`` operator
 (``node.keyword``). This is so that the `~roman_datamodels.stnode.DNode`
 objects "look" like they are nice Python derived types.
 
 .. warning::
+
     Because the `~roman_datamodels.stnode.DNode` "attributes" are actually like
     they are Python dictionary key, using the ``__getattr__`` to enable ``.``
     access, things like ``dir(node)``, IDE autocompletion, and some other Python
@@ -49,6 +50,9 @@ objects "look" like they are nice Python derived types.
     in spurious warnings about accessing undefined attributes. It also means
     that one should be referencing the schema files to understand what
     attributes are available for a given stnode object.
+
+    This information can be found using the ``.info()`` method. This method will
+    be a pass through to the `asdf.AsdfFile.info` method.
 
 
 Dynamic Node Construction
@@ -64,8 +68,9 @@ stored in a `~roman_datamodels.stnode.DNode` or `~roman_datamodels.stnode.LNode`
 object, depending on the schema in question.
 
 .. note::
+
     The creation of stnode "node" types might occur when a user opens an ASDF
-    file contain Roman data, as ASDF will load stnode as part of its
+    file containing Roman data, as ASDF will load stnode as part of its
     de-serialization process. However, due to how Python imports work this
     should only happen once.
 
@@ -83,6 +88,7 @@ is they process the ``tag`` value and strip out the unique name for the schema,
 which gets turned into a name for the type that the factory will create.
 
 .. note::
+
     If special methods are needed for a specific stnode object, then one needs
     to add class to `roman_datamodels.stnode._mixins` with the appropriate
     methods/properties under the name ``<expected-class-name>Mixin``. The
@@ -142,12 +148,14 @@ constructs which the parser is unaware of. In these cases, validation might
 raise an error or pass invalid data.
 
 .. warning::
+
     The only validation process that is guaranteed to validate the data
     correctly is the full ASDF validation process. This is because ASDF will be
     using the full schema and be checking everything against it. The on-the-fly
     validation's parsing may create unreliable validation scenarios.
 
 .. note::
+
     In order to avoid the "on-the-fly" validation process, one can set values in
     a node/datamodel via the dictionary, ``[]``, interface instead of the ``.``
     interface. This is because the ``[]`` purposely bypasses the on-the-fly
