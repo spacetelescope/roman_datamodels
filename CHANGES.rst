@@ -3,6 +3,8 @@
 
 - Remove the ``psutil`` dependency. [#320]
 
+- Add model for the Source Catalog [#317]
+
 0.19.0 (2024-02-09)
 ===================
 

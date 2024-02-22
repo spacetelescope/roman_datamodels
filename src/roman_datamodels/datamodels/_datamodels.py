@@ -287,3 +287,11 @@ class WfiImgPhotomRefModel(_DataModel):
 
 class RefpixRefModel(_DataModel):
     _node_type = stnode.RefpixRef
+
+
+class SourceCatalogModel(_DataModel):
+    _node_type = stnode.SourceCatalog
+
+
+class SegmentationMapModel(_DataModel):
+    _node_type = stnode.SegmentationMap
