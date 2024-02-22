@@ -485,4 +485,3 @@ def mk_segmentation_map(*, filepath=None, shape=(4096, 4096), **kwargs):
     segmentation_map["meta"].update(kwargs.get("meta", {}))
 
     return save_node(segmentation_map, filepath=filepath)
-
