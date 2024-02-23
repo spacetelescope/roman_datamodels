@@ -114,7 +114,6 @@ def mk_tvac_groundtest(**kwargs):
 
     ground["activity_number"] = kwargs.get("activity_number", NONUM)
     ground["led_bank1_band_number_on"] = kwargs.get("led_bank1_band_number_on", [NONUM])
-    ground["led_bank2_band_number_on"] = kwargs.get("led_bank2_band_number_on", [NONUM])
     ground["led_bank1_approx_wlen"] = kwargs.get(
         "led_bank1_approx_wlen", u.Quantity(np.zeros(6, dtype=np.float64), unit=u.nm, dtype=np.float64)
     )
