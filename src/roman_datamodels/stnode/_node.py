@@ -127,12 +127,30 @@ class SchemaProperties:
                     return True
         return False
 
+    def extend(self, other):
+        """
+        Extend the current SchemaProperties with those from another instance.
+        """
+        self.explicit_properties = set(self.explicit_properties).union(other.explicit_properties)
+        self.patterns.update(other.patterns)
+
     @classmethod
     def from_schema(cls, schema):
         """
         Create a SchemaProperties object from a schema.
         """
-        return cls(schema.get("properties", {}).keys(), schema.get("patternProperties", {}))
+
+        # Handle the top-level properties
+        explicit_properties = schema.get("properties", {}).keys()
+        patterns = schema.get("patternProperties", {})
+        schema_properties = cls(explicit_properties, patterns)
+
+        # Handle the case where the schema is using an "allOf" combiner
+        if "allOf" in schema:
+            for subschema in schema["allOf"]:
+                schema_properties.extend(cls.from_schema(subschema))
+
+        return schema_properties
 
 
 class DNode(MutableMapping):
