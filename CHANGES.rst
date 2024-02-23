@@ -7,6 +7,8 @@
 
 - Added documentation for ``stnode``. [#316]
 
+- Add support for ``FPS`` and ``TVAC`` models. [#309]
+
 0.19.0 (2024-02-09)
 ===================
 
