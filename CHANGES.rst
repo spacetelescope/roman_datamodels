@@ -3,12 +3,15 @@
 
 - Remove the ``psutil`` dependency. [#320]
 
+- Move ``dqflags`` from ``romancal`` to ``roman_datamodels``. [#293]
+
+- Added documentation for ``stnode``. [#316]
+
 0.19.0 (2024-02-09)
 ===================
 
 - Allow assignment to or creation of node attributes using dot notation of object instances
   with validation. [#284]
-- Move ``dqflags`` from ``romancal`` to ``roman_datamodels``. [#293]
 
 - Bugfix for ``model.meta.filename`` not matching the filename of the file on disk. [#295]
 

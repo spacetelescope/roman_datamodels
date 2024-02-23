@@ -62,6 +62,9 @@ def _check_value(value, schema, validator_context):
 
 
 def _validate(attr, instance, schema, ctx):
+    """
+    Validate the attribute against the schema.
+    """
     # Note that the following checks cannot use isinstance since the TaggedObjectNode
     # and TaggedListNode subclasses will break as a result. And currently there is no
     # non-tagged subclasses of these classes that exist, nor are any envisioned yet.
@@ -69,11 +72,15 @@ def _validate(attr, instance, schema, ctx):
         instance = instance._data
     elif type(instance) == LNode:  # noqa: E721
         instance = instance.data
+
     tagged_tree = yamlutil.custom_tree_to_tagged_tree(instance, ctx)
     return _value_change(attr, tagged_tree, schema, False, will_strict_validate(), ctx)
 
 
 def _get_schema_for_property(schema, attr):
+    """
+    Pull out the schema for a particular property.
+    """
     # Check if attr is a property
     subschema = schema.get("properties", {}).get(attr, None)
 
@@ -84,21 +91,20 @@ def _get_schema_for_property(schema, attr):
             subschema = value
             break
 
+    # Have found a schema for the attribute return it
     if subschema is not None:
         return subschema
+
+    # Still have not found a schema for the attribute, so check for combiners
+    # and search for the attribute through the entries in the combiners
     for combiner in ["allOf", "anyOf"]:
         for subschema in schema.get(combiner, []):
             subsubschema = _get_schema_for_property(subschema, attr)
             if subsubschema != {}:
                 return subsubschema
 
+    # Still have not found a schema for the attribute, so return an empty one
     return {}
-
-
-def _get_attributes_from_schema(schema):
-    explicit_properties = schema.get("properties", {}).keys()
-    patterns = schema.get("patternProperties", {})
-    return SchemaProperties(explicit_properties, patterns)
 
 
 class SchemaProperties:
@@ -121,6 +127,13 @@ class SchemaProperties:
                     return True
         return False
 
+    @classmethod
+    def from_schema(cls, schema):
+        """
+        Create a SchemaProperties object from a schema.
+        """
+        return cls(schema.get("properties", {}).keys(), schema.get("patternProperties", {}))
+
 
 class DNode(MutableMapping):
     """
@@ -131,12 +144,15 @@ class DNode(MutableMapping):
     _ctx = None
 
     def __init__(self, node=None, parent=None, name=None):
+        # Handle if we are passed different data types
         if node is None:
             self.__dict__["_data"] = {}
         elif isinstance(node, dict):
             self.__dict__["_data"] = node
         else:
             raise ValueError("Initializer only accepts dicts")
+
+        # Set the metadata tracked by the node
         self._x_schema = None
         self._schema_uri = None
         self._parent = parent
@@ -145,12 +161,14 @@ class DNode(MutableMapping):
 
     @property
     def ctx(self):
+        """Asdf context for this node. This should be an empty file"""
         if self._ctx is None:
             DNode._ctx = asdf.AsdfFile()
         return self._ctx
 
     @staticmethod
     def _convert_to_scalar(key, value):
+        """Find and wrap scalars in the appropriate class, if its a tagged one."""
         if key in SCALAR_NODE_CLASSES_BY_KEY:
             value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
 
@@ -161,48 +179,62 @@ class DNode(MutableMapping):
         Permit accessing dict keys as attributes, assuming they are legal Python
         variable names.
         """
+        # Private values should have already been handled by the __getattribute__ method
+        #   bail out if we are falling back on this method
         if key.startswith("_"):
             raise AttributeError(f"No attribute {key}")
+
+        # If the key is in the schema, then we can return the value
         if key in self._data:
+            # Cast the value into the appropriate tagged scalar class
             value = self._convert_to_scalar(key, self._data[key])
+
+            # Return objects as node classes, if applicable
             if isinstance(value, dict):
                 return DNode(value, parent=self, name=key)
+
             elif isinstance(value, list):
                 return LNode(value)
+
             else:
                 return value
-        else:
-            raise AttributeError(f"No such attribute ({key}) found in node")
+
+        # Raise the correct error for the attribute not being found
+        raise AttributeError(f"No such attribute ({key}) found in node")
 
     def __setattr__(self, key, value):
         """
         Permit assigning dict keys as attributes.
-
         """
 
+        # Private keys should just be in the normal __dict__
         if key[0] != "_":
+
+            # Wrap things in the tagged scalar classes if necessary
             value = self._convert_to_scalar(key, value)
-            if key in self._data or key in self._schema_attributes():
+
+            if key in self._data or key in self._schema_attributes:
+                # Perform validation if enabled
                 if will_validate():
                     schema = _get_schema_for_property(self._schema(), key)
                     if schema:
                         _validate(key, value, schema, self.ctx)
+
+                # Finally set the value
                 self._data[key] = value
             else:
                 raise AttributeError(f"No such attribute ({key}) found in node")
         else:
             self.__dict__[key] = value
 
+    @property
     def _schema_attributes(self):
+        """
+        Get the schema attributes for this node.
+        """
         if self._x_schema_attributes is None:
-            self._x_schema_attributes = self._get_schema_attributes()
+            self._x_schema_attributes = SchemaProperties.from_schema(self._schema())
         return self._x_schema_attributes
-
-    def _get_schema_attributes(self):
-        """
-        Extract all schema attributes for this node.
-        """
-        return _get_attributes_from_schema(self._schema())
 
     def to_flat_dict(self, include_arrays=True):
         """
@@ -217,6 +249,9 @@ class DNode(MutableMapping):
         """
 
         def convert_val(val):
+            """
+            Unwrap the tagged scalars if necessary.
+            """
             if isinstance(val, datetime.datetime):
                 return val.isoformat()
             elif isinstance(val, Time):
@@ -243,34 +278,47 @@ class DNode(MutableMapping):
         return self._x_schema
 
     def __asdf_traverse__(self):
+        """Asdf traverse method for things like info/search"""
         return dict(self)
 
     def __len__(self):
+        """Define length of the node"""
         return len(self._data)
 
     def __getitem__(self, key):
+        """Dictionary style access data"""
         if key in self._data:
             return self._data[key]
 
         raise KeyError(f"No such key ({key}) found in node")
 
     def __setitem__(self, key, value):
+        """Dictionary style access set data"""
+
+        # Convert the value to a tagged scalar if necessary
         value = self._convert_to_scalar(key, value)
+
+        # If the value is a dictionary, loop over its keys and convert them to tagged scalars
         if isinstance(value, dict):
             for sub_key, sub_value in value.items():
                 value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
+
         self._data[key] = value
 
     def __delitem__(self, key):
+        """Dictionary style access delete data"""
         del self._data[key]
 
     def __iter__(self):
+        """Define iteration"""
         return iter(self._data)
 
     def __repr__(self):
+        """Define a representation"""
         return repr(self._data)
 
     def copy(self):
+        """Handle copying of the node"""
         instance = self.__class__.__new__(self.__class__)
         instance.__dict__.update(self.__dict__.copy())
         instance.__dict__["_data"] = self.__dict__["_data"].copy()

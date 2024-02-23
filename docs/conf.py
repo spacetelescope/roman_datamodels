@@ -66,8 +66,9 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", (None, "http://data.astropy.org/intersphinx/scipy.inv")),
     "matplotlib": ("https://matplotlib.org/stable/", (None, "http://data.astropy.org/intersphinx/matplotlib.inv")),
     "astropy": ("https://docs.astropy.org/en/stable/", None),
-    "asdf": ("https://asdf.readthedocs.io/en/stable/", None),
+    "asdf": ("https://asdf.readthedocs.io/en/latest/", None),
     "psutil": ("https://psutil.readthedocs.io/en/stable/", None),
+    "rad": ("https://rad.readthedocs.io/en/latest/", None),
 }
 
 # Add any Sphinx extension module names here, as strings. They can be
