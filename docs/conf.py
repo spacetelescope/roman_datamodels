@@ -18,19 +18,11 @@ from distutils.version import LooseVersion
 from pathlib import Path
 
 import sphinx
-import stsci_rtd_theme
 
 if sys.version_info < (3, 11):
     import tomli as tomllib
 else:
     import tomllib
-
-
-def setup(app):
-    try:
-        app.add_css_file("stsci.css")
-    except AttributeError:
-        app.add_stylesheet("stsci.css")
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -88,7 +80,6 @@ extensions = [
     "sphinx_automodapi.automodsumm",
     "sphinx_automodapi.autodoc_enhancements",
     "sphinx_automodapi.smart_resolver",
-    "sphinx_asdf",
     "sphinxcontrib.jquery",
 ]
 
@@ -208,16 +199,13 @@ pygments_style = "default"
 # If true, keep warnings as "system message" paragraphs in the built documents.
 # keep_warnings = False
 
-# Mapping for links to the ASDF Standard in ASDF schema documentation
-asdf_schema_reference_mappings = [
-    ("tag:stsci.edu:asdf", "http://asdf-standard.readthedocs.io/en/latest/generated/stsci.edu/asdf/"),
-]
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "stsci_rtd_theme"
+html_theme = "sphinx_rtd_theme"
+
+html_static_path = ["_static"]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -231,7 +219,7 @@ html_theme_options = {"collapse_navigation": True}
 #        }
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [stsci_rtd_theme.get_html_theme_path()]
+# html_theme_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -246,7 +234,8 @@ html_theme_path = [stsci_rtd_theme.get_html_theme_path()]
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-# html_favicon = None
+html_favicon = "_static/stsci_logo.png"
+html_logo = "_static/stsci_logo.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -323,7 +312,7 @@ htmlhelp_basename = "roman_datamodelsdoc"
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-# latex_logo = '_static/Romanlogocrop.png'
+latex_logo = "_static/stsci_logo.png"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
