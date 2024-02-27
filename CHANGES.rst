@@ -7,7 +7,12 @@
 
 - Added documentation for ``stnode``. [#316]
 
+<<<<<<< HEAD
 - Add support for ``FPS`` and ``TVAC`` models. [#309]
+=======
+- Make datamodels follow the same subscription pattern as the ``stnode`` based
+  objects. [#322]
+>>>>>>> 8dcb8dc13bdeb129fa69f4a945cbe29615bf9cfd
 
 0.19.0 (2024-02-09)
 ===================

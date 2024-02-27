@@ -38,9 +38,7 @@ docs = [
     'sphinx',
     'sphinx-automodapi',
     'sphinx-rtd-theme',
-    'stsci-rtd-theme',
     'sphinx-astropy',
-    'sphinx-asdf',
     'tomli; python_version <"3.11"',
 ]
 
