@@ -124,7 +124,7 @@ def test_schema_info():
                 "archive_catalog": (
                     {
                         "datatype": "nvarchar(10)",
-                        "destination": ["ScienceCommon.detector", "GuideWindow.detector", "WFICommon.detector"],
+                        "destination": ["WFIExposure.detector", "GuideWindow.detector", "WFICommon.detector"],
                     },
                     "WFI18",
                 )
@@ -134,7 +134,7 @@ def test_schema_info():
                     {
                         "datatype": "nvarchar(5)",
                         "destination": [
-                            "ScienceCommon.instrument_name",
+                            "WFIExposure.instrument_name",
                             "GuideWindow.instrument_name",
                             "WFICommon.instrument_name",
                         ],
@@ -147,7 +147,7 @@ def test_schema_info():
                     {
                         "datatype": "nvarchar(20)",
                         "destination": [
-                            "ScienceCommon.optical_element",
+                            "WFIExposure.optical_element",
                             "GuideWindow.optical_element",
                             "WFICommon.optical_element",
                         ],

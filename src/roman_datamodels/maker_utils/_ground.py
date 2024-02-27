@@ -10,55 +10,55 @@ from ._base import NONUM, NOSTR, save_node
 from ._basic_meta import mk_basic_meta
 
 
-def mk_ground_exposure(**kwargs):
-    """
-    Create a dummy GroundExposure instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+# def mk_base_exposure(**kwargs):
+#     """
+#     Create a dummy BaseExposure instance with valid values for attributes
+#     required by the schema. Utilized by the model maker utilities below.
 
-    Returns
-    -------
-    roman_datamodels.stnode.GroundExposure
-    """
-    exp = stnode.GroundExposure()
-    exp["type"] = kwargs.get("type", "WFI_IMAGE")
-    exp["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    exp["ngroups"] = kwargs.get("ngroups", 6)
-    exp["nframes"] = kwargs.get("nframes", 8)
-    exp["data_problem"] = kwargs.get("data_problem", False)
-    exp["frame_divisor"] = kwargs.get("frame_divisor", NONUM)
-    exp["groupgap"] = kwargs.get("groupgap", 0)
-    exp["frame_time"] = kwargs.get("frame_time", NONUM)
-    exp["group_time"] = kwargs.get("group_time", NONUM)
-    exp["exposure_time"] = kwargs.get("exposure_time", NONUM)
-    exp["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
-    exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
-    exp["read_pattern"] = kwargs.get("read_pattern", np.arange(1, 56).reshape((-1, 1)).tolist())
+#     Returns
+#     -------
+#     roman_datamodels.stnode.BaseExposure
+#     """
+#     exp = stnode.GroundExposure()
+#     exp["type"] = kwargs.get("type", "WFI_IMAGE")
+#     exp["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
+#     exp["ngroups"] = kwargs.get("ngroups", 6)
+#     exp["nframes"] = kwargs.get("nframes", 8)
+#     exp["data_problem"] = kwargs.get("data_problem", False)
+#     exp["frame_divisor"] = kwargs.get("frame_divisor", NONUM)
+#     exp["groupgap"] = kwargs.get("groupgap", 0)
+#     exp["frame_time"] = kwargs.get("frame_time", NONUM)
+#     exp["group_time"] = kwargs.get("group_time", NONUM)
+#     exp["exposure_time"] = kwargs.get("exposure_time", NONUM)
+#     exp["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
+#     exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
+#     exp["read_pattern"] = kwargs.get("read_pattern", np.arange(1, 56).reshape((-1, 1)).tolist())
 
-    return exp
+#     return exp
 
 
-def mk_ground_guidestar(**kwargs):
-    """
-    Create a dummy GroundGuidestar instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
+# def mk_base_guidestar(**kwargs):
+#     """
+#     Create a dummy BaseGuidestar instance with valid values for attributes
+#     required by the schema. Utilized by the model maker utilities below.
 
-    Returns
-    -------
-    roman_datamodels.stnode.GroundGuidestar
-    """
-    guide = stnode.GroundGuidestar()
-    guide["gw_id"] = kwargs.get("gw_id", NOSTR)
-    guide["gw_fgs_mode"] = kwargs.get("gw_fgs_mode", "WSM-ACQ-2")
-    guide["data_start"] = kwargs.get("data_start", NONUM)
-    guide["data_end"] = kwargs.get("data_end", NONUM)
-    guide["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
-    guide["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
-    guide["gw_window_xstop"] = kwargs.get("gw_window_xstop", guide["gw_window_xstart"] + 170)
-    guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
-    guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
-    guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
+#     Returns
+#     -------
+#     roman_datamodels.stnode.GroundGuidestar
+#     """
+#     guide = stnode.GroundGuidestar()
+#     guide["gw_id"] = kwargs.get("gw_id", NOSTR)
+#     guide["gw_fgs_mode"] = kwargs.get("gw_fgs_mode", "WSM-ACQ-2")
+#     guide["data_start"] = kwargs.get("data_start", NONUM)
+#     guide["data_end"] = kwargs.get("data_end", NONUM)
+#     guide["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
+#     guide["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
+#     guide["gw_window_xstop"] = kwargs.get("gw_window_xstop", guide["gw_window_xstart"] + 170)
+#     guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
+#     guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
+#     guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
 
-    return guide
+#     return guide
 
 
 def mk_groundtest(**kwargs):
@@ -170,12 +170,12 @@ def mk_ground_common_meta(**kwargs):
     dict (defined by the ground_common-1.0.0 schema)
     """
     # prevent circular import
-    from ._common_meta import mk_cal_step, mk_ref_file, mk_wfi_mode
+    from ._common_meta import mk_cal_step, mk_ref_file, mk_wfi_mode, mk_base_exposure, mk_base_guidestar
 
     meta = mk_basic_meta(**kwargs)
     meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
-    meta["exposure"] = mk_ground_exposure(**kwargs.get("exposure", {}))
-    meta["guidestar"] = mk_ground_guidestar(**kwargs.get("guidestar", {}))
+    meta["exposure"] = mk_base_exposure(**kwargs.get("exposure", {}))
+    meta["guidestar"] = mk_base_guidestar(**kwargs.get("guidestar", {}))
     meta["instrument"] = mk_wfi_mode(**kwargs.get("instrument", {}))
     meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
     meta["hdf5_meta"] = kwargs.get("hdf5_meta", {"test": NOSTR})

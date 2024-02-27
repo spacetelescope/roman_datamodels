@@ -770,7 +770,7 @@ def test_datamodel_schema_info():
                     {
                         "datatype": "nvarchar(40)",
                         "destination": [
-                            "ScienceCommon.aperture_name",
+                            "WFIExposure.aperture_name",
                             "GuideWindow.aperture_name",
                         ],
                     },
@@ -782,7 +782,7 @@ def test_datamodel_schema_info():
                     {
                         "datatype": "float",
                         "destination": [
-                            "ScienceCommon.position_angle",
+                            "WFIExposure.position_angle",
                             "GuideWindow.position_angle",
                         ],
                     },
