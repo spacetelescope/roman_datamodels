@@ -9,7 +9,6 @@ from roman_datamodels import stnode
 from ._base import NONUM, NOSTR, save_node
 from ._basic_meta import mk_basic_meta
 
-
 # def mk_base_exposure(**kwargs):
 #     """
 #     Create a dummy BaseExposure instance with valid values for attributes
@@ -170,7 +169,7 @@ def mk_ground_common_meta(**kwargs):
     dict (defined by the ground_common-1.0.0 schema)
     """
     # prevent circular import
-    from ._common_meta import mk_cal_step, mk_ref_file, mk_wfi_mode, mk_base_exposure, mk_base_guidestar
+    from ._common_meta import mk_base_exposure, mk_base_guidestar, mk_cal_step, mk_ref_file, mk_wfi_mode
 
     meta = mk_basic_meta(**kwargs)
     meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))

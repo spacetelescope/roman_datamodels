@@ -1,8 +1,8 @@
+import numpy as np
 from astropy import coordinates, time
 from astropy import units as u
 from astropy.modeling import models
 from astropy.table import QTable
-import numpy as np
 from gwcs import coordinate_frames
 from gwcs.wcs import WCS
 
@@ -10,8 +10,10 @@ from roman_datamodels import stnode
 
 from ._base import NONUM, NOSTR
 from ._basic_meta import mk_basic_meta
+
 # from ._ground import mk_base_exposure, mk_base_guidestar
 from ._tagged_nodes import mk_photometry, mk_resample
+
 
 def mk_base_exposure(**kwargs):
     """
@@ -62,6 +64,7 @@ def mk_base_guidestar(**kwargs):
     guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
 
     return guide
+
 
 def mk_exposure(**kwargs):
     """
