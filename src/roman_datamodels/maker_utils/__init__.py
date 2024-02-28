@@ -3,6 +3,7 @@ from roman_datamodels.datamodels import MODEL_REGISTRY as _MODEL_REGISTRY  # Hid
 from ._basic_meta import *  # noqa: F403
 from ._common_meta import *  # noqa: F403
 from ._datamodels import *  # noqa: F403
+from ._ground import *  # noqa: F403
 from ._ref_files import *  # noqa: F403
 from ._tagged_nodes import *  # noqa: F403
 

@@ -719,6 +719,32 @@ def test_append_individual_image_meta_level3_mosaic():
     assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][2] == "Roman"
 
 
+# FPS tests
+def test_make_fps():
+    shape = (2, 8, 8)
+    fps = utils.mk_fps(shape=shape)
+
+    assert fps.data.dtype == np.uint16
+    assert fps.data.unit == u.DN
+
+    # Test validation
+    fps_model = datamodels.FpsModel(fps)
+    assert fps_model.validate() is None
+
+
+# TVAC tests
+def test_make_tvac():
+    shape = (2, 8, 8)
+    tvac = utils.mk_tvac(shape=shape)
+
+    assert tvac.data.dtype == np.uint16
+    assert tvac.data.unit == u.DN
+
+    # Test validation
+    tvac_model = datamodels.TvacModel(tvac)
+    assert tvac_model.validate() is None
+
+
 def test_datamodel_info_search(capsys):
     wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
     af = asdf.AsdfFile()
@@ -744,7 +770,7 @@ def test_datamodel_schema_info():
                     {
                         "datatype": "nvarchar(40)",
                         "destination": [
-                            "ScienceCommon.aperture_name",
+                            "WFIExposure.aperture_name",
                             "GuideWindow.aperture_name",
                         ],
                     },
@@ -756,7 +782,7 @@ def test_datamodel_schema_info():
                     {
                         "datatype": "float",
                         "destination": [
-                            "ScienceCommon.position_angle",
+                            "WFIExposure.position_angle",
                             "GuideWindow.position_angle",
                         ],
                     },

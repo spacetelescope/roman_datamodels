@@ -142,16 +142,23 @@ def node_factory(tag):
     class_name = class_name_from_tag_uri(tag["tag_uri"])
     schema = load_schema_from_uri(tag["schema_uri"])
 
-    # Determine if the class is a TaggedObjectNode or TaggedListNode based on the
-    #   type defined in the schema:
-    #   - TaggedObjectNode if type is "object"
-    #   - TaggedListNode if type is "array" (array in jsonschema represents Python list)
-    if schema["type"] == "object":
+    if "type" in schema:
+        # Determine if the class is a TaggedObjectNode or TaggedListNode based on the
+        #   type defined in the schema:
+        #   - TaggedObjectNode if type is "object"
+        #   - TaggedListNode if type is "array" (array in jsonschema represents Python list)
+        if schema["type"] == "object":
+            class_type = TaggedObjectNode
+        elif schema["type"] == "array":
+            class_type = TaggedListNode
+        else:
+            raise RuntimeError(f"Unknown schema type: {schema['type']}")
+    # Use of allOf in the schema indicates that the class is a TaggedObjectNode
+    #    which is "extending" another class.
+    elif "allOf" in schema:
         class_type = TaggedObjectNode
-    elif schema["type"] == "array":
-        class_type = TaggedListNode
     else:
-        raise RuntimeError(f"Unknown schema type: {schema['type']}")
+        raise RuntimeError(f"Unknown schema type for: {tag['schema_uri']}")
 
     # In special cases one may need to add additional features to a tagged node class.
     #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
