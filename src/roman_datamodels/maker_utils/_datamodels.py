@@ -121,18 +121,18 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     # add amp 33 ref pixel array
     amp33_size = (n_groups, 4096, 128)
     wfi_image["amp33"] = kwargs.get("amp33", u.Quantity(np.zeros(amp33_size, dtype=np.uint16), u.DN, dtype=np.uint16))
-    wfi_image["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32))
+    wfi_image["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN / u.s, dtype=np.float32))
     wfi_image["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
-    wfi_image["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.s, dtype=np.float32))
+    wfi_image["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN / u.s, dtype=np.float32))
 
     wfi_image["var_poisson"] = kwargs.get(
-        "var_poisson", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+        "var_poisson", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN**2 / u.s**2, dtype=np.float32)
     )
     wfi_image["var_rnoise"] = kwargs.get(
-        "var_rnoise", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+        "var_rnoise", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN**2 / u.s**2, dtype=np.float32)
     )
     wfi_image["var_flat"] = kwargs.get(
-        "var_flat", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron**2 / u.s**2, dtype=np.float32)
+        "var_flat", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN**2 / u.s**2, dtype=np.float32)
     )
     wfi_image["cal_logs"] = mk_cal_logs(**kwargs)
 

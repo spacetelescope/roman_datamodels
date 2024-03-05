@@ -618,19 +618,30 @@ def test_make_level2_image():
     wfi_image = utils.mk_level2_image(shape=(8, 8))
 
     assert wfi_image.data.dtype == np.float32
-    assert wfi_image.data.unit == u.electron / u.s
+    assert wfi_image.data.unit == u.DN / u.s
     assert wfi_image.dq.dtype == np.uint32
     assert wfi_image.err.dtype == np.float32
-    assert wfi_image.err.unit == u.electron / u.s
+    assert wfi_image.err.unit == u.DN / u.s
     assert wfi_image.var_poisson.dtype == np.float32
-    assert wfi_image.var_poisson.unit == u.electron**2 / u.s**2
+    assert wfi_image.var_poisson.unit == u.DN**2 / u.s**2
     assert wfi_image.var_rnoise.dtype == np.float32
-    assert wfi_image.var_rnoise.unit == u.electron**2 / u.s**2
+    assert wfi_image.var_rnoise.unit == u.DN**2 / u.s**2
     assert wfi_image.var_flat.dtype == np.float32
+    assert wfi_image.var_flat.unit == u.DN**2 / u.s**2
     assert isinstance(wfi_image.cal_logs[0], str)
 
     # Test validation
     wfi_image_model = datamodels.ImageModel(wfi_image)
+    assert wfi_image_model.validate() is None
+
+    # Test Physical units
+    wfi_image_model.data = wfi_image_model.data.value * (u.MJy / u.sr)
+    wfi_image_model.err = wfi_image_model.err.value * (u.MJy / u.sr)
+    wfi_image_model.var_poisson = wfi_image_model.var_poisson.value * (u.MJy**2 / u.sr**2)
+    wfi_image_model.var_rnoise = wfi_image_model.var_rnoise.value * (u.MJy**2 / u.sr**2)
+    wfi_image_model.var_flat = wfi_image_model.var_flat.value * (u.MJy**2 / u.sr**2)
+
+    # Test validation
     assert wfi_image_model.validate() is None
 
 
