@@ -481,9 +481,10 @@ def mk_mosaic_meta(**kwargs):
     dict (defined by the wfi_mosaic-1.0.0 schema)
     """
 
-    meta = {}
+    meta = mk_basic_meta(**kwargs)
+    meta['basic'] = mk_mosaic_basic(**kwargs.get("meta", {}))
     meta["asn"] = mk_mosaic_associations(**kwargs.get("asn", {}))
-    meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
+    # meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
     meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["individual_image_meta"] = mk_individual_image_meta(**kwargs.get("individual_image_meta", {}))
@@ -723,7 +724,6 @@ def mk_mosaic_basic(**kwargs):
     mosbasic["time_mean_mjd"] = kwargs.get("time_mean_mjd", NONUM)
     mosbasic["max_exposure_time"] = kwargs.get("max_exposure_time", NONUM)
     mosbasic["mean_exposure_time"] = kwargs.get("mean_exposure_time", NONUM)
-    mosbasic["model_type"] = kwargs.get("model_type", NOSTR)
     mosbasic["visit"] = kwargs.get("visit", NONUM)
     mosbasic["segment"] = kwargs.get("segment", NONUM)
     mosbasic["pass"] = kwargs.get("pass", NONUM)
@@ -731,10 +731,8 @@ def mk_mosaic_basic(**kwargs):
     mosbasic["survey"] = kwargs.get("survey", NOSTR)
     mosbasic["optical_element"] = kwargs.get("optical_element", "F158")
     mosbasic["instrument"] = kwargs.get("instrument", "WFI")
-    mosbasic["telescope"] = kwargs.get("telescope", "ROMAN")
     mosbasic["location_name"] = kwargs.get("location_name", NOSTR)
     mosbasic["product_type"] = kwargs.get("product_type", NOSTR)
-    mosbasic["filename"] = kwargs.get("filename", NOSTR)
 
     return mosbasic
 

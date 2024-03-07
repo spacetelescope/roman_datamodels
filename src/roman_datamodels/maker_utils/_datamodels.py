@@ -6,7 +6,8 @@ from astropy import units as u
 from roman_datamodels import stnode
 
 from ._base import MESSAGE, save_node
-from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_mosaic_meta, mk_msos_stack_meta, mk_photometry_meta, mk_wcs
+from ._common_meta import (mk_common_meta, mk_guidewindow_meta, mk_mosaic_meta,
+                          mk_msos_stack_meta, mk_photometry_meta, mk_wcs, mk_mosaic_basic)
 from ._tagged_nodes import mk_cal_logs
 
 
@@ -174,6 +175,7 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
 
     wfi_mosaic = stnode.WfiMosaic()
     wfi_mosaic["meta"] = mk_mosaic_meta(**kwargs.get("meta", {}))
+    #wfi_mosaic["meta"]['basic'] = mk_mosaic_basic(**kwargs.get("meta", {}))
 
     wfi_mosaic["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy / u.sr, dtype=np.float32))
     wfi_mosaic["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy / u.sr, dtype=np.float32))
