@@ -356,7 +356,7 @@ def test_node_representation(model):
                     "time_mean_mjd": -999999,
                     "max_exposure_time": -999999,
                     "mean_exposure_time": -999999,
-                    "model_type": "MosaicModel",
+                    #"model_type": "MosaicModel",
                     "visit": -999999,
                     "segment": -999999,
                     "pass": -999999,
@@ -364,12 +364,15 @@ def test_node_representation(model):
                     "survey": "dummy value",
                     "optical_element": "F158",
                     "instrument": "WFI",
-                    "telescope": "ROMAN",
+                    #"telescope": "ROMAN",
                     "location_name": "dummy value",
                     "product_type": "dummy value",
-                    "filename": "dummy value",
+                    #"filename": "dummy value",
                 }
             )
+            assert mdl.meta.model_type == "MosaicModel"
+            assert mdl.meta.telescope == "ROMAN"
+            assert mdl.meta.filename == "dummy value"
         else:
             assert repr(mdl.meta.instrument) == repr(
                 {

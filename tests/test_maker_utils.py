@@ -112,10 +112,10 @@ def test_datamodel_maker(model_class):
     model.validate()
 
     if issubclass(model_class, _RomanDataModel):
-        if isinstance(model, datamodels.MosaicModel):
-            assert model.meta.basic.model_type == model_class.__name__
-        else:
-            assert model.meta.model_type == model_class.__name__
+        # if isinstance(model, datamodels.MosaicModel):
+        #     assert model.meta.basic.model_type == model_class.__name__
+        # else:
+        assert model.meta.model_type == model_class.__name__
 
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
