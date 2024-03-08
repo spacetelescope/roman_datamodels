@@ -14,6 +14,8 @@
 
 - Changed image units from e/s to DN/s (and added support for MJy/sr). [#327]
 
+- Add attributes under the ``basic`` schema to ``WfiMosaic.meta``. [#328]
+
 0.19.0 (2024-02-09)
 ===================
 
