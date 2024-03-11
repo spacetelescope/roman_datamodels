@@ -12,6 +12,8 @@
 - Make datamodels follow the same subscription pattern as the ``stnode`` based
   objects. [#322]
 
+- Changed image units from e/s to DN/s (and added support for MJy/sr). [#327]
+
 0.19.0 (2024-02-09)
 ===================
 
