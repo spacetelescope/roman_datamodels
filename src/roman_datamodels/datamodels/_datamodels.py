@@ -43,10 +43,7 @@ class _RomanDataModel(_DataModel):
         super().__init__(init, **kwargs)
 
         if init is not None:
-            if self._node_type == stnode.WfiMosaic:
-                self.meta.basic.model_type = self.__class__.__name__
-            else:
-                self.meta.model_type = self.__class__.__name__
+            self.meta.model_type = self.__class__.__name__
 
 
 class MosaicModel(_RomanDataModel):

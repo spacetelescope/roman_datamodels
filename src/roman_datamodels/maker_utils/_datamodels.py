@@ -174,7 +174,6 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
 
     wfi_mosaic = stnode.WfiMosaic()
     wfi_mosaic["meta"] = mk_mosaic_meta(**kwargs.get("meta", {}))
-
     wfi_mosaic["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy / u.sr, dtype=np.float32))
     wfi_mosaic["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy / u.sr, dtype=np.float32))
     wfi_mosaic["context"] = kwargs.get("context", np.zeros((n_images,) + shape, dtype=np.uint32))
