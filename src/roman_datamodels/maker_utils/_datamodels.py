@@ -6,8 +6,7 @@ from astropy import units as u
 from roman_datamodels import stnode
 
 from ._base import MESSAGE, save_node
-from ._common_meta import (mk_common_meta, mk_guidewindow_meta, mk_mosaic_meta,
-                          mk_msos_stack_meta, mk_photometry_meta, mk_wcs, mk_mosaic_basic)
+from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_mosaic_meta, mk_msos_stack_meta, mk_photometry_meta, mk_wcs
 from ._tagged_nodes import mk_cal_logs
 
 
