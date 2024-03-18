@@ -7,7 +7,8 @@ from astropy.table import Table
 from roman_datamodels import stnode
 
 from ._base import MESSAGE, save_node
-from ._common_meta import mk_common_meta, mk_guidewindow_meta, mk_mosaic_meta, mk_msos_stack_meta, mk_photometry_meta, mk_wcs
+from ._common_meta import (mk_common_meta, mk_guidewindow_meta, mk_mosaic_meta, mk_msos_stack_meta,
+                           mk_photometry_meta, mk_wcs, mk_mosaic_catalog_meta)
 from ._tagged_nodes import mk_cal_logs
 
 
@@ -432,6 +433,59 @@ def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
     return save_node(guidewindow, filepath=filepath)
 
 
+def mk_mosaic_source_catalog(*, filepath=None, **kwargs):
+    """
+    Create a dummy Source Catalog instance (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SourceCatalog
+    """
+    source_catalog = stnode.MosaicSourceCatalog()
+
+    source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
+    source_catalog["meta"] = mk_mosaic_catalog_meta(**kwargs.get("meta", {}))
+
+    return save_node(source_catalog, filepath=filepath)
+
+
+def mk_mosaic_segmentation_map(*, filepath=None, shape=(4096, 4096), **kwargs):
+    """
+    Create a dummy Segmentation Map (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SegmentationMap
+    """
+    if len(shape) > 2:
+        shape = shape[1:3]
+
+        warnings.warn(
+            f"{MESSAGE} assuming the first entry is n_groups followed by y, x. The remaining is thrown out!", UserWarning
+        )
+
+    segmentation_map = stnode.MosaicSegmentationMap()
+    segmentation_map["data"] = kwargs.get("data", np.zeros(shape, dtype=np.uint32))
+    segmentation_map["meta"] = mk_mosaic_catalog_meta(**kwargs.get("meta", {}))
+
+    return save_node(segmentation_map, filepath=filepath)
+
+
 def mk_source_catalog(*, filepath=None, **kwargs):
     """
     Create a dummy Source Catalog instance (or file) with arrays and valid values
@@ -449,8 +503,7 @@ def mk_source_catalog(*, filepath=None, **kwargs):
     source_catalog = stnode.SourceCatalog()
 
     source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
-    source_catalog["meta"] = mk_common_meta()
-    source_catalog["meta"].update(kwargs.get("meta", dict(segmentation_map='')))
+    source_catalog["meta"] = mk_catalog_meta(**kwargs.get("meta", {}))
 
     return save_node(source_catalog, filepath=filepath)
 
@@ -465,15 +518,22 @@ def mk_segmentation_map(*, filepath=None, shape=(4096, 4096), **kwargs):
     filepath
         (optional, keyword-only) File name and path to write model to.
 
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+
     Returns
     -------
     roman_datamodels.stnode.SegmentationMap
     """
-    segmentation_map = stnode.SegmentationMap()
+    if len(shape) > 2:
+        shape = shape[1:3]
 
+        warnings.warn(
+            f"{MESSAGE} assuming the first entry is n_groups followed by y, x. The remaining is thrown out!", UserWarning
+        )
+
+    segmentation_map = stnode.SegmentationMap()
     segmentation_map["data"] = kwargs.get("data", np.zeros(shape, dtype=np.uint32))
-    segmentation_map["meta"] = mk_common_meta()
-    segmentation_map["meta"].update(kwargs.get("meta", dict(filename='')))
+    segmentation_map["meta"] = mk_catalog_meta(**kwargs.get("meta", {}))
 
     return save_node(segmentation_map, filepath=filepath)
-

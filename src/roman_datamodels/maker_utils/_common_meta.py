@@ -843,3 +843,40 @@ def mk_wcs():
             (sky_frame, None),
         ]
     )
+
+
+def mk_mosaic_catalog_meta(**kwargs):
+    """
+    Create a dummy metadata dictionary with valid values for mosaic catalog.
+
+    Returns
+    -------
+    dict (defined by the wfi_mosaic-1.0.0 schema)
+    """
+
+    meta = mk_basic_meta(**kwargs)
+    meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
+    meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
+    meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
+    meta["program"] = mk_program(**kwargs.get("program", {}))
+
+    return meta
+
+
+def mk_catalog_meta(**kwargs):
+    """
+    Create a dummy metadata dictionary with valid values for
+    source catalog from Level 2 data.
+
+    Returns
+    -------
+    dict (defined by the wfi_mosaic-1.0.0 schema)
+    """
+
+    meta = mk_basic_meta(**kwargs)
+    meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
+    meta["program"] = mk_program(**kwargs.get("program", {}))
+    meta["visit"] = mk_program(**kwargs.get("visit", {}))
+    meta["optical_element"] = kwargs.get("optical_element", "F158")
+
+    return meta
