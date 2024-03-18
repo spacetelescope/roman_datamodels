@@ -294,9 +294,17 @@ class TvacModel(_DataModel):
     _node_type = stnode.Tvac
 
 
-class SourceCatalogModel(_DataModel):
+class MosaicSourceCatalogModel(_RomanDataModel):
+    _node_type = stnode.MosaicSourceCatalog
+
+
+class MosaicSegmentationMapModel(_RomanDataModel):
+    _node_type = stnode.MosaicSegmentationMap
+
+
+class SourceCatalogModel(_RomanDataModel):
     _node_type = stnode.SourceCatalog
 
 
-class SegmentationMapModel(_DataModel):
+class SegmentationMapModel(_RomanDataModel):
     _node_type = stnode.SegmentationMap
