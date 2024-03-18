@@ -876,7 +876,7 @@ def mk_catalog_meta(**kwargs):
     meta = mk_basic_meta(**kwargs)
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["program"] = mk_program(**kwargs.get("program", {}))
-    meta["visit"] = mk_program(**kwargs.get("visit", {}))
+    meta["visit"] = mk_visit(**kwargs.get("visit", {}))
     meta["optical_element"] = kwargs.get("optical_element", "F158")
 
     return meta
