@@ -371,12 +371,13 @@ def test_node_representation(model):
             model_types = {datamodels.MosaicModel: "MosaicModel",
                            datamodels.MosaicSegmentationMapModel: "MosaicSegmentationMapModel",
                            datamodels.MosaicSourceCatalogModel: "MosaicSourceCatalogModel",
-                           datamodels.SegmentationMapModel: "SegmentationMapModel",
-                           datamodels.SourceCatalogModel: "SourceCatalogModel"
                            }
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
             assert mdl.meta.filename == "dummy value"
+        elif isinstance(mdl, (datamodels.SegmentationMapModel,
+                              datamodels.SourceCatalogModel)):
+            assert repr(mdl.meta.optical_element) == "F158"
         else:
             assert repr(mdl.meta.instrument) == repr(
                 {
