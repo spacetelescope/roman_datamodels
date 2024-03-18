@@ -348,7 +348,8 @@ def test_node_representation(model):
     mdl = maker_utils.mk_datamodel(model)
 
     if hasattr(mdl, "meta"):
-        if isinstance(mdl, (datamodels.MosaicModel, datamodels.MosaicSegmentationMapModel, datamodels.MosaicSourceCatalogModel)):
+        if isinstance(mdl, (datamodels.MosaicModel, datamodels.MosaicSegmentationMapModel,
+                            datamodels.MosaicSourceCatalogModel)):
             assert repr(mdl.meta.basic) == repr(
                 {
                     "time_first_mjd": -999999,
@@ -363,14 +364,15 @@ def test_node_representation(model):
                     "survey": "dummy value",
                     "optical_element": "F158",
                     "instrument": "WFI",
-                    # "telescope": "ROMAN",
                     "location_name": "dummy value",
                     "product_type": "dummy value",
                 }
             )
             model_types = {datamodels.MosaicModel: "MosaicModel",
                            datamodels.MosaicSegmentationMapModel: "MosaicSegmentationMapModel",
-                           datamodels.MosaicSourceCatalogModel: "MosaicSourceCatalogModel"
+                           datamodels.MosaicSourceCatalogModel: "MosaicSourceCatalogModel",
+                           #datamodels.SegmentationMapModel: "SegmentationMapModel",
+                           #datamodels.SourceCatalogModel: "SourceCatalogModel"
                            }
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
