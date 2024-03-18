@@ -377,7 +377,7 @@ def test_node_representation(model):
             assert mdl.meta.filename == "dummy value"
         elif isinstance(mdl, (datamodels.SegmentationMapModel,
                               datamodels.SourceCatalogModel)):
-            assert repr(mdl.meta.optical_element) == "F158"
+            assert mdl.meta.optical_element == 'F158'
         else:
             assert repr(mdl.meta.instrument) == repr(
                 {
