@@ -16,6 +16,8 @@
 
 - Add attributes under the ``basic`` schema to ``WfiMosaic.meta``. [#328]
 
+- Add models for Level 2 and Level 3 source catalog and segmentation map. [#331]
+
 0.19.0 (2024-02-09)
 ===================
 

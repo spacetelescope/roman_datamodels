@@ -485,7 +485,6 @@ def mk_mosaic_meta(**kwargs):
     meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
     meta["asn"] = mk_mosaic_associations(**kwargs.get("asn", {}))
     meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
-    meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["individual_image_meta"] = mk_individual_image_meta(**kwargs.get("individual_image_meta", {}))
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["program"] = mk_program(**kwargs.get("program", {}))
@@ -825,3 +824,39 @@ def mk_wcs():
             (sky_frame, None),
         ]
     )
+
+
+def mk_mosaic_catalog_meta(**kwargs):
+    """
+    Create a dummy metadata dictionary with valid values for mosaic catalog.
+
+    Returns
+    -------
+    dict (defined by the wfi_mosaic-1.0.0 schema)
+    """
+
+    meta = mk_basic_meta(**kwargs)
+    meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
+    meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
+    meta["program"] = mk_program(**kwargs.get("program", {}))
+
+    return meta
+
+
+def mk_catalog_meta(**kwargs):
+    """
+    Create a dummy metadata dictionary with valid values for
+    source catalog from Level 2 data.
+
+    Returns
+    -------
+    dict (defined by the wfi_mosaic-1.0.0 schema)
+    """
+
+    meta = mk_basic_meta(**kwargs)
+    meta["program"] = mk_program(**kwargs.get("program", {}))
+    meta["visit"] = mk_visit(**kwargs.get("visit", {}))
+    meta["optical_element"] = kwargs.get("optical_element", "F158")
+    meta["exposure"] = mk_exposure(**kwargs.get("exposure", {}))
+
+    return meta
