@@ -783,6 +783,7 @@ def test_make_mosaic_segmentation_map():
 
     assert isinstance(segmentation_map_model.data, np.ndarray)
 
+
 def test_datamodel_info_search(capsys):
     wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
     af = asdf.AsdfFile()
