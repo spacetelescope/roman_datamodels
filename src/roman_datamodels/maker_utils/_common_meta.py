@@ -485,7 +485,6 @@ def mk_mosaic_meta(**kwargs):
     meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
     meta["asn"] = mk_mosaic_associations(**kwargs.get("asn", {}))
     meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
-    meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["individual_image_meta"] = mk_individual_image_meta(**kwargs.get("individual_image_meta", {}))
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["program"] = mk_program(**kwargs.get("program", {}))
@@ -838,7 +837,6 @@ def mk_mosaic_catalog_meta(**kwargs):
 
     meta = mk_basic_meta(**kwargs)
     meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
-    meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["program"] = mk_program(**kwargs.get("program", {}))
 
@@ -856,9 +854,9 @@ def mk_catalog_meta(**kwargs):
     """
 
     meta = mk_basic_meta(**kwargs)
-    meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["program"] = mk_program(**kwargs.get("program", {}))
     meta["visit"] = mk_visit(**kwargs.get("visit", {}))
     meta["optical_element"] = kwargs.get("optical_element", "F158")
+    meta["exposure"] = mk_exposure(**kwargs.get("exposure", {}))
 
     return meta
