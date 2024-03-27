@@ -299,7 +299,7 @@ of meta will consist of the same attributes with few variations between data fil
     │ ├─aperture (Aperture) # Aperture information
     │ │ ├─name (str): WFI_CEN # PRD science aperture used
     │ │ └─position_angle (int): 120 # [deg] Position angle of aperture used
-    │ ├─cal_step (CalStep) # Calibration Status
+    │ ├─cal_step (L2CalStep) # Calibration Status
     │ │ ├─assign_wcs (str): INCOMPLETE # Assign World Coordinate System
     │ │ ├─flat_field (str): INCOMPLETE # Flat Field Step
     │ │ ├─dark (str): INCOMPLETE # Dark Subtraction
@@ -528,7 +528,7 @@ common-1.0.0.yaml::
       aperture:
         tag: asdf://stsci.edu/datamodels/roman/tags/aperture-1.0.0
       cal_step:
-        tag: asdf://stsci.edu/datamodels/roman/tags/cal_step-1.0.0
+        tag: asdf://stsci.edu/datamodels/roman/tags/l2_cal_step-1.0.0
       coordinates:
         tag: asdf://stsci.edu/datamodels/roman/tags/coordinates-1.0.0
       ephemeris:
