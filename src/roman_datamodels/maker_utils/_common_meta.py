@@ -343,33 +343,49 @@ def mk_wcsinfo(**kwargs):
     return wcsi
 
 
-def mk_cal_step(**kwargs):
+def mk_l2_cal_step(**kwargs):
     """
-    Create a dummy Cal Step instance with valid values for attributes
+    Create a dummy Level 2 Cal Step instance with valid values for attributes
     required by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
-    roman_datamodels.stnode.CalStep
+    roman_datamodels.stnode.L2CalStep
     """
-    calstep = stnode.CalStep()
-    calstep["assign_wcs"] = kwargs.get("assign_wcs", "INCOMPLETE")
-    calstep["dark"] = kwargs.get("dark", "INCOMPLETE")
-    calstep["dq_init"] = kwargs.get("dq_init", "INCOMPLETE")
-    calstep["flat_field"] = kwargs.get("flat_field", "INCOMPLETE")
-    calstep["jump"] = kwargs.get("jump", "INCOMPLETE")
-    calstep["linearity"] = kwargs.get("linearity", "INCOMPLETE")
-    calstep["photom"] = kwargs.get("photom", "INCOMPLETE")
-    calstep["source_detection"] = kwargs.get("source_detection", "INCOMPLETE")
-    calstep["outlier_detection"] = kwargs.get("outlier_detection", "INCOMPLETE")
-    calstep["ramp_fit"] = kwargs.get("ramp_fit", "INCOMPLETE")
-    calstep["refpix"] = kwargs.get("refpix", "INCOMPLETE")
-    calstep["saturation"] = kwargs.get("saturation", "INCOMPLETE")
-    calstep["skymatch"] = kwargs.get("skymatch", "INCOMPLETE")
-    calstep["tweakreg"] = kwargs.get("tweakreg", "INCOMPLETE")
-    calstep["resample"] = kwargs.get("resample", "INCOMPLETE")
+    l2calstep = stnode.L2CalStep()
+    l2calstep["assign_wcs"] = kwargs.get("assign_wcs", "INCOMPLETE")
+    l2calstep["dark"] = kwargs.get("dark", "INCOMPLETE")
+    l2calstep["dq_init"] = kwargs.get("dq_init", "INCOMPLETE")
+    l2calstep["flat_field"] = kwargs.get("flat_field", "INCOMPLETE")
+    l2calstep["jump"] = kwargs.get("jump", "INCOMPLETE")
+    l2calstep["linearity"] = kwargs.get("linearity", "INCOMPLETE")
+    l2calstep["photom"] = kwargs.get("photom", "INCOMPLETE")
+    l2calstep["source_detection"] = kwargs.get("source_detection", "INCOMPLETE")
+    l2calstep["outlier_detection"] = kwargs.get("outlier_detection", "INCOMPLETE")
+    l2calstep["ramp_fit"] = kwargs.get("ramp_fit", "INCOMPLETE")
+    l2calstep["refpix"] = kwargs.get("refpix", "INCOMPLETE")
+    l2calstep["saturation"] = kwargs.get("saturation", "INCOMPLETE")
+    l2calstep["skymatch"] = kwargs.get("skymatch", "INCOMPLETE")
+    l2calstep["tweakreg"] = kwargs.get("tweakreg", "INCOMPLETE")
 
-    return calstep
+    return l2calstep
+
+
+def mk_l3_cal_step(**kwargs):
+    """
+    Create a dummy Level 3 Cal Step instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.L3CalStep
+    """
+    l3calstep = stnode.L3CalStep()
+    l3calstep["outlier_detection"] = kwargs.get("outlier_detection", "INCOMPLETE")
+    l3calstep["skymatch"] = kwargs.get("skymatch", "INCOMPLETE")
+    l3calstep["resample"] = kwargs.get("resample", "INCOMPLETE")
+
+    return l3calstep
 
 
 def mk_guidestar(**kwargs):
@@ -438,7 +454,7 @@ def mk_common_meta(**kwargs):
     """
     meta = mk_basic_meta(**kwargs)
     meta["aperture"] = mk_aperture(**kwargs.get("aperture", {}))
-    meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
+    meta["cal_step"] = mk_l2_cal_step(**kwargs.get("cal_step", {}))
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["ephemeris"] = mk_ephemeris(**kwargs.get("ephemeris", {}))
     meta["exposure"] = mk_exposure(**kwargs.get("exposure", {}))
@@ -484,7 +500,7 @@ def mk_mosaic_meta(**kwargs):
     meta = mk_basic_meta(**kwargs)
     meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
     meta["asn"] = mk_mosaic_associations(**kwargs.get("asn", {}))
-    meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
+    meta["cal_step"] = mk_l3_cal_step(**kwargs.get("cal_step", {}))
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["individual_image_meta"] = mk_individual_image_meta(**kwargs.get("individual_image_meta", {}))
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
