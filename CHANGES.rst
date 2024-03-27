@@ -16,6 +16,9 @@
 
 - Add attributes under the ``basic`` schema to ``WfiMosaic.meta``. [#328]
 
+- Split cal_step into L2 and L3 versions. [#334]
+
+  
 0.19.0 (2024-02-09)
 ===================
 
