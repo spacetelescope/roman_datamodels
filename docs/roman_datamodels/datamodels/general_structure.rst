@@ -528,7 +528,7 @@ common-1.0.0.yaml::
       aperture:
         tag: asdf://stsci.edu/datamodels/roman/tags/aperture-1.0.0
       cal_step:
-        tag: asdf://stsci.edu/datamodels/roman/tags/cal_step-1.0.0
+        tag: asdf://stsci.edu/datamodels/roman/tags/l2_cal_step-1.0.0
       coordinates:
         tag: asdf://stsci.edu/datamodels/roman/tags/coordinates-1.0.0
       ephemeris:
