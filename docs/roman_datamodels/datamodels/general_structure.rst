@@ -299,7 +299,7 @@ of meta will consist of the same attributes with few variations between data fil
     │ ├─aperture (Aperture) # Aperture information
     │ │ ├─name (str): WFI_CEN # PRD science aperture used
     │ │ └─position_angle (int): 120 # [deg] Position angle of aperture used
-    │ ├─cal_step (CalStep) # Calibration Status
+    │ ├─cal_step (L2CalStep) # Calibration Status
     │ │ ├─assign_wcs (str): INCOMPLETE # Assign World Coordinate System
     │ │ ├─flat_field (str): INCOMPLETE # Flat Field Step
     │ │ ├─dark (str): INCOMPLETE # Dark Subtraction
