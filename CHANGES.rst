@@ -18,6 +18,10 @@
 
 - Split cal_step into L2 and L3 versions. [#334]
 
+- Add Members Keyword to Resample datamodel maker utility. [#333]
+
+- Add initialization for the flux step meta. [#332]
+
 
 0.19.0 (2024-02-09)
 ===================

@@ -357,6 +357,7 @@ def mk_l2_cal_step(**kwargs):
     l2calstep["dark"] = kwargs.get("dark", "INCOMPLETE")
     l2calstep["dq_init"] = kwargs.get("dq_init", "INCOMPLETE")
     l2calstep["flat_field"] = kwargs.get("flat_field", "INCOMPLETE")
+    l2calstep["flux"] = kwargs.get("flux", "INCOMPLETE")
     l2calstep["jump"] = kwargs.get("jump", "INCOMPLETE")
     l2calstep["linearity"] = kwargs.get("linearity", "INCOMPLETE")
     l2calstep["photom"] = kwargs.get("photom", "INCOMPLETE")
@@ -381,6 +382,7 @@ def mk_l3_cal_step(**kwargs):
     roman_datamodels.stnode.L3CalStep
     """
     l3calstep = stnode.L3CalStep()
+    l3calstep["flux"] = kwargs.get("flux", "INCOMPLETE")
     l3calstep["outlier_detection"] = kwargs.get("outlier_detection", "INCOMPLETE")
     l3calstep["skymatch"] = kwargs.get("skymatch", "INCOMPLETE")
     l3calstep["resample"] = kwargs.get("resample", "INCOMPLETE")
