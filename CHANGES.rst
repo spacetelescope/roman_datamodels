@@ -16,7 +16,10 @@
 
 - Add attributes under the ``basic`` schema to ``WfiMosaic.meta``. [#328]
 
+- Add Members Keyword to Resample datamodel maker utility. [#333]
+
 - Add initialization for the flux step meta. [#332]
+
 
 0.19.0 (2024-02-09)
 ===================
