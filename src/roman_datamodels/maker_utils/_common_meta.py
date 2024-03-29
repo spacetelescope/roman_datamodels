@@ -357,6 +357,7 @@ def mk_cal_step(**kwargs):
     calstep["dark"] = kwargs.get("dark", "INCOMPLETE")
     calstep["dq_init"] = kwargs.get("dq_init", "INCOMPLETE")
     calstep["flat_field"] = kwargs.get("flat_field", "INCOMPLETE")
+    calstep["flux"] = kwargs.get("flux", "INCOMPLETE")
     calstep["jump"] = kwargs.get("jump", "INCOMPLETE")
     calstep["linearity"] = kwargs.get("linearity", "INCOMPLETE")
     calstep["photom"] = kwargs.get("photom", "INCOMPLETE")
