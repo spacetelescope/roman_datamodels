@@ -16,6 +16,8 @@
 
 - Add attributes under the ``basic`` schema to ``WfiMosaic.meta``. [#328]
 
+- Split cal_step into L2 and L3 versions. [#334]
+
 - Add Members Keyword to Resample datamodel maker utility. [#333]
 
 - Add initialization for the flux step meta. [#332]

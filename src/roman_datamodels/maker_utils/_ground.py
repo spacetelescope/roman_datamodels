@@ -169,10 +169,10 @@ def mk_ground_common_meta(**kwargs):
     dict (defined by the ground_common-1.0.0 schema)
     """
     # prevent circular import
-    from ._common_meta import mk_base_exposure, mk_base_guidestar, mk_cal_step, mk_ref_file, mk_wfi_mode
+    from ._common_meta import mk_base_exposure, mk_base_guidestar, mk_l2_cal_step, mk_ref_file, mk_wfi_mode
 
     meta = mk_basic_meta(**kwargs)
-    meta["cal_step"] = mk_cal_step(**kwargs.get("cal_step", {}))
+    meta["cal_step"] = mk_l2_cal_step(**kwargs.get("cal_step", {}))
     meta["exposure"] = mk_base_exposure(**kwargs.get("exposure", {}))
     meta["guidestar"] = mk_base_guidestar(**kwargs.get("guidestar", {}))
     meta["instrument"] = mk_wfi_mode(**kwargs.get("instrument", {}))
