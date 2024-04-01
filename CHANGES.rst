@@ -22,6 +22,8 @@
 
 - Add initialization for the flux step meta. [#332]
 
+- Add bit mask field to ``resample``. [#336]
+
 
 0.19.0 (2024-02-09)
 ===================
