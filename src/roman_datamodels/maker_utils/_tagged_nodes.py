@@ -35,6 +35,7 @@ def mk_resample(**kwargs):
     roman_datamodels.stnode.Resample
     """
     res = stnode.Resample()
+    res["good_bits"] = kwargs.get("good_bits", "NA")
     res["members"] = kwargs.get("members", [])
     res["pixel_scale_ratio"] = kwargs.get("pixel_scale_ratio", NONUM)
     res["pixfrac"] = kwargs.get("pixfrac", NONUM)
