@@ -22,6 +22,7 @@
 
 - Add initialization for the flux step meta. [#332]
 
+- Add models for Level 2 and Level 3 source catalog and segmentation map. [#331]
 
 0.19.0 (2024-02-09)
 ===================

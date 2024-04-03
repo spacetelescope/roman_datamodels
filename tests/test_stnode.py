@@ -348,7 +348,7 @@ def test_node_representation(model):
     mdl = maker_utils.mk_datamodel(model)
 
     if hasattr(mdl, "meta"):
-        if isinstance(mdl, datamodels.MosaicModel):
+        if isinstance(mdl, (datamodels.MosaicModel, datamodels.MosaicSegmentationMapModel, datamodels.MosaicSourceCatalogModel)):
             assert repr(mdl.meta.basic) == repr(
                 {
                     "time_first_mjd": -999999,
@@ -356,7 +356,6 @@ def test_node_representation(model):
                     "time_mean_mjd": -999999,
                     "max_exposure_time": -999999,
                     "mean_exposure_time": -999999,
-                    # "model_type": "MosaicModel",
                     "visit": -999999,
                     "segment": -999999,
                     "pass": -999999,
@@ -364,15 +363,20 @@ def test_node_representation(model):
                     "survey": "dummy value",
                     "optical_element": "F158",
                     "instrument": "WFI",
-                    # "telescope": "ROMAN",
                     "location_name": "dummy value",
                     "product_type": "dummy value",
-                    # "filename": "dummy value",
                 }
             )
-            assert mdl.meta.model_type == "MosaicModel"
+            model_types = {
+                datamodels.MosaicModel: "MosaicModel",
+                datamodels.MosaicSegmentationMapModel: "MosaicSegmentationMapModel",
+                datamodels.MosaicSourceCatalogModel: "MosaicSourceCatalogModel",
+            }
+            assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
             assert mdl.meta.filename == "dummy value"
+        elif isinstance(mdl, (datamodels.SegmentationMapModel, datamodels.SourceCatalogModel)):
+            assert mdl.meta.optical_element == "F158"
         else:
             assert repr(mdl.meta.instrument) == repr(
                 {
