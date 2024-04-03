@@ -348,8 +348,7 @@ def test_node_representation(model):
     mdl = maker_utils.mk_datamodel(model)
 
     if hasattr(mdl, "meta"):
-        if isinstance(mdl, (datamodels.MosaicModel, datamodels.MosaicSegmentationMapModel,
-                            datamodels.MosaicSourceCatalogModel)):
+        if isinstance(mdl, (datamodels.MosaicModel, datamodels.MosaicSegmentationMapModel, datamodels.MosaicSourceCatalogModel)):
             assert repr(mdl.meta.basic) == repr(
                 {
                     "time_first_mjd": -999999,
@@ -368,16 +367,16 @@ def test_node_representation(model):
                     "product_type": "dummy value",
                 }
             )
-            model_types = {datamodels.MosaicModel: "MosaicModel",
-                           datamodels.MosaicSegmentationMapModel: "MosaicSegmentationMapModel",
-                           datamodels.MosaicSourceCatalogModel: "MosaicSourceCatalogModel",
-                           }
+            model_types = {
+                datamodels.MosaicModel: "MosaicModel",
+                datamodels.MosaicSegmentationMapModel: "MosaicSegmentationMapModel",
+                datamodels.MosaicSourceCatalogModel: "MosaicSourceCatalogModel",
+            }
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
             assert mdl.meta.filename == "dummy value"
-        elif isinstance(mdl, (datamodels.SegmentationMapModel,
-                              datamodels.SourceCatalogModel)):
-            assert mdl.meta.optical_element == 'F158'
+        elif isinstance(mdl, (datamodels.SegmentationMapModel, datamodels.SourceCatalogModel)):
+            assert mdl.meta.optical_element == "F158"
         else:
             assert repr(mdl.meta.instrument) == repr(
                 {

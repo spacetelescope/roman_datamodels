@@ -241,7 +241,7 @@ def test_opening_model(tmp_path, node_class):
         elif node_class in (stnode.SegmentationMap, stnode.SourceCatalog):
             assert model.meta.optical_element == "F158"
         elif node_class in (stnode.MosaicSegmentationMap, stnode.MosaicSourceCatalog):
-            assert hasattr(model.meta, 'basic')
+            assert hasattr(model.meta, "basic")
         else:
             assert model.meta.instrument.optical_element == "F158"
 
