@@ -164,6 +164,7 @@ def mk_observation(**kwargs):
 
     return obs
 
+
 def mk_outlier_detection(**kwargs):
     """
     Create a dummy Outlier Detection instance with valid values for attributes
