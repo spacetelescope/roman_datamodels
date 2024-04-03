@@ -164,6 +164,20 @@ def mk_observation(**kwargs):
 
     return obs
 
+def mk_outlier_detection(**kwargs):
+    """
+    Create a dummy Resample instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.OutlierDetection
+    """
+    od = stnode.OutlierDetection()
+    od["good_bits"] = kwargs.get("good_bits", "NA")
+
+    return od
+
 
 def mk_ephemeris(**kwargs):
     """
