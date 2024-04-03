@@ -22,7 +22,7 @@
 
 - Add initialization for the flux step meta. [#332]
 
-- Add bit mask field to ``resample``. [#336]
+- Create ``outlier_detection`` schema and add bit mask field to both it and ``resample``. [#336]
 
 - Add models for Level 2 and Level 3 source catalog and segmentation map. [#331]
 
