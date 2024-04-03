@@ -874,6 +874,7 @@ def mk_catalog_meta(**kwargs):
 
     meta = mk_basic_meta(**kwargs)
     meta["program"] = mk_program(**kwargs.get("program", {}))
+    meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["visit"] = mk_visit(**kwargs.get("visit", {}))
     meta["optical_element"] = kwargs.get("optical_element", "F158")
     meta["exposure"] = mk_exposure(**kwargs.get("exposure", {}))
