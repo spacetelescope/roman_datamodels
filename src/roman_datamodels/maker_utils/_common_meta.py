@@ -165,6 +165,21 @@ def mk_observation(**kwargs):
     return obs
 
 
+def mk_outlier_detection(**kwargs):
+    """
+    Create a dummy Outlier Detection instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.OutlierDetection
+    """
+    od = stnode.OutlierDetection()
+    od["good_bits"] = kwargs.get("good_bits", "NA")
+
+    return od
+
+
 def mk_ephemeris(**kwargs):
     """
     Create a dummy Ephemeris instance with valid values for attributes
@@ -486,6 +501,7 @@ def mk_photometry_meta(**kwargs):
 
     meta = mk_common_meta(**kwargs)
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
+    meta["outlier_detection"] = mk_outlier_detection(**kwargs.get("outlier_detection", {}))
 
     return meta
 
