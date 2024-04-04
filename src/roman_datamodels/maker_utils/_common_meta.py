@@ -521,7 +521,6 @@ def mk_mosaic_meta(**kwargs):
     meta["cal_step"] = mk_l3_cal_step(**kwargs.get("cal_step", {}))
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["individual_image_meta"] = mk_individual_image_meta(**kwargs.get("individual_image_meta", {}))
-    meta["outlier_detection"] = mk_outlier_detection(**kwargs.get("outlier_detection", {}))
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["program"] = mk_program(**kwargs.get("program", {}))
     meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
