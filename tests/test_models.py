@@ -829,6 +829,8 @@ def test_datamodel_schema_info():
                 )
             },
         }
+        for keyword in dm.meta.keys():
+            assert keyword in info["roman"]["meta"]
 
 
 def test_crds_parameters(tmp_path):
