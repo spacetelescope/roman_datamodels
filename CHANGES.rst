@@ -1,7 +1,7 @@
 0.19.2 (unreleased)
 ===================
 
-- Addes test to ensure that the base ``common`` keyword groups exist within the ``schema.info`` tree. [#388]
+- Addes test to ensure that the base ``common`` keyword groups exist within the ``schema.info`` tree. [#338]
 
 0.19.1 (2024-04-04)
 ===================
