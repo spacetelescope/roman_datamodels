@@ -19,7 +19,7 @@ schemas are used to validate the datafiles. Furthermore, these schemas also
 include information used by the ground system to indicate where metadata and
 data are obtained as well as their destination in the archive catalogs, and most
 important, serve to keep the ground system definition of the data files and
-the calibration pipeline definitin sync since both rely on the same schema
+the calibration pipeline definition in sync since both rely on the same schema
 files.
 
 The schema/datamodel system is also intrinsic to how the ASDF converter

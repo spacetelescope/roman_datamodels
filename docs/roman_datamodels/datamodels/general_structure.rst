@@ -37,7 +37,7 @@ Some of the most relevant methods are:
 
 While ASDF permits a wide variety of legal attribute names, the convention is that Roman
 only uses attribute name that are legal Python variable names. This is so they can be
-used as Python object attributes. Using the above example of for the keys that ``to_flat_dict``
+used as Python object attributes. Using the above example for the keys that ``to_flat_dict``
 returns, that permits using ``dm.meta.observation.date`` to obtain the value of that attribute
 instead of ``dm.tree['roman']['meta']['observation']['date']``. The latter can still be used
 if you enjoy typing lots of brackets and quotes instead of periods.
