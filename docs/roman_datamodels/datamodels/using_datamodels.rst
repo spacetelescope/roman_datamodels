@@ -5,7 +5,7 @@ Using Roman Datamodels
 
 The following illustrates common operations with the datamodels.
 This is most relevant for interactive use with a loaded datamodel
-or if one is writing scripts or propgrams to view and manipulate
+or if one is writing scripts or programs to view and manipulate
 these data models. Developing new datamodels is a different topic
 and may be covered in the future. For the most part, it involves
 defining what the schema for such a model must be and what modifications
@@ -92,7 +92,7 @@ page::
 
 	>>> dm.to_asdf('test.asdf')
 	>>> dm2 = rdm.open('test.asdf')
-	>>> dm2[0, 10, 10]
+	>>> dm2.data[0, 10, 10]
 	42
 	>>> dm2.meta.exposure_start_time_mjd
 	60000.0
@@ -100,7 +100,7 @@ page::
 
 .. note::
 
-    There are a couple subtlties with regard to changing values in a datamodel.
+    There are a couple subtleties with regard to changing values in a datamodel.
     If you assign dicts or lists to attributes, it will map these into the
     corresponding DNode or LNode subclasses. In such uses, the assigned values
     will be immediately checked by validating against the defining schemas.
@@ -109,7 +109,7 @@ page::
     values interactively.
 
 	If you are getting validation errors consult the corresponding schema in
-	``rad`` to se what is allowed. If you think the schema is wrong, or you
+	``rad`` to see what is allowed. If you think the schema is wrong, or you
 	continue to have issues, please contact the Roman team for help.
 
 	As a method of last resort, if you wish to turn off validation, you can do

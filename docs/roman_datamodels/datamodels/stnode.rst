@@ -33,7 +33,7 @@ stnode objects construct from a schema file will be built off these two classes.
 Hence, general functionality of an stnode object should be implemented in these
 two classes so that all stnode objects can inherit from them.
 
-Currently, there these two objects are implemented so that they follow the
+Currently, these two objects are implemented so that they follow the
 dictionary or list interface; meaning that, they can be accessed via the ``[]``
 operator (``node["keyword"]`` or ``node[0]``). However, for the case of the
 `~roman_datamodels.stnode.DNode` objects, keys can also be used to directly
@@ -105,14 +105,14 @@ the `roman_datamodels.datamodels` module.
 Scalar Nodes
 ************
 
-In addition, to the objects described above, there are the "scalar node"
+In addition to the objects described above, there are the "scalar node"
 objects, which are created from multiple inheritance of
 `~roman_datamodels.stnode.TaggedScalarNode` and a scalar type. These objects are
 used to represent the schemas under the ``tagged_scalars`` directory in RAD.
 Those schemas are used to decorate a few common scalar ``meta`` fields with
 additional information for the archive and sdp. Due to how the ``meta`` keyword
 is assembled (via multiple combiners), ASDF has a hard time traversing the
-schemas to look of this information. Thus, these scalar nodes are tagged so that
+schemas to look for this information. Thus, these scalar nodes are tagged so that
 ASDF has a hook to find them without trying a recursive search of the schema
 files. If this issue is resolved in the future, or the metadata under ``meta``
 is reorganized, then scalar node concept can be removed from the codebase.
@@ -135,7 +135,7 @@ on the fly when the data is set via the ``.`` interface; however, ASDF by
 default will validate the data stored in the node against its schema during both
 serialization and de-serialization.
 
-In order to avoid, the overhead of re-validating all of the data in a node when
+In order to avoid the overhead of re-validating all of the data in a node when
 one thing is updated (this can induce a lot of overhead), the stnode objects
 will attempt to parse a given "tagged-node's" schema down so that it is only
 validating the field being updated. It performs the validation by attempting to
