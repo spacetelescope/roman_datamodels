@@ -3,6 +3,8 @@
 
 - Adds test to ensure that the base ``common`` keyword groups exist within the ``schema.info`` tree. [#338]
 
+- Pleaced the previous test for ``schema_info`` with something more robust.  
+
 0.19.1 (2024-04-04)
 ===================
 
