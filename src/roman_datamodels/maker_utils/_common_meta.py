@@ -874,6 +874,7 @@ def mk_mosaic_catalog_meta(**kwargs):
     meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["program"] = mk_program(**kwargs.get("program", {}))
+    meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
 
     return meta
 
@@ -894,5 +895,6 @@ def mk_catalog_meta(**kwargs):
     meta["visit"] = mk_visit(**kwargs.get("visit", {}))
     meta["optical_element"] = kwargs.get("optical_element", "F158")
     meta["exposure"] = mk_exposure(**kwargs.get("exposure", {}))
+    meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
 
     return meta
