@@ -20,8 +20,8 @@ from .conftest import MANIFEST
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
 # Nodes for metadata schema that do not contain any archive_catalog keywords
-NODES_LACKING_ARCHIVE_CATALOG = [stnode.OutlierDetection, stnode.MosaicAssociations,
-                                 stnode.IndividualImageMeta, stnode.Resample]
+NODES_LACKING_ARCHIVE_CATALOG = [stnode.OutlierDetection, stnode.MosaicAssociations, stnode.IndividualImageMeta, stnode.Resample]
+
 
 def datamodel_names():
     names = []
@@ -836,16 +836,16 @@ def test_datamodel_schema_info_values():
 
 @pytest.mark.parametrize("name", datamodel_names())
 def test_datamodel_schema_info_existence(name):
-    # Loop over datamodels that have archive_catalog entires
-    if not name.endswith("RefModel") and name != 'AssociationsModel':
+    # Loop over datamodels that have archive_catalog entries
+    if not name.endswith("RefModel") and name != "AssociationsModel":
         method = getattr(datamodels, name)
         model = utils.mk_datamodel(method)
         info = model.schema_info("archive_catalog")
         for keyword in model.meta.keys():
             # Only DNodes or LNodes need to be canvassed
             if isinstance(model.meta[keyword], (stnode.DNode, stnode.LNode)):
-                # Ignore metadata schemas that lack archive_catalog entires
-                if (type(model.meta[keyword]) not in NODES_LACKING_ARCHIVE_CATALOG):
+                # Ignore metadata schemas that lack archive_catalog entries
+                if type(model.meta[keyword]) not in NODES_LACKING_ARCHIVE_CATALOG:
                     assert keyword in info["roman"]["meta"]
 
 
