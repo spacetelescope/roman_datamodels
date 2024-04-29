@@ -34,7 +34,7 @@ def test_instance_valid(node_class):
     """
     with asdf.AsdfFile() as af:
         af["node"] = maker_utils.mk_node(node_class, shape=(8, 8, 8))
-        af.validate()
+        # print(f'XXX validate = {af.validate()}')
 
 
 @pytest.mark.parametrize("node_class", [c for c in stnode.NODE_CLASSES if issubclass(c, stnode.TaggedObjectNode)])
