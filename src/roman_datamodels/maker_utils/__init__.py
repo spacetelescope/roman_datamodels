@@ -3,9 +3,17 @@ from roman_datamodels.datamodels import MODEL_REGISTRY as _MODEL_REGISTRY  # Hid
 from ._basic_meta import *  # noqa: F403
 from ._common_meta import *  # noqa: F403
 from ._datamodels import *  # noqa: F403
-from ._ground import *  # noqa: F403
+# from ._ground import *  # noqa: F403
 from ._ref_files import *  # noqa: F403
 from ._tagged_nodes import *  # noqa: F403
+
+from ._tvac_basic_meta import *  # noqa: F403
+from ._tvac_common_meta import *  # noqa: F403
+from ._tvac import *  # noqa: F403
+
+from ._fps_basic_meta import *  # noqa: F403
+from ._fps_common_meta import *  # noqa: F403
+from ._fps import *  # noqa: F403
 
 # These makers have special names to reflect the nature of their use in the pipeline
 SPECIAL_MAKERS = {

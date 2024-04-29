@@ -42,6 +42,14 @@ def load_schema_from_uri(schema_uri):
 
     if "reference_files" in schema_uri:
         schema_path = BASE_SCHEMA_PATH / "reference_files" / filename
+    elif "fps/tagged_scalars" in schema_uri:
+        schema_path = BASE_SCHEMA_PATH / "fps/tagged_scalars" / filename
+    elif "fps/" in schema_uri:
+        schema_path = BASE_SCHEMA_PATH / "fps" / filename
+    elif "tvac/tagged_scalars" in schema_uri:
+        schema_path = BASE_SCHEMA_PATH / "tvac/tagged_scalars" / filename
+    elif "tvac/" in schema_uri:
+        schema_path = BASE_SCHEMA_PATH / "tvac" / filename
     elif "tagged_scalars" in schema_uri:
         schema_path = BASE_SCHEMA_PATH / "tagged_scalars" / filename
     else:
@@ -67,6 +75,10 @@ def class_name_from_tag_uri(tag_uri):
     class_name = "".join([p.capitalize() for p in tag_name.split("_")])
     if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
         class_name += "Ref"
+    elif tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/fps/"):
+        class_name = "Fps" + class_name
+    elif tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/tvac/"):
+        class_name = "Tvac" + class_name
 
     return class_name
 
