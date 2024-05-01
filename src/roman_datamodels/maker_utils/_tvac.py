@@ -104,7 +104,7 @@ def mk_tvac_common_meta(**kwargs):
     dict (defined by the ground_common-1.0.0 schema)
     """
     # prevent circular import
-    from ._tvac_common_meta import mk_tvac_exposure, mk_tvac_guidestar, mk_tvac_cal_step, mk_tvac_ref_file, mk_tvac_wfi_mode
+    from ._tvac_common_meta import mk_tvac_cal_step, mk_tvac_exposure, mk_tvac_guidestar, mk_tvac_ref_file, mk_tvac_wfi_mode
 
     meta = mk_tvac_basic_meta(**kwargs)
     meta["cal_step"] = mk_tvac_cal_step(**kwargs.get("cal_step", {}))

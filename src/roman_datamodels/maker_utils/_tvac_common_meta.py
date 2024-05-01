@@ -5,6 +5,7 @@ from roman_datamodels import stnode
 
 from ._base import NONUM, NOSTR
 
+
 def mk_tvac_exposure(**kwargs):
     """
     Create a dummy BaseExposure instance with valid values for attributes
@@ -56,7 +57,6 @@ def mk_tvac_guidestar(**kwargs):
     return guide
 
 
-
 def mk_tvac_wfi_mode(**kwargs):
     """
     Create a dummy WFI mode instance with valid values for attributes
@@ -101,7 +101,6 @@ def mk_tvac_cal_step(**kwargs):
     l2calstep["tweakreg"] = kwargs.get("tweakreg", "INCOMPLETE")
 
     return l2calstep
-
 
 
 def mk_tvac_ref_file(**kwargs):
