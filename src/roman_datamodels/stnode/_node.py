@@ -325,7 +325,6 @@ class DNode(MutableMapping):
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
         if isinstance(value, dict):
             for sub_key, sub_value in value.items():
-                # value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
                 if self._tag and "/tvac" in self._tag:
                     value[sub_key] = self._convert_to_scalar("tvac_"+sub_key, sub_value)
                 elif self._tag and "/fps" in self._tag:
