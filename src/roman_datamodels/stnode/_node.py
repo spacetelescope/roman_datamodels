@@ -316,9 +316,9 @@ class DNode(MutableMapping):
 
         # Convert the value to a tagged scalar if necessary
         if self._tag and "/tvac" in self._tag:
-            value = self._convert_to_scalar("tvac_"+key, value)
+            value = self._convert_to_scalar("tvac_" + key, value)
         elif self._tag and "/fps" in self._tag:
-            value = self._convert_to_scalar("fps_"+key, value)
+            value = self._convert_to_scalar("fps_" + key, value)
         else:
             value = self._convert_to_scalar(key, value)
 
@@ -326,9 +326,9 @@ class DNode(MutableMapping):
         if isinstance(value, dict):
             for sub_key, sub_value in value.items():
                 if self._tag and "/tvac" in self._tag:
-                    value[sub_key] = self._convert_to_scalar("tvac_"+sub_key, sub_value)
+                    value[sub_key] = self._convert_to_scalar("tvac_" + sub_key, sub_value)
                 elif self._tag and "/fps" in self._tag:
-                    value[sub_key] = self._convert_to_scalar("fps_"+sub_key, sub_value)
+                    value[sub_key] = self._convert_to_scalar("fps_" + sub_key, sub_value)
                 else:
                     value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
 

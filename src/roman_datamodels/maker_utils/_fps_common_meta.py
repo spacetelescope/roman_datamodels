@@ -57,7 +57,6 @@ def mk_fps_guidestar(**kwargs):
     return guide
 
 
-
 def mk_fps_wfi_mode(**kwargs):
     """
     Create a dummy WFI mode instance with valid values for attributes
@@ -102,7 +101,6 @@ def mk_fps_cal_step(**kwargs):
     l2calstep["tweakreg"] = kwargs.get("tweakreg", "INCOMPLETE")
 
     return l2calstep
-
 
 
 def mk_fps_ref_file(**kwargs):
