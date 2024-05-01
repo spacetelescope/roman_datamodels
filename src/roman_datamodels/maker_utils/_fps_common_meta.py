@@ -1,18 +1,9 @@
 import numpy as np
-from astropy import coordinates, time
-from astropy import units as u
-from astropy.modeling import models
-from astropy.table import QTable
-from gwcs import coordinate_frames
-from gwcs.wcs import WCS
+from astropy import time
 
 from roman_datamodels import stnode
 
 from ._base import NONUM, NOSTR
-from ._fps_basic_meta import mk_fps_basic_meta
-
-# from ._ground import mk_base_exposure, mk_base_guidestar
-# from ._tagged_nodes import mk_photometry, mk_resample
 
 
 def mk_fps_exposure(**kwargs):
@@ -136,4 +127,3 @@ def mk_fps_ref_file(**kwargs):
     ref_file["crds"] = kwargs.get("crds", {"sw_version": "12.3.1", "context_used": "roman_0815.pmap"})
 
     return ref_file
-

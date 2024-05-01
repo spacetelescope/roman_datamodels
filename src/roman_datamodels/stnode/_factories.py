@@ -43,19 +43,14 @@ def load_schema_from_uri(schema_uri):
     if "reference_files" in schema_uri:
         schema_path = BASE_SCHEMA_PATH / "reference_files" / filename
     elif "/fps/tagged_scalars" in schema_uri:
-        print(f"XXXX FPS TAGGED SCALARS schema_uri = {schema_uri}")
         schema_path = BASE_SCHEMA_PATH / "fps/tagged_scalars" / filename
     elif "/fps/" in schema_uri:
-        print(f"XXXX FPX schema_uri = {schema_uri}")
         schema_path = BASE_SCHEMA_PATH / "fps" / filename
     elif "/tvac/tagged_scalars" in schema_uri:
-        print(f"XXXX TVAC TAGGED SCALARS schema_uri = {schema_uri}")
         schema_path = BASE_SCHEMA_PATH / "tvac/tagged_scalars" / filename
     elif "/tvac/" in schema_uri:
-        print(f"XXXX TVAC schema_uri = {schema_uri}")
         schema_path = BASE_SCHEMA_PATH / "tvac" / filename
     elif "tagged_scalars" in schema_uri:
-        print(f"XXXX REAL TAGGED SCALARS schema_uri = {schema_uri}")
         schema_path = BASE_SCHEMA_PATH / "tagged_scalars" / filename
     else:
         schema_path = BASE_SCHEMA_PATH / filename
@@ -123,9 +118,6 @@ def scalar_factory(tag):
     class_name = class_name_from_tag_uri(tag["tag_uri"])
     schema = load_schema_from_uri(tag["schema_uri"])
 
-    print(f"XXXX scalar_factory tag[schema_uri] = {tag["schema_uri"]}")
-    print(f"XXXX scalar_factory schema = {schema}")
-
     # TaggedScalarNode subclasses are really subclasses of the type of the scalar,
     #   with the TaggedScalarNode as a mixin.  This is because the TaggedScalarNode
     #   is supposed to be the scalar, but it needs to be serializable under a specific
@@ -161,9 +153,6 @@ def node_factory(tag):
     """
     class_name = class_name_from_tag_uri(tag["tag_uri"])
     schema = load_schema_from_uri(tag["schema_uri"])
-
-    print(f"XXXX node_factory tag[schema_uri] = {tag["schema_uri"]}")
-    print(f"XXXX node_factory schema = {schema}")
 
     if "type" in schema:
         # Determine if the class is a TaggedObjectNode or TaggedListNode based on the

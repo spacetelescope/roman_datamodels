@@ -131,7 +131,6 @@ class TaggedScalarNode:
         Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_TAG
         and SCALAR_NODE_CLASSES_BY_KEY registry.
         """
-        print(f"XXX TaggedScalarNode init cls._tag = {cls._tag}")
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedScalarNode":
             if cls._tag in SCALAR_NODE_CLASSES_BY_TAG:

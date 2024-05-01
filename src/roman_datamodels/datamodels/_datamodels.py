@@ -40,11 +40,7 @@ class _DataModel(DataModel):
 
 class _RomanDataModel(_DataModel):
     def __init__(self, init=None, **kwargs):
-        # print(f"\n\n\n\nXXX 0 _RomanDataModel type(init.meta.file_date) = {type(init.meta.file_date)}")
-
         super().__init__(init, **kwargs)
-
-        # print(f"\n\n\n\nXXX 1 _RomanDataModel type(init.meta.file_date) = {type(init.meta.file_date)}")
 
         if init is not None:
             self.meta.model_type = self.__class__.__name__

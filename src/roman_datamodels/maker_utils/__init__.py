@@ -50,7 +50,7 @@ def _get_node_maker(node_class):
     -------
     maker function for node class
     """
-    print(f"\nXXX node_class = {node_class}")
+
     if node_class.__name__ in SPECIAL_MAKERS:
         method_name = SPECIAL_MAKERS[node_class.__name__]
     else:
@@ -62,8 +62,6 @@ def _get_node_maker(node_class):
 
         if method_name not in globals():
             raise ValueError(f"Maker utility: {method_name} not implemented for class {node_class.__name__}")
-        
-    print(f"\nXXX method_name = {method_name}")
 
     return globals()[method_name]
 
@@ -84,7 +82,6 @@ def mk_node(node_class, **kwargs):
     -------
     `roman_datamodels.stnode.TaggedObjectNode`
     """
-    print("\nXXX Making node!")
 
     return _get_node_maker(node_class)(**kwargs)
 
@@ -105,8 +102,5 @@ def mk_datamodel(model_class, **kwargs):
     -------
     `roman_datamodels.datamodels.Datamodel`
     """
-    print(f"\n\nXXX model_class = {model_class}\n\n")
-    # print(f"\n\nXXX NODE_REGISTRY[model_class] = {NODE_REGISTRY[model_class]}\n\n")
-    print(f"\n\nXXX kwargs = {kwargs}\n\n")
-    # print(f"\n\nXXX mk_node(NODE_REGISTRY[model_class], **kwargs) = {mk_node(NODE_REGISTRY[model_class], **kwargs)}\n\n")
+
     return model_class(mk_node(NODE_REGISTRY[model_class], **kwargs))

@@ -495,7 +495,6 @@ def mk_common_meta(**kwargs):
     dict (defined by the common-1.0.0 schema)
     """
     meta = mk_basic_meta(**kwargs)
-    print(f"XXX common meta type(meta[file_date]) = {type(meta["file_date"])}")
     meta["aperture"] = mk_aperture(**kwargs.get("aperture", {}))
     meta["cal_step"] = mk_l2_cal_step(**kwargs.get("cal_step", {}))
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
@@ -528,9 +527,6 @@ def mk_photometry_meta(**kwargs):
     meta = mk_common_meta(**kwargs)
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["outlier_detection"] = mk_outlier_detection(**kwargs.get("outlier_detection", {}))
-
-    print(f"XXX photometry meta type(meta[file_date]) = {type(meta["file_date"])}")
-    
 
     return meta
 

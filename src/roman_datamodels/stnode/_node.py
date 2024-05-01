@@ -187,7 +187,7 @@ class DNode(MutableMapping):
     @staticmethod
     def _convert_to_scalar(key, value):
         """Find and wrap scalars in the appropriate class, if its a tagged one."""
-        print(f"XXX converting ({key},{value}) to scalar")
+
         if key in SCALAR_NODE_CLASSES_BY_KEY:
             value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
 
@@ -225,8 +225,6 @@ class DNode(MutableMapping):
         """
         Permit assigning dict keys as attributes.
         """
-
-        print(f"XXX Setting node value for ({key}, {value}) with tag ({self._tag})")
 
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
@@ -316,7 +314,6 @@ class DNode(MutableMapping):
     def __setitem__(self, key, value):
         """Dictionary style access set data"""
 
-        print(f"XXX Before converting to scalar ({key},{value})  with tag ({self._tag})")
         # Convert the value to a tagged scalar if necessary
         if self._tag and "/tvac" in self._tag:
             value = self._convert_to_scalar("tvac_"+key, value)
@@ -324,12 +321,10 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar("fps_"+key, value)
         else:
             value = self._convert_to_scalar(key, value)
-        print(f"XXX After converting to scalar ({key},{value})  with tag ({self._tag})")
 
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
         if isinstance(value, dict):
             for sub_key, sub_value in value.items():
-                print(f"XXX Looping over subkeys!")
                 # value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
                 if self._tag and "/tvac" in self._tag:
                     value[sub_key] = self._convert_to_scalar("tvac_"+sub_key, sub_value)
@@ -337,8 +332,6 @@ class DNode(MutableMapping):
                     value[sub_key] = self._convert_to_scalar("fps_"+sub_key, sub_value)
                 else:
                     value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
-
-        print(f"XXX After loop ({key},{value}) with tag ({self._tag})")
 
         self._data[key] = value
 

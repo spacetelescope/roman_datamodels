@@ -104,7 +104,6 @@ def mk_tvac_basic_meta(**kwargs):
     -------
     dict (defined by the tvac/basic-1.0.0 schema)
     """
-    print("XXX Making TVAC BASIC")
     meta = {}
     meta["calibration_software_version"] = mk_tvac_calibration_software_version(**kwargs)
     meta["sdf_software_version"] = mk_tvac_sdf_software_version(**kwargs)
