@@ -206,74 +206,74 @@ def mk_tvac_common_meta(**kwargs):
     return meta
 
 
-def mk_fps_meta(**kwargs):
-    """
-    Create a dummy common metadata dictionary with valid values for attributes
+# def mk_fps_meta(**kwargs):
+#     """
+#     Create a dummy common metadata dictionary with valid values for attributes
 
-    Returns
-    -------
-    dict (defined by the fps-1.0.0.meta schema)
-    """
+#     Returns
+#     -------
+#     dict (defined by the fps-1.0.0.meta schema)
+#     """
 
-    meta = mk_ground_common_meta(**kwargs)
-    meta["groundtest"] = mk_groundtest(**kwargs.get("groundtest", {}))
+#     meta = mk_ground_common_meta(**kwargs)
+#     meta["groundtest"] = mk_groundtest(**kwargs.get("groundtest", {}))
 
-    return meta
+#     return meta
 
 
-def mk_fps(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
-    """
-    Create a dummy Fps instance (or file) with arrays and valid
-    values for attributes required by the schema.
+# def mk_fps(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
+#     """
+#     Create a dummy Fps instance (or file) with arrays and valid
+#     values for attributes required by the schema.
 
-    Parameters
-    ----------
-    shape : tuple, int
-        (optional, keyword-only) (z, y, x) Shape of data array. This includes a
-        four-pixel border representing the reference pixels. Default is
-            (8, 4096, 4096)
-        (8 integrations, 4088 x 4088 represent the science pixels, with the
-        additional being the border reference pixels).
+#     Parameters
+#     ----------
+#     shape : tuple, int
+#         (optional, keyword-only) (z, y, x) Shape of data array. This includes a
+#         four-pixel border representing the reference pixels. Default is
+#             (8, 4096, 4096)
+#         (8 integrations, 4088 x 4088 represent the science pixels, with the
+#         additional being the border reference pixels).
 
-    filepath : str
-        (optional, keyword-only) File name and path to write model to.
+#     filepath : str
+#         (optional, keyword-only) File name and path to write model to.
 
-    Returns
-    -------
-    roman_datamodels.stnode.Fps
-    """
-    if len(shape) != 3:
-        shape = (8, 4096, 4096)
-        warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
+#     Returns
+#     -------
+#     roman_datamodels.stnode.Fps
+#     """
+#     if len(shape) != 3:
+#         shape = (8, 4096, 4096)
+#         warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
 
-    fps = stnode.Fps()
-    fps["meta"] = mk_fps_meta(**kwargs.get("meta", {}))
+#     fps = stnode.Fps()
+#     fps["meta"] = mk_fps_meta(**kwargs.get("meta", {}))
 
-    n_groups = shape[0]
+#     n_groups = shape[0]
 
-    fps["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16))
+#     fps["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16))
 
-    # add amp 33 ref pix
-    fps["amp33"] = kwargs.get("amp33", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16))
-    fps["amp33_reset_reads"] = kwargs.get(
-        "amp33_reset_reads", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
-    )
-    fps["amp33_reference_read"] = kwargs.get(
-        "amp33_reference_read", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
-    )
+#     # add amp 33 ref pix
+#     fps["amp33"] = kwargs.get("amp33", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16))
+#     fps["amp33_reset_reads"] = kwargs.get(
+#         "amp33_reset_reads", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+#     )
+#     fps["amp33_reference_read"] = kwargs.get(
+#         "amp33_reference_read", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+#     )
 
-    # add guidewindow and reference
-    fps["guidewindow"] = kwargs.get(
-        "guidewindow", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
-    )
-    fps["reference_read"] = kwargs.get(
-        "reference_read", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
-    )
-    fps["reset_reads"] = kwargs.get(
-        "reset_reads", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
-    )
+#     # add guidewindow and reference
+#     fps["guidewindow"] = kwargs.get(
+#         "guidewindow", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+#     )
+#     fps["reference_read"] = kwargs.get(
+#         "reference_read", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+#     )
+#     fps["reset_reads"] = kwargs.get(
+#         "reset_reads", u.Quantity(np.zeros((n_groups, 4096, 128), dtype=np.uint16), u.DN, dtype=np.uint16)
+#     )
 
-    return save_node(fps, filepath=filepath)
+#     return save_node(fps, filepath=filepath)
 
 
 def mk_tvac_meta(**kwargs):

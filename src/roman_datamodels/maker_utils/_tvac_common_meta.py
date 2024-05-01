@@ -9,7 +9,7 @@ from gwcs.wcs import WCS
 from roman_datamodels import stnode
 
 from ._base import NONUM, NOSTR
-from ._basic_meta import mk_basic_meta
+from ._tvac_basic_meta import mk_tvac_basic_meta
 
 # from ._ground import mk_base_exposure, mk_base_guidestar
 # from ._tagged_nodes import mk_photometry, mk_resample

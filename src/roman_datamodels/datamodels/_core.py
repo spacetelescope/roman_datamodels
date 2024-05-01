@@ -112,6 +112,7 @@ class DataModel(abc.ABC):
         return super().__new__(cls)
 
     def __init__(self, init=None, **kwargs):
+        # print(f"\n\n\n\nXXX type(init.meta.file_date) = {type(init.meta.file_date)}")
         if isinstance(init, self.__class__):
             # Due to __new__ above, this is already initialized.
             return
@@ -127,6 +128,11 @@ class DataModel(abc.ABC):
                 raise ValidationError(
                     f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
                 )
+            # print(f"\n\n\n\nXXX init = {init}")
+            # print(f"\n\n\n\nXXX init.meta.file_date = {init.meta.file_date}")
+            # print(f"\n\n\n\nXXX type(init.meta.file_date) = {type(init.meta.file_date)}")
+            # print(f"\n\n\n\nXXX init.meta.file_date.tag = {init.meta.file_date.tag}")
+            # print(f"\n\n\n\nXXX init.meta.file_date._tag = {init.meta.file_date._tag}")
             with validate.nuke_validation():
                 self._instance = init
                 af = asdf.AsdfFile()
@@ -255,9 +261,11 @@ class DataModel(abc.ABC):
         return self._shape
 
     def __setattr__(self, attr, value):
+        # print(f"XXX Setting model value for ({attr})")
         if attr.startswith("_"):
             self.__dict__[attr] = value
         else:
+            # print(f"XXX Setting model value for ({attr})")
             setattr(self._instance, attr, value)
 
     def __getattr__(self, attr):

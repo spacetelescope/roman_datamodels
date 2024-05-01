@@ -106,7 +106,12 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
         )
 
     wfi_image = stnode.WfiImage()
+
+    # print(f"XXX make l2 type(wfi_image[meta][file_date]) = {type(wfi_image["meta"]["file_date"])}")
+
     wfi_image["meta"] = mk_photometry_meta(**kwargs.get("meta", {}))
+
+    # print(f"XXX make l2 type(wfi_image[meta][file_date]) = {type(wfi_image["meta"]["file_date"])}")
 
     # add border reference pixel arrays
     wfi_image["border_ref_pix_left"] = kwargs.get(

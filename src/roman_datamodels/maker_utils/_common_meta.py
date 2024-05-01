@@ -65,57 +65,6 @@ from ._tagged_nodes import mk_photometry, mk_resample
 
 #     return guide
 
-# def mk_base_exposure(**kwargs):
-#     """
-#     Create a dummy BaseExposure instance with valid values for attributes
-#     required by the schema. Utilized by the model maker utilities below.
-
-#     Returns
-#     -------
-#     roman_datamodels.stnode.BaseExposure
-#     """
-#     exp = stnode.GroundExposure()
-#     exp["type"] = kwargs.get("type", "WFI_IMAGE")
-#     exp["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-#     exp["ngroups"] = kwargs.get("ngroups", 6)
-#     exp["nframes"] = kwargs.get("nframes", 8)
-#     exp["data_problem"] = kwargs.get("data_problem", False)
-#     exp["frame_divisor"] = kwargs.get("frame_divisor", NONUM)
-#     exp["groupgap"] = kwargs.get("groupgap", 0)
-#     exp["frame_time"] = kwargs.get("frame_time", NONUM)
-#     exp["group_time"] = kwargs.get("group_time", NONUM)
-#     exp["exposure_time"] = kwargs.get("exposure_time", NONUM)
-#     exp["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
-#     exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
-#     exp["read_pattern"] = kwargs.get("read_pattern", np.arange(1, 56).reshape((-1, 1)).tolist())
-
-#     return exp
-
-
-# def mk_base_guidestar(**kwargs):
-#     """
-#     Create a dummy BaseGuidestar instance with valid values for attributes
-#     required by the schema. Utilized by the model maker utilities below.
-
-#     Returns
-#     -------
-#     roman_datamodels.stnode.GroundGuidestar
-#     """
-#     guide = stnode.GroundGuidestar()
-#     guide["gw_id"] = kwargs.get("gw_id", NOSTR)
-#     guide["gw_fgs_mode"] = kwargs.get("gw_fgs_mode", "WSM-ACQ-2")
-#     guide["data_start"] = kwargs.get("data_start", NONUM)
-#     guide["data_end"] = kwargs.get("data_end", NONUM)
-#     guide["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
-#     guide["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
-#     guide["gw_window_xstop"] = kwargs.get("gw_window_xstop", guide["gw_window_xstart"] + 170)
-#     guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
-#     guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
-#     guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
-
-#     return guide
-
-
 
 def mk_exposure(**kwargs):
     """
@@ -128,20 +77,6 @@ def mk_exposure(**kwargs):
     """
     exp = stnode.Exposure()
     # exp._data = mk_base_exposure(**kwargs)._data
-    # exp["type"] = kwargs.get("type", "WFI_IMAGE")
-    # exp["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    # exp["ngroups"] = kwargs.get("ngroups", 6)
-    # exp["nframes"] = kwargs.get("nframes", 8)
-    # exp["data_problem"] = kwargs.get("data_problem", False)
-    # exp["frame_divisor"] = kwargs.get("frame_divisor", NONUM)
-    # exp["groupgap"] = kwargs.get("groupgap", 0)
-    # exp["frame_time"] = kwargs.get("frame_time", NONUM)
-    # exp["group_time"] = kwargs.get("group_time", NONUM)
-    # exp["exposure_time"] = kwargs.get("exposure_time", NONUM)
-    # exp["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
-    # exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
-    # exp["read_pattern"] = kwargs.get("read_pattern", np.arange(1, 56).reshape((-1, 1)).tolist())
-
     exp["type"] = kwargs.get("type", "WFI_IMAGE")
     exp["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
     exp["ngroups"] = kwargs.get("ngroups", 6)
@@ -154,8 +89,7 @@ def mk_exposure(**kwargs):
     exp["exposure_time"] = kwargs.get("exposure_time", NONUM)
     exp["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
     exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
-    # exp["read_pattern"] = kwargs.get("read_pattern", np.arange(1, 56).reshape((-1, 1)).tolist())
-
+    exp["read_pattern"] = kwargs.get("read_pattern", np.arange(1, 56).reshape((-1, 1)).tolist())
 
     exp["read_pattern"] = kwargs.get("read_pattern", [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]])
     exp["id"] = kwargs.get("id", NONUM)
@@ -175,8 +109,6 @@ def mk_exposure(**kwargs):
     exp["duration"] = kwargs.get("duration", NONUM)
     exp["level0_compressed"] = kwargs.get("level0_compressed", True)
     exp["truncated"] = kwargs.get("truncated", False)
-
-
 
     return exp
 
@@ -498,18 +430,6 @@ def mk_guidestar(**kwargs):
     """
     guide = stnode.Guidestar()
     # guide._data = mk_base_guidestar(**kwargs)._data
-
-    # guide["gw_id"] = kwargs.get("gw_id", NOSTR)
-    # guide["gw_fgs_mode"] = kwargs.get("gw_fgs_mode", "WSM-ACQ-2")
-    # guide["data_start"] = kwargs.get("data_start", NONUM)
-    # guide["data_end"] = kwargs.get("data_end", NONUM)
-    # guide["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
-    # guide["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
-    # guide["gw_window_xstop"] = kwargs.get("gw_window_xstop", guide["gw_window_xstart"] + 170)
-    # guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
-    # guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
-    # guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
-
     guide["gw_id"] = kwargs.get("gw_id", NOSTR)
     guide["gw_fgs_mode"] = kwargs.get("gw_fgs_mode", "WSM-ACQ-2")
     guide["data_start"] = kwargs.get("data_start", NONUM)
@@ -520,7 +440,6 @@ def mk_guidestar(**kwargs):
     guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
     guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
     guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
-
 
     guide["gs_ra"] = kwargs.get("gs_ra", NONUM)
     guide["gs_dec"] = kwargs.get("gs_dec", NONUM)
@@ -539,8 +458,6 @@ def mk_guidestar(**kwargs):
     guide["gs_mudec"] = kwargs.get("gs_mudec", NONUM)
     guide["gs_para"] = kwargs.get("gs_para", NONUM)
     guide["gs_pattern_error"] = kwargs.get("gs_pattern_error", NONUM)
-
-
 
     return guide
 
@@ -578,6 +495,7 @@ def mk_common_meta(**kwargs):
     dict (defined by the common-1.0.0 schema)
     """
     meta = mk_basic_meta(**kwargs)
+    print(f"XXX common meta type(meta[file_date]) = {type(meta["file_date"])}")
     meta["aperture"] = mk_aperture(**kwargs.get("aperture", {}))
     meta["cal_step"] = mk_l2_cal_step(**kwargs.get("cal_step", {}))
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
@@ -610,6 +528,9 @@ def mk_photometry_meta(**kwargs):
     meta = mk_common_meta(**kwargs)
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["outlier_detection"] = mk_outlier_detection(**kwargs.get("outlier_detection", {}))
+
+    print(f"XXX photometry meta type(meta[file_date]) = {type(meta["file_date"])}")
+    
 
     return meta
 

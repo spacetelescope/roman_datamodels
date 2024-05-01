@@ -47,7 +47,7 @@ def mk_file_date(**kwargs):
     -------
     roman_datamodels.stnode.FileDate
     """
-
+    print("XXX REAL FileDate")
     return stnode.FileDate(kwargs.get("file_date", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")))
 
 
@@ -104,11 +104,13 @@ def mk_basic_meta(**kwargs):
     -------
     dict (defined by the basic-1.0.0 schema)
     """
+    print("XXX Making REAL BASIC")
     meta = {}
     meta["calibration_software_version"] = mk_calibration_software_version(**kwargs)
     meta["sdf_software_version"] = mk_sdf_software_version(**kwargs)
     meta["filename"] = mk_filename(**kwargs)
     meta["file_date"] = mk_file_date(**kwargs)
+    print(f"XXX type(meta[file_date]) = {type(meta["file_date"])}")
     meta["model_type"] = mk_model_type(**kwargs)
     meta["origin"] = mk_origin(**kwargs)
     meta["prd_software_version"] = mk_prd_software_version(**kwargs)
