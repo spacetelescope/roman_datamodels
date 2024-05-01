@@ -75,10 +75,6 @@ def class_name_from_tag_uri(tag_uri):
     class_name = "".join([p.capitalize() for p in tag_name.split("_")])
     if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
         class_name += "Ref"
-    # elif tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/fps/"):
-    #     class_name = "Fps" + class_name
-    # elif tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/tvac/"):
-    #     class_name = "Tvac" + class_name
 
     return class_name
 
