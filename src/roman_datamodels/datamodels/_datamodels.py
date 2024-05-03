@@ -90,7 +90,7 @@ class MosaicModel(_RomanDataModel):
 
                     subtable_cols.append(subkey)
 
-                    if isinstance(subvalue, list):
+                    if isinstance(subvalue, (list, dict)):
                         subtable_vals.append([str(subvalue)])
                     else:
                         subtable_vals.append([subvalue])
