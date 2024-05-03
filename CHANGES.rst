@@ -5,6 +5,8 @@
 
 - Replaced the previous test for ``schema_info`` with something more robust. [#344]
 
+- Add conversion of dict to string during Qtable construction [#348]
+
 0.19.1 (2024-04-04)
 ===================
 
