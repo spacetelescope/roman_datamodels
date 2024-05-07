@@ -7,6 +7,8 @@
 
 - Add conversion of dict to string during Qtable construction [#348]
 
+- Do not include QTables in individual image metadata [#349]
+
 0.19.1 (2024-04-04)
 ===================
 
