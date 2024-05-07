@@ -19,8 +19,8 @@ dependencies = [
     "numpy >=1.22",
     "astropy >=5.3.0",
     # "rad @ git+https://github.com/spacetelescope/rad.git",
-    # "rad >= 0.19.2",
     "rad @ git+https://github.com/PaulHuwe/rad.git@RAD-165_SepTVACFPS",
+    # "rad >= 0.19.3",
     "asdf-standard >=1.0.3",
 ]
 dynamic = [
