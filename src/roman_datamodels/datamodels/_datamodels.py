@@ -87,6 +87,9 @@ class MosaicModel(_RomanDataModel):
                     # Skip ndarrays
                     if isinstance(subvalue, asdf.tags.core.ndarray.NDArrayType):
                         continue
+                    # Skip QTables
+                    if isinstance(subvalue, QTable):
+                        continue
 
                     subtable_cols.append(subkey)
 
@@ -110,6 +113,9 @@ class MosaicModel(_RomanDataModel):
                 continue
             # Skip ndarrays
             elif isinstance(value.strip(), asdf.tags.core.ndarray.NDArrayType):
+                continue
+            # Skip QTables
+            elif isinstance(value, QTable):
                 continue
             else:
                 # Store Basic keyword
