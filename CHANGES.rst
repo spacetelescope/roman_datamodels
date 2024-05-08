@@ -1,4 +1,9 @@
-0.19.2 (unreleased)
+0.20.0 (unreleased)
+===================
+
+-
+
+0.19.2 (2024-05-08)
 ===================
 
 - Adds test to ensure that the base ``common`` keyword groups exist within the ``schema.info`` tree. [#338]
