@@ -106,6 +106,7 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
         )
 
     wfi_image = stnode.WfiImage()
+
     wfi_image["meta"] = mk_photometry_meta(**kwargs.get("meta", {}))
 
     # add border reference pixel arrays

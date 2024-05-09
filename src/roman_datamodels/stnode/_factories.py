@@ -42,6 +42,14 @@ def load_schema_from_uri(schema_uri):
 
     if "reference_files" in schema_uri:
         schema_path = BASE_SCHEMA_PATH / "reference_files" / filename
+    elif "/fps/tagged_scalars" in schema_uri:
+        schema_path = BASE_SCHEMA_PATH / "fps/tagged_scalars" / filename
+    elif "/fps/" in schema_uri:
+        schema_path = BASE_SCHEMA_PATH / "fps" / filename
+    elif "/tvac/tagged_scalars" in schema_uri:
+        schema_path = BASE_SCHEMA_PATH / "tvac/tagged_scalars" / filename
+    elif "/tvac/" in schema_uri:
+        schema_path = BASE_SCHEMA_PATH / "tvac" / filename
     elif "tagged_scalars" in schema_uri:
         schema_path = BASE_SCHEMA_PATH / "tagged_scalars" / filename
     else:

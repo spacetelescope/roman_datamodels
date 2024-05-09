@@ -48,7 +48,12 @@ def name_from_tag_uri(tag_uri):
     tag_uri : str
         The tag_uri to find the name from
     """
-    return tag_uri.split("/")[-1].split("-")[0]
+    tag_uri_split = tag_uri.split("/")[-1].split("-")[0]
+    if "/tvac/" in tag_uri and "tvac" not in tag_uri_split:
+        tag_uri_split = "tvac_" + tag_uri.split("/")[-1].split("-")[0]
+    elif "/fps/" in tag_uri and "fps" not in tag_uri_split:
+        tag_uri_split = "fps_" + tag_uri.split("/")[-1].split("-")[0]
+    return tag_uri_split
 
 
 class TaggedObjectNode(DNode):

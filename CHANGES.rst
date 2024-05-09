@@ -1,7 +1,8 @@
 0.20.0 (unreleased)
 ===================
 
--
+- Separated TVAC and FPS into their own makers to freeze from from main development. [#347]
+
 
 0.19.2 (2024-05-08)
 ===================
@@ -13,6 +14,7 @@
 - Add conversion of dict to string during Qtable construction [#348]
 
 - Do not include QTables in individual image metadata [#349]
+
 
 0.19.1 (2024-04-04)
 ===================

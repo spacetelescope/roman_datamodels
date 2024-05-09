@@ -187,6 +187,7 @@ class DNode(MutableMapping):
     @staticmethod
     def _convert_to_scalar(key, value):
         """Find and wrap scalars in the appropriate class, if its a tagged one."""
+
         if key in SCALAR_NODE_CLASSES_BY_KEY:
             value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
 
@@ -314,12 +315,22 @@ class DNode(MutableMapping):
         """Dictionary style access set data"""
 
         # Convert the value to a tagged scalar if necessary
-        value = self._convert_to_scalar(key, value)
+        if self._tag and "/tvac" in self._tag:
+            value = self._convert_to_scalar("tvac_" + key, value)
+        elif self._tag and "/fps" in self._tag:
+            value = self._convert_to_scalar("fps_" + key, value)
+        else:
+            value = self._convert_to_scalar(key, value)
 
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
         if isinstance(value, dict):
             for sub_key, sub_value in value.items():
-                value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
+                if self._tag and "/tvac" in self._tag:
+                    value[sub_key] = self._convert_to_scalar("tvac_" + sub_key, sub_value)
+                elif self._tag and "/fps" in self._tag:
+                    value[sub_key] = self._convert_to_scalar("fps_" + sub_key, sub_value)
+                else:
+                    value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
 
         self._data[key] = value
 

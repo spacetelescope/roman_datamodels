@@ -10,21 +10,20 @@ from roman_datamodels import stnode
 
 from ._base import NONUM, NOSTR
 from ._basic_meta import mk_basic_meta
-
-# from ._ground import mk_base_exposure, mk_base_guidestar
 from ._tagged_nodes import mk_photometry, mk_resample
 
 
-def mk_base_exposure(**kwargs):
+def mk_exposure(**kwargs):
     """
-    Create a dummy BaseExposure instance with valid values for attributes
+    Create a dummy Exposure instance with valid values for attributes
     required by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
-    roman_datamodels.stnode.BaseExposure
+    roman_datamodels.stnode.Exposure
     """
-    exp = stnode.BaseExposure()
+    exp = stnode.Exposure()
+
     exp["type"] = kwargs.get("type", "WFI_IMAGE")
     exp["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
     exp["ngroups"] = kwargs.get("ngroups", 6)
@@ -39,44 +38,6 @@ def mk_base_exposure(**kwargs):
     exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
     exp["read_pattern"] = kwargs.get("read_pattern", np.arange(1, 56).reshape((-1, 1)).tolist())
 
-    return exp
-
-
-def mk_base_guidestar(**kwargs):
-    """
-    Create a dummy BaseGuidestar instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
-
-    Returns
-    -------
-    roman_datamodels.stnode.GroundGuidestar
-    """
-    guide = stnode.BaseGuidestar()
-    guide["gw_id"] = kwargs.get("gw_id", NOSTR)
-    guide["gw_fgs_mode"] = kwargs.get("gw_fgs_mode", "WSM-ACQ-2")
-    guide["data_start"] = kwargs.get("data_start", NONUM)
-    guide["data_end"] = kwargs.get("data_end", NONUM)
-    guide["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
-    guide["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
-    guide["gw_window_xstop"] = kwargs.get("gw_window_xstop", guide["gw_window_xstart"] + 170)
-    guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
-    guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
-    guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
-
-    return guide
-
-
-def mk_exposure(**kwargs):
-    """
-    Create a dummy Exposure instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
-
-    Returns
-    -------
-    roman_datamodels.stnode.Exposure
-    """
-    exp = stnode.Exposure()
-    exp._data = mk_base_exposure(**kwargs)._data
     exp["read_pattern"] = kwargs.get("read_pattern", [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]])
     exp["id"] = kwargs.get("id", NONUM)
     exp["mid_time"] = kwargs.get("mid_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
@@ -415,7 +376,18 @@ def mk_guidestar(**kwargs):
     roman_datamodels.stnode.Guidestar
     """
     guide = stnode.Guidestar()
-    guide._data = mk_base_guidestar(**kwargs)._data
+
+    guide["gw_id"] = kwargs.get("gw_id", NOSTR)
+    guide["gw_fgs_mode"] = kwargs.get("gw_fgs_mode", "WSM-ACQ-2")
+    guide["data_start"] = kwargs.get("data_start", NONUM)
+    guide["data_end"] = kwargs.get("data_end", NONUM)
+    guide["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
+    guide["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
+    guide["gw_window_xstop"] = kwargs.get("gw_window_xstop", guide["gw_window_xstart"] + 170)
+    guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
+    guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
+    guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
+
     guide["gs_ra"] = kwargs.get("gs_ra", NONUM)
     guide["gs_dec"] = kwargs.get("gs_dec", NONUM)
     guide["gs_ura"] = kwargs.get("gs_ura", NONUM)
