@@ -2,7 +2,7 @@
 ===================
 
 - Separated TVAC and FPS into their own makers to freeze from from main development. [#347]
-  
+
 
 0.19.2 (2024-05-08)
 ===================
