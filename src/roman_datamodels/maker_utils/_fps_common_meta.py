@@ -57,6 +57,7 @@ def mk_fps_guidestar(**kwargs):
 
     return guide
 
+
 def mk_fps_statistics(**kwargs):
     """
     Create a dummy Statistics instance with valid values for attributes

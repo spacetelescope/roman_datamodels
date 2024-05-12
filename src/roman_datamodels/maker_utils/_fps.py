@@ -58,8 +58,14 @@ def mk_fps_common_meta(**kwargs):
     dict (defined by the ground_common-1.0.0 schema)
     """
     # prevent circular import
-    from ._fps_common_meta import mk_fps_cal_step, mk_fps_exposure, mk_fps_guidestar, \
-                                  mk_fps_ref_file, mk_fps_wfi_mode, mk_fps_statistics
+    from ._fps_common_meta import (
+        mk_fps_cal_step,
+        mk_fps_exposure,
+        mk_fps_guidestar,
+        mk_fps_ref_file,
+        mk_fps_statistics,
+        mk_fps_wfi_mode,
+    )
 
     meta = mk_fps_basic_meta(**kwargs)
     meta["cal_step"] = mk_fps_cal_step(**kwargs.get("cal_step", {}))
