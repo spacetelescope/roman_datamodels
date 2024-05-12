@@ -1,5 +1,6 @@
 import numpy as np
 from astropy import time
+from astropy import units as u
 
 from roman_datamodels import stnode
 
@@ -55,6 +56,23 @@ def mk_fps_guidestar(**kwargs):
     guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
 
     return guide
+
+def mk_fps_statistics(**kwargs):
+    """
+    Create a dummy Statistics instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.FpsStatistics
+    """
+    stats = stnode.FpsStatistics()
+    stats["mean_counts_per_sec"] = kwargs.get("mean_counts_per_sec", NONUM * (u.DN / u.s))
+    stats["median_counts_per_sec"] = kwargs.get("median_counts_per_sec", NONUM * (u.DN / u.s))
+    stats["min_counts"] = kwargs.get("min_counts", u.Quantity(NONUM, u.DN, dtype=np.int32))
+    stats["max_counts"] = kwargs.get("max_counts", u.Quantity(NONUM, u.DN, dtype=np.int32))
+
+    return stats
 
 
 def mk_fps_wfi_mode(**kwargs):

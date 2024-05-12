@@ -1,5 +1,6 @@
 import numpy as np
 from astropy import time
+from astropy import units as u
 
 from roman_datamodels import stnode
 
@@ -35,7 +36,7 @@ def mk_tvac_exposure(**kwargs):
 
 def mk_tvac_guidestar(**kwargs):
     """
-    Create a dummy BaseGuidestar instance with valid values for attributes
+    Create a dummy Guidestar instance with valid values for attributes
     required by the schema. Utilized by the model maker utilities below.
 
     Returns
@@ -55,6 +56,24 @@ def mk_tvac_guidestar(**kwargs):
     guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
 
     return guide
+
+
+def mk_tvac_statistics(**kwargs):
+    """
+    Create a dummy Statistics instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.TvacStatistics
+    """
+    stats = stnode.TvacStatistics()
+    stats["mean_counts_per_sec"] = kwargs.get("mean_counts_per_sec", NONUM * (u.DN / u.s))
+    stats["median_counts_per_sec"] = kwargs.get("median_counts_per_sec", NONUM * (u.DN / u.s))
+    stats["min_counts"] = kwargs.get("min_counts", u.Quantity(NONUM, u.DN, dtype=np.int32))
+    stats["max_counts"] = kwargs.get("max_counts", u.Quantity(NONUM, u.DN, dtype=np.int32))
+
+    return stats
 
 
 def mk_tvac_wfi_mode(**kwargs):
