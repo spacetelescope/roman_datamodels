@@ -19,6 +19,7 @@ class _RomanConverter(Converter):
     """
     Base class for the roman_datamodels converters.
     """
+    lazy = True
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
