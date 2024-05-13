@@ -77,6 +77,9 @@ class MosaicModel(_RomanDataModel):
 
             # Keys that are themselves Dnodes (subdirectories)
             # neccessitate a new table
+            if isinstance(value, (dict, asdf.tags.core.ndarray.NDArrayType, QTable)):
+                continue
+
             if isinstance(value, stnode.DNode):
                 # Storage for keys and values
                 subtable_cols = []
@@ -84,48 +87,27 @@ class MosaicModel(_RomanDataModel):
 
                 # Loop over items within the node
                 for subkey, subvalue in meta_dict[key].items():
-                    # Skip ndarrays
-                    if isinstance(subvalue, asdf.tags.core.ndarray.NDArrayType):
-                        continue
-                    # Skip QTables
-                    if isinstance(subvalue, QTable):
+                    # Skip ndarrays and QTables
+                    if isinstance(subvalue, (asdf.tags.core.ndarray.NDArrayType, QTable)):
                         continue
 
                     subtable_cols.append(subkey)
-
-                    if isinstance(subvalue, (list, dict)):
-                        subtable_vals.append([str(subvalue)])
-                    else:
-                        subtable_vals.append([subvalue])
+                    subtable_vals.append([str(subvalue)] if isinstance(subvalue, (list, dict)) else [subvalue])
 
                 # Skip this Table if it would be empty
-                if len(subtable_vals) == 0:
-                    continue
-
-                # Make new Keyword Table if needed
-                if (key not in self.meta.individual_image_meta) or (self.meta.individual_image_meta[key].colnames == ["dummy"]):
-                    self.meta.individual_image_meta[key] = QTable(names=subtable_cols, data=subtable_vals)
-                else:
-                    # Append to existing table
-                    self.meta.individual_image_meta[key].add_row(subtable_vals)
-            # Skip non-schema metas
-            elif isinstance(value, dict):
-                continue
-            # Skip ndarrays
-            elif isinstance(value.strip(), asdf.tags.core.ndarray.NDArrayType):
-                continue
-            # Skip QTables
-            elif isinstance(value, QTable):
-                continue
+                if subtable_vals:
+                    # Make new Keyword Table if needed
+                    if (key not in self.meta.individual_image_meta) or (
+                        self.meta.individual_image_meta[key].colnames == ["dummy"]
+                    ):
+                        self.meta.individual_image_meta[key] = QTable(names=subtable_cols, data=subtable_vals)
+                    else:
+                        # Append to existing table
+                        self.meta.individual_image_meta[key].add_row(subtable_vals)
             else:
                 # Store Basic keyword
                 basic_cols.append(key)
-
-                # Store value (lists converted to strings)
-                if isinstance(value.strip(), list):
-                    basic_vals.append([str(value)])
-                else:
-                    basic_vals.append([value])
+                basic_vals.append([str(value)] if isinstance(value, list) else [value])
 
         # Make Basic Table if needed
         if self.meta.individual_image_meta.basic.colnames == ["dummy"]:
