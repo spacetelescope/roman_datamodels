@@ -5,6 +5,8 @@
 
 - Added statistics blocks to the TVAC and FS models. [#351]
 
+- Fix bug that prevented proper handling of ``np.NDArray``\s. [#350]
+
 
 0.19.2 (2024-05-08)
 ===================
