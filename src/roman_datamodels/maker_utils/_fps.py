@@ -58,7 +58,14 @@ def mk_fps_common_meta(**kwargs):
     dict (defined by the ground_common-1.0.0 schema)
     """
     # prevent circular import
-    from ._fps_common_meta import mk_fps_cal_step, mk_fps_exposure, mk_fps_guidestar, mk_fps_ref_file, mk_fps_wfi_mode
+    from ._fps_common_meta import (
+        mk_fps_cal_step,
+        mk_fps_exposure,
+        mk_fps_guidestar,
+        mk_fps_ref_file,
+        mk_fps_statistics,
+        mk_fps_wfi_mode,
+    )
 
     meta = mk_fps_basic_meta(**kwargs)
     meta["cal_step"] = mk_fps_cal_step(**kwargs.get("cal_step", {}))
@@ -66,6 +73,7 @@ def mk_fps_common_meta(**kwargs):
     meta["guidestar"] = mk_fps_guidestar(**kwargs.get("guidestar", {}))
     meta["instrument"] = mk_fps_wfi_mode(**kwargs.get("instrument", {}))
     meta["ref_file"] = mk_fps_ref_file(**kwargs.get("ref_file", {}))
+    meta["statistics"] = mk_fps_statistics(**kwargs.get("statistics", {}))
     meta["hdf5_meta"] = kwargs.get("hdf5_meta", {"test": NOSTR})
     meta["hdf5_telemetry"] = kwargs.get("hdf5_telemetry", NOSTR)
     meta["gw_meta"] = kwargs.get("gw_meta", {"test": NOSTR})

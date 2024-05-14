@@ -3,6 +3,8 @@
 
 - Separated TVAC and FPS into their own makers to freeze from from main development. [#347]
 
+- Added statistics blocks to the TVAC and FS models. [#351]
+
 - Fix bug that prevented proper handling of ``np.NDArray``\s. [#350]
 
 
