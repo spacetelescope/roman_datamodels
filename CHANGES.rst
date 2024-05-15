@@ -1,4 +1,9 @@
-0.20.0 (unreleased)
+0.20.1 (unreleased)
+===================
+
+-
+
+0.20.0 (2024-05-15)
 ===================
 
 - Separated TVAC and FPS into their own makers to freeze from from main development. [#347]
