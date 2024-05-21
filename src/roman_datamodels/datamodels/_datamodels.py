@@ -135,37 +135,57 @@ class RampModel(_RomanDataModel):
     @classmethod
     def from_science_raw(cls, model):
         """
-        Construct a RampModel from a ScienceRawModel
+        Attempt to construct a RampModel from a DataModel
+
+        If the model has a `resultantdq` attribute, this is copied into
+        the `RampModel.groupdq` attribute.
 
         Parameters
         ----------
-        model : ScienceRawModel or RampModel
-            The input science raw model (a RampModel will also work)
-        """
+        model : ScieceRawModel, TvacModel
+            The input data model (a RampModel will also work).
 
+        Returns
+        -------
+        output_model : RampModel
+            The RampModel built from the input model. If the input is already
+            a RampModel, it is simply returned.
+        """
         if isinstance(model, cls):
             return model
+        if not isinstance(model, (ScienceRawModel, TvacModel)):
+            raise ValueError('Input must be one of (RampModel, ScienceRawModel, TvacModel)')
 
-        if isinstance(model, ScienceRawModel):
-            from roman_datamodels.maker_utils import mk_ramp
+        # Create base ramp node with dummy values (for validation)
+        from roman_datamodels.maker_utils import mk_ramp
+        input_ramp = mk_ramp(shape=model.shape)
 
-            instance = mk_ramp(shape=model.shape)
+        # check if the input model has a resultantdq from SDF
+        if hasattr(model, "resultantdq"):
+            input_ramp.groupdq = model.resultantdq.copy()
 
-            # Copy input_model contents into RampModel
-            for key in model:
-                # If a dictionary (like meta), overwrite entries (but keep
-                # required dummy entries that may not be in input_model)
-                if isinstance(instance[key], dict):
-                    instance[key].update(getattr(model, key))
-                elif isinstance(instance[key], np.ndarray):
+        # Copy input_model contents into RampModel
+        for key in model.keys():
+            # check for resultantdq if present copy this to the emp
+            # it to the ramp model, we don't want to carry this around
+            if key != "resultantdq":
+                if key not in input_ramp:
+                    input_ramp[key] = model.__getattr__(key)
+                elif isinstance(input_ramp[key], dict):
+                    # If a dictionary (like meta), overwrite entires (but keep
+                    # required dummy entries that may not be in input_model)
+                    input_ramp[key].update(model.__getattr__(key))
+                elif isinstance(input_ramp[key], np.ndarray):
                     # Cast input ndarray as RampModel dtype
-                    instance[key] = getattr(model, key).astype(instance[key].dtype)
+                    input_ramp[key] = model.__getattr__(key).astype(
+                        input_ramp[key].dtype
+                    )
                 else:
-                    instance[key] = getattr(model, key)
+                    input_ramp[key] = model.__getattr__(key)
 
-            return cls(instance)
-
-        raise ValueError("Input model must be a ScienceRawModel or RampModel")
+        # Create model from node
+        output_model = RampModel(input_ramp)
+        return output_model
 
 
 class RampFitOutputModel(_RomanDataModel):
