@@ -164,7 +164,7 @@ class RampModel(_RomanDataModel):
         if hasattr(model, "resultantdq"):
             input_ramp.groupdq = model.resultantdq.copy()
 
-        # Copy input_model contents into RampModel
+        # Copy input model contents into RampModel
         for key in model.keys():
             # check for resultantdq if present copy this to the emp
             # it to the ramp model, we don't want to carry this around
