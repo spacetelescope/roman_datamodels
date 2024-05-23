@@ -154,12 +154,13 @@ class RampModel(_RomanDataModel):
         if isinstance(model, cls):
             return model
         if not isinstance(model, (ScienceRawModel, TvacModel)):
-            raise ValueError('Input must be one of (RampModel, ScienceRawModel, TvacModel)')
+            raise ValueError("Input must be one of (RampModel, ScienceRawModel, TvacModel)")
 
         # Create base ramp node with dummy values (for validation)
         # from roman_datamodels.maker_utils import mk_ramp
         # input_ramp = mk_ramp(shape=model.shape)
         from roman_datamodels.maker_utils import mk_datamodel
+
         output_model = mk_datamodel(RampModel, shape=model.shape)
 
         # check if the input model has a resultantdq from SDF
@@ -174,14 +175,12 @@ class RampModel(_RomanDataModel):
                 if key not in output_model:
                     output_model[key] = model.__getattr__(key)
                 elif isinstance(output_model[key], dict):
-                    # If a dictionary (like meta), overwrite entires (but keep
+                    # If a dictionary (like meta), overwrite entries (but keep
                     # required dummy entries that may not be in input_model)
                     output_model[key].update(model.__getattr__(key))
                 elif isinstance(output_model[key], np.ndarray):
                     # Cast input ndarray as RampModel dtype
-                    output_model[key] = model.__getattr__(key).astype(
-                        output_model[key].dtype
-                    )
+                    output_model[key] = model.__getattr__(key).astype(output_model[key].dtype)
                 else:
                     output_model[key] = model.__getattr__(key)
 

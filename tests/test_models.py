@@ -960,7 +960,7 @@ def test_datamodel_save_filename(tmp_path):
         assert new_ramp.meta.filename == filename.name
 
 
-@pytest.mark.parametrize('model_class', [datamodels.RampModel, datamodels.ScienceRawModel, datamodels.TvacModel])
+@pytest.mark.parametrize("model_class", [datamodels.RampModel, datamodels.ScienceRawModel, datamodels.TvacModel])
 def test_rampmodel_from_science_raw(model_class):
     """Test creation of RampModel from raw science/tvac"""
     model = utils.mk_datamodel(model_class)
