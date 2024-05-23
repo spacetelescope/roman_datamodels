@@ -143,7 +143,7 @@ class RampModel(_RomanDataModel):
 
         Parameters
         ----------
-        model : ScieceRawModel, TvacModel
+        model : ScienceRawModel, TvacModel
             The input data model (a RampModel will also work).
 
         Returns
