@@ -5,6 +5,7 @@ This module provides all the specific datamodels used by the Roman pipeline.
     the top-level STNode type that the datamodel wraps. This STNode type is derived
     from the schema manifest defined by RAD.
 """
+from collections.abc import Mapping
 
 import asdf
 import numpy as np
@@ -164,24 +165,23 @@ class RampModel(_RomanDataModel):
         if hasattr(model, "resultantdq"):
             input_ramp.groupdq = model.resultantdq.copy()
 
-        # Copy input model contents into RampModel
-        for key in model.keys():
-            # check for resultantdq if present copy this to the emp
-            # it to the ramp model, we don't want to carry this around
-            if key != "resultantdq":
-                if key not in input_ramp:
-                    input_ramp[key] = model.__getattr__(key)
-                elif isinstance(input_ramp[key], dict):
-                    # If a dictionary (like meta), overwrite entires (but keep
-                    # required dummy entries that may not be in input_model)
-                    input_ramp[key].update(model.__getattr__(key))
-                elif isinstance(input_ramp[key], np.ndarray):
-                    # Cast input ndarray as RampModel dtype
-                    input_ramp[key] = model.__getattr__(key).astype(
-                        input_ramp[key].dtype
-                    )
-                else:
-                    input_ramp[key] = model.__getattr__(key)
+        # Define how to recursively copy all attributes.
+        def node_update(self, other, orig=False):
+            """Implement update to directly access each value"""
+            for key in other.keys():
+                if key == 'resultantdq':
+                    continue
+                if key not in self:
+                    self[key] = other.__getattr__(key)
+                    continue
+                if isinstance(self[key], Mapping):
+                    node_update(self[key], other.__getattr__(key))
+                    continue
+                if isinstance(self[key], np.ndarray):
+                    self[key] = other.__getattr__(key).astype(self[key].dtype)
+                    continue
+                self[key] = other.__getattr__(key)
+        node_update(input_ramp, model)
 
         # Create model from node
         output_model = RampModel(input_ramp)
