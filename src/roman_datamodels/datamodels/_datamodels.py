@@ -171,15 +171,16 @@ class RampModel(_RomanDataModel):
             for key in other.keys():
                 if key == 'resultantdq':
                     continue
-                if key not in self:
-                    self[key] = other.__getattr__(key)
-                    continue
-                if isinstance(self[key], Mapping):
-                    node_update(self[key], other.__getattr__(key))
-                    continue
-                if isinstance(self[key], np.ndarray):
-                    self[key] = other.__getattr__(key).astype(self[key].dtype)
-                    continue
+                if key in self:
+                    if isinstance(self[key], Mapping):
+                        node_update(self[key], other.__getattr__(key))
+                        continue
+                    if isinstance(self[key], list):
+                        self[key] = other.__getattr__(key).data
+                        continue
+                    if isinstance(self[key], np.ndarray):
+                        self[key] = other.__getattr__(key).astype(self[key].dtype)
+                        continue
                 self[key] = other.__getattr__(key)
         node_update(input_ramp, model)
 
