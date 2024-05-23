@@ -5,6 +5,7 @@ This module provides all the specific datamodels used by the Roman pipeline.
     the top-level STNode type that the datamodel wraps. This STNode type is derived
     from the schema manifest defined by RAD.
 """
+
 from collections.abc import Mapping
 
 import asdf
@@ -155,10 +156,11 @@ class RampModel(_RomanDataModel):
         if isinstance(model, cls):
             return model
         if not isinstance(model, (ScienceRawModel, TvacModel)):
-            raise ValueError('Input must be one of (RampModel, ScienceRawModel, TvacModel)')
+            raise ValueError("Input must be one of (RampModel, ScienceRawModel, TvacModel)")
 
         # Create base ramp node with dummy values (for validation)
         from roman_datamodels.maker_utils import mk_ramp
+
         input_ramp = mk_ramp(shape=model.shape)
 
         # check if the input model has a resultantdq from SDF
@@ -169,7 +171,7 @@ class RampModel(_RomanDataModel):
         def node_update(self, other, orig=False):
             """Implement update to directly access each value"""
             for key in other.keys():
-                if key == 'resultantdq':
+                if key == "resultantdq":
                     continue
                 if key in self:
                     if isinstance(self[key], Mapping):
@@ -182,6 +184,7 @@ class RampModel(_RomanDataModel):
                         self[key] = other.__getattr__(key).astype(self[key].dtype)
                         continue
                 self[key] = other.__getattr__(key)
+
         node_update(input_ramp, model)
 
         # Create model from node
