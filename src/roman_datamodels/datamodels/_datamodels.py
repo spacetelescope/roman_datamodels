@@ -157,34 +157,36 @@ class RampModel(_RomanDataModel):
             raise ValueError('Input must be one of (RampModel, ScienceRawModel, TvacModel)')
 
         # Create base ramp node with dummy values (for validation)
-        from roman_datamodels.maker_utils import mk_ramp
-        input_ramp = mk_ramp(shape=model.shape)
+        # from roman_datamodels.maker_utils import mk_ramp
+        # input_ramp = mk_ramp(shape=model.shape)
+        from roman_datamodels.maker_utils import mk_datamodel
+        output_model = mk_datamodel(RampModel, shape=model.shape)
 
         # check if the input model has a resultantdq from SDF
         if hasattr(model, "resultantdq"):
-            input_ramp.groupdq = model.resultantdq.copy()
+            output_model.groupdq = model.resultantdq.copy()
 
         # Copy input model contents into RampModel
         for key in model.keys():
             # check for resultantdq if present copy this to the emp
             # it to the ramp model, we don't want to carry this around
             if key != "resultantdq":
-                if key not in input_ramp:
-                    input_ramp[key] = model.__getattr__(key)
-                elif isinstance(input_ramp[key], dict):
+                if key not in output_model:
+                    output_model[key] = model.__getattr__(key)
+                elif isinstance(output_model[key], dict):
                     # If a dictionary (like meta), overwrite entires (but keep
                     # required dummy entries that may not be in input_model)
-                    input_ramp[key].update(model.__getattr__(key))
-                elif isinstance(input_ramp[key], np.ndarray):
+                    output_model[key].update(model.__getattr__(key))
+                elif isinstance(output_model[key], np.ndarray):
                     # Cast input ndarray as RampModel dtype
-                    input_ramp[key] = model.__getattr__(key).astype(
-                        input_ramp[key].dtype
+                    output_model[key] = model.__getattr__(key).astype(
+                        output_model[key].dtype
                     )
                 else:
-                    input_ramp[key] = model.__getattr__(key)
+                    output_model[key] = model.__getattr__(key)
 
         # Create model from node
-        output_model = RampModel(input_ramp)
+        # output_model = RampModel(input_ramp)
         return output_model
 
 
