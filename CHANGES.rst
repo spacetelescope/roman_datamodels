@@ -1,7 +1,7 @@
 0.20.1 (unreleased)
 ===================
 
--
+- Recursively convert all meta attributes during model casting. [#352]
 
 0.20.0 (2024-05-15)
 ===================
