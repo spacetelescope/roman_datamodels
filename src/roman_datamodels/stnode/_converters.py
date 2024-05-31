@@ -51,7 +51,7 @@ class TaggedObjectNodeConverter(_RomanConverter):
         return obj.tag
 
     def to_yaml_tree(self, obj, tag, ctx):
-        return obj._data
+        return dict(obj._data)
 
     def from_yaml_tree(self, node, tag, ctx):
         return OBJECT_NODE_CLASSES_BY_TAG[tag](node)
