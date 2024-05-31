@@ -62,7 +62,7 @@ class MosaicModel(_RomanDataModel):
         """
 
         # Convert input to a dictionary, if necessary
-        if not isinstance(meta, dict):
+        if not isinstance(meta, (dict, asdf.lazy_nodes.AsdfDictNode)):
             meta_dict = meta.to_flat_dict()
         else:
             meta_dict = meta
@@ -79,7 +79,7 @@ class MosaicModel(_RomanDataModel):
 
             # Keys that are themselves Dnodes (subdirectories)
             # neccessitate a new table
-            if isinstance(value, (dict, asdf.tags.core.ndarray.NDArrayType, QTable)):
+            if isinstance(value, (dict, asdf.tags.core.ndarray.NDArrayType, QTable, asdf.lazy_nodes.AsdfDictNode)):
                 continue
 
             if isinstance(value, stnode.DNode):
@@ -94,7 +94,7 @@ class MosaicModel(_RomanDataModel):
                         continue
 
                     subtable_cols.append(subkey)
-                    subtable_vals.append([str(subvalue)] if isinstance(subvalue, (list, dict)) else [subvalue])
+                    subtable_vals.append([str(subvalue)] if isinstance(subvalue, (list, dict, asdf.lazy_nodes.AsdfDictNode, asdf.lazy_nodes.AsdfListNode)) else [subvalue])
 
                 # Skip this Table if it would be empty
                 if subtable_vals:
@@ -109,7 +109,7 @@ class MosaicModel(_RomanDataModel):
             else:
                 # Store Basic keyword
                 basic_cols.append(key)
-                basic_vals.append([str(value)] if isinstance(value, list) else [value])
+                basic_vals.append([str(value)] if isinstance(value, (list, asdf.lazy_nodes.AsdfListNode)) else [value])
 
         # Make Basic Table if needed
         if self.meta.individual_image_meta.basic.colnames == ["dummy"]:
