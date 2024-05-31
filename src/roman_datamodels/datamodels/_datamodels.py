@@ -158,10 +158,11 @@ class RampModel(_RomanDataModel):
         if isinstance(model, cls):
             return model
         if not isinstance(model, ALLOWED_MODELS):
-            raise ValueError(f'Input must be one of {ALLOWED_MODELS}')
+            raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base ramp node with dummy values (for validation)
         from roman_datamodels.maker_utils import mk_ramp
+
         ramp = mk_ramp(shape=model.shape)
 
         # check if the input model has a resultantdq from SDF
@@ -185,6 +186,7 @@ class RampModel(_RomanDataModel):
                         self[key] = other.__getattr__(key).astype(self[key].dtype)
                         continue
                 self[key] = other.__getattr__(key)
+
         node_update(ramp, model)
 
         # Create model from node
