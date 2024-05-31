@@ -139,8 +139,8 @@ class RampModel(_RomanDataModel):
         """
         Attempt to construct a RampModel from a DataModel
 
-        If the model has a `resultantdq` attribute, this is copied into
-        the `RampModel.groupdq` attribute.
+        If the model has a resultantdq attribute, this is copied into
+        the RampModel.groupdq attribute.
 
         Parameters
         ----------
