@@ -149,26 +149,25 @@ class RampModel(_RomanDataModel):
 
         Returns
         -------
-        output_model : RampModel
+        ramp_model : RampModel
             The RampModel built from the input model. If the input is already
             a RampModel, it is simply returned.
         """
         if isinstance(model, cls):
             return model
-        if not isinstance(model, (ScienceRawModel, TvacModel)):
-            raise ValueError("Input must be one of (RampModel, ScienceRawModel, TvacModel)")
+        if not isinstance(model, (FpsModel, RampModel, ScienceRawModel, TvacModel)):
+            raise ValueError('Input must be one of (FpsModel, RampModel, ScienceRawModel, TvacModel)')
 
         # Create base ramp node with dummy values (for validation)
         from roman_datamodels.maker_utils import mk_ramp
-
-        input_ramp = mk_ramp(shape=model.shape)
+        ramp = mk_ramp(shape=model.shape)
 
         # check if the input model has a resultantdq from SDF
         if hasattr(model, "resultantdq"):
-            input_ramp.groupdq = model.resultantdq.copy()
+            ramp.groupdq = model.resultantdq.copy()
 
         # Define how to recursively copy all attributes.
-        def node_update(self, other, orig=False):
+        def node_update(self, other):
             """Implement update to directly access each value"""
             for key in other.keys():
                 if key == "resultantdq":
@@ -184,12 +183,11 @@ class RampModel(_RomanDataModel):
                         self[key] = other.__getattr__(key).astype(self[key].dtype)
                         continue
                 self[key] = other.__getattr__(key)
-
-        node_update(input_ramp, model)
+        node_update(ramp, model)
 
         # Create model from node
-        output_model = RampModel(input_ramp)
-        return output_model
+        ramp_model = RampModel(ramp)
+        return ramp_model
 
 
 class RampFitOutputModel(_RomanDataModel):
