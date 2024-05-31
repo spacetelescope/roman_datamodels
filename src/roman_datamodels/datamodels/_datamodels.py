@@ -153,10 +153,12 @@ class RampModel(_RomanDataModel):
             The RampModel built from the input model. If the input is already
             a RampModel, it is simply returned.
         """
+        ALLOWED_MODELS = (FpsModel, RampModel, ScienceRawModel, TvacModel)
+
         if isinstance(model, cls):
             return model
-        if not isinstance(model, (FpsModel, RampModel, ScienceRawModel, TvacModel)):
-            raise ValueError('Input must be one of (FpsModel, RampModel, ScienceRawModel, TvacModel)')
+        if not isinstance(model, ALLOWED_MODELS):
+            raise ValueError(f'Input must be one of {ALLOWED_MODELS}')
 
         # Create base ramp node with dummy values (for validation)
         from roman_datamodels.maker_utils import mk_ramp
