@@ -19,6 +19,7 @@ from pathlib import Path, PurePath
 import asdf
 import numpy as np
 from asdf.exceptions import ValidationError
+from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from astropy.time import Time
 
 from roman_datamodels import stnode, validate
@@ -315,10 +316,10 @@ class DataModel(abc.ABC):
         """
 
         def recurse(tree, path=[]):
-            if isinstance(tree, (stnode.DNode, dict)):
+            if isinstance(tree, (stnode.DNode, dict, AsdfDictNode)):
                 for key, val in tree.items():
                     yield from recurse(val, path + [key])
-            elif isinstance(tree, (stnode.LNode, list, tuple)):
+            elif isinstance(tree, (stnode.LNode, list, tuple, AsdfListNode)):
                 for i, val in enumerate(tree):
                     yield from recurse(val, path + [i])
             elif tree is not None:
