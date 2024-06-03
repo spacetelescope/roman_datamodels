@@ -6,6 +6,8 @@ This module provides all the specific datamodels used by the Roman pipeline.
     from the schema manifest defined by RAD.
 """
 
+from collections.abc import Mapping
+
 import asdf
 import numpy as np
 from astropy.table import QTable
@@ -135,37 +137,61 @@ class RampModel(_RomanDataModel):
     @classmethod
     def from_science_raw(cls, model):
         """
-        Construct a RampModel from a ScienceRawModel
+        Attempt to construct a RampModel from a DataModel
+
+        If the model has a resultantdq attribute, this is copied into
+        the RampModel.groupdq attribute.
 
         Parameters
         ----------
-        model : ScienceRawModel or RampModel
-            The input science raw model (a RampModel will also work)
+        model : ScienceRawModel, TvacModel
+            The input data model (a RampModel will also work).
+
+        Returns
+        -------
+        ramp_model : RampModel
+            The RampModel built from the input model. If the input is already
+            a RampModel, it is simply returned.
         """
+        ALLOWED_MODELS = (FpsModel, RampModel, ScienceRawModel, TvacModel)
 
         if isinstance(model, cls):
             return model
+        if not isinstance(model, ALLOWED_MODELS):
+            raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
-        if isinstance(model, ScienceRawModel):
-            from roman_datamodels.maker_utils import mk_ramp
+        # Create base ramp node with dummy values (for validation)
+        from roman_datamodels.maker_utils import mk_ramp
 
-            instance = mk_ramp(shape=model.shape)
+        ramp = mk_ramp(shape=model.shape)
 
-            # Copy input_model contents into RampModel
-            for key in model:
-                # If a dictionary (like meta), overwrite entries (but keep
-                # required dummy entries that may not be in input_model)
-                if isinstance(instance[key], dict):
-                    instance[key].update(getattr(model, key))
-                elif isinstance(instance[key], np.ndarray):
-                    # Cast input ndarray as RampModel dtype
-                    instance[key] = getattr(model, key).astype(instance[key].dtype)
-                else:
-                    instance[key] = getattr(model, key)
+        # check if the input model has a resultantdq from SDF
+        if hasattr(model, "resultantdq"):
+            ramp.groupdq = model.resultantdq.copy()
 
-            return cls(instance)
+        # Define how to recursively copy all attributes.
+        def node_update(self, other):
+            """Implement update to directly access each value"""
+            for key in other.keys():
+                if key == "resultantdq":
+                    continue
+                if key in self:
+                    if isinstance(self[key], Mapping):
+                        node_update(self[key], other.__getattr__(key))
+                        continue
+                    if isinstance(self[key], list):
+                        self[key] = other.__getattr__(key).data
+                        continue
+                    if isinstance(self[key], np.ndarray):
+                        self[key] = other.__getattr__(key).astype(self[key].dtype)
+                        continue
+                self[key] = other.__getattr__(key)
 
-        raise ValueError("Input model must be a ScienceRawModel or RampModel")
+        node_update(ramp, model)
+
+        # Create model from node
+        ramp_model = RampModel(ramp)
+        return ramp_model
 
 
 class RampFitOutputModel(_RomanDataModel):
