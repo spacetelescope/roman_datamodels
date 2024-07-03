@@ -479,8 +479,8 @@ def test_make_mask():
 def test_make_pixelarea():
     pixearea = utils.mk_pixelarea(shape=(8, 8))
     assert pixearea.meta.reftype == "AREA"
-    assert type(pixearea.meta.photometry.pixelarea_steradians) == u.Quantity
-    assert type(pixearea.meta.photometry.pixelarea_arcsecsq) == u.Quantity
+    assert isinstance(pixearea.meta.photometry.pixelarea_steradians, u.Quantity)
+    assert isinstance(pixearea.meta.photometry.pixelarea_arcsecsq, u.Quantity)
     assert pixearea.data.dtype == np.float32
 
     # Test validation
