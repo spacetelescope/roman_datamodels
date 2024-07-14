@@ -94,7 +94,11 @@ class MosaicModel(_RomanDataModel):
                         continue
 
                     subtable_cols.append(subkey)
-                    subtable_vals.append([str(subvalue)] if isinstance(subvalue, (list, dict, asdf.lazy_nodes.AsdfDictNode, asdf.lazy_nodes.AsdfListNode)) else [subvalue])
+                    subtable_vals.append(
+                        [str(subvalue)]
+                        if isinstance(subvalue, (list, dict, asdf.lazy_nodes.AsdfDictNode, asdf.lazy_nodes.AsdfListNode))
+                        else [subvalue]
+                    )
 
                 # Skip this Table if it would be empty
                 if subtable_vals:
