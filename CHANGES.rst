@@ -3,6 +3,8 @@
 
 - Recursively convert all meta attributes during model casting. [#352]
 
+- replace usages of ``copy_arrays`` with ``memmap`` [#360]
+
 0.20.0 (2024-05-15)
 ===================
 
