@@ -10,6 +10,7 @@ from collections import UserList
 from collections.abc import MutableMapping
 
 import asdf
+import asdf.lazy_nodes
 import asdf.schema as asdfschema
 import asdf.yamlutil as yamlutil
 import numpy as np
@@ -185,7 +186,7 @@ class DNode(MutableMapping):
         # Handle if we are passed different data types
         if node is None:
             self.__dict__["_data"] = {}
-        elif isinstance(node, dict):
+        elif isinstance(node, (dict, asdf.lazy_nodes.AsdfDictNode)):
             self.__dict__["_data"] = node
         else:
             raise ValueError("Initializer only accepts dicts")
@@ -260,7 +261,7 @@ class DNode(MutableMapping):
             
 
             # Return objects as node classes, if applicable
-            if isinstance(value, dict):
+            if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
                 # print(f"DDDDD NODE_CONVERTERS[TaggedObjectNodeConverter] = {NODE_CONVERTERS['TaggedObjectNodeConverter'].types}")
                 print(f"DDDDD key = {key}")
                 # print(f"DDDDD self._x_schema = {self._x_schema}")
@@ -321,13 +322,15 @@ class DNode(MutableMapping):
                 else:
                     print(f"DDDDD {key} is a dict")
                     return value
-                return DNode(value, parent=self, name=key)
-                if type(value) in NODE_CONVERTERS['TaggedObjectNodeConverter'].types:
-                    return DNode(value, parent=self, name=key)
-                else:
-                    return value
+            # From Brett's laxy load merge 
+            # if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
+            #     return DNode(value, parent=self, name=key)
+            #     if type(value) in NODE_CONVERTERS['TaggedObjectNodeConverter'].types:
+            #         return DNode(value, parent=self, name=key)
+            #     else:
+            #         return value
 
-            elif isinstance(value, list):
+            elif isinstance(value, (list, asdf.lazy_nodes.AsdfListNode)):
                 return LNode(value)
 
             else:
@@ -503,8 +506,12 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, value)
 
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
+<<<<<<< HEAD
         if isinstance(value, dict):
             print("RRRR2 this is a dict!")
+=======
+        if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
+>>>>>>> 911485a5913e61a42dc0b79c83325eadec310d3a
             for sub_key, sub_value in value.items():
                 # if self._tag and "/tvac" in self._tag:
                 if (self._tag and "/tvac" in self._tag) or (".Tvac" in str(type(self._parent))):
@@ -558,7 +565,7 @@ class LNode(UserList):
     def __init__(self, node=None):
         if node is None:
             self.data = []
-        elif isinstance(node, list):
+        elif isinstance(node, (list, asdf.lazy_nodes.AsdfListNode)):
             self.data = node
         elif isinstance(node, self.__class__):
             self.data = node.data
@@ -567,9 +574,9 @@ class LNode(UserList):
 
     def __getitem__(self, index):
         value = self.data[index]
-        if isinstance(value, dict):
+        if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
             return DNode(value)
-        elif isinstance(value, list):
+        elif isinstance(value, (list, asdf.lazy_nodes.AsdfListNode)):
             return LNode(value)
         else:
             return value

@@ -3,34 +3,18 @@ This module contains the utility functions for the datamodels sub-package. Mainl
     the open/factory function for creating datamodels
 """
 
-import warnings
 from pathlib import Path
 
 import asdf
-from astropy.utils import minversion
 
 from roman_datamodels import validate
 
 from ._core import MODEL_REGISTRY, DataModel
 
-# .dev is included in the version comparison to allow for correct version
-# comparisons with development versions of asdf 3.0
-if minversion(asdf, "3.dev"):
-    AsdfInFits = None
-else:
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            category=asdf.exceptions.AsdfDeprecationWarning,
-            message=r"AsdfInFits has been deprecated.*",
-        )
-        from asdf.fits_embed import AsdfInFits
-
-
 __all__ = ["rdm_open"]
 
 
-def _open_path_like(init, **kwargs):
+def _open_path_like(init, lazy_tree=True, **kwargs):
     """
     Attempt to open init as if it was a path-like object.
 
@@ -47,16 +31,14 @@ def _open_path_like(init, **kwargs):
     -------
     `asdf.AsdfFile`
     """
+    # asdf defaults to lazy_tree=False, this overwrites it to
+    # lazy_tree=True for roman_datamodels
+    kwargs["lazy_tree"] = lazy_tree
 
     try:
         asdf_file = asdf.open(init, **kwargs)
     except ValueError as err:
         raise TypeError("Open requires a filepath, file-like object, or Roman datamodel") from err
-
-    # This is only needed until we move min asdf version to 3.0
-    if AsdfInFits is not None and isinstance(asdf_file, AsdfInFits):
-        asdf_file.close()
-        raise TypeError("Roman datamodels does not accept FITS files or objects")
 
     return asdf_file
 
