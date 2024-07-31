@@ -169,7 +169,6 @@ def mk_tvac(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
         warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
 
     tvac = stnode.Tvac()
-
     tvac["meta"] = mk_tvac_meta(**kwargs.get("meta", {}))
 
     n_groups = shape[0]

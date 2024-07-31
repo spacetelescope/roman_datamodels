@@ -211,11 +211,7 @@ class DNode(MutableMapping):
 
         if key in SCALAR_NODE_CLASSES_BY_KEY:
             value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
-
-        print(f"BBBBB _convert_to_scalar key = {key}")
-        # print(f"BBBBB _convert_to_scalar value = {value}")
-        print(f"BBBBB _convert_to_scalar type(value) = {type(value)}")
-        
+       
         return value
 
     def __getattr__(self, key):
@@ -241,108 +237,35 @@ class DNode(MutableMapping):
             else:
                 scaled_key = key
 
- 
-
             # Cast the value into the appropriate tagged scalar class
             # value = self._convert_to_scalar(key, self._data[key])
             value = self._convert_to_scalar(scaled_key, self._data[key])
 
-            # print(f"AAAAA key = {key}")
-            # print(f"AAAAA type(key) = {type(key)}")
-            # # print(f"AAAAA self._data[key] = {self._data[key]}")
-            # print(f"AAAAA type(self._data[key]) = {type(self._data[key])}")
-            # print(f"AAAAA str(type(self._data[key])).split('.')[-1] = {str(type(self._data[key])).split('.')[-1]}")
-            # # print(f"AAAAA value = {value}")
-            # print(f"AAAAA type(value) = {type(value)}")
-
-# if type(other[key]) in (stnode._registry.NODE_CONVERTERS['TaggedObjectNodeConverter'].types,
-#                                              stnode._registry.NODE_CONVERTERS['TaggedScalarNodeConverter'].types,
-#                                             stnode._registry.NODE_CONVERTERS['TaggedScalarNodeConverter'].types):
-            
-
             # Return objects as node classes, if applicable
-            if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
-                # print(f"DDDDD NODE_CONVERTERS[TaggedObjectNodeConverter] = {NODE_CONVERTERS['TaggedObjectNodeConverter'].types}")
-                print(f"DDDDD key = {key}")
-                # print(f"DDDDD self._x_schema = {self._x_schema}")
-                print(f"DDDDD self._schema_uri = {self._schema_uri}")
-                print(f"DDDDD self._parent = {self._parent}")
-                print(f"DDDDD self._name = {self._name}")
-                print(f"DDDDD self._x_schema_attributes = {self._x_schema_attributes}")
-                print(f"DDDDD type(value) = {type(value)}")
-                print(f"DDDDD type(value) in NODE_CONVERTERS[TaggedObjectNodeConverter]? {type(value) in NODE_CONVERTERS['TaggedObjectNodeConverter'].types}")
-
-                print(f"DDDDD {key} in schema & properties?? {key in (list(self._schema().keys()) + list(self._schema()['properties'].keys() if 'properties' in self._schema().keys() else ''))}")
-                print(f"DDDDD self._schema = {self._schema()}")
-                print("\n")
-                # print(f"DDDDD self._schema['properties'] = {self._schema()['properties']}")
-                # return DNode(value, parent=self, name=key)
-                # if key in DICT_TO_DNODE:
-                def gen_dict_extract(key, var):
-                    # if hasattr(var,'iteritems'): # hasattr(var,'items') for python 3
-                    #     for k, v in var.iteritems(): # var.items() for python 3
-                    if hasattr(var,'items'): # hasattr(var,'items') for python 3
-                        for k, v in var.items(): # var.items() for python 3
-                            if k == key:
-                                yield v
-                            if isinstance(v, dict):
-                                for result in gen_dict_extract(key, v):
-                                    yield result
-                            elif isinstance(v, list):
-                                for d in v:
-                                    for result in gen_dict_extract(key, d):
-                                        yield result
-
-                # def gen_dict_extract(key, var):
-                #     # if hasattr(var,'iteritems'): # hasattr(var,'items') for python 3
-                #     #     for k, v in var.iteritems(): # var.items() for python 3
-                #     if hasattr(var,'items'): # hasattr(var,'items') for python 3
-                #         for k, v in var.items(): # var.items() for python 3
-                #             if k == key:
-                #                 # yield v
-                #                 return True
-                #             if isinstance(v, dict):
-                #                 for result in gen_dict_extract(key, v):
-                #                     # yield result
-                #                     return result
-                #             elif isinstance(v, list):
-                #                 for d in v:
-                #                     for result in gen_dict_extract(key, d):
-                #                         # yield result
-                #                         return result
-                
-                
-
-                # if key in (list(self._schema().keys()) + list(self._schema()['properties'].keys() if 'properties' in self._schema().keys() else '')
-                #            + list(self._schema()['allOf'].keys() if 'allOf' in self._schema().keys() else '')):
-                # if gen_dict_extract(key, self._schema()):
-                if f"'{key}'" in str(self._schema()):
-                    print(f"DDDDD {key} is a DNode! Result is {gen_dict_extract(key, self._schema())}")
-                    return DNode(value, parent=self, name=key)
-                else:
-                    print(f"DDDDD {key} is a dict")
-                    return value
-            # From Brett's laxy load merge 
             # if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
-            #     return DNode(value, parent=self, name=key)
-            #     if type(value) in NODE_CONVERTERS['TaggedObjectNodeConverter'].types:
+            #     # return DNode(value, parent=self, name=key)
+            #     # if key in DICT_TO_DNODE:
+
+            #     # if key in (list(self._schema().keys()) + list(self._schema()['properties'].keys() if 'properties' in self._schema().keys() else '')
+            #     #            + list(self._schema()['allOf'].keys() if 'allOf' in self._schema().keys() else '')):
+            #     # if gen_dict_extract(key, self._schema()):
+            #     if f"'{key}'" in str(self._schema()):
             #         return DNode(value, parent=self, name=key)
             #     else:
             #         return value
+            # From Brett's lazy load merge 
+            if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
+                return DNode(value, parent=self, name=key)
+                if type(value) in NODE_CONVERTERS['TaggedObjectNodeConverter'].types:
+                    return DNode(value, parent=self, name=key)
+                else:
+                    return value
 
             elif isinstance(value, (list, asdf.lazy_nodes.AsdfListNode)):
                 return LNode(value)
 
             else:
                 return value
-            
-
-            # if type(value) in NODE_CONVERTERS['TaggedObjectNodeConverter'].types:
-            #     return DNode(value, parent=self, name=key)
-            # elif type(value) in NODE_CONVERTERS['TaggedListNodeConverter'].types:
-            #     return LNode(value)
-            # else:
-            #     return value
 
         # Raise the correct error for the attribute not being found
         raise AttributeError(f"No such attribute ({key}) found in node")
@@ -354,18 +277,10 @@ class DNode(MutableMapping):
 
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
-            print(f"RRRR1 self._tag = {self._tag}, key = {key}")
-            print(f"RRRR1 type(self._parent) = {type(self._parent)}, self._name = {self._name}")
-            print(f'RRRR1 ".Tvac" in str(type(self._parent)) = {".Tvac" in str(type(self._parent))}')
-
             # Wrap things in the tagged scalar classes if necessary
             # if self._tag and "/tvac" in self._tag:
             if (self._tag and "/tvac" in self._tag) or (".Tvac" in str(type(self._parent))):
-                # if ".Tvac" not in str(self._parent):
-                #     print(f"LLLLL Tvac Mismatch? self._parent = {self._parent}; self._tag = {self._tag}")
                 value = self._convert_to_scalar("tvac_" + key, value)
-                print(f"RRRR1 tvac found.. value = {value}")
-                print(f"RRRR1 tvac found.. type(value) = {type(value)}")
             # elif self._tag and "/fps" in self._tag:
             elif (self._tag and "/fps" in self._tag) or (".Fps" in str(type(self._parent))):
                 value = self._convert_to_scalar("fps_" + key, value)
@@ -382,10 +297,6 @@ class DNode(MutableMapping):
 
                 # Finally set the value
                 self._data[key] = value
-                print(f"RRRR1 value = {value}")
-                print(f"RRRR1 type(value) = {type(value)}")
-                print(f"RRRR1 self._data[key] = {self._data[key]}")
-                print(f"RRRR1 type(self._data[key]) = {type(self._data[key])}")
             else:
                 raise AttributeError(f"No such attribute ({key}) found in node")
         else:
@@ -452,9 +363,6 @@ class DNode(MutableMapping):
     def __getitem__(self, key):
         """Dictionary style access data"""
 
-        print(f"VVVVVVV2 key = {key}")
-
-
         if key in self._data:
             if (".Tvac" in str(type(self._parent))) or \
                 (str(type(self._data[key])).split('.')[-1].split("'")[0] in TVAC_SCALAR_NODES):
@@ -482,8 +390,6 @@ class DNode(MutableMapping):
         # if (key == 'filename'):
         # Convert the value to a tagged scalar if necessary
         if (self._tag and "/tvac" in self._tag) or (".Tvac" in str(type(self._parent))):
-            # if ".Tvac" not in str(self._parent):
-            #         print(f"LLLLL Tvac Mismatch? self._parent = {self._parent}; self._tag = {self._tag}")
             value = self._convert_to_scalar("tvac_" + key, value)
             # if (key == 'filename'):
         # elif self._tag and "/fps" in self._tag:

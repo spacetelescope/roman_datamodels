@@ -213,15 +213,6 @@ class RampModel(_RomanDataModel):
                         from roman_datamodels.maker_utils import mk_basic_meta
                         self[key] = mk_basic_meta(**{key:other[key]})[key]
                         continue
-                    if isinstance(dict, type(other[key])):
-                        self[key] = other.__getattr__(key).data
-                        continue
-                    # if type(other[key]) in (stnode._registry.NODE_CONVERTERS['TaggedObjectNodeConverter'].types,
-                    #                         stnode._registry.NODE_CONVERTERS['TaggedListNodeConverter'].types,
-                    #                         stnode._registry.NODE_CONVERTERS['TaggedScalarNodeConverter'].types):
-                    #     self[key] = other.__getattr__(key)
-                    #     continue
-                    # self[key] = other[key]
                 self[key] = other.__getattr__(key)
 
         node_update(ramp, model)
