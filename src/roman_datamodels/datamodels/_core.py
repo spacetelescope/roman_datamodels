@@ -271,7 +271,6 @@ class DataModel(abc.ABC):
         self._instance[key] = value
 
     def __getitem__(self, key):
-        print(f"JJJJJ datamodel _core key = {key}")
         return self._instance[key]
 
     def __iter__(self):

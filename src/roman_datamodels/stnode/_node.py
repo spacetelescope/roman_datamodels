@@ -469,14 +469,6 @@ class DNode(MutableMapping):
             # Cast the value into the appropriate tagged scalar class
             # value = self._convert_to_scalar(key, self._data[key])
             value = self._convert_to_scalar(scaled_key, self._data[key])
-            # print(f"VVVVV2 value = {value}")
-            # print(f"VVVVV2 type(value) = {type(value)}")
-            # print(f"VVVVV2 self._data[key] = {self._data[key]}")
-            # print(f"VVVVV2 type(self._data[key]) = {type(self._data[key])}")
-            # print(f"VVVVV2 self._data[scaled_key] = {self._data[scaled_key]}")
-            # print(f"VVVVV2 type(self._data[scaled_key]) = {type(self._data[scaled_key])}")
-
-
         
         # if key in self._data:
             # return self._data[key]
@@ -488,17 +480,12 @@ class DNode(MutableMapping):
         """Dictionary style access set data"""
 
         # if (key == 'filename'):
-        print(f"RRRR2 self._tag = {self._tag}, key = {key}")
-        print(f"RRRR2 type(self._parent) = {type(self._parent)}, self._name = {self._name}")
-        print(f'RRRR2 ".Tvac" in str(self._parent) = {".Tvac" in str(self._parent)}')
         # Convert the value to a tagged scalar if necessary
         if (self._tag and "/tvac" in self._tag) or (".Tvac" in str(type(self._parent))):
             # if ".Tvac" not in str(self._parent):
             #         print(f"LLLLL Tvac Mismatch? self._parent = {self._parent}; self._tag = {self._tag}")
             value = self._convert_to_scalar("tvac_" + key, value)
             # if (key == 'filename'):
-            print(f"RRRR2 tvac found.. value = {value}")
-            print(f"RRRR2 tvac found.. type(value) = {type(value)}")
         # elif self._tag and "/fps" in self._tag:
         elif (self._tag and "/fps" in self._tag) or (".Fps" in str(type(self._parent))):
             value = self._convert_to_scalar("fps_" + key, value)
@@ -506,12 +493,7 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, value)
 
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
-<<<<<<< HEAD
-        if isinstance(value, dict):
-            print("RRRR2 this is a dict!")
-=======
         if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
->>>>>>> 911485a5913e61a42dc0b79c83325eadec310d3a
             for sub_key, sub_value in value.items():
                 # if self._tag and "/tvac" in self._tag:
                 if (self._tag and "/tvac" in self._tag) or (".Tvac" in str(type(self._parent))):
@@ -521,18 +503,9 @@ class DNode(MutableMapping):
                     value[sub_key] = self._convert_to_scalar("fps_" + sub_key, sub_value)
                 else:
                     value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
-                print(f"RRRR2 {sub_key} sub_value = {sub_value}")
-                print(f"RRRR2 {sub_key} type(sub_value) = {type(sub_value)}")
-                print(f"RRRR2 {sub_key} value[sub_key] = {value[sub_key]}")
-                print(f"RRRR2 {sub_key} type(value[sub_key]) = {type(value[sub_key])}")
+
 
         self._data[key] = value
-
-        # if (key == 'filename'):
-        print(f"RRRR2 value = {value}")
-        print(f"RRRR2 type(value) = {type(value)}")
-        print(f"RRRR2 self._data[key] = {self._data[key]}")
-        print(f"RRRR2 type(self._data[key]) = {type(self._data[key])}")
 
     def __delitem__(self, key):
         """Dictionary style access delete data"""

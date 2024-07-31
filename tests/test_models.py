@@ -1013,8 +1013,7 @@ def test_model_assignment_access_types(model_class):
     # model['meta']['filename'] = "Roman_keys_test.asdf"
     model.meta['filename'] = "Roman_keys_test.asdf"
     model2.meta.filename = "Roman_dot_test.asdf"
-
-    print(f"XXXX filename validation")    
+ 
     assert model.validate() is None
     assert model2.validate() is None
     # assert model3.validate()
