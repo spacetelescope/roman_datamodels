@@ -14,7 +14,7 @@ from ._core import MODEL_REGISTRY, DataModel
 __all__ = ["rdm_open"]
 
 
-def _open_path_like(init, **kwargs):
+def _open_path_like(init, lazy_tree=True, **kwargs):
     """
     Attempt to open init as if it was a path-like object.
 
@@ -31,6 +31,9 @@ def _open_path_like(init, **kwargs):
     -------
     `asdf.AsdfFile`
     """
+    # asdf defaults to lazy_tree=False, this overwrites it to
+    # lazy_tree=True for roman_datamodels
+    kwargs["lazy_tree"] = lazy_tree
 
     try:
         asdf_file = asdf.open(init, **kwargs)

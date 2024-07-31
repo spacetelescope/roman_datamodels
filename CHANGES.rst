@@ -5,6 +5,8 @@
 
 - replace usages of ``copy_arrays`` with ``memmap`` [#360]
 
+- Enable asdf "lazy_tree" mode for all roman datamodels files [#358]
+
 0.20.0 (2024-05-15)
 ===================
 
