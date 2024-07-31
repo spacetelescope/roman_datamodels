@@ -175,7 +175,7 @@ def test_set_pattern_properties():
     with pytest.raises(asdf.ValidationError):
         mdl.phot_table.F062.pixelareasr = 3.14
 
-    # This is invalid be cause it is not a scalar
+    # This is invalid because it is not a scalar
     with pytest.raises(asdf.ValidationError):
         mdl.phot_table.F062.photmjsr = [37.0] * (u.MJy / u.sr)
     with pytest.raises(asdf.ValidationError):

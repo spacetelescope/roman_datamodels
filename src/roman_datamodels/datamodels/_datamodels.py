@@ -18,6 +18,26 @@ from ._core import DataModel
 
 __all__ = []
 
+TVAC_SCALAR_NODES = [stnode.TvacCalibrationSoftwareVersion,
+                     stnode.TvacSdfSoftwareVersion,
+                     stnode.TvacFilename,
+                     stnode.TvacFileDate,
+                     stnode.TvacModelType,
+                     stnode.TvacOrigin,
+                     stnode.TvacPrdSoftwareVersion,
+                     stnode.TvacTelescope,
+                     ]
+FPS_SCALAR_NODES = [stnode.FpsCalibrationSoftwareVersion,
+                    stnode.FpsSdfSoftwareVersion,
+                    stnode.FpsFilename,
+                    stnode.FpsFileDate,
+                    stnode.FpsModelType,
+                    stnode.FpsOrigin,
+                    stnode.FpsPrdSoftwareVersion,
+                    stnode.FpsTelescope,
+                    ]
+
+
 
 class _DataModel(DataModel):
     """
@@ -185,7 +205,31 @@ class RampModel(_RomanDataModel):
                     if isinstance(self[key], np.ndarray):
                         self[key] = other.__getattr__(key).astype(self[key].dtype)
                         continue
+                    if type(other[key]) in (TVAC_SCALAR_NODES + FPS_SCALAR_NODES):
+                        # self[key] = other.__getattr__(key).astype(type(self[key]))
+                        # print(f"GGGG {key} is found.. trying to reset!")
+                        # self[key].value = other[key].__repr__()
+                        # self[key] = maker_utils.mk_common_meta(meta={key:other.__getattr__(key)})[key]
+                        from roman_datamodels.maker_utils import mk_basic_meta
+                        # self[key].value = mk_common_meta(meta={key:other.__getattr__(key)})[key]
+                        # self[key] = mk_common_meta(key=other[key])[key]
+                        self[key] = mk_basic_meta(**{key:other[key]})[key]
+                        # print(f"GGGG {key} is found.. trying to reset! other[key] = {other[key]} self[key] = {self[key]}")
+                        continue
+                    if isinstance(dict, type(other[key])):
+                        self[key] = other.__getattr__(key).data
+                        print(f"GGGGG node_update in _datamodels - key {key} is getting set")
+                        continue
+                    # if type(other[key]) in (stnode._registry.NODE_CONVERTERS['TaggedObjectNodeConverter'].types,
+                    #                         stnode._registry.NODE_CONVERTERS['TaggedListNodeConverter'].types,
+                    #                         stnode._registry.NODE_CONVERTERS['TaggedScalarNodeConverter'].types):
+                    #     self[key] = other.__getattr__(key)
+                    #     continue
+                    # self[key] = other[key]
+                print(f"other = {other}; key = {key}")
                 self[key] = other.__getattr__(key)
+                # if isinstance(dict, type(other[key])):
+                #     print(f"GGGGG node_update in _datamodels - key {key} is getting set in default manner")
 
         node_update(ramp, model)
 
