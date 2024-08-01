@@ -990,8 +990,7 @@ def test_rampmodel_from_science_raw(model_class, expect_success):
 @pytest.mark.parametrize(
     "model_class",
     [ datamodels.FpsModel, datamodels.RampModel, datamodels.ScienceRawModel,
-      datamodels.TvacModel, datamodels.MosaicModel ],
-    # [ datamodels.TvacModel ],
+      datamodels.TvacModel, datamodels.MosaicModel ]
 )
 def test_model_assignment_access_types(model_class):
     """Test assigment and access of model keyword value via keys and dot notation"""
