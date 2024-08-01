@@ -28,24 +28,26 @@ __all__ = ["DNode", "LNode"]
 validator_callbacks = HashableDict(asdfschema.YAML_VALIDATORS)
 validator_callbacks.update({"type": _check_type})
 
-TVAC_SCALAR_NODES = ['TvacCalibrationSoftwareVersion',
-                     'TvacSdfSoftwareVersion',
-                     'TvacFilename',
-                     'TvacFileDate',
-                     'TvacModelType',
-                     'TvacOrigin',
-                     'TvacPrdSoftwareVersion',
-                     'TvacTelescope',
-                     ]
-FPS_SCALAR_NODES = ['FpsCalibrationSoftwareVersion',
-                    'FpsSdfSoftwareVersion',
-                    'FpsFilename',
-                    'FpsFileDate',
-                    'FpsModelType',
-                    'FpsOrigin',
-                    'FpsPrdSoftwareVersion',
-                    'FpsTelescope',
-                    ]
+TVAC_SCALAR_NODES = [
+    "TvacCalibrationSoftwareVersion",
+    "TvacSdfSoftwareVersion",
+    "TvacFilename",
+    "TvacFileDate",
+    "TvacModelType",
+    "TvacOrigin",
+    "TvacPrdSoftwareVersion",
+    "TvacTelescope",
+]
+FPS_SCALAR_NODES = [
+    "FpsCalibrationSoftwareVersion",
+    "FpsSdfSoftwareVersion",
+    "FpsFilename",
+    "FpsFileDate",
+    "FpsModelType",
+    "FpsOrigin",
+    "FpsPrdSoftwareVersion",
+    "FpsTelescope",
+]
 
 
 def _value_change(path, value, schema, pass_invalid_values, strict_validation, ctx):
@@ -225,11 +227,13 @@ class DNode(MutableMapping):
 
         # If the key is in the schema, then we can return the value
         if key in self._data:
-            if (".Tvac" in str(type(self._parent))) or \
-                (str(type(self._data[key])).split('.')[-1].split("'")[0] in TVAC_SCALAR_NODES):
+            if (".Tvac" in str(type(self._parent))) or (
+                str(type(self._data[key])).split(".")[-1].split("'")[0] in TVAC_SCALAR_NODES
+            ):
                 scaled_key = "tvac_" + key
-            elif (".Fps" in str(type(self._parent))) or \
-                (str(type(self._data[key])).split('.')[-1].split("'")[0] in FPS_SCALAR_NODES):
+            elif (".Fps" in str(type(self._parent))) or (
+                str(type(self._data[key])).split(".")[-1].split("'")[0] in FPS_SCALAR_NODES
+            ):
                 scaled_key = "fps_" + key
             else:
                 scaled_key = key
@@ -341,11 +345,13 @@ class DNode(MutableMapping):
         """Dictionary style access data"""
 
         if key in self._data:
-            if (".Tvac" in str(type(self._parent))) or \
-                (str(type(self._data[key])).split('.')[-1].split("'")[0] in TVAC_SCALAR_NODES):
+            if (".Tvac" in str(type(self._parent))) or (
+                str(type(self._data[key])).split(".")[-1].split("'")[0] in TVAC_SCALAR_NODES
+            ):
                 scaled_key = "tvac_" + key
-            elif (".Fps" in str(type(self._parent))) or \
-                (str(type(self._data[key])).split('.')[-1].split("'")[0] in FPS_SCALAR_NODES):
+            elif (".Fps" in str(type(self._parent))) or (
+                str(type(self._data[key])).split(".")[-1].split("'")[0] in FPS_SCALAR_NODES
+            ):
                 scaled_key = "fps_" + key
             else:
                 scaled_key = key
@@ -376,7 +382,6 @@ class DNode(MutableMapping):
                     value[sub_key] = self._convert_to_scalar("fps_" + sub_key, sub_value)
                 else:
                     value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
-
 
         self._data[key] = value
 
