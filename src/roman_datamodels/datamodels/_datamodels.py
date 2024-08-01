@@ -18,25 +18,26 @@ from ._core import DataModel
 
 __all__ = []
 
-TVAC_SCALAR_NODES = [stnode.TvacCalibrationSoftwareVersion,
-                     stnode.TvacSdfSoftwareVersion,
-                     stnode.TvacFilename,
-                     stnode.TvacFileDate,
-                     stnode.TvacModelType,
-                     stnode.TvacOrigin,
-                     stnode.TvacPrdSoftwareVersion,
-                     stnode.TvacTelescope,
-                     ]
-FPS_SCALAR_NODES = [stnode.FpsCalibrationSoftwareVersion,
-                    stnode.FpsSdfSoftwareVersion,
-                    stnode.FpsFilename,
-                    stnode.FpsFileDate,
-                    stnode.FpsModelType,
-                    stnode.FpsOrigin,
-                    stnode.FpsPrdSoftwareVersion,
-                    stnode.FpsTelescope,
-                    ]
-
+TVAC_SCALAR_NODES = [
+    stnode.TvacCalibrationSoftwareVersion,
+    stnode.TvacSdfSoftwareVersion,
+    stnode.TvacFilename,
+    stnode.TvacFileDate,
+    stnode.TvacModelType,
+    stnode.TvacOrigin,
+    stnode.TvacPrdSoftwareVersion,
+    stnode.TvacTelescope,
+]
+FPS_SCALAR_NODES = [
+    stnode.FpsCalibrationSoftwareVersion,
+    stnode.FpsSdfSoftwareVersion,
+    stnode.FpsFilename,
+    stnode.FpsFileDate,
+    stnode.FpsModelType,
+    stnode.FpsOrigin,
+    stnode.FpsPrdSoftwareVersion,
+    stnode.FpsTelescope,
+]
 
 
 class _DataModel(DataModel):
@@ -211,7 +212,8 @@ class RampModel(_RomanDataModel):
                         continue
                     if type(other[key]) in (TVAC_SCALAR_NODES + FPS_SCALAR_NODES):
                         from roman_datamodels.maker_utils import mk_basic_meta
-                        self[key] = mk_basic_meta(**{key:other[key]})[key]
+
+                        self[key] = mk_basic_meta(**{key: other[key]})[key]
                         continue
                 self[key] = other.__getattr__(key)
 
