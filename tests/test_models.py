@@ -1020,6 +1020,6 @@ def test_model_assignment_access_types(model_class):
     assert model2.validate() is None
 
     # Test assignment types
-    assert type(model["meta"]["filename"]) == type(model2.meta["filename"])
-    assert type(model["meta"]["filename"]) == type(model2.meta.filename)
-    assert type(model.meta.filename) == type(model2.meta["filename"])
+    assert type(model["meta"]["filename"]) == type(model2.meta["filename"])  # noqa: E721
+    assert type(model["meta"]["filename"]) == type(model2.meta.filename)  # noqa: E721
+    assert type(model.meta.filename) == type(model2.meta["filename"])  # noqa: E721
