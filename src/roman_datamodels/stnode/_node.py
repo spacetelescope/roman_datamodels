@@ -46,7 +46,6 @@ FPS_SCALAR_NODES = ['FpsCalibrationSoftwareVersion',
                     'FpsPrdSoftwareVersion',
                     'FpsTelescope',
                     ]
-DICT_TO_DNODE = ['meta', 'crds']
 
 
 def _value_change(path, value, schema, pass_invalid_values, strict_validation, ctx):
@@ -226,11 +225,9 @@ class DNode(MutableMapping):
 
         # If the key is in the schema, then we can return the value
         if key in self._data:
-            # (".Tvac" in str(type(self._parent))):
             if (".Tvac" in str(type(self._parent))) or \
                 (str(type(self._data[key])).split('.')[-1].split("'")[0] in TVAC_SCALAR_NODES):
                 scaled_key = "tvac_" + key
-            # elif str(type(self._data[key])).split('.')[-1].split("'")[0] in FPS_SCALAR_NODES:
             elif (".Fps" in str(type(self._parent))) or \
                 (str(type(self._data[key])).split('.')[-1].split("'")[0] in FPS_SCALAR_NODES):
                 scaled_key = "fps_" + key
@@ -241,25 +238,8 @@ class DNode(MutableMapping):
             # value = self._convert_to_scalar(key, self._data[key])
             value = self._convert_to_scalar(scaled_key, self._data[key])
 
-            # Return objects as node classes, if applicable
-            # if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
-            #     # return DNode(value, parent=self, name=key)
-            #     # if key in DICT_TO_DNODE:
-
-            #     # if key in (list(self._schema().keys()) + list(self._schema()['properties'].keys() if 'properties' in self._schema().keys() else '')
-            #     #            + list(self._schema()['allOf'].keys() if 'allOf' in self._schema().keys() else '')):
-            #     # if gen_dict_extract(key, self._schema()):
-            #     if f"'{key}'" in str(self._schema()):
-            #         return DNode(value, parent=self, name=key)
-            #     else:
-            #         return value
-            # From Brett's lazy load merge 
             if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
                 return DNode(value, parent=self, name=key)
-                if type(value) in NODE_CONVERTERS['TaggedObjectNodeConverter'].types:
-                    return DNode(value, parent=self, name=key)
-                else:
-                    return value
 
             elif isinstance(value, (list, asdf.lazy_nodes.AsdfListNode)):
                 return LNode(value)
@@ -278,15 +258,12 @@ class DNode(MutableMapping):
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
             # Wrap things in the tagged scalar classes if necessary
-            # if self._tag and "/tvac" in self._tag:
             if (self._tag and "/tvac" in self._tag) or (".Tvac" in str(type(self._parent))):
                 value = self._convert_to_scalar("tvac_" + key, value)
-            # elif self._tag and "/fps" in self._tag:
             elif (self._tag and "/fps" in self._tag) or (".Fps" in str(type(self._parent))):
                 value = self._convert_to_scalar("fps_" + key, value)
             else:
                 value = self._convert_to_scalar(key, value)
-            # value = self._convert_to_scalar(key, value)
 
             if key in self._data or key in self._schema_attributes:
                 # Perform validation if enabled
