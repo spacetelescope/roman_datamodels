@@ -18,27 +18,6 @@ from ._core import DataModel
 
 __all__ = []
 
-TVAC_SCALAR_NODES = [
-    stnode.TvacCalibrationSoftwareVersion,
-    stnode.TvacSdfSoftwareVersion,
-    stnode.TvacFilename,
-    stnode.TvacFileDate,
-    stnode.TvacModelType,
-    stnode.TvacOrigin,
-    stnode.TvacPrdSoftwareVersion,
-    stnode.TvacTelescope,
-]
-FPS_SCALAR_NODES = [
-    stnode.FpsCalibrationSoftwareVersion,
-    stnode.FpsSdfSoftwareVersion,
-    stnode.FpsFilename,
-    stnode.FpsFileDate,
-    stnode.FpsModelType,
-    stnode.FpsOrigin,
-    stnode.FpsPrdSoftwareVersion,
-    stnode.FpsTelescope,
-]
-
 
 class _DataModel(DataModel):
     """
@@ -195,33 +174,22 @@ class RampModel(_RomanDataModel):
             ramp.groupdq = model.resultantdq.copy()
 
         # Define how to recursively copy all attributes.
-        def node_update(self, other):
+        def node_update(ramp, other):
             """Implement update to directly access each value"""
             for key in other.keys():
                 if key == "resultantdq":
                     continue
-                if key in self:
-                    if isinstance(self[key], Mapping):
-                        node_update(self[key], other.__getattr__(key))
-                        continue
-                    if isinstance(self[key], list):
-                        self[key] = other.__getattr__(key).data
-                        continue
-                    if isinstance(self[key], np.ndarray):
-                        self[key] = other.__getattr__(key).astype(self[key].dtype)
-                        continue
-                    if type(other[key]) in (TVAC_SCALAR_NODES + FPS_SCALAR_NODES):
-                        from roman_datamodels.maker_utils import mk_basic_meta
-
-                        self[key] = mk_basic_meta(**{key: other[key]})[key]
-                        continue
-                    self[key] = other.__getattr__(key)
-                else:
-                    value = other.__getattr__(key)
-                    if isinstance(value, stnode.DNode):
-                        self[key] = value._data
+                if key in ramp:
+                    if isinstance(ramp[key], Mapping):
+                        node_update(getattr(ramp, key), getattr(other, key))
+                    elif isinstance(ramp[key], list):
+                        setattr(ramp, key, getattr(other, key).data)
+                    elif isinstance(ramp[key], np.ndarray):
+                        setattr(ramp, key, getattr(other, key).astype(ramp[key].dtype))
                     else:
-                        self[key] = value
+                        setattr(ramp, key, getattr(other, key))
+                else:
+                    ramp[key] = other[key]
 
         node_update(ramp, model)
 

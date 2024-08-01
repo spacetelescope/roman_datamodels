@@ -28,27 +28,6 @@ __all__ = ["DNode", "LNode"]
 validator_callbacks = HashableDict(asdfschema.YAML_VALIDATORS)
 validator_callbacks.update({"type": _check_type})
 
-TVAC_SCALAR_NODES = [
-    "TvacCalibrationSoftwareVersion",
-    "TvacSdfSoftwareVersion",
-    "TvacFilename",
-    "TvacFileDate",
-    "TvacModelType",
-    "TvacOrigin",
-    "TvacPrdSoftwareVersion",
-    "TvacTelescope",
-]
-FPS_SCALAR_NODES = [
-    "FpsCalibrationSoftwareVersion",
-    "FpsSdfSoftwareVersion",
-    "FpsFilename",
-    "FpsFileDate",
-    "FpsModelType",
-    "FpsOrigin",
-    "FpsPrdSoftwareVersion",
-    "FpsTelescope",
-]
-
 
 def _value_change(path, value, schema, pass_invalid_values, strict_validation, ctx):
     """
@@ -207,8 +186,18 @@ class DNode(MutableMapping):
         return self._ctx
 
     @staticmethod
-    def _convert_to_scalar(key, value):
+    def _convert_to_scalar(key, value, ref=None):
         """Find and wrap scalars in the appropriate class, if its a tagged one."""
+        from ._tagged import TaggedScalarNode
+
+        if isinstance(ref, TaggedScalarNode):
+            # we want the exact class (not possible subclasses)
+            if type(value) == type(ref):  # noqa: E721
+                return value
+            return type(ref)(value)
+
+        if isinstance(value, TaggedScalarNode):
+            return value
 
         if key in SCALAR_NODE_CLASSES_BY_KEY:
             value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
@@ -227,27 +216,12 @@ class DNode(MutableMapping):
 
         # If the key is in the schema, then we can return the value
         if key in self._data:
-            if (".Tvac" in str(type(self._parent))) or (
-                str(type(self._data[key])).split(".")[-1].split("'")[0] in TVAC_SCALAR_NODES
-            ):
-                scaled_key = "tvac_" + key
-            elif (".Fps" in str(type(self._parent))) or (
-                str(type(self._data[key])).split(".")[-1].split("'")[0] in FPS_SCALAR_NODES
-            ):
-                scaled_key = "fps_" + key
-            else:
-                scaled_key = key
-
             # Cast the value into the appropriate tagged scalar class
-            value = self._convert_to_scalar(scaled_key, self._data[key])
+            value = self._convert_to_scalar(key, self._data[key])
 
             # Return objects as node classes, if applicable
             if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
-                if self._schema_attributes.__contains__(key):
-                    self._x_schema_attributes = None
-                    return DNode(value, parent=self, name=key)
-
-                return value
+                return DNode(value, parent=self, name=key)
 
             elif isinstance(value, (list, asdf.lazy_nodes.AsdfListNode)):
                 return LNode(value)
@@ -265,13 +239,9 @@ class DNode(MutableMapping):
 
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
+
             # Wrap things in the tagged scalar classes if necessary
-            if (self._tag and "/tvac" in self._tag) or (".Tvac" in str(type(self._parent))):
-                value = self._convert_to_scalar("tvac_" + key, value)
-            elif (self._tag and "/fps" in self._tag) or (".Fps" in str(type(self._parent))):
-                value = self._convert_to_scalar("fps_" + key, value)
-            else:
-                value = self._convert_to_scalar(key, value)
+            value = self._convert_to_scalar(key, value, self._data.get(key))
 
             if key in self._data or key in self._schema_attributes:
                 # Perform validation if enabled
@@ -347,22 +317,8 @@ class DNode(MutableMapping):
 
     def __getitem__(self, key):
         """Dictionary style access data"""
-
         if key in self._data:
-            if (".Tvac" in str(type(self._parent))) or (
-                str(type(self._data[key])).split(".")[-1].split("'")[0] in TVAC_SCALAR_NODES
-            ):
-                scaled_key = "tvac_" + key
-            elif (".Fps" in str(type(self._parent))) or (
-                str(type(self._data[key])).split(".")[-1].split("'")[0] in FPS_SCALAR_NODES
-            ):
-                scaled_key = "fps_" + key
-            else:
-                scaled_key = key
-
-            # Cast the value into the appropriate tagged scalar class
-            value = self._convert_to_scalar(scaled_key, self._data[key])
-            return value
+            return self._data[key]
 
         raise KeyError(f"No such key ({key}) found in node")
 
@@ -370,22 +326,12 @@ class DNode(MutableMapping):
         """Dictionary style access set data"""
 
         # Convert the value to a tagged scalar if necessary
-        if (self._tag and "/tvac" in self._tag) or (".Tvac" in str(type(self._parent))):
-            value = self._convert_to_scalar("tvac_" + key, value)
-        elif (self._tag and "/fps" in self._tag) or (".Fps" in str(type(self._parent))):
-            value = self._convert_to_scalar("fps_" + key, value)
-        else:
-            value = self._convert_to_scalar(key, value)
+        value = self._convert_to_scalar(key, value, self._data.get(key))
 
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
         if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
             for sub_key, sub_value in value.items():
-                if self._tag and "/tvac" in self._tag:
-                    value[sub_key] = self._convert_to_scalar("tvac_" + sub_key, sub_value)
-                elif self._tag and "/fps" in self._tag:
-                    value[sub_key] = self._convert_to_scalar("fps_" + sub_key, sub_value)
-                else:
-                    value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
+                value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
 
         self._data[key] = value
 
