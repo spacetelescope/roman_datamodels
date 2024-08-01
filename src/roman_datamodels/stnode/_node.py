@@ -21,7 +21,7 @@ from astropy.time import Time
 
 from roman_datamodels.validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
 
-from ._registry import SCALAR_NODE_CLASSES_BY_KEY, NODE_CONVERTERS
+from ._registry import SCALAR_NODE_CLASSES_BY_KEY
 
 __all__ = ["DNode", "LNode"]
 
@@ -210,7 +210,7 @@ class DNode(MutableMapping):
 
         if key in SCALAR_NODE_CLASSES_BY_KEY:
             value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
-       
+
         return value
 
     def __getattr__(self, key):
@@ -235,9 +235,9 @@ class DNode(MutableMapping):
                 scaled_key = key
 
             # Cast the value into the appropriate tagged scalar class
-            # value = self._convert_to_scalar(key, self._data[key])
             value = self._convert_to_scalar(scaled_key, self._data[key])
 
+            # Return objects as node classes, if applicable
             if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
                 return DNode(value, parent=self, name=key)
 
@@ -344,7 +344,6 @@ class DNode(MutableMapping):
             if (".Tvac" in str(type(self._parent))) or \
                 (str(type(self._data[key])).split('.')[-1].split("'")[0] in TVAC_SCALAR_NODES):
                 scaled_key = "tvac_" + key
-            # elif str(type(self._data[key])).split('.')[-1].split("'")[0] in FPS_SCALAR_NODES:
             elif (".Fps" in str(type(self._parent))) or \
                 (str(type(self._data[key])).split('.')[-1].split("'")[0] in FPS_SCALAR_NODES):
                 scaled_key = "fps_" + key
@@ -352,41 +351,21 @@ class DNode(MutableMapping):
                 scaled_key = key
 
             # Cast the value into the appropriate tagged scalar class
-            # value = self._convert_to_scalar(key, self._data[key])
             value = self._convert_to_scalar(scaled_key, self._data[key])
-        
-        # if key in self._data:
-            # return self._data[key]
-            return self._convert_to_scalar(scaled_key, self._data[key])
+            return value
 
         raise KeyError(f"No such key ({key}) found in node")
 
     def __setitem__(self, key, value):
         """Dictionary style access set data"""
 
-        # if (key == 'filename'):
         # Convert the value to a tagged scalar if necessary
         if (self._tag and "/tvac" in self._tag) or (".Tvac" in str(type(self._parent))):
             value = self._convert_to_scalar("tvac_" + key, value)
-            # if (key == 'filename'):
-        # elif self._tag and "/fps" in self._tag:
         elif (self._tag and "/fps" in self._tag) or (".Fps" in str(type(self._parent))):
             value = self._convert_to_scalar("fps_" + key, value)
         else:
             value = self._convert_to_scalar(key, value)
-
-        # If the value is a dictionary, loop over its keys and convert them to tagged scalars
-        if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
-            for sub_key, sub_value in value.items():
-                # if self._tag and "/tvac" in self._tag:
-                if (self._tag and "/tvac" in self._tag) or (".Tvac" in str(type(self._parent))):
-                    value[sub_key] = self._convert_to_scalar("tvac_" + sub_key, sub_value)
-                # elif self._tag and "/fps" in self._tag:
-                elif (self._tag and "/fps" in self._tag) or (".Fps" in str(type(self._parent))):
-                    value[sub_key] = self._convert_to_scalar("fps_" + sub_key, sub_value)
-                else:
-                    value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
-
 
         self._data[key] = value
 
