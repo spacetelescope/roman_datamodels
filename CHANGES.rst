@@ -7,6 +7,8 @@
 
 - Enable asdf "lazy_tree" mode for all roman datamodels files [#358]
 
+- Fix to preserve Tvac & FPS tagged scalar node types. [#368]
+
 0.20.0 (2024-05-15)
 ===================
 
