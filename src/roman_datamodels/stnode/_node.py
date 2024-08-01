@@ -243,7 +243,11 @@ class DNode(MutableMapping):
 
             # Return objects as node classes, if applicable
             if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
-                return DNode(value, parent=self, name=key)
+                if self._schema_attributes.__contains__(key):
+                    self._x_schema_attributes = None
+                    return DNode(value, parent=self, name=key)
+
+                return value
 
             elif isinstance(value, (list, asdf.lazy_nodes.AsdfListNode)):
                 return LNode(value)

@@ -215,7 +215,13 @@ class RampModel(_RomanDataModel):
 
                         self[key] = mk_basic_meta(**{key: other[key]})[key]
                         continue
-                self[key] = other.__getattr__(key)
+                    self[key] = other.__getattr__(key)
+                else:
+                    value = other.__getattr__(key)
+                    if isinstance(value, stnode.DNode):
+                        self[key] = value._data
+                    else:
+                        self[key] = value
 
         node_update(ramp, model)
 
