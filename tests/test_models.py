@@ -1006,9 +1006,9 @@ def test_model_assignment_access_types(model_class):
     assert model["meta"]["filename"] == model.meta["filename"]
     assert model["meta"]["filename"] == model.meta.filename
     assert model.meta.filename == model.meta["filename"]
-    assert type(model["meta"]["filename"]) == type(model.meta["filename"])
-    assert type(model["meta"]["filename"]) == type(model.meta.filename)
-    assert type(model.meta.filename) == type(model.meta["filename"])
+    assert type(model["meta"]["filename"]) == type(model.meta["filename"])  # noqa: E721
+    assert type(model["meta"]["filename"]) == type(model.meta.filename)  # noqa: E721
+    assert type(model.meta.filename) == type(model.meta["filename"])  # noqa: E721
 
     # Test assignment
     model2 = utils.mk_datamodel(model_class, meta={"calibration_software_version": "4.5.6"})
