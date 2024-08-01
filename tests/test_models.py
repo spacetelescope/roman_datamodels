@@ -987,7 +987,6 @@ def test_rampmodel_from_science_raw(tmp_path, model_class, expect_success):
         with datamodels.open(filename) as new_ramp:
             assert new_ramp.meta.calibration_software_version == model.meta.calibration_software_version
 
-
     else:
         with pytest.raises(ValueError):
             datamodels.RampModel.from_science_raw(model)
