@@ -970,17 +970,56 @@ def test_datamodel_save_filename(tmp_path):
         (datamodels.MosaicModel, False),
     ],
 )
-def test_rampmodel_from_science_raw(model_class, expect_success):
+def test_rampmodel_from_science_raw(tmp_path, model_class, expect_success):
     """Test creation of RampModel from raw science/tvac"""
     model = utils.mk_datamodel(
         model_class, meta={"calibration_software_version": "1.2.3", "exposure": {"read_pattern": [[1], [2], [3]]}}
     )
     if expect_success:
+        filename = tmp_path / "fancy_filename.asdf"
         ramp = datamodels.RampModel.from_science_raw(model)
 
         assert ramp.meta.calibration_software_version == model.meta.calibration_software_version
         assert ramp.meta.exposure.read_pattern == model.meta.exposure.read_pattern
+        assert ramp.validate() is None
+
+        ramp.save(filename)
+        with datamodels.open(filename) as new_ramp:
+            assert new_ramp.meta.calibration_software_version == model.meta.calibration_software_version
 
     else:
         with pytest.raises(ValueError):
             datamodels.RampModel.from_science_raw(model)
+
+
+@pytest.mark.parametrize(
+    "model_class",
+    [datamodels.FpsModel, datamodels.RampModel, datamodels.ScienceRawModel, datamodels.TvacModel, datamodels.MosaicModel],
+)
+def test_model_assignment_access_types(model_class):
+    """Test assignment and access of model keyword value via keys and dot notation"""
+    # Test creation
+    model = utils.mk_datamodel(
+        model_class, meta={"calibration_software_version": "1.2.3", "exposure": {"read_pattern": [[1], [2], [3]]}}
+    )
+
+    assert model["meta"]["filename"] == model.meta["filename"]
+    assert model["meta"]["filename"] == model.meta.filename
+    assert model.meta.filename == model.meta["filename"]
+    assert type(model["meta"]["filename"]) == type(model.meta["filename"])  # noqa: E721
+    assert type(model["meta"]["filename"]) == type(model.meta.filename)  # noqa: E721
+    assert type(model.meta.filename) == type(model.meta["filename"])  # noqa: E721
+
+    # Test assignment
+    model2 = utils.mk_datamodel(model_class, meta={"calibration_software_version": "4.5.6"})
+
+    model.meta["filename"] = "Roman_keys_test.asdf"
+    model2.meta.filename = "Roman_dot_test.asdf"
+
+    assert model.validate() is None
+    assert model2.validate() is None
+
+    # Test assignment types
+    assert type(model["meta"]["filename"]) == type(model2.meta["filename"])  # noqa: E721
+    assert type(model["meta"]["filename"]) == type(model2.meta.filename)  # noqa: E721
+    assert type(model.meta.filename) == type(model2.meta["filename"])  # noqa: E721

@@ -186,8 +186,18 @@ class DNode(MutableMapping):
         return self._ctx
 
     @staticmethod
-    def _convert_to_scalar(key, value):
+    def _convert_to_scalar(key, value, ref=None):
         """Find and wrap scalars in the appropriate class, if its a tagged one."""
+        from ._tagged import TaggedScalarNode
+
+        if isinstance(ref, TaggedScalarNode):
+            # we want the exact class (not possible subclasses)
+            if type(value) == type(ref):  # noqa: E721
+                return value
+            return type(ref)(value)
+
+        if isinstance(value, TaggedScalarNode):
+            return value
 
         if key in SCALAR_NODE_CLASSES_BY_KEY:
             value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
@@ -231,7 +241,7 @@ class DNode(MutableMapping):
         if key[0] != "_":
 
             # Wrap things in the tagged scalar classes if necessary
-            value = self._convert_to_scalar(key, value)
+            value = self._convert_to_scalar(key, value, self._data.get(key))
 
             if key in self._data or key in self._schema_attributes:
                 # Perform validation if enabled
@@ -316,22 +326,12 @@ class DNode(MutableMapping):
         """Dictionary style access set data"""
 
         # Convert the value to a tagged scalar if necessary
-        if self._tag and "/tvac" in self._tag:
-            value = self._convert_to_scalar("tvac_" + key, value)
-        elif self._tag and "/fps" in self._tag:
-            value = self._convert_to_scalar("fps_" + key, value)
-        else:
-            value = self._convert_to_scalar(key, value)
+        value = self._convert_to_scalar(key, value, self._data.get(key))
 
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
         if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
             for sub_key, sub_value in value.items():
-                if self._tag and "/tvac" in self._tag:
-                    value[sub_key] = self._convert_to_scalar("tvac_" + sub_key, sub_value)
-                elif self._tag and "/fps" in self._tag:
-                    value[sub_key] = self._convert_to_scalar("fps_" + sub_key, sub_value)
-                else:
-                    value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
+                value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
 
         self._data[key] = value
 

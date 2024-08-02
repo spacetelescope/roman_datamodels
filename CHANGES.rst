@@ -7,6 +7,8 @@
 
 - Enable asdf "lazy_tree" mode for all roman datamodels files [#358]
 
+- Fix to preserve extra TVAC specific data when processed through DQ Init. [#369]
+
 0.20.0 (2024-05-15)
 ===================
 
