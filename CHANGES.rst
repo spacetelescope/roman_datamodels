@@ -9,6 +9,9 @@
 
 - Fix to preserve extra TVAC specific data when processed through DQ Init. [#369]
 
+- Added maker utilities and a test for sky background metadata. [#370]
+  
+
 0.20.0 (2024-05-15)
 ===================
 
