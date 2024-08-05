@@ -19,7 +19,7 @@ from pathlib import Path, PurePath
 import asdf
 import numpy as np
 from asdf.exceptions import ValidationError
-from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
+from asdf.tags.core.ndarray import NDArrayType
 from astropy.time import Time
 
 from roman_datamodels import stnode, validate
@@ -298,7 +298,9 @@ class DataModel(abc.ABC):
             return val
 
         return {
-            f"roman.{key}": convert_val(val) for (key, val) in self.items() if include_arrays or not isinstance(val, np.ndarray)
+            f"roman.{key}": convert_val(val)
+            for (key, val) in self.items()
+            if include_arrays or not isinstance(val, (np.ndarray, NDArrayType))
         }
 
     def items(self):
@@ -315,29 +317,21 @@ class DataModel(abc.ABC):
         schemas directly.
         """
 
-        def recurse(tree, path=[]):
-            if isinstance(tree, (stnode.DNode, dict, AsdfDictNode)):
-                for key, val in tree.items():
-                    yield from recurse(val, path + [key])
-            elif isinstance(tree, (stnode.LNode, list, tuple, AsdfListNode)):
-                for i, val in enumerate(tree):
-                    yield from recurse(val, path + [i])
-            elif tree is not None:
-                yield (".".join(str(x) for x in path), tree)
-
-        yield from recurse(self._instance)
+        yield from self._instance.items(recursive=True)
 
     def get_crds_parameters(self):
         """
         Get parameters used by CRDS to select references for this model.
+
+        This will only return items under ``roman.meta``.
 
         Returns
         -------
         dict
         """
         return {
-            key: val
-            for key, val in self.to_flat_dict(include_arrays=False).items()
+            f"roman.meta.{key}": val
+            for key, val in self.meta.to_flat_dict(include_arrays=False, recursive=True).items()
             if isinstance(val, (str, int, float, complex, bool))
         }
 
