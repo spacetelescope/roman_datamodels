@@ -18,8 +18,9 @@ dependencies = [
     "gwcs >=0.19.0",
     "numpy >=1.22",
     "astropy >=5.3.0",
-    "rad >= 0.20.0",
+    # "rad >= 0.20.0",
     # "rad @ git+https://github.com/spacetelescope/rad.git",
+    "rad @ git+https://github.com/PaulHuwe/rad.git@RAD-172_SkyBackground",
     "asdf-standard >=1.1.0",
 ]
 dynamic = [
