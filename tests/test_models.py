@@ -20,8 +20,13 @@ from .conftest import MANIFEST
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
 # Nodes for metadata schema that do not contain any archive_catalog keywords
-NODES_LACKING_ARCHIVE_CATALOG = [stnode.OutlierDetection, stnode.MosaicAssociations,
-                                 stnode.IndividualImageMeta, stnode.Resample, stnode.SkyBackground]
+NODES_LACKING_ARCHIVE_CATALOG = [
+    stnode.OutlierDetection,
+    stnode.MosaicAssociations,
+    stnode.IndividualImageMeta,
+    stnode.Resample,
+    stnode.SkyBackground,
+]
 
 
 def datamodel_names():
