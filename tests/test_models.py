@@ -858,18 +858,15 @@ def test_datamodel_schema_info_existence(name):
                     assert keyword in info["roman"]["meta"]
 
 
-def test_crds_parameters(tmp_path):
+@pytest.mark.parametrize("mk_model", (utils.mk_level2_image, utils.mk_ramp))
+def test_crds_parameters(mk_model, tmp_path):
     # CRDS uses meta.exposure.start_time to compare to USEAFTER
-    file_path = tmp_path / "testwfi_image.asdf"
-    utils.mk_level2_image(filepath=file_path)
+    file_path = tmp_path / "test.asdf"
+    mk_model(filepath=file_path)
     with datamodels.open(file_path) as wfi_image:
         crds_pars = wfi_image.get_crds_parameters()
         assert "roman.meta.exposure.start_time" in crds_pars
-
-    utils.mk_ramp(filepath=file_path)
-    with datamodels.open(file_path) as ramp:
-        crds_pars = ramp.get_crds_parameters()
-        assert "roman.meta.exposure.start_time" in crds_pars
+        assert "roman.cal_logs" not in crds_pars
 
 
 def test_model_validate_without_save():

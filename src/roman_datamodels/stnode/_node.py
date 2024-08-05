@@ -10,11 +10,11 @@ from collections import UserList
 from collections.abc import MutableMapping
 
 import asdf
-import asdf.lazy_nodes
 import asdf.schema as asdfschema
 import asdf.yamlutil as yamlutil
 import numpy as np
 from asdf.exceptions import ValidationError
+from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
 from asdf.util import HashableDict
 from astropy.time import Time
@@ -166,7 +166,7 @@ class DNode(MutableMapping):
         # Handle if we are passed different data types
         if node is None:
             self.__dict__["_data"] = {}
-        elif isinstance(node, (dict, asdf.lazy_nodes.AsdfDictNode)):
+        elif isinstance(node, (dict, AsdfDictNode)):
             self.__dict__["_data"] = node
         else:
             raise ValueError("Initializer only accepts dicts")
@@ -220,10 +220,10 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, self._data[key])
 
             # Return objects as node classes, if applicable
-            if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
+            if isinstance(value, (dict, AsdfDictNode)):
                 return DNode(value, parent=self, name=key)
 
-            elif isinstance(value, (list, asdf.lazy_nodes.AsdfListNode)):
+            elif isinstance(value, (list, AsdfListNode)):
                 return LNode(value)
 
             else:
@@ -266,7 +266,24 @@ class DNode(MutableMapping):
             self._x_schema_attributes = SchemaProperties.from_schema(self._schema())
         return self._x_schema_attributes
 
-    def to_flat_dict(self, include_arrays=True):
+    def items(self, recursive=False):
+        if not recursive:
+            yield from super().items()
+        else:
+
+            def recurse(tree, path=[]):
+                if isinstance(tree, (DNode, dict, AsdfDictNode)):
+                    for key, val in tree.items():
+                        yield from recurse(val, path + [key])
+                elif isinstance(tree, (LNode, list, tuple, AsdfListNode)):
+                    for i, val in enumerate(tree):
+                        yield from recurse(val, path + [i])
+                elif tree is not None:
+                    yield (".".join(str(x) for x in path), tree)
+
+            yield from recurse(self)
+
+    def to_flat_dict(self, include_arrays=True, recursive=False):
         """
         Returns a dictionary of all of the schema items as a flat dictionary.
 
@@ -289,10 +306,12 @@ class DNode(MutableMapping):
             return val
 
         if include_arrays:
-            return {key: convert_val(val) for (key, val) in self.items()}
+            return {key: convert_val(val) for (key, val) in self.items(recursive)}
         else:
             return {
-                key: convert_val(val) for (key, val) in self.items() if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
+                key: convert_val(val)
+                for (key, val) in self.items(recursive)
+                if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
             }
 
     def _schema(self):
@@ -329,7 +348,7 @@ class DNode(MutableMapping):
         value = self._convert_to_scalar(key, value, self._data.get(key))
 
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
-        if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
+        if isinstance(value, (dict, AsdfDictNode)):
             for sub_key, sub_value in value.items():
                 value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
 
@@ -366,7 +385,7 @@ class LNode(UserList):
     def __init__(self, node=None):
         if node is None:
             self.data = []
-        elif isinstance(node, (list, asdf.lazy_nodes.AsdfListNode)):
+        elif isinstance(node, (list, AsdfListNode)):
             self.data = node
         elif isinstance(node, self.__class__):
             self.data = node.data
@@ -375,9 +394,9 @@ class LNode(UserList):
 
     def __getitem__(self, index):
         value = self.data[index]
-        if isinstance(value, (dict, asdf.lazy_nodes.AsdfDictNode)):
+        if isinstance(value, (dict, AsdfDictNode)):
             return DNode(value)
-        elif isinstance(value, (list, asdf.lazy_nodes.AsdfListNode)):
+        elif isinstance(value, (list, AsdfListNode)):
             return LNode(value)
         else:
             return value
