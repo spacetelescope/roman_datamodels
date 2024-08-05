@@ -151,7 +151,7 @@ def mk_sky_background(**kwargs):
     roman_datamodels.stnode.SkyBackground
     """
     sb = stnode.SkyBackground()
-    sb["level"] = kwargs.get("level", NONUM * (u.DN / u.s))
+    sb["level"] = kwargs.get("level", NONUM * (u.MJy / u.sr))
     sb["method"] = kwargs.get("method", "None")
     sb["subtracted"] = kwargs.get("subtracted", False)
 
