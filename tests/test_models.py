@@ -858,15 +858,31 @@ def test_datamodel_schema_info_existence(name):
                     assert keyword in info["roman"]["meta"]
 
 
+@pytest.mark.parametrize("include_arrays", (True, False))
+def test_to_flat_dict(include_arrays, tmp_path):
+    file_path = tmp_path / "test.asdf"
+    utils.mk_level2_image(filepath=file_path, shape=(8, 8))
+    with datamodels.open(file_path) as model:
+        if include_arrays:
+            assert "roman.data" in model.to_flat_dict()
+        else:
+            assert "roman.data" not in model.to_flat_dict(include_arrays=False)
+
+
 @pytest.mark.parametrize("mk_model", (utils.mk_level2_image, utils.mk_ramp))
 def test_crds_parameters(mk_model, tmp_path):
     # CRDS uses meta.exposure.start_time to compare to USEAFTER
     file_path = tmp_path / "test.asdf"
     mk_model(filepath=file_path)
-    with datamodels.open(file_path) as wfi_image:
-        crds_pars = wfi_image.get_crds_parameters()
+    with datamodels.open(file_path) as model:
+        # patch on a value that is valid (a simple type)
+        # but isn't under meta. Since it's not under meta
+        # it shouldn't be in the crds_pars.
+        model["test"] = 42
+        crds_pars = model.get_crds_parameters()
         assert "roman.meta.exposure.start_time" in crds_pars
         assert "roman.cal_logs" not in crds_pars
+        assert "roman.test" not in crds_pars
 
 
 def test_model_validate_without_save():
