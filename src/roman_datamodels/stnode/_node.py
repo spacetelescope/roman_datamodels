@@ -266,22 +266,18 @@ class DNode(MutableMapping):
             self._x_schema_attributes = SchemaProperties.from_schema(self._schema())
         return self._x_schema_attributes
 
-    def items(self, recursive=False):
-        if not recursive:
-            yield from super().items()
-        else:
+    def _recursive_items(self):
+        def recurse(tree, path=[]):
+            if isinstance(tree, (DNode, dict, AsdfDictNode)):
+                for key, val in tree.items():
+                    yield from recurse(val, path + [key])
+            elif isinstance(tree, (LNode, list, tuple, AsdfListNode)):
+                for i, val in enumerate(tree):
+                    yield from recurse(val, path + [i])
+            elif tree is not None:
+                yield (".".join(str(x) for x in path), tree)
 
-            def recurse(tree, path=[]):
-                if isinstance(tree, (DNode, dict, AsdfDictNode)):
-                    for key, val in tree.items():
-                        yield from recurse(val, path + [key])
-                elif isinstance(tree, (LNode, list, tuple, AsdfListNode)):
-                    for i, val in enumerate(tree):
-                        yield from recurse(val, path + [i])
-                elif tree is not None:
-                    yield (".".join(str(x) for x in path), tree)
-
-            yield from recurse(self)
+        yield from recurse(self)
 
     def to_flat_dict(self, include_arrays=True, recursive=False):
         """
@@ -305,13 +301,13 @@ class DNode(MutableMapping):
                 return str(val)
             return val
 
+        item_getter = self._recursive_items if recursive else self.items
+
         if include_arrays:
-            return {key: convert_val(val) for (key, val) in self.items(recursive)}
+            return {key: convert_val(val) for (key, val) in item_getter()}
         else:
             return {
-                key: convert_val(val)
-                for (key, val) in self.items(recursive)
-                if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
+                key: convert_val(val) for (key, val) in item_getter() if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
             }
 
     def _schema(self):

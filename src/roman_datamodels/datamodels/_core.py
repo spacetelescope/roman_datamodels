@@ -317,7 +317,7 @@ class DataModel(abc.ABC):
         schemas directly.
         """
 
-        yield from self._instance.items(recursive=True)
+        yield from self._instance._recursive_items()
 
     def get_crds_parameters(self):
         """
