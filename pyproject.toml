@@ -83,6 +83,7 @@ testpaths = [
 filterwarnings = [
     "error",
     "ignore:numpy.ndarray size changed:RuntimeWarning",
+    "ignore:The `hash` argument is deprecated in favor of `unsafe_hash` and will be removed in or after August 2025:DeprecationWarning",
 ]
 env = [
     "ROMAN_VALIDATE=true",
