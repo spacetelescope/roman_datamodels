@@ -20,7 +20,13 @@ from .conftest import MANIFEST
 EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
 
 # Nodes for metadata schema that do not contain any archive_catalog keywords
-NODES_LACKING_ARCHIVE_CATALOG = [stnode.OutlierDetection, stnode.MosaicAssociations, stnode.IndividualImageMeta, stnode.Resample]
+NODES_LACKING_ARCHIVE_CATALOG = [
+    stnode.OutlierDetection,
+    stnode.MosaicAssociations,
+    stnode.IndividualImageMeta,
+    stnode.Resample,
+    stnode.SkyBackground,
+]
 
 
 def datamodel_names():
@@ -731,6 +737,9 @@ def test_append_individual_image_meta_level3_mosaic():
     assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][0] == "Nancy"
     assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][1] == "Grace"
     assert wfi_mosaic_model.meta.individual_image_meta.program["pi_name"][2] == "Roman"
+
+    # Test that the mosaic validates with IIM filled
+    assert wfi_mosaic_model.validate() is None
 
 
 # FPS tests
