@@ -1,3 +1,9 @@
+0.22.0 (unreleased)
+===================
+
+- Only use ``roman.meta`` attributes for crds parameter selection. [#372]
+
+
 0.21.0 (2024-08-06)
 ===================
 
