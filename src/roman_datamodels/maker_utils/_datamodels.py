@@ -98,8 +98,8 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     roman_datamodels.stnode.WfiImage
     """
     if len(shape) > 2:
-        shape = shape[1:3]
         n_groups = shape[0]
+        shape = shape[1:3]
 
         warnings.warn(
             f"{MESSAGE} assuming the first entry is n_groups followed by y, x. The remaining is thrown out!", UserWarning
