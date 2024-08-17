@@ -204,3 +204,14 @@ def test_keyword_only(node_class):
             assert param.kind == inspect.Parameter.VAR_KEYWORD
         else:
             assert param.kind == inspect.Parameter.KEYWORD_ONLY
+
+
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+def test_mk_level2_image_shape():
+    """
+    Regression test for https://github.com/spacetelescope/roman_datamodels/issues/377
+    where n_groups was incorrect when provided a 3d shape
+    """
+    n = maker_utils.mk_level2_image(shape=(2, 3, 4))
+    assert n.amp33.shape == (2, 4096, 128)
+    assert n.data.shape == (3, 4)
