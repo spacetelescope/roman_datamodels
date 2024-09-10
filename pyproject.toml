@@ -124,11 +124,16 @@ ignore = [".gitkeep"]
 wrap = true
 issue_format = "`#{issue} <https://github.com/spacetelescope/roman_datamodels/issues/{issue}>`_"
 
-[tool.towncrier.fragment.apichange]
-name = "Changes to API"
+[tool.towncrier.fragment.feature]
+name = "New Features"
 
 [tool.towncrier.fragment.bugfix]
 name = "Bug Fixes"
 
-[tool.towncrier.fragment.general]
-name = "General"
+[tool.towncrier.fragment.doc]
+name = "Documentation"
+
+[tool.towncrier.fragment.removal]
+name = "Deprecations and Removals"
+
+[tool.towncrier.fragment.misc]
