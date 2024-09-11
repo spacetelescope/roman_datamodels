@@ -265,7 +265,7 @@ A minor release to set the minimum version of RAD to 0.16.0.
 0.13.0 (2022-08-23)
 ===================
 
-- pin ``asdf`` above ``2.12.1`` to fix issue with `jsonschema` release [#91]
+- pin ``asdf`` above ``2.12.1`` to fix issue with ``jsonschema`` release [#91]
 - Add ability to access information stored in ``rad`` schemas relative to the information stored in the datamodel. [#93]
 - Add ``IPAC/SSC`` as valid ``origin`` values. [#95]
 
