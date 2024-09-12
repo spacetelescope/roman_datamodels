@@ -62,3 +62,8 @@ repos:
   hooks:
     - id: bandit
       args: ["-r", "-ll"]
+
+- repo: https://github.com/twisted/towncrier
+  rev: 23.11.0  # run 'pre-commit autoupdate' to update
+  hooks:
+    - id: towncrier-check
