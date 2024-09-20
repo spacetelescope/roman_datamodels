@@ -63,6 +63,14 @@ def rdm_open(init, memmap=False, **kwargs):
     -------
     `DataModel`
     """
+    if isinstance(init, str | Path):
+        if Path(init).suffix.lower() == ".json":
+            try:
+                from romancal.datamodels.library import ModelLibrary
+
+                return ModelLibrary(init)
+            except ImportError:
+                raise ImportError("Please install romancal to allow opening associations with roman_datamodels")
     with validate.nuke_validation():
         if isinstance(init, DataModel):
             # Copy the object so it knows not to close here
@@ -75,15 +83,6 @@ def rdm_open(init, memmap=False, **kwargs):
         asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_path_like(init, memmap=memmap, **kwargs)
         if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
             return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
-
-        if isinstance(init, str):
-            exts = Path(init).suffixes
-            if not exts:
-                raise ValueError(f"Input file path does not have an extension: {init}")
-
-            # Assume json files are asn and return them
-            if exts[0] == "json":
-                return init
 
         asdf_file.close()
         raise TypeError(f"Unknown datamodel type: {model_type}")
