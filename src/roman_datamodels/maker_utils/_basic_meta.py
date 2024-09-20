@@ -2,7 +2,7 @@ from astropy import time
 
 from roman_datamodels import stnode
 
-from ._base import NOSTR
+from ._base import NOFN, NOSTR
 
 
 def mk_calibration_software_version(**kwargs):
@@ -36,7 +36,7 @@ def mk_filename(**kwargs):
     -------
     roman_datamodels.stnode.Filename
     """
-    return stnode.Filename(kwargs.get("filename", NOSTR))
+    return stnode.Filename(kwargs.get("filename", NOFN))
 
 
 def mk_file_date(**kwargs):

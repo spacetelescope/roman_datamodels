@@ -10,7 +10,7 @@ from roman_datamodels import datamodels
 from roman_datamodels import maker_utils
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode, validate
-from roman_datamodels.maker_utils._base import NONUM, NOSTR
+from roman_datamodels.maker_utils._base import NOFN, NONUM, NOSTR
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 from .conftest import MANIFEST
@@ -375,7 +375,7 @@ def test_node_representation(model):
             }
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
-            assert mdl.meta.filename == NOSTR
+            assert mdl.meta.filename == NOFN
         elif isinstance(mdl, (datamodels.SegmentationMapModel, datamodels.SourceCatalogModel)):
             assert mdl.meta.optical_element == "F158"
         else:
