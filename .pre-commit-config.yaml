@@ -42,7 +42,7 @@ repos:
       args: ["--py38-plus"]
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: 'v0.5.5'
+  rev: 'v0.6.5'
   hooks:
     - id: ruff
       args: ["--fix"]
@@ -53,7 +53,7 @@ repos:
     - id: isort
 
 - repo: https://github.com/psf/black
-  rev: 24.4.2
+  rev: 24.8.0
   hooks:
     - id: black
 
@@ -62,3 +62,8 @@ repos:
   hooks:
     - id: bandit
       args: ["-r", "-ll"]
+
+- repo: https://github.com/twisted/towncrier
+  rev: 24.8.0  # run 'pre-commit autoupdate' to update
+  hooks:
+    - id: towncrier-check

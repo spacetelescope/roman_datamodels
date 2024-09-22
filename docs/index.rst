@@ -27,3 +27,4 @@ Package Documentation
    :maxdepth: 1
 
    roman_datamodels/package_index.rst
+   roman_datamodels/changes.rst

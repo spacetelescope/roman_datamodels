@@ -1,4 +1,9 @@
-0.20.1 (unreleased)
+0.22.0 (2024-08-06)
+===================
+
+- Fix mk_level2_image utility for 3d shape. [#378]
+
+0.21.0 (2024-08-06)
 ===================
 
 - Recursively convert all meta attributes during model casting. [#352]
@@ -8,6 +13,9 @@
 - Enable asdf "lazy_tree" mode for all roman datamodels files [#358]
 
 - Fix to preserve extra TVAC specific data when processed through DQ Init. [#369]
+
+- Added maker utilities and a test for sky background metadata. [#370]
+
 
 0.20.0 (2024-05-15)
 ===================
@@ -257,7 +265,7 @@ A minor release to set the minimum version of RAD to 0.16.0.
 0.13.0 (2022-08-23)
 ===================
 
-- pin ``asdf`` above ``2.12.1`` to fix issue with `jsonschema` release [#91]
+- pin ``asdf`` above ``2.12.1`` to fix issue with ``jsonschema`` release [#91]
 - Add ability to access information stored in ``rad`` schemas relative to the information stored in the datamodel. [#93]
 - Add ``IPAC/SSC`` as valid ``origin`` values. [#95]
 

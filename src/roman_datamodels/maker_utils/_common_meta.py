@@ -141,6 +141,23 @@ def mk_outlier_detection(**kwargs):
     return od
 
 
+def mk_sky_background(**kwargs):
+    """
+    Create a dummy Sky Background instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SkyBackground
+    """
+    sb = stnode.SkyBackground()
+    sb["level"] = kwargs.get("level", NONUM * (u.MJy / u.sr))
+    sb["method"] = kwargs.get("method", "None")
+    sb["subtracted"] = kwargs.get("subtracted", False)
+
+    return sb
+
+
 def mk_ephemeris(**kwargs):
     """
     Create a dummy Ephemeris instance with valid values for attributes
@@ -474,6 +491,7 @@ def mk_photometry_meta(**kwargs):
     meta = mk_common_meta(**kwargs)
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["outlier_detection"] = mk_outlier_detection(**kwargs.get("outlier_detection", {}))
+    meta["background"] = mk_sky_background(**kwargs.get("background", {}))
 
     return meta
 
