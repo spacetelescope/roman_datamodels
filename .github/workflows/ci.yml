@@ -33,3 +33,8 @@ jobs:
     with:
       envs: |
         - linux: rad
+  test_with_romancal:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      envs: |
+        - linux: with_romancal
