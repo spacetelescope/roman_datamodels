@@ -242,7 +242,7 @@ def test_rdm_open_non_datamodel():
 def test_open_asn(tmp_path):
     romancal = pytest.importorskip("romancal")
 
-    fn = tmp_path / "test.asn"
+    fn = tmp_path / "test.json"
     asn = {
         "product": [
             {
