@@ -244,7 +244,7 @@ def test_open_asn(tmp_path):
 
     fn = tmp_path / "test.json"
     asn = {
-        "product": [
+        "products": [
             {
                 "members": [],
                 "name": "foo",
