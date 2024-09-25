@@ -8,6 +8,8 @@
 User Manual
 ===========
 
+added test text for docdiff
+
 .. toctree::
    :maxdepth: 2
 
