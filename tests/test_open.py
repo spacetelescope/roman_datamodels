@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import asdf
@@ -236,3 +237,23 @@ def test_rdm_open_non_datamodel():
 
     with pytest.raises(TypeError, match=r"Unknown datamodel type: .*"):
         rdm_open(Path(__file__).parent / "data" / "not_a_datamodel.asdf")
+
+
+def test_open_asn(tmp_path):
+    romancal = pytest.importorskip("romancal")
+
+    fn = tmp_path / "test.json"
+    asn = {
+        "products": [
+            {
+                "members": [],
+                "name": "foo",
+            }
+        ],
+    }
+    with open(fn, "w") as f:
+        json.dump(asn, f)
+
+    lib = datamodels.open(fn)
+
+    assert isinstance(lib, romancal.datamodels.ModelLibrary)
