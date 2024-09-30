@@ -659,6 +659,7 @@ def mk_ref_dark_meta(**kwargs):
 
     return meta
 
+
 def mk_ref_epsf_meta(**kwargs):
     """
     Create dummy metadata for ePSF reference file instances.
@@ -675,6 +676,7 @@ def mk_ref_epsf_meta(**kwargs):
     meta["pixel_y"] = kwargs.get("pixel_y", np.arange(1, 10, dtype=np.float32).tolist())
 
     return meta
+
 
 def mk_ref_distoriton_meta(**kwargs):
     """

@@ -6,7 +6,7 @@ from astropy.modeling import models
 
 from roman_datamodels import stnode
 
-from ._base import MESSAGE, save_node, NONUM
+from ._base import MESSAGE, NONUM, save_node
 from ._common_meta import (
     mk_ref_common,
     mk_ref_dark_meta,
@@ -51,7 +51,7 @@ def mk_ref_abvegaoffset_data(**kwargs):
     data = {}
     for optical_elem in OPT_ELEM:
         data[optical_elem] = {}
-        data[optical_elem]['abvega_offset'] = kwargs.get(optical_elem,{}).get("abvega_offset", float(NONUM))
+        data[optical_elem]["abvega_offset"] = kwargs.get(optical_elem, {}).get("abvega_offset", float(NONUM))
 
     return data
 
@@ -99,11 +99,13 @@ def mk_ref_apcorr_data(shape=(10,), **kwargs):
     data = {}
     for optical_elem in OPT_ELEM:
         data[optical_elem] = {}
-        data[optical_elem]['ap_corrections'] = kwargs.get(optical_elem,{}).get("ap_corrections", np.zeros(shape, dtype=np.float64))
-        data[optical_elem]['ee_fractions'] = kwargs.get(optical_elem,{}).get("ee_fractions", np.zeros(shape, dtype=np.float64))
-        data[optical_elem]['ee_radii'] = kwargs.get(optical_elem,{}).get("ee_radii", np.zeros(shape, dtype=np.float64))
-        data[optical_elem]['sky_background_rin'] = kwargs.get(optical_elem,{}).get("sky_background_rin", float(NONUM))
-        data[optical_elem]['sky_background_rout'] = kwargs.get(optical_elem,{}).get("sky_background_rout", float(NONUM))
+        data[optical_elem]["ap_corrections"] = kwargs.get(optical_elem, {}).get(
+            "ap_corrections", np.zeros(shape, dtype=np.float64)
+        )
+        data[optical_elem]["ee_fractions"] = kwargs.get(optical_elem, {}).get("ee_fractions", np.zeros(shape, dtype=np.float64))
+        data[optical_elem]["ee_radii"] = kwargs.get(optical_elem, {}).get("ee_radii", np.zeros(shape, dtype=np.float64))
+        data[optical_elem]["sky_background_rin"] = kwargs.get(optical_elem, {}).get("sky_background_rin", float(NONUM))
+        data[optical_elem]["sky_background_rout"] = kwargs.get(optical_elem, {}).get("sky_background_rout", float(NONUM))
 
     return data
 
@@ -257,9 +259,8 @@ def mk_epsf(*, shape=(3, 9, 361, 361), filepath=None, **kwargs):
     epsfref = stnode.EpsfRef()
     epsfref["meta"] = mk_ref_epsf_meta(**kwargs.get("meta", {}))
 
-    epsfref['psf'] = kwargs.get("psf", np.zeros(shape, dtype=np.float32))
-    epsfref['extended_psf'] = kwargs.get("extended_psf", np.zeros(shape[2:], dtype=np.float32))
-
+    epsfref["psf"] = kwargs.get("psf", np.zeros(shape, dtype=np.float32))
+    epsfref["extended_psf"] = kwargs.get("extended_psf", np.zeros(shape[2:], dtype=np.float32))
 
     return save_node(epsfref, filepath=filepath)
 
