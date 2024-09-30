@@ -349,7 +349,8 @@ def test_reference_file_model_base(tmp_path):
         if not found_common:
             raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
 
-# AB Vega Offest Correction tests
+
+# AB Vega Offset Correction tests
 def test_make_abvegaoffset():
     abvegaoffset = utils.mk_abvegaoffset()
     assert abvegaoffset.meta.reftype == "ABVEGAOFFSET"
@@ -358,6 +359,7 @@ def test_make_abvegaoffset():
     # Test validation
     abvegaoffset_model = datamodels.AbvegaoffsetRefModel(abvegaoffset)
     assert abvegaoffset_model.validate() is None
+
 
 # Aperture Correction tests
 def test_make_apcorr():
@@ -370,6 +372,7 @@ def test_make_apcorr():
     # Test validation
     apcorr_model = datamodels.ApcorrRefModel(apcorr)
     assert apcorr_model.validate() is None
+
 
 # Flat tests
 def test_make_flat():
@@ -447,12 +450,11 @@ def test_make_distortion():
 def test_make_epsf():
     epsf = utils.mk_epsf(shape=(2, 4, 8, 8))
     assert epsf.meta.reftype == "EPSF"
-    assert isinstance(epsf.meta['pixel_x'], list)
-    assert isinstance(epsf.meta['pixel_x'][0], float)
-    assert epsf['psf'].shape == (2, 4, 8, 8)
+    assert isinstance(epsf.meta["pixel_x"], list)
+    assert isinstance(epsf.meta["pixel_x"][0], float)
+    assert epsf["psf"].shape == (2, 4, 8, 8)
     print(f"XXX type(epsf['psf'][0,0,0,0]) = {type(epsf['psf'][0,0,0,0])}")
-    assert isinstance(epsf['psf'][0,0,0,0], (float, np.float32))
-
+    assert isinstance(epsf["psf"][0, 0, 0, 0], (float, np.float32))
 
     # Test validation
     epsf_model = datamodels.EpsfRefModel(epsf)
