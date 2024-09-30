@@ -6,20 +6,24 @@ from astropy.modeling import models
 
 from roman_datamodels import stnode
 
-from ._base import MESSAGE, save_node
+from ._base import MESSAGE, save_node, NONUM
 from ._common_meta import (
     mk_ref_common,
     mk_ref_dark_meta,
     mk_ref_distoriton_meta,
+    mk_ref_epsf_meta,
     mk_ref_pixelarea_meta,
     mk_ref_readnoise_meta,
     mk_ref_units_dn_meta,
 )
 
 __all__ = [
+    "mk_abvegaoffset",
+    "mk_apcorr",
     "mk_flat",
     "mk_dark",
     "mk_distortion",
+    "mk_epsf",
     "mk_gain",
     "mk_ipc",
     "mk_linearity",
@@ -32,6 +36,106 @@ __all__ = [
     "mk_superbias",
     "mk_refpix",
 ]
+
+OPT_ELEM = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK")
+
+
+def mk_ref_abvegaoffset_data(**kwargs):
+    """
+    Create dummy data for AB Vega Offset reference file instances.
+
+    Returns
+    -------
+    dict
+    """
+    data = {}
+    for optical_elem in OPT_ELEM:
+        data[optical_elem] = {}
+        data[optical_elem]['abvega_offset'] = kwargs.get(optical_elem,{}).get("abvega_offset", float(NONUM))
+
+    return data
+
+
+def mk_abvegaoffset(*, filepath=None, **kwargs):
+    """
+    Create a dummy AB Vega Offset instance (or file) with valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.AbvegaoffsetRef
+    """
+    abvegaref = stnode.AbvegaoffsetRef()
+    abvegaref["meta"] = mk_ref_common("ABVEGAOFFSET", **kwargs.get("meta", {}))
+    abvegaref["data"] = mk_ref_abvegaoffset_data(**kwargs.get("data", {}))
+
+    return save_node(abvegaref, filepath=filepath)
+
+
+def mk_ref_apcorr_data(shape=(10,), **kwargs):
+    """
+    Create dummy data for Aperture Correction reference file instances.
+
+    Parameters
+    ----------
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 1D, the first dimension is used.
+
+    Returns
+    -------
+    dict
+    """
+    if len(shape) > 1:
+        shape = shape[:1]
+
+        warnings.warn(f"{MESSAGE} assuming the first entry. The remaining are thrown out!", UserWarning)
+
+    data = {}
+    for optical_elem in OPT_ELEM:
+        data[optical_elem] = {}
+        data[optical_elem]['ap_corrections'] = kwargs.get(optical_elem,{}).get("ap_corrections", np.zeros(shape, dtype=np.float64))
+        data[optical_elem]['ee_fractions'] = kwargs.get(optical_elem,{}).get("ee_fractions", np.zeros(shape, dtype=np.float64))
+        data[optical_elem]['ee_radii'] = kwargs.get(optical_elem,{}).get("ee_radii", np.zeros(shape, dtype=np.float64))
+        data[optical_elem]['sky_background_rin'] = kwargs.get(optical_elem,{}).get("sky_background_rin", float(NONUM))
+        data[optical_elem]['sky_background_rout'] = kwargs.get(optical_elem,{}).get("sky_background_rout", float(NONUM))
+
+    return data
+
+
+def mk_apcorr(*, shape=(10,), filepath=None, **kwargs):
+    """
+    Create a dummy Aperture Correction instance (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 1D, the first dimension is used.
+
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.ApcorrRef
+    """
+    if len(shape) > 1:
+        shape = shape[:1]
+
+        warnings.warn(f"{MESSAGE} assuming the first entry. The remaining is thrown out!", UserWarning)
+
+    apcorrref = stnode.ApcorrRef()
+    apcorrref["meta"] = mk_ref_common("APCORR", **kwargs.get("meta", {}))
+    apcorrref["data"] = mk_ref_apcorr_data(shape, **kwargs.get("data", {}))
+
+    return save_node(apcorrref, filepath=filepath)
 
 
 def mk_flat(*, shape=(4096, 4096), filepath=None, **kwargs):
@@ -126,6 +230,38 @@ def mk_distortion(*, filepath=None, **kwargs):
     )
 
     return save_node(distortionref, filepath=filepath)
+
+
+def mk_epsf(*, shape=(3, 9, 361, 361), filepath=None, **kwargs):
+    """
+    Create a dummy ePSF instance (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+        If shape is greater than 1D, the first dimension is used.
+
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.EpsfRef
+    """
+    if len(shape) != 4:
+        shape = (3, 9, 361, 361)
+        warnings.warn("Input shape must be 4D. Defaulting to (3, 9, 361, 361)")
+
+    epsfref = stnode.EpsfRef()
+    epsfref["meta"] = mk_ref_epsf_meta(**kwargs.get("meta", {}))
+
+    epsfref['psf'] = kwargs.get("psf", np.zeros(shape, dtype=np.float32))
+    epsfref['extended_psf'] = kwargs.get("extended_psf", np.zeros(shape[2:], dtype=np.float32))
+
+
+    return save_node(epsfref, filepath=filepath)
 
 
 def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
@@ -340,9 +476,7 @@ def _mk_phot_table(**kwargs):
     """
     Create the phot_table for the photom reference file.
     """
-    entries = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK")
-
-    return {entry: _mk_phot_table_entry(entry, **kwargs.get(entry, {})) for entry in entries}
+    return {entry: _mk_phot_table_entry(entry, **kwargs.get(entry, {})) for entry in OPT_ELEM}
 
 
 def mk_wfi_img_photom(*, filepath=None, **kwargs):

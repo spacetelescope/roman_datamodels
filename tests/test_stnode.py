@@ -31,6 +31,7 @@ def test_generated_node_classes(tag):
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_copy(node_class):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
@@ -49,6 +50,7 @@ def test_copy(node_class):
 
 @pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_deepcopy_model(node_class):
     node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
@@ -90,6 +92,7 @@ def test_wfi_mode():
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_serialization(node_class, tmp_path):
     file_path = tmp_path / "test.asdf"
