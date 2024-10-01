@@ -254,7 +254,8 @@ def mk_velocity_aberration(**kwargs):
     vab = stnode.VelocityAberration()
     vab["ra_reference"] = kwargs.get("ra_reference", NONUM)
     vab["dec_reference"] = kwargs.get("dec_reference", NONUM)
-    vab["scale_factor"] = kwargs.get("scale_factor", NONUM)
+    vab["scale_factor"] = kwargs.get("scale_factor", 1)
+
 
     return vab
 
