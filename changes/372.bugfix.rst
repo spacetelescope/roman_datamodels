@@ -1,0 +1,1 @@
+Only use ``roman.meta`` attributes for crds parameter selection.
