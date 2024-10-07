@@ -321,7 +321,7 @@ def mk_ramp_fit_output(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     rampfitoutput["sigslope"] = kwargs.get(
         "sigslope", np.zeros(shape, dtype=np.float32)
     )
-    rampfitoutput["yint"] = kwargs.get("yint", np.zeros(shape, dtype=np.float32)
+    rampfitoutput["yint"] = kwargs.get("yint", np.zeros(shape, dtype=np.float32))
     rampfitoutput["sigyint"] = kwargs.get("sigyint", np.zeros(shape, dtype=np.float32))
     rampfitoutput["pedestal"] = kwargs.get(
         "pedestal", np.zeros(shape[1:], dtype=np.float32)
@@ -329,7 +329,7 @@ def mk_ramp_fit_output(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
     rampfitoutput["weights"] = kwargs.get("weights", np.zeros(shape, dtype=np.float32))
     rampfitoutput["crmag"] = kwargs.get("crmag", np.zeros(shape, dtype=np.float32))
     rampfitoutput["var_poisson"] = kwargs.get(
-        "var_poisson", np.zeros(shape, dtype=np.float32))
+        "var_poisson", np.zeros(shape, dtype=np.float32)
     )
     rampfitoutput["var_rnoise"] = kwargs.get(
         "var_rnoise", np.zeros(shape, dtype=np.float32)
