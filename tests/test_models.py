@@ -683,16 +683,12 @@ def test_make_level3_mosaic():
     wfi_mosaic = utils.mk_level3_mosaic(shape=(8, 8))
 
     assert wfi_mosaic.data.dtype == np.float32
-    assert wfi_mosaic.data.unit == u.MJy / u.sr
 
     assert wfi_mosaic.err.dtype == np.float32
-    assert wfi_mosaic.err.unit == u.MJy / u.sr
     assert wfi_mosaic.context.dtype == np.uint32
     assert wfi_mosaic.weight.dtype == np.float32
     assert wfi_mosaic.var_poisson.dtype == np.float32
-    assert wfi_mosaic.var_poisson.unit == u.MJy**2 / u.sr**2
     assert wfi_mosaic.var_rnoise.dtype == np.float32
-    assert wfi_mosaic.var_rnoise.unit == u.MJy**2 / u.sr**2
     assert wfi_mosaic.var_flat.dtype == np.float32
     assert isinstance(wfi_mosaic.cal_logs[0], str)
 

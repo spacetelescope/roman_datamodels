@@ -185,20 +185,14 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
 
     wfi_mosaic = stnode.WfiMosaic()
     wfi_mosaic["meta"] = mk_mosaic_meta(**kwargs.get("meta", {}))
-    wfi_mosaic["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy / u.sr, dtype=np.float32))
-    wfi_mosaic["err"] = kwargs.get("err", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy / u.sr, dtype=np.float32))
+    wfi_mosaic["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
+    wfi_mosaic["err"] = kwargs.get("err", np.zeros(shape, dtype=np.float32))
     wfi_mosaic["context"] = kwargs.get("context", np.zeros((n_images,) + shape, dtype=np.uint32))
     wfi_mosaic["weight"] = kwargs.get("weight", np.zeros(shape, dtype=np.float32))
 
-    wfi_mosaic["var_poisson"] = kwargs.get(
-        "var_poisson", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy**2 / u.sr**2, dtype=np.float32)
-    )
-    wfi_mosaic["var_rnoise"] = kwargs.get(
-        "var_rnoise", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy**2 / u.sr**2, dtype=np.float32)
-    )
-    wfi_mosaic["var_flat"] = kwargs.get(
-        "var_flat", u.Quantity(np.zeros(shape, dtype=np.float32), u.MJy**2 / u.sr**2, dtype=np.float32)
-    )
+    wfi_mosaic["var_poisson"] = kwargs.get("var_poisson", np.zeros(shape, dtype=np.float32))
+    wfi_mosaic["var_rnoise"] = kwargs.get("var_rnoise", np.zeros(shape, dtype=np.float32))
+    wfi_mosaic["var_flat"] = kwargs.get("var_flat", np.zeros(shape, dtype=np.float32))
     wfi_mosaic["cal_logs"] = mk_cal_logs(**kwargs)
 
     wfi_mosaic["meta"]["wcs"] = mk_wcs()
