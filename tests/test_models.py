@@ -191,13 +191,11 @@ def test_make_ramp():
 
     assert ramp.meta.exposure.type == "WFI_IMAGE"
     assert ramp.data.dtype == np.float32
-    assert ramp.data.unit == u.DN
     assert ramp.pixeldq.dtype == np.uint32
     assert ramp.pixeldq.shape == (8, 8)
     assert ramp.groupdq.dtype == np.uint8
     assert ramp.err.dtype == np.float32
     assert ramp.err.shape == (2, 8, 8)
-    assert ramp.err.unit == u.DN
 
     # Test validation
     ramp = datamodels.RampModel(ramp)
@@ -210,22 +208,14 @@ def test_make_ramp_fit_output():
 
     assert rampfitoutput.meta.exposure.type == "WFI_IMAGE"
     assert rampfitoutput.slope.dtype == np.float32
-    assert rampfitoutput.slope.unit == u.electron / u.s
     assert rampfitoutput.sigslope.dtype == np.float32
-    assert rampfitoutput.sigslope.unit == u.electron / u.s
     assert rampfitoutput.yint.dtype == np.float32
-    assert rampfitoutput.yint.unit == u.electron
     assert rampfitoutput.sigyint.dtype == np.float32
-    assert rampfitoutput.sigyint.unit == u.electron
     assert rampfitoutput.pedestal.dtype == np.float32
-    assert rampfitoutput.pedestal.unit == u.electron
     assert rampfitoutput.weights.dtype == np.float32
     assert rampfitoutput.crmag.dtype == np.float32
-    assert rampfitoutput.crmag.unit == u.electron
     assert rampfitoutput.var_poisson.dtype == np.float32
-    assert rampfitoutput.var_poisson.unit == u.electron**2 / u.s**2
     assert rampfitoutput.var_rnoise.dtype == np.float32
-    assert rampfitoutput.var_rnoise.unit == u.electron**2 / u.s**2
     assert rampfitoutput.var_poisson.shape == (2, 8, 8)
     assert rampfitoutput.pedestal.shape == (8, 8)
 
@@ -615,7 +605,6 @@ def test_make_level1_science_raw():
     wfi_science_raw = utils.mk_level1_science_raw(shape=shape, dq=True)
 
     assert wfi_science_raw.data.dtype == np.uint16
-    assert wfi_science_raw.data.unit == u.DN
 
     # Test validation
     wfi_science_raw_model = datamodels.ScienceRawModel(wfi_science_raw)
@@ -627,28 +616,16 @@ def test_make_level2_image():
     wfi_image = utils.mk_level2_image(shape=(8, 8))
 
     assert wfi_image.data.dtype == np.float32
-    assert wfi_image.data.unit == u.DN / u.s
     assert wfi_image.dq.dtype == np.uint32
     assert wfi_image.err.dtype == np.float32
-    assert wfi_image.err.unit == u.DN / u.s
     assert wfi_image.var_poisson.dtype == np.float32
-    assert wfi_image.var_poisson.unit == u.DN**2 / u.s**2
     assert wfi_image.var_rnoise.dtype == np.float32
-    assert wfi_image.var_rnoise.unit == u.DN**2 / u.s**2
     assert wfi_image.var_flat.dtype == np.float32
-    assert wfi_image.var_flat.unit == u.DN**2 / u.s**2
     assert isinstance(wfi_image.cal_logs[0], str)
 
     # Test validation
     wfi_image_model = datamodels.ImageModel(wfi_image)
     assert wfi_image_model.validate() is None
-
-    # Test Physical units
-    wfi_image_model.data = wfi_image_model.data.value * (u.MJy / u.sr)
-    wfi_image_model.err = wfi_image_model.err.value * (u.MJy / u.sr)
-    wfi_image_model.var_poisson = wfi_image_model.var_poisson.value * (u.MJy**2 / u.sr**2)
-    wfi_image_model.var_rnoise = wfi_image_model.var_rnoise.value * (u.MJy**2 / u.sr**2)
-    wfi_image_model.var_flat = wfi_image_model.var_flat.value * (u.MJy**2 / u.sr**2)
 
     # Test validation
     assert wfi_image_model.validate() is None
@@ -981,10 +958,10 @@ def test_datamodel_save_filename(tmp_path):
 @pytest.mark.parametrize(
     "model_class, expect_success",
     [
-        (datamodels.FpsModel, True),
+        (datamodels.FpsModel, False),  # will no longer succeed until we implement a wrapper to remove units
         (datamodels.RampModel, True),
         (datamodels.ScienceRawModel, True),
-        (datamodels.TvacModel, True),
+        (datamodels.TvacModel, False),  # will no longer succeed until we implement a wrapper to remove units
         (datamodels.MosaicModel, False),
     ],
 )
@@ -1006,7 +983,7 @@ def test_rampmodel_from_science_raw(tmp_path, model_class, expect_success):
             assert new_ramp.meta.calibration_software_version == model.meta.calibration_software_version
 
     else:
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, ValidationError)):
             datamodels.RampModel.from_science_raw(model)
 
 
