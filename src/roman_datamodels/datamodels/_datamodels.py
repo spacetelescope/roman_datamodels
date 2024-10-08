@@ -227,12 +227,24 @@ class FlatRefModel(_DataModel):
     _node_type = stnode.FlatRef
 
 
+class AbvegaoffsetRefModel(_DataModel):
+    _node_type = stnode.AbvegaoffsetRef
+
+
+class ApcorrRefModel(_DataModel):
+    _node_type = stnode.ApcorrRef
+
+
 class DarkRefModel(_DataModel):
     _node_type = stnode.DarkRef
 
 
 class DistortionRefModel(_DataModel):
     _node_type = stnode.DistortionRef
+
+
+class EpsfRefModel(_DataModel):
+    _node_type = stnode.EpsfRef
 
 
 class GainRefModel(_DataModel):

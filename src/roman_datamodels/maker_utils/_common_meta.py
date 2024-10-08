@@ -660,6 +660,24 @@ def mk_ref_dark_meta(**kwargs):
     return meta
 
 
+def mk_ref_epsf_meta(**kwargs):
+    """
+    Create dummy metadata for ePSF reference file instances.
+
+    Returns
+    -------
+    dict (follows reference_file/ref_common-1.0.0 schema + ePSF reference file metadata)
+    """
+    meta = mk_ref_common("EPSF", **kwargs)
+    meta["oversample"] = kwargs.get("oversample", NONUM)
+    meta["effective_temperature"] = kwargs.get("effective_temperature", np.arange(1, 10).tolist())
+    meta["defocus"] = kwargs.get("defocus", np.arange(1, 10).tolist())
+    meta["pixel_x"] = kwargs.get("pixel_x", np.arange(1, 10, dtype=np.float32).tolist())
+    meta["pixel_y"] = kwargs.get("pixel_y", np.arange(1, 10, dtype=np.float32).tolist())
+
+    return meta
+
+
 def mk_ref_distoriton_meta(**kwargs):
     """
     Create dummy metadata for distortion reference file instances.
