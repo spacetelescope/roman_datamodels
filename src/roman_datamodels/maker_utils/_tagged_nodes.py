@@ -1,5 +1,3 @@
-from astropy import units as u
-
 from roman_datamodels import stnode
 
 from ._base import NONUM
@@ -15,12 +13,12 @@ def mk_photometry(**kwargs):
     roman_datamodels.stnode.Photometry
     """
     phot = stnode.Photometry()
-    phot["conversion_microjanskys"] = kwargs.get("conversion_microjanskys", NONUM * u.uJy / u.arcsec**2)
-    phot["conversion_megajanskys"] = kwargs.get("conversion_megajanskys", NONUM * u.MJy / u.sr)
-    phot["pixelarea_steradians"] = kwargs.get("pixelarea_steradians", NONUM * u.sr)
-    phot["pixelarea_arcsecsq"] = kwargs.get("pixelarea_arcsecsq", NONUM * u.arcsec**2)
-    phot["conversion_microjanskys_uncertainty"] = kwargs.get("conversion_microjanskys_uncertainty", NONUM * u.uJy / u.arcsec**2)
-    phot["conversion_megajanskys_uncertainty"] = kwargs.get("conversion_megajanskys_uncertainty", NONUM * u.MJy / u.sr)
+    phot["conversion_microjanskys"] = kwargs.get("conversion_microjanskys", float(NONUM))
+    phot["conversion_megajanskys"] = kwargs.get("conversion_megajanskys", float(NONUM))
+    phot["pixelarea_steradians"] = kwargs.get("pixelarea_steradians", float(NONUM))
+    phot["pixelarea_arcsecsq"] = kwargs.get("pixelarea_arcsecsq", float(NONUM))
+    phot["conversion_microjanskys_uncertainty"] = kwargs.get("conversion_microjanskys_uncertainty", float(NONUM))
+    phot["conversion_megajanskys_uncertainty"] = kwargs.get("conversion_megajanskys_uncertainty", float(NONUM))
 
     return phot
 
