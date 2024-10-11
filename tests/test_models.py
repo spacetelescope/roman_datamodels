@@ -53,6 +53,7 @@ def test_datamodel_exists(name):
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_node_type_matches_model(model):
     """
@@ -349,6 +350,30 @@ def test_reference_file_model_base(tmp_path):
             raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
 
 
+# AB Vega Offset Correction tests
+def test_make_abvegaoffset():
+    abvegaoffset = utils.mk_abvegaoffset()
+    assert abvegaoffset.meta.reftype == "ABVEGAOFFSET"
+    assert isinstance(abvegaoffset.data.GRISM["abvega_offset"], float)
+
+    # Test validation
+    abvegaoffset_model = datamodels.AbvegaoffsetRefModel(abvegaoffset)
+    assert abvegaoffset_model.validate() is None
+
+
+# Aperture Correction tests
+def test_make_apcorr():
+    apcorr = utils.mk_apcorr()
+    assert apcorr.meta.reftype == "APCORR"
+    assert isinstance(apcorr.data.DARK["sky_background_rin"], float)
+    assert isinstance(apcorr.data.DARK["ap_corrections"], np.ndarray)
+    assert isinstance(apcorr.data.DARK["ap_corrections"][0], float)
+
+    # Test validation
+    apcorr_model = datamodels.ApcorrRefModel(apcorr)
+    assert apcorr_model.validate() is None
+
+
 # Flat tests
 def test_make_flat():
     flat = utils.mk_flat(shape=(8, 8))
@@ -419,6 +444,21 @@ def test_make_distortion():
     # Test validation
     distortion_model = datamodels.DistortionRefModel(distortion)
     assert distortion_model.validate() is None
+
+
+# ePSF tests
+def test_make_epsf():
+    epsf = utils.mk_epsf(shape=(2, 4, 8, 8))
+    assert epsf.meta.reftype == "EPSF"
+    assert isinstance(epsf.meta["pixel_x"], list)
+    assert isinstance(epsf.meta["pixel_x"][0], float)
+    assert epsf["psf"].shape == (2, 4, 8, 8)
+    print(f"XXX type(epsf['psf'][0,0,0,0]) = {type(epsf['psf'][0,0,0,0])}")
+    assert isinstance(epsf["psf"][0, 0, 0, 0], (float, np.float32))
+
+    # Test validation
+    epsf_model = datamodels.EpsfRefModel(epsf)
+    assert epsf_model.validate() is None
 
 
 # Gain tests
@@ -903,6 +943,7 @@ def test_model_validate_without_save():
 @pytest.mark.parametrize("node", datamodels.MODEL_REGISTRY.keys())
 @pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_model_only_init_with_correct_node(node, correct, model):
     """
@@ -945,6 +986,7 @@ def test_ramp_from_science_raw():
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_datamodel_construct_like_from_like(model):
     """
