@@ -26,6 +26,7 @@ def test_maker_utility_implemented(node_class):
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_instance_valid(node_class):
     """
@@ -39,6 +40,7 @@ def test_instance_valid(node_class):
 
 @pytest.mark.parametrize("node_class", [c for c in stnode.NODE_CLASSES if issubclass(c, stnode.TaggedObjectNode)])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_no_extra_fields(node_class, manifest):
     instance = maker_utils.mk_node(node_class, shape=(8, 8, 8))
@@ -100,6 +102,7 @@ def test_deprecated():
 
 @pytest.mark.parametrize("model_class", [mdl for mdl in maker_utils.NODE_REGISTRY])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_datamodel_maker(model_class):
     """
@@ -120,6 +123,7 @@ def test_datamodel_maker(model_class):
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_override_data(node_class):
     """
