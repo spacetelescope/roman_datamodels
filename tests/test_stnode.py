@@ -212,8 +212,8 @@ def test_node_new_attribute_assignment():
     exp = stnode.Exposure()
     with pytest.raises(AttributeError):
         exp.bozo = 0
-    exp.ngroups = 5
-    assert exp.ngroups == 5
+    exp.nresultants = 5
+    assert exp.nresultants == 5
     # Test patternProperties attribute case
     photmod = utils.mk_wfi_img_photom()
     phottab = photmod.phot_table

@@ -14,7 +14,7 @@ from ._common_meta import (
     mk_mosaic_catalog_meta,
     mk_mosaic_meta,
     mk_msos_stack_meta,
-    mk_photometry_meta,
+    mk_l2_meta,
     mk_wcs,
 )
 from ._tagged_nodes import mk_cal_logs
@@ -107,20 +107,20 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
 
     wfi_image = stnode.WfiImage()
 
-    wfi_image["meta"] = mk_photometry_meta(**kwargs.get("meta", {}))
+    wfi_image["meta"] = mk_l2_meta(**kwargs.get("meta", {}))
 
     # add border reference pixel arrays
     wfi_image["border_ref_pix_left"] = kwargs.get(
-        "border_ref_pix_left", u.Quantity(np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
+        "border_ref_pix_left", u.Quantity(np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.uint16)
     )
     wfi_image["border_ref_pix_right"] = kwargs.get(
-        "border_ref_pix_right", u.Quantity(np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
+        "border_ref_pix_right", u.Quantity(np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.uint16)
     )
     wfi_image["border_ref_pix_top"] = kwargs.get(
-        "border_ref_pix_top", u.Quantity(np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
+        "border_ref_pix_top", u.Quantity(np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.uint16)
     )
     wfi_image["border_ref_pix_bottom"] = kwargs.get(
-        "border_ref_pix_bottom", u.Quantity(np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.float32)
+        "border_ref_pix_bottom", u.Quantity(np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32), u.DN, dtype=np.uint16)
     )
 
     # and their dq arrays
@@ -145,7 +145,6 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     wfi_image["var_flat"] = kwargs.get(
         "var_flat", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN**2 / u.s**2, dtype=np.float32)
     )
-    wfi_image["cal_logs"] = mk_cal_logs(**kwargs)
 
     wfi_image["meta"]["wcs"] = mk_wcs()
 
