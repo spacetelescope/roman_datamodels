@@ -10,8 +10,7 @@ from roman_datamodels import stnode
 
 from ._base import NONUM, NOSTR
 from ._basic_meta import mk_basic_meta
-from ._tagged_nodes import mk_photometry, mk_resample, mk_source_detection, mk_cal_logs
-
+from ._tagged_nodes import mk_cal_logs, mk_photometry, mk_resample, mk_source_detection
 
 
 def mk_exposure(**kwargs):
@@ -192,9 +191,9 @@ def mk_visit(**kwargs):
     roman_datamodels.stnode.Visit
     """
     visit = stnode.Visit()
-    visit["dither"] = kwargs.get("dither", {"primary_name": None,
-                                            "subpixel_name": None,
-                                            "executed_pattern": np.arange(1, 10).tolist()})
+    visit["dither"] = kwargs.get(
+        "dither", {"primary_name": None, "subpixel_name": None, "executed_pattern": np.arange(1, 10).tolist()}
+    )
     visit["engineering_quality"] = kwargs.get("engineering_quality", "OK")
     visit["pointing_engineering_source"] = kwargs.get("pointing_engineering_source", "CALCULATED")
     visit["type"] = kwargs.get("type", "PRIME_TARGETED_FIXED")
@@ -256,9 +255,6 @@ def mk_pointing(**kwargs):
     point["target_dec"] = kwargs.get("target_dec", NONUM)
 
     return point
-
-
-
 
 
 def mk_velocity_aberration(**kwargs):
@@ -605,6 +601,7 @@ def mk_statistics(**kwargs):
     stats["good_pixel_fraction"] = kwargs.get("good_pixel_fraction", NONUM)
 
     return stats
+
 
 def mk_ref_common(reftype_, **kwargs):
     """

@@ -1,9 +1,6 @@
-from astropy import units as u
-
 from roman_datamodels import stnode
 
 from ._base import NONUM
-
 
 
 def mk_photometry(**kwargs):
@@ -21,6 +18,7 @@ def mk_photometry(**kwargs):
     phot["pixel_area"] = kwargs.get("pixel_area", NONUM)
 
     return phot
+
 
 def mk_resample(**kwargs):
     """
