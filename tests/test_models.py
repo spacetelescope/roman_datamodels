@@ -777,7 +777,7 @@ def test_append_individual_image_meta_level3_mosaic():
     # Test that each image entry in the program table contains the correct (different) PI name
     assert wfi_mosaic_model.meta.individual_image_meta.program["investigator_name"][0] == "Nancy"
     assert wfi_mosaic_model.meta.individual_image_meta.program["investigator_name"][1] == "Grace"
-    assert wfi_mosaic_model.meta.individual_image_meta.program["investigator_name"][2] == "Roman"
+    assert wfi_mosaic_model.meta.individual_image_meta.program["investigator_name"][2] == "Roman"  
 
     # Test that the mosaic validates with IIM filled
     assert wfi_mosaic_model.validate() is None
