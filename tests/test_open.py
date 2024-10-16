@@ -4,7 +4,6 @@ from pathlib import Path
 import asdf
 import numpy as np
 import pytest
-from astropy import units as u
 from astropy.io import fits
 from numpy.testing import assert_array_equal
 
@@ -84,12 +83,12 @@ def test_invalid_input():
 
 def test_memmap(tmp_path):
     data = np.zeros(
-            (
-                400,
-                400,
-            ),
-            dtype=np.float32,
-        )
+        (
+            400,
+            400,
+        ),
+        dtype=np.float32,
+    )
     new_value = 1.0
     new_data = data.copy()
     new_data[6, 19] = new_value
@@ -133,12 +132,12 @@ def test_memmap(tmp_path):
 )
 def test_no_memmap(tmp_path, kwargs):
     data = np.zeros(
-            (
-                400,
-                400,
-            ),
-            dtype=np.float32,
-        )
+        (
+            400,
+            400,
+        ),
+        dtype=np.float32,
+    )
     new_value = 1.0
     new_data = data.copy()
     new_data[6, 19] = new_value
@@ -175,6 +174,7 @@ def test_no_memmap(tmp_path, kwargs):
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_node_round_trip(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"
@@ -187,6 +187,7 @@ def test_node_round_trip(tmp_path, node_class):
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_opening_model(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"

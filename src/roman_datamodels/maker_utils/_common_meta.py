@@ -443,6 +443,7 @@ def mk_ref_file(**kwargs):
     ref_file["linearity"] = kwargs.get("linearity", "N/A")
     ref_file["mask"] = kwargs.get("mask", "N/A")
     ref_file["readnoise"] = kwargs.get("readnoise", "N/A")
+    ref_file["refpix"] = kwargs.get("refpix", "N/A")
     ref_file["saturation"] = kwargs.get("saturation", "N/A")
     ref_file["photom"] = kwargs.get("photom", "N/A")
     ref_file["crds"] = kwargs.get("crds", {"sw_version": "12.3.1", "context_used": "roman_0815.pmap"})
@@ -656,6 +657,24 @@ def mk_ref_dark_meta(**kwargs):
     """
     meta = mk_ref_common("DARK", **kwargs)
     meta["exposure"] = _mk_ref_dark_exposure(**kwargs.get("exposure", {}))
+
+    return meta
+
+
+def mk_ref_epsf_meta(**kwargs):
+    """
+    Create dummy metadata for ePSF reference file instances.
+
+    Returns
+    -------
+    dict (follows reference_file/ref_common-1.0.0 schema + ePSF reference file metadata)
+    """
+    meta = mk_ref_common("EPSF", **kwargs)
+    meta["oversample"] = kwargs.get("oversample", NONUM)
+    meta["effective_temperature"] = kwargs.get("effective_temperature", np.arange(1, 10).tolist())
+    meta["defocus"] = kwargs.get("defocus", np.arange(1, 10).tolist())
+    meta["pixel_x"] = kwargs.get("pixel_x", np.arange(1, 10, dtype=np.float32).tolist())
+    meta["pixel_y"] = kwargs.get("pixel_y", np.arange(1, 10, dtype=np.float32).tolist())
 
     return meta
 
