@@ -743,8 +743,6 @@ def test_make_level3_mosaic():
 
 
 # WFI Level 3 Mosaic tests
-# This is skipped until Mosaic schemas are updated
-@pytest.mark.skip
 def test_append_individual_image_meta_level3_mosaic():
     wfi_mosaic = utils.mk_level3_mosaic(shape=(8, 8))
     wfi_mosaic_model = datamodels.MosaicModel(wfi_mosaic)

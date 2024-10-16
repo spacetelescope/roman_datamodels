@@ -439,7 +439,7 @@ def mk_common_meta(**kwargs):
     meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
     meta["velocity_aberration"] = mk_velocity_aberration(**kwargs.get("velocity_aberration", {}))
     meta["visit"] = mk_visit(**kwargs.get("visit", {}))
-    meta["wcs_info"] = mk_wcsinfo(**kwargs.get("wcs_info", {}))
+    meta["wcsinfo"] = mk_wcsinfo(**kwargs.get("wcsinfo", {}))
 
     return meta
 
@@ -837,19 +837,22 @@ def mk_individual_image_meta(**kwargs):
     table_dct = {"dummy": [NONUM]}
 
     imm["basic"] = kwargs.get("basic", QTable(table_dct))
-    imm["aperture"] = kwargs.get("aperture", QTable(table_dct))
+    imm["background"] = kwargs.get("background", QTable(table_dct))
+    imm["cal_logs"] = kwargs.get("cal_logs", QTable(table_dct))
     imm["cal_step"] = kwargs.get("cal_step", QTable(table_dct))
     imm["coordinates"] = kwargs.get("coordinates", QTable(table_dct))
     imm["ephemeris"] = kwargs.get("ephemeris", QTable(table_dct))
     imm["exposure"] = kwargs.get("exposure", QTable(table_dct))
-    imm["guidestar"] = kwargs.get("guidestar", QTable(table_dct))
+    imm["guide_star"] = kwargs.get("guide_star", QTable(table_dct))
     imm["instrument"] = kwargs.get("instrument", QTable(table_dct))
     imm["observation"] = kwargs.get("observation", QTable(table_dct))
+    imm["outlier_detection"] = kwargs.get("outlier_detection", QTable(table_dct))
     imm["photometry"] = kwargs.get("photometry", QTable(table_dct))
     imm["pointing"] = kwargs.get("pointing", QTable(table_dct))
     imm["program"] = kwargs.get("program", QTable(table_dct))
+    imm["rcs"] = kwargs.get("rcs", QTable(table_dct))
     imm["ref_file"] = kwargs.get("ref_file", QTable(table_dct))
-    imm["target"] = kwargs.get("target", QTable(table_dct))
+    imm["source_detection"] = kwargs.get("source_detection", QTable(table_dct))
     imm["velocity_aberration"] = kwargs.get("velocity_aberration", QTable(table_dct))
     imm["visit"] = kwargs.get("visit", QTable(table_dct))
     imm["wcsinfo"] = kwargs.get("wcsinfo", QTable(table_dct))
