@@ -1,9 +1,9 @@
+import json
 from pathlib import Path
 
 import asdf
 import numpy as np
 import pytest
-from astropy import units as u
 from astropy.io import fits
 from numpy.testing import assert_array_equal
 
@@ -55,7 +55,7 @@ def test_path_input(tmp_path):
 def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    data = u.Quantity(np.random.default_rng(42).uniform(size=(4, 4)).astype(np.float32), u.DN / u.s, dtype=np.float32)
+    data = np.random.default_rng(42).uniform(size=(4, 4)).astype(np.float32)
 
     with asdf.AsdfFile() as af:
         af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
@@ -82,18 +82,14 @@ def test_invalid_input():
 
 
 def test_memmap(tmp_path):
-    data = u.Quantity(
-        np.zeros(
-            (
-                400,
-                400,
-            ),
-            dtype=np.float32,
+    data = np.zeros(
+        (
+            400,
+            400,
         ),
-        u.DN / u.s,
         dtype=np.float32,
     )
-    new_value = u.Quantity(1.0, u.DN / u.s, dtype=np.float32)
+    new_value = 1.0
     new_data = data.copy()
     new_data[6, 19] = new_value
 
@@ -135,18 +131,14 @@ def test_memmap(tmp_path):
     ],
 )
 def test_no_memmap(tmp_path, kwargs):
-    data = u.Quantity(
-        np.zeros(
-            (
-                400,
-                400,
-            ),
-            dtype=np.float32,
+    data = np.zeros(
+        (
+            400,
+            400,
         ),
-        u.DN / u.s,
         dtype=np.float32,
     )
-    new_value = u.Quantity(1.0, u.DN / u.s, dtype=np.float32)
+    new_value = 1.0
     new_data = data.copy()
     new_data[6, 19] = new_value
 
@@ -182,6 +174,7 @@ def test_no_memmap(tmp_path, kwargs):
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_node_round_trip(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"
@@ -194,6 +187,7 @@ def test_node_round_trip(tmp_path, node_class):
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_opening_model(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"
@@ -236,3 +230,23 @@ def test_rdm_open_non_datamodel():
 
     with pytest.raises(TypeError, match=r"Unknown datamodel type: .*"):
         rdm_open(Path(__file__).parent / "data" / "not_a_datamodel.asdf")
+
+
+def test_open_asn(tmp_path):
+    romancal = pytest.importorskip("romancal")
+
+    fn = tmp_path / "test.json"
+    asn = {
+        "products": [
+            {
+                "members": [],
+                "name": "foo",
+            }
+        ],
+    }
+    with open(fn, "w") as f:
+        json.dump(asn, f)
+
+    lib = datamodels.open(fn)
+
+    assert isinstance(lib, romancal.datamodels.ModelLibrary)

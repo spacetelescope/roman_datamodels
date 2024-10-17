@@ -53,6 +53,7 @@ def test_datamodel_exists(name):
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_node_type_matches_model(model):
     """
@@ -191,13 +192,11 @@ def test_make_ramp():
 
     assert ramp.meta.exposure.type == "WFI_IMAGE"
     assert ramp.data.dtype == np.float32
-    assert ramp.data.unit == u.DN
     assert ramp.pixeldq.dtype == np.uint32
     assert ramp.pixeldq.shape == (8, 8)
     assert ramp.groupdq.dtype == np.uint8
     assert ramp.err.dtype == np.float32
     assert ramp.err.shape == (2, 8, 8)
-    assert ramp.err.unit == u.DN
 
     # Test validation
     ramp = datamodels.RampModel(ramp)
@@ -210,22 +209,14 @@ def test_make_ramp_fit_output():
 
     assert rampfitoutput.meta.exposure.type == "WFI_IMAGE"
     assert rampfitoutput.slope.dtype == np.float32
-    assert rampfitoutput.slope.unit == u.electron / u.s
     assert rampfitoutput.sigslope.dtype == np.float32
-    assert rampfitoutput.sigslope.unit == u.electron / u.s
     assert rampfitoutput.yint.dtype == np.float32
-    assert rampfitoutput.yint.unit == u.electron
     assert rampfitoutput.sigyint.dtype == np.float32
-    assert rampfitoutput.sigyint.unit == u.electron
     assert rampfitoutput.pedestal.dtype == np.float32
-    assert rampfitoutput.pedestal.unit == u.electron
     assert rampfitoutput.weights.dtype == np.float32
     assert rampfitoutput.crmag.dtype == np.float32
-    assert rampfitoutput.crmag.unit == u.electron
     assert rampfitoutput.var_poisson.dtype == np.float32
-    assert rampfitoutput.var_poisson.unit == u.electron**2 / u.s**2
     assert rampfitoutput.var_rnoise.dtype == np.float32
-    assert rampfitoutput.var_rnoise.unit == u.electron**2 / u.s**2
     assert rampfitoutput.var_poisson.shape == (2, 8, 8)
     assert rampfitoutput.pedestal.shape == (8, 8)
 
@@ -349,6 +340,30 @@ def test_reference_file_model_base(tmp_path):
             raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
 
 
+# AB Vega Offset Correction tests
+def test_make_abvegaoffset():
+    abvegaoffset = utils.mk_abvegaoffset()
+    assert abvegaoffset.meta.reftype == "ABVEGAOFFSET"
+    assert isinstance(abvegaoffset.data.GRISM["abvega_offset"], float)
+
+    # Test validation
+    abvegaoffset_model = datamodels.AbvegaoffsetRefModel(abvegaoffset)
+    assert abvegaoffset_model.validate() is None
+
+
+# Aperture Correction tests
+def test_make_apcorr():
+    apcorr = utils.mk_apcorr()
+    assert apcorr.meta.reftype == "APCORR"
+    assert isinstance(apcorr.data.DARK["sky_background_rin"], float)
+    assert isinstance(apcorr.data.DARK["ap_corrections"], np.ndarray)
+    assert isinstance(apcorr.data.DARK["ap_corrections"][0], float)
+
+    # Test validation
+    apcorr_model = datamodels.ApcorrRefModel(apcorr)
+    assert apcorr_model.validate() is None
+
+
 # Flat tests
 def test_make_flat():
     flat = utils.mk_flat(shape=(8, 8))
@@ -419,6 +434,21 @@ def test_make_distortion():
     # Test validation
     distortion_model = datamodels.DistortionRefModel(distortion)
     assert distortion_model.validate() is None
+
+
+# ePSF tests
+def test_make_epsf():
+    epsf = utils.mk_epsf(shape=(2, 4, 8, 8))
+    assert epsf.meta.reftype == "EPSF"
+    assert isinstance(epsf.meta["pixel_x"], list)
+    assert isinstance(epsf.meta["pixel_x"][0], float)
+    assert epsf["psf"].shape == (2, 4, 8, 8)
+    print(f"XXX type(epsf['psf'][0,0,0,0]) = {type(epsf['psf'][0,0,0,0])}")
+    assert isinstance(epsf["psf"][0, 0, 0, 0], (float, np.float32))
+
+    # Test validation
+    epsf_model = datamodels.EpsfRefModel(epsf)
+    assert epsf_model.validate() is None
 
 
 # Gain tests
@@ -615,7 +645,6 @@ def test_make_level1_science_raw():
     wfi_science_raw = utils.mk_level1_science_raw(shape=shape, dq=True)
 
     assert wfi_science_raw.data.dtype == np.uint16
-    assert wfi_science_raw.data.unit == u.DN
 
     # Test validation
     wfi_science_raw_model = datamodels.ScienceRawModel(wfi_science_raw)
@@ -627,28 +656,16 @@ def test_make_level2_image():
     wfi_image = utils.mk_level2_image(shape=(8, 8))
 
     assert wfi_image.data.dtype == np.float32
-    assert wfi_image.data.unit == u.DN / u.s
     assert wfi_image.dq.dtype == np.uint32
     assert wfi_image.err.dtype == np.float32
-    assert wfi_image.err.unit == u.DN / u.s
     assert wfi_image.var_poisson.dtype == np.float32
-    assert wfi_image.var_poisson.unit == u.DN**2 / u.s**2
     assert wfi_image.var_rnoise.dtype == np.float32
-    assert wfi_image.var_rnoise.unit == u.DN**2 / u.s**2
     assert wfi_image.var_flat.dtype == np.float32
-    assert wfi_image.var_flat.unit == u.DN**2 / u.s**2
     assert isinstance(wfi_image.cal_logs[0], str)
 
     # Test validation
     wfi_image_model = datamodels.ImageModel(wfi_image)
     assert wfi_image_model.validate() is None
-
-    # Test Physical units
-    wfi_image_model.data = wfi_image_model.data.value * (u.MJy / u.sr)
-    wfi_image_model.err = wfi_image_model.err.value * (u.MJy / u.sr)
-    wfi_image_model.var_poisson = wfi_image_model.var_poisson.value * (u.MJy**2 / u.sr**2)
-    wfi_image_model.var_rnoise = wfi_image_model.var_rnoise.value * (u.MJy**2 / u.sr**2)
-    wfi_image_model.var_flat = wfi_image_model.var_flat.value * (u.MJy**2 / u.sr**2)
 
     # Test validation
     assert wfi_image_model.validate() is None
@@ -683,16 +700,12 @@ def test_make_level3_mosaic():
     wfi_mosaic = utils.mk_level3_mosaic(shape=(8, 8))
 
     assert wfi_mosaic.data.dtype == np.float32
-    assert wfi_mosaic.data.unit == u.MJy / u.sr
 
     assert wfi_mosaic.err.dtype == np.float32
-    assert wfi_mosaic.err.unit == u.MJy / u.sr
     assert wfi_mosaic.context.dtype == np.uint32
     assert wfi_mosaic.weight.dtype == np.float32
     assert wfi_mosaic.var_poisson.dtype == np.float32
-    assert wfi_mosaic.var_poisson.unit == u.MJy**2 / u.sr**2
     assert wfi_mosaic.var_rnoise.dtype == np.float32
-    assert wfi_mosaic.var_rnoise.unit == u.MJy**2 / u.sr**2
     assert wfi_mosaic.var_flat.dtype == np.float32
     assert isinstance(wfi_mosaic.cal_logs[0], str)
 
@@ -858,18 +871,31 @@ def test_datamodel_schema_info_existence(name):
                     assert keyword in info["roman"]["meta"]
 
 
-def test_crds_parameters(tmp_path):
-    # CRDS uses meta.exposure.start_time to compare to USEAFTER
-    file_path = tmp_path / "testwfi_image.asdf"
-    utils.mk_level2_image(filepath=file_path)
-    with datamodels.open(file_path) as wfi_image:
-        crds_pars = wfi_image.get_crds_parameters()
-        assert "roman.meta.exposure.start_time" in crds_pars
+@pytest.mark.parametrize("include_arrays", (True, False))
+def test_to_flat_dict(include_arrays, tmp_path):
+    file_path = tmp_path / "test.asdf"
+    utils.mk_level2_image(filepath=file_path, shape=(8, 8))
+    with datamodels.open(file_path) as model:
+        if include_arrays:
+            assert "roman.data" in model.to_flat_dict()
+        else:
+            assert "roman.data" not in model.to_flat_dict(include_arrays=False)
 
-    utils.mk_ramp(filepath=file_path)
-    with datamodels.open(file_path) as ramp:
-        crds_pars = ramp.get_crds_parameters()
+
+@pytest.mark.parametrize("mk_model", (utils.mk_level2_image, utils.mk_ramp))
+def test_crds_parameters(mk_model, tmp_path):
+    # CRDS uses meta.exposure.start_time to compare to USEAFTER
+    file_path = tmp_path / "test.asdf"
+    mk_model(filepath=file_path)
+    with datamodels.open(file_path) as model:
+        # patch on a value that is valid (a simple type)
+        # but isn't under meta. Since it's not under meta
+        # it shouldn't be in the crds_pars.
+        model["test"] = 42
+        crds_pars = model.get_crds_parameters()
         assert "roman.meta.exposure.start_time" in crds_pars
+        assert "roman.cal_logs" not in crds_pars
+        assert "roman.test" not in crds_pars
 
 
 def test_model_validate_without_save():
@@ -890,6 +916,7 @@ def test_model_validate_without_save():
 @pytest.mark.parametrize("node", datamodels.MODEL_REGISTRY.keys())
 @pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_model_only_init_with_correct_node(node, correct, model):
     """
@@ -932,6 +959,7 @@ def test_ramp_from_science_raw():
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_datamodel_construct_like_from_like(model):
     """
@@ -972,10 +1000,10 @@ def test_datamodel_save_filename(tmp_path):
 @pytest.mark.parametrize(
     "model_class, expect_success",
     [
-        (datamodels.FpsModel, True),
+        (datamodels.FpsModel, False),  # will no longer succeed until we implement a wrapper to remove units
         (datamodels.RampModel, True),
         (datamodels.ScienceRawModel, True),
-        (datamodels.TvacModel, True),
+        (datamodels.TvacModel, False),  # will no longer succeed until we implement a wrapper to remove units
         (datamodels.MosaicModel, False),
     ],
 )
@@ -997,7 +1025,7 @@ def test_rampmodel_from_science_raw(tmp_path, model_class, expect_success):
             assert new_ramp.meta.calibration_software_version == model.meta.calibration_software_version
 
     else:
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, ValidationError)):
             datamodels.RampModel.from_science_raw(model)
 
 

@@ -1,7 +1,8 @@
 import asdf
 
 NONUM = -999999
-NOSTR = "dummy value"
+NOSTR = "?"
+NOFN = "none"
 
 MESSAGE = "This function assumes shape is 2D, but it was given at least 3 dimensions"
 

@@ -10,6 +10,7 @@ from roman_datamodels import datamodels
 from roman_datamodels import maker_utils
 from roman_datamodels import maker_utils as utils
 from roman_datamodels import stnode, validate
+from roman_datamodels.maker_utils._base import NOFN, NONUM, NOSTR
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 from .conftest import MANIFEST
@@ -30,6 +31,7 @@ def test_generated_node_classes(tag):
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_copy(node_class):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
@@ -48,6 +50,7 @@ def test_copy(node_class):
 
 @pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_deepcopy_model(node_class):
     node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
@@ -89,6 +92,7 @@ def test_wfi_mode():
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_serialization(node_class, tmp_path):
     file_path = tmp_path / "test.asdf"
@@ -351,20 +355,20 @@ def test_node_representation(model):
         if isinstance(mdl, (datamodels.MosaicModel, datamodels.MosaicSegmentationMapModel, datamodels.MosaicSourceCatalogModel)):
             assert repr(mdl.meta.basic) == repr(
                 {
-                    "time_first_mjd": -999999,
-                    "time_last_mjd": -999999,
-                    "time_mean_mjd": -999999,
-                    "max_exposure_time": -999999,
-                    "mean_exposure_time": -999999,
-                    "visit": -999999,
-                    "segment": -999999,
-                    "pass": -999999,
-                    "program": "dummy value",
-                    "survey": "dummy value",
+                    "time_first_mjd": NONUM,
+                    "time_last_mjd": NONUM,
+                    "time_mean_mjd": NONUM,
+                    "max_exposure_time": NONUM,
+                    "mean_exposure_time": NONUM,
+                    "visit": NONUM,
+                    "segment": NONUM,
+                    "pass": NONUM,
+                    "program": NOSTR,
+                    "survey": NOSTR,
                     "optical_element": "F158",
                     "instrument": "WFI",
-                    "location_name": "dummy value",
-                    "product_type": "dummy value",
+                    "location_name": NOSTR,
+                    "product_type": NOSTR,
                 }
             )
             model_types = {
@@ -374,7 +378,7 @@ def test_node_representation(model):
             }
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
-            assert mdl.meta.filename == "dummy value"
+            assert mdl.meta.filename == NOFN
         elif isinstance(mdl, (datamodels.SegmentationMapModel, datamodels.SourceCatalogModel)):
             assert mdl.meta.optical_element == "F158"
         else:
