@@ -133,7 +133,7 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     wfi_image["var_poisson"] = kwargs.get("var_poisson", np.zeros(shape, dtype=np.float32))
     wfi_image["var_rnoise"] = kwargs.get("var_rnoise", np.zeros(shape, dtype=np.float32))
     wfi_image["var_flat"] = kwargs.get("var_flat", np.zeros(shape, dtype=np.float32))
-    wfi_image["cal_logs"] = mk_cal_logs(**kwargs)
+    # wfi_image["cal_logs"] = mk_cal_logs(**kwargs)
 
     wfi_image["meta"]["wcs"] = mk_wcs()
 

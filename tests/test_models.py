@@ -662,7 +662,7 @@ def test_make_level2_image():
     assert wfi_image.var_poisson.dtype == np.float32
     assert wfi_image.var_rnoise.dtype == np.float32
     assert wfi_image.var_flat.dtype == np.float32
-    assert isinstance(wfi_image.cal_logs[0], str)
+    assert isinstance(wfi_image.meta.cal_logs[0], str)
 
     # Test validation
     wfi_image_model = datamodels.ImageModel(wfi_image)
