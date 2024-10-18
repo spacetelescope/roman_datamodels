@@ -2,7 +2,6 @@ import os
 from contextlib import nullcontext
 
 import asdf
-import astropy.units as u
 import pytest
 from asdf.exceptions import ValidationError
 
@@ -171,34 +170,18 @@ def test_set_pattern_properties():
     # This model uses includes a patternProperty
     mdl = maker_utils.mk_wfi_img_photom()
 
-    # This should be invalid because it is not a quantity
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.photmjsr = 3.14
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.uncertainty = 3.14
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.pixelareasr = 3.14
-
     # This is invalid because it is not a scalar
     with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.photmjsr = [37.0] * (u.MJy / u.sr)
+        mdl.phot_table.F062.photmjsr = [37.0]
     with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.uncertainty = [37.0] * (u.MJy / u.sr)
+        mdl.phot_table.F062.uncertainty = [37.0]
     with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.pixelareasr = [37.0] * u.sr
-
-    # This should be invalid because it has the wrong unit
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.photmjsr = 3.14 * u.m
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.uncertainty = 3.14 * u.m
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.pixelareasr = 3.14 * u.m
+        mdl.phot_table.F062.pixelareasr = [37.0]
 
     # Test some valid values (including the rest of the patternProperties)
-    mdl.phot_table.F062.photmjsr = 3.14 * (u.MJy / u.sr)
-    mdl.phot_table.F062.uncertainty = 0.1 * (u.MJy / u.sr)
-    mdl.phot_table.F062.pixelareasr = 37.0 * u.sr
+    mdl.phot_table.F062.photmjsr = 3.14
+    mdl.phot_table.F062.uncertainty = 0.1
+    mdl.phot_table.F062.pixelareasr = 37.0
 
     # Test it can be None (including the rest of the patternProperties)
     mdl.phot_table.F062.photmjsr = None

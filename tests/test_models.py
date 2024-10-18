@@ -412,9 +412,7 @@ def test_make_dark():
     assert dark.data.dtype == np.float32
     assert dark.dq.dtype == np.uint32
     assert dark.dq.shape == (8, 8)
-    assert dark.data.unit == u.DN
     assert dark.dark_slope.dtype == np.float32
-    assert dark.dark_slope.unit == u.DN / u.s
     assert dark.dark_slope_error.dtype == np.float32
     assert dark.dark_slope_error.shape == (8, 8)
 
@@ -427,8 +425,6 @@ def test_make_dark():
 def test_make_distortion():
     distortion = utils.mk_distortion()
     assert distortion.meta.reftype == "DISTORTION"
-    assert distortion["meta"]["input_units"] == u.pixel
-    assert distortion["meta"]["output_units"] == u.arcsec
     assert isinstance(distortion["coordinate_distortion_transform"], Model)
 
     # Test validation
@@ -456,7 +452,6 @@ def test_make_gain():
     gain = utils.mk_gain(shape=(8, 8))
     assert gain.meta.reftype == "GAIN"
     assert gain.data.dtype == np.float32
-    assert gain.data.unit == u.electron / u.DN
 
     # Test validation
     gain_model = datamodels.GainRefModel(gain)
@@ -515,8 +510,6 @@ def test_make_mask():
 def test_make_pixelarea():
     pixearea = utils.mk_pixelarea(shape=(8, 8))
     assert pixearea.meta.reftype == "AREA"
-    assert isinstance(pixearea.meta.photometry.pixelarea_steradians, u.Quantity)
-    assert isinstance(pixearea.meta.photometry.pixelarea_arcsecsq, u.Quantity)
     assert pixearea.data.dtype == np.float32
 
     # Test validation
@@ -529,7 +522,6 @@ def test_make_readnoise():
     readnoise = utils.mk_readnoise(shape=(8, 8))
     assert readnoise.meta.reftype == "READNOISE"
     assert readnoise.data.dtype == np.float32
-    assert readnoise.data.unit == u.DN
 
     # Test validation
     readnoise_model = datamodels.ReadnoiseRefModel(readnoise)
@@ -575,7 +567,6 @@ def test_make_saturation():
     assert saturation.meta.reftype == "SATURATION"
     assert saturation.dq.dtype == np.uint32
     assert saturation.data.dtype == np.float32
-    assert saturation.data.unit == u.DN
 
     # Test validation
     saturation_model = datamodels.SaturationRefModel(saturation)
@@ -609,30 +600,15 @@ def test_make_refpix():
     assert refpix.zeta.shape == (8, 8)
     assert refpix.alpha.shape == (8, 8)
 
-    assert refpix.meta.input_units == u.DN
-    assert refpix.meta.output_units == u.DN
-
 
 # WFI Photom tests
 def test_make_wfi_img_photom():
     wfi_img_photom = utils.mk_wfi_img_photom()
 
     assert wfi_img_photom.meta.reftype == "PHOTOM"
-    assert isinstance(wfi_img_photom.phot_table.F146.photmjsr, u.Quantity)
-    assert wfi_img_photom.phot_table.F146.photmjsr.unit == u.megajansky / u.steradian
-    assert isinstance(wfi_img_photom.phot_table.F184.photmjsr, u.Quantity)
-
-    assert isinstance(wfi_img_photom.phot_table.F146.uncertainty, u.Quantity)
-    assert isinstance(wfi_img_photom.phot_table.F184.uncertainty, u.Quantity)
-    assert wfi_img_photom.phot_table.F184.uncertainty.unit == u.megajansky / u.steradian
-
-    assert isinstance(wfi_img_photom.phot_table.F184.pixelareasr, u.Quantity)
-    assert isinstance(wfi_img_photom.phot_table.F146.pixelareasr, u.Quantity)
-    assert wfi_img_photom.phot_table.GRISM.pixelareasr.unit == u.steradian
 
     assert wfi_img_photom.phot_table.PRISM.photmjsr is None
     assert wfi_img_photom.phot_table.PRISM.uncertainty is None
-    assert isinstance(wfi_img_photom.phot_table.PRISM.pixelareasr, u.Quantity)
 
     # Test validation
     wfi_img_photom_model = datamodels.WfiImgPhotomRefModel(wfi_img_photom)
@@ -761,7 +737,6 @@ def test_make_fps():
     fps = utils.mk_fps(shape=shape)
 
     assert fps.data.dtype == np.uint16
-    assert fps.data.unit == u.DN
 
     # Test validation
     fps_model = datamodels.FpsModel(fps)
