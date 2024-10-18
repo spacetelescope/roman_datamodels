@@ -309,7 +309,7 @@ def mk_velocity_aberration(**kwargs):
     vab = stnode.VelocityAberration()
     vab["ra_offset"] = kwargs.get("ra_offset", NONUM)
     vab["dec_offset"] = kwargs.get("dec_offset", NONUM)
-    vab["scale_factor"] = kwargs.get("scale_factor", NONUM)
+    vab["scale_factor"] = kwargs.get("scale_factor", 1)
 
     return vab
 
