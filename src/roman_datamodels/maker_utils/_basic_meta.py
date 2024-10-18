@@ -5,6 +5,17 @@ from roman_datamodels import stnode
 from ._base import NOFN, NOSTR
 
 
+def mk_calibration_software_name(**kwargs):
+    """
+    Create a dummy CalibrationSoftwareName object with valid values
+
+    Returns
+    -------
+    roman_datamodels.stnode.CalibrationSoftwareName
+    """
+    return stnode.CalibrationSoftwareName(kwargs.get("calibration_software_name", "RomanCAL"))
+
+
 def mk_calibration_software_version(**kwargs):
     """
     Create a dummy CalibrationSoftwareVersion object with valid values
@@ -71,18 +82,29 @@ def mk_origin(**kwargs):
     roman_datamodels.stnode.Origin
     """
 
-    return stnode.Origin(kwargs.get("origin", "STSCI"))
+    return stnode.Origin(kwargs.get("origin", "STSCI/SOC"))
 
 
-def mk_prd_software_version(**kwargs):
+def mk_prd_version(**kwargs):
     """
-    Create a dummy PrdSoftwareVersion object with valid values
+    Create a dummy PrdVersion object with valid values
 
     Returns
     -------
-    roman_datamodels.stnode.PrdSoftwareVersion
+    roman_datamodels.stnode.PrdVersion
     """
-    return stnode.PrdSoftwareVersion(kwargs.get("prd_software_version", "8.8.8"))
+    return stnode.PrdVersion(kwargs.get("prd_version", "8.8.8"))
+
+
+def mk_product_type(**kwargs):
+    """
+    Create a dummy ProductType object with valid values
+
+    Returns
+    -------
+    roman_datamodels.stnode.ProductType
+    """
+    return stnode.ProductType(kwargs.get("product_type", "l2"))
 
 
 def mk_telescope(**kwargs):
@@ -105,13 +127,15 @@ def mk_basic_meta(**kwargs):
     dict (defined by the basic-1.0.0 schema)
     """
     meta = {}
+    meta["calibration_software_name"] = mk_calibration_software_name(**kwargs)
     meta["calibration_software_version"] = mk_calibration_software_version(**kwargs)
-    meta["sdf_software_version"] = mk_sdf_software_version(**kwargs)
+    meta["product_type"] = mk_product_type(**kwargs)
     meta["filename"] = mk_filename(**kwargs)
     meta["file_date"] = mk_file_date(**kwargs)
     meta["model_type"] = mk_model_type(**kwargs)
     meta["origin"] = mk_origin(**kwargs)
-    meta["prd_software_version"] = mk_prd_software_version(**kwargs)
+    meta["prd_version"] = mk_prd_version(**kwargs)
+    meta["sdf_software_version"] = mk_sdf_software_version(**kwargs)
     meta["telescope"] = mk_telescope(**kwargs)
 
     return meta
