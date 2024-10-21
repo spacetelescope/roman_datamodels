@@ -181,7 +181,8 @@ def test_core_schema(tmp_path):
         with datamodels.open(file_path) as model:
             pass
     asdf.get_config().validate_on_read = False
-    with datamodels.open(file_path) as model:
+    # Filename mismatch warning, because did not save through datamodel to_asdf method
+    with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(file_path) as model:
         assert model.meta.telescope == "XOMAN"
     asdf.get_config().validate_on_read = True
 
