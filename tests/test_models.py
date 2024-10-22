@@ -997,6 +997,8 @@ def test_ramp_from_science_raw():
                     ramp_value[meta_key] = ramp.__class__.__name__
                     raw_value[meta_key] = raw.__class__.__name__
                     continue
+                elif meta_key == "cal_step":
+                    continue
                 assert_node_equal(ramp_value[meta_key], raw_value[meta_key])
 
         elif isinstance(ramp_value, stnode.DNode):

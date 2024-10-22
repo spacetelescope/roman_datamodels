@@ -462,6 +462,23 @@ def mk_l2_meta(**kwargs):
     return meta
 
 
+def mk_ramp_meta(**kwargs):
+    """
+    Create a dummy common metadata dictionary with valid values for attributes and add
+    the additional photometry metadata
+
+    Returns
+    -------
+    dict (defined by the common-1.0.0 schema with additional photometry metadata)
+    """
+
+    meta = mk_common_meta(**kwargs)
+
+    meta["cal_step"] = mk_l2_cal_step(**kwargs.get("cal_step", {}))
+
+    return meta
+
+
 def mk_mosaic_meta(**kwargs):
     """
     Create a dummy metadata dictionary with valid values for mosaic attributes.

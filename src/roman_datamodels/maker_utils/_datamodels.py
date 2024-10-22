@@ -12,6 +12,7 @@ from ._common_meta import (
     mk_common_meta,
     mk_guidewindow_meta,
     mk_l2_meta,
+    mk_ramp_meta,
     mk_mosaic_catalog_meta,
     mk_mosaic_meta,
     mk_msos_stack_meta,
@@ -246,7 +247,10 @@ def mk_ramp(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
         warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
 
     ramp = stnode.Ramp()
-    ramp["meta"] = mk_common_meta(**kwargs.get("meta", {}))
+    # ramp["meta"] = mk_common_meta(**kwargs.get("meta", {}))
+    # ramp.meta["cal_logs"] = mk_cal_logs(**kwargs)
+    # ramp["meta"] = mk_ramp_meta(**kwargs.get("meta", {}))
+    ramp["meta"] = mk_ramp_meta(**kwargs.get("meta", {}))
 
     # add border reference pixel arrays
     ramp["border_ref_pix_left"] = kwargs.get("border_ref_pix_left", np.zeros((shape[0], shape[1], 4), dtype=np.float32))
