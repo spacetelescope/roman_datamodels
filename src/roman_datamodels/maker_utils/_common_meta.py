@@ -689,9 +689,6 @@ def mk_ref_distoriton_meta(**kwargs):
     """
     meta = mk_ref_common("DISTORTION", **kwargs)
 
-    meta["input_units"] = kwargs.get("input_units", u.pixel)
-    meta["output_units"] = kwargs.get("output_units", u.arcsec)
-
     return meta
 
 
@@ -700,8 +697,8 @@ def _mk_ref_photometry_meta(**kwargs):
     Create the photometry meta data for pixelarea reference files
     """
     meta = {}
-    meta["pixelarea_steradians"] = kwargs.get("pixelarea_steradians", float(NONUM) * u.sr)
-    meta["pixelarea_arcsecsq"] = kwargs.get("pixelarea_arcsecsq", float(NONUM) * u.arcsec**2)
+    meta["pixelarea_steradians"] = kwargs.get("pixelarea_steradians", float(NONUM))
+    meta["pixelarea_arcsecsq"] = kwargs.get("pixelarea_arcsecsq", float(NONUM))
 
     return meta
 
@@ -729,9 +726,6 @@ def mk_ref_units_dn_meta(reftype_, **kwargs):
     dict (follows reference_file/ref_common-1.0.0 schema + DN input/output metadata)
     """
     meta = mk_ref_common(reftype_, **kwargs)
-
-    meta["input_units"] = kwargs.get("input_units", u.DN)
-    meta["output_units"] = kwargs.get("output_units", u.DN)
 
     return meta
 
