@@ -3,6 +3,8 @@ This module contains the utility functions for the datamodels sub-package. Mainl
     the open/factory function for creating datamodels
 """
 
+import warnings
+from collections.abc import Mapping
 from pathlib import Path
 
 import asdf
@@ -11,7 +13,14 @@ from roman_datamodels import validate
 
 from ._core import MODEL_REGISTRY, DataModel
 
-__all__ = ["rdm_open"]
+__all__ = ["rdm_open", "FilenameMismatchWarning"]
+
+
+class FilenameMismatchWarning(UserWarning):
+    """
+    Warning when the filename in the meta attribute does not match the filename
+    of the file being opened.
+    """
 
 
 def _open_path_like(init, lazy_tree=True, **kwargs):
@@ -34,11 +43,25 @@ def _open_path_like(init, lazy_tree=True, **kwargs):
     # asdf defaults to lazy_tree=False, this overwrites it to
     # lazy_tree=True for roman_datamodels
     kwargs["lazy_tree"] = lazy_tree
+    init = Path(init)
 
     try:
         asdf_file = asdf.open(init, **kwargs)
     except ValueError as err:
         raise TypeError("Open requires a filepath, file-like object, or Roman datamodel") from err
+
+    if (
+        "roman" in asdf_file
+        and isinstance(asdf_file["roman"], Mapping)  # Fix issue for Python 3.10
+        and "meta" in asdf_file["roman"]
+        and "filename" in asdf_file["roman"]["meta"]
+        and asdf_file["roman"]["meta"]["filename"] != init.name
+    ):
+        warnings.warn(
+            f"meta.filename: {asdf_file['roman']['meta']['filename']} does not match filename: {init.name}, updating the filename in memory!",
+            FilenameMismatchWarning,
+        )
+        asdf_file["roman"]["meta"]["filename"] = init.name
 
     return asdf_file
 

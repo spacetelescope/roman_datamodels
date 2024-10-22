@@ -1,0 +1,3 @@
+Have datamodels update their ``meta.filename`` attribute match the filename of the
+file they were loaded from. This means users can rename files on disk, but when they
+open them in datamodels, the filename will be updated to match the new filename.
