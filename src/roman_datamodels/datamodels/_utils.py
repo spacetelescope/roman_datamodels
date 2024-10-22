@@ -4,6 +4,7 @@ This module contains the utility functions for the datamodels sub-package. Mainl
 """
 
 import warnings
+from collections.abc import Mapping
 from pathlib import Path
 
 import asdf
@@ -51,6 +52,7 @@ def _open_path_like(init, lazy_tree=True, **kwargs):
 
     if (
         "roman" in asdf_file
+        and isinstance(asdf_file["roman"], Mapping)  # Fix issue for Python 3.10
         and "meta" in asdf_file["roman"]
         and "filename" in asdf_file["roman"]["meta"]
         and asdf_file["roman"]["meta"]["filename"] != init.name
