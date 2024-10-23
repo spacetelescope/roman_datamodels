@@ -788,7 +788,7 @@ def mk_mosaic_basic(**kwargs):
     mosbasic["visit"] = kwargs.get("visit", NONUM)
     mosbasic["segment"] = kwargs.get("segment", NONUM)
     mosbasic["pass"] = kwargs.get("pass", NONUM)
-    mosbasic["program"] = kwargs.get("program", NOSTR)
+    mosbasic["program"] = kwargs.get("program", NONUM)
     mosbasic["survey"] = kwargs.get("survey", NOSTR)
     mosbasic["optical_element"] = kwargs.get("optical_element", "F158")
     mosbasic["instrument"] = kwargs.get("instrument", "WFI")

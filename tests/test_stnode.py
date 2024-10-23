@@ -363,7 +363,7 @@ def test_node_representation(model):
                     "visit": NONUM,
                     "segment": NONUM,
                     "pass": NONUM,
-                    "program": NOSTR,
+                    "program": NONUM,
                     "survey": NOSTR,
                     "optical_element": "F158",
                     "instrument": "WFI",
