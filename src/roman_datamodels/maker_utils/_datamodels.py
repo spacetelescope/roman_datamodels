@@ -12,10 +12,10 @@ from ._common_meta import (
     mk_common_meta,
     mk_guidewindow_meta,
     mk_l2_meta,
-    mk_ramp_meta,
     mk_mosaic_catalog_meta,
     mk_mosaic_meta,
     mk_msos_stack_meta,
+    mk_ramp_meta,
     mk_wcs,
 )
 from ._tagged_nodes import mk_cal_logs
