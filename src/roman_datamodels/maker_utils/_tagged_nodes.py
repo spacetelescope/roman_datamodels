@@ -13,12 +13,9 @@ def mk_photometry(**kwargs):
     roman_datamodels.stnode.Photometry
     """
     phot = stnode.Photometry()
-    phot["conversion_microjanskys"] = kwargs.get("conversion_microjanskys", float(NONUM))
-    phot["conversion_megajanskys"] = kwargs.get("conversion_megajanskys", float(NONUM))
-    phot["pixelarea_steradians"] = kwargs.get("pixelarea_steradians", float(NONUM))
-    phot["pixelarea_arcsecsq"] = kwargs.get("pixelarea_arcsecsq", float(NONUM))
-    phot["conversion_microjanskys_uncertainty"] = kwargs.get("conversion_microjanskys_uncertainty", float(NONUM))
-    phot["conversion_megajanskys_uncertainty"] = kwargs.get("conversion_megajanskys_uncertainty", float(NONUM))
+    phot["conversion_megajanskys"] = kwargs.get("conversion_megajanskys", NONUM)
+    phot["conversion_megajanskys_uncertainty"] = kwargs.get("conversion_megajanskys_uncertainty", NONUM)
+    phot["pixel_area"] = kwargs.get("pixel_area", NONUM)
 
     return phot
 
@@ -62,3 +59,18 @@ def mk_cal_logs(**kwargs):
             ],
         )
     )
+
+
+def mk_source_detection(**kwargs):
+    """
+    Create a dummy Source Detection instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.SourceDetection
+    """
+    sd = stnode.SourceDetection()
+    sd["tweakreg_catalog_name"] = kwargs.get("tweakreg_catalog_name", "catalog")
+
+    return sd

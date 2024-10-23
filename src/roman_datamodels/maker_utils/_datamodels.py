@@ -11,10 +11,11 @@ from ._common_meta import (
     mk_catalog_meta,
     mk_common_meta,
     mk_guidewindow_meta,
+    mk_l2_meta,
     mk_mosaic_catalog_meta,
     mk_mosaic_meta,
     mk_msos_stack_meta,
-    mk_photometry_meta,
+    mk_ramp_meta,
     mk_wcs,
 )
 from ._tagged_nodes import mk_cal_logs
@@ -105,7 +106,7 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
 
     wfi_image = stnode.WfiImage()
 
-    wfi_image["meta"] = mk_photometry_meta(**kwargs.get("meta", {}))
+    wfi_image["meta"] = mk_l2_meta(**kwargs.get("meta", {}))
 
     # add border reference pixel arrays
     wfi_image["border_ref_pix_left"] = kwargs.get("border_ref_pix_left", np.zeros((n_groups, shape[0] + 8, 4), dtype=np.float32))
@@ -133,7 +134,7 @@ def mk_level2_image(*, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
     wfi_image["var_poisson"] = kwargs.get("var_poisson", np.zeros(shape, dtype=np.float32))
     wfi_image["var_rnoise"] = kwargs.get("var_rnoise", np.zeros(shape, dtype=np.float32))
     wfi_image["var_flat"] = kwargs.get("var_flat", np.zeros(shape, dtype=np.float32))
-    wfi_image["cal_logs"] = mk_cal_logs(**kwargs)
+    # wfi_image["cal_logs"] = mk_cal_logs(**kwargs)
 
     wfi_image["meta"]["wcs"] = mk_wcs()
 
@@ -246,7 +247,10 @@ def mk_ramp(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
         warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)")
 
     ramp = stnode.Ramp()
-    ramp["meta"] = mk_common_meta(**kwargs.get("meta", {}))
+    # ramp["meta"] = mk_common_meta(**kwargs.get("meta", {}))
+    # ramp.meta["cal_logs"] = mk_cal_logs(**kwargs)
+    # ramp["meta"] = mk_ramp_meta(**kwargs.get("meta", {}))
+    ramp["meta"] = mk_ramp_meta(**kwargs.get("meta", {}))
 
     # add border reference pixel arrays
     ramp["border_ref_pix_left"] = kwargs.get("border_ref_pix_left", np.zeros((shape[0], shape[1], 4), dtype=np.float32))
