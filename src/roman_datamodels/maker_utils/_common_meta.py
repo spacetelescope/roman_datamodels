@@ -207,21 +207,6 @@ def mk_visit(**kwargs):
     return visit
 
 
-def mk_source_detection(**kwargs):  # noqa: F811
-    """
-    Create a dummy Source Detection instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below
-
-    Returns
-    -------
-    roman_datamodels.stnode.SourceDetection
-    """
-    sd = stnode.SourceDetection()
-    sd["tweakreg_catalog_name"] = kwargs.get("tweakreg_catalog_name", "filename_tweakreg_catalog.asdf")
-
-    return sd
-
-
 def mk_coordinates(**kwargs):
     """
     Create a dummy Coordinates instance with valid values for attributes
