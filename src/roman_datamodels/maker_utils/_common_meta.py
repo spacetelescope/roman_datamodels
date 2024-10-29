@@ -207,7 +207,7 @@ def mk_visit(**kwargs):
     return visit
 
 
-def mk_source_detection(**kwargs):
+def mk_source_detection(**kwargs): # noqa: F811
     """
     Create a dummy Source Detection instance with valid values for attributes
     required by the schema. Utilized by the model maker utilities below
