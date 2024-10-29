@@ -10,7 +10,7 @@ from roman_datamodels import stnode
 
 from ._base import NONUM, NOSTR
 from ._basic_meta import mk_basic_meta
-from ._tagged_nodes import mk_photometry, mk_resample
+from ._tagged_nodes import mk_cal_logs, mk_photometry, mk_resample, mk_source_detection
 
 
 def mk_exposure(**kwargs):
@@ -25,36 +25,33 @@ def mk_exposure(**kwargs):
     exp = stnode.Exposure()
 
     exp["type"] = kwargs.get("type", "WFI_IMAGE")
+    exp["nresultants"] = kwargs.get("nresultants", 6)
     exp["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    exp["ngroups"] = kwargs.get("ngroups", 6)
-    exp["nframes"] = kwargs.get("nframes", 8)
+    exp["mid_time"] = kwargs.get("mid_time", time.Time("2020-01-01T01:00:00.0", format="isot", scale="utc"))
+    exp["end_time"] = kwargs.get("end_time", time.Time("2020-01-01T02:00:00.0", format="isot", scale="utc"))
+    # exp["ngroups"] = kwargs.get("ngroups", 6)
+    # exp["nframes"] = kwargs.get("nframes", 8)
     exp["data_problem"] = kwargs.get("data_problem", False)
-    exp["frame_divisor"] = kwargs.get("frame_divisor", NONUM)
-    exp["groupgap"] = kwargs.get("groupgap", 0)
+    # exp["frame_divisor"] = kwargs.get("frame_divisor", NONUM)
+    # exp["groupgap"] = kwargs.get("groupgap", 0)
     exp["frame_time"] = kwargs.get("frame_time", NONUM)
-    exp["group_time"] = kwargs.get("group_time", NONUM)
     exp["exposure_time"] = kwargs.get("exposure_time", NONUM)
     exp["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
     exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
-    exp["read_pattern"] = kwargs.get("read_pattern", np.arange(1, 56).reshape((-1, 1)).tolist())
-
     exp["read_pattern"] = kwargs.get("read_pattern", [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]])
-    exp["id"] = kwargs.get("id", NONUM)
-    exp["mid_time"] = kwargs.get("mid_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    exp["end_time"] = kwargs.get("end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    exp["start_time_mjd"] = kwargs.get("start_time_mjd", NONUM)
-    exp["mid_time_mjd"] = kwargs.get("mid_time_mjd", NONUM)
-    exp["end_time_mjd"] = kwargs.get("end_time_mjd", NONUM)
-    exp["start_time_tdb"] = kwargs.get("start_time_tdb", NONUM)
-    exp["mid_time_tdb"] = kwargs.get("mid_time_tdb", NONUM)
-    exp["end_time_tdb"] = kwargs.get("end_time_tdb", NONUM)
-    exp["sca_number"] = kwargs.get("sca_number", NONUM)
-    exp["gain_factor"] = kwargs.get("gain_factor", NONUM)
-    exp["integration_time"] = kwargs.get("integration_time", NONUM)
-    exp["elapsed_exposure_time"] = kwargs.get("elapsed_exposure_time", NONUM)
+    # exp["start_time_mjd"] = kwargs.get("start_time_mjd", NONUM)
+    # exp["mid_time_mjd"] = kwargs.get("mid_time_mjd", NONUM)
+    # exp["end_time_mjd"] = kwargs.get("end_time_mjd", NONUM)
+    # exp["start_time_tdb"] = kwargs.get("start_time_tdb", NONUM)
+    # exp["mid_time_tdb"] = kwargs.get("mid_time_tdb", NONUM)
+    # exp["end_time_tdb"] = kwargs.get("end_time_tdb", NONUM)
+    # exp["sca_number"] = kwargs.get("sca_number", NONUM)
+    # exp["gain_factor"] = kwargs.get("gain_factor", NONUM)
+    # exp["integration_time"] = kwargs.get("integration_time", NONUM)
+    # exp["elapsed_exposure_time"] = kwargs.get("elapsed_exposure_time", NONUM)
     exp["effective_exposure_time"] = kwargs.get("effective_exposure_time", NONUM)
-    exp["duration"] = kwargs.get("duration", NONUM)
-    exp["level0_compressed"] = kwargs.get("level0_compressed", True)
+    # exp["duration"] = kwargs.get("duration", NONUM)
+    # exp["level0_compressed"] = kwargs.get("level0_compressed", True)
     exp["truncated"] = kwargs.get("truncated", False)
 
     return exp
@@ -88,9 +85,9 @@ def mk_program(**kwargs):
     """
     prog = stnode.Program()
     prog["title"] = kwargs.get("title", NOSTR)
-    prog["pi_name"] = kwargs.get("pi_name", NOSTR)
+    prog["investigator_name"] = kwargs.get("investigator_name", NOSTR)
     prog["category"] = kwargs.get("category", NOSTR)
-    prog["subcategory"] = kwargs.get("subcategory", NOSTR)
+    prog["subcategory"] = kwargs.get("subcategory", "None")
     prog["science_category"] = kwargs.get("science_category", NOSTR)
     prog["continuation_id"] = kwargs.get("continuation_id", NONUM)
 
@@ -107,21 +104,21 @@ def mk_observation(**kwargs):
     roman_datamodels.stnode.Observation
     """
     obs = stnode.Observation()
-    obs["obs_id"] = kwargs.get("obs_id", NOSTR)
+    obs["observation_id"] = kwargs.get("observation_id", NOSTR)
     obs["visit_id"] = kwargs.get("visit_id", NOSTR)
-    obs["program"] = kwargs.get("program", str(NONUM))
-    obs["execution_plan"] = kwargs.get("execution_plan", NONUM)
-    obs["pass"] = kwargs.get("pass", NONUM)
-    obs["segment"] = kwargs.get("segment", NONUM)
-    obs["observation"] = kwargs.get("observation", NONUM)
-    obs["visit"] = kwargs.get("visit", NONUM)
-    obs["visit_file_group"] = kwargs.get("visit_file_group", NONUM)
-    obs["visit_file_sequence"] = kwargs.get("visit_file_sequence", NONUM)
-    obs["visit_file_activity"] = kwargs.get("visit_file_activity", NOSTR)
-    obs["exposure"] = kwargs.get("exposure", NONUM)
-    obs["template"] = kwargs.get("template", NOSTR)
-    obs["observation_label"] = kwargs.get("observation_label", NOSTR)
-    obs["survey"] = kwargs.get("survey", "N/A")
+    obs["program"] = kwargs.get("program", 1)
+    obs["execution_plan"] = kwargs.get("execution_plan", 1)
+    obs["pass"] = kwargs.get("pass", 1)
+    obs["segment"] = kwargs.get("segment", 1)
+    obs["observation"] = kwargs.get("observation", 1)
+    obs["visit"] = kwargs.get("visit", 1)
+    obs["visit_file_group"] = kwargs.get("visit_file_group", 1)
+    obs["visit_file_sequence"] = kwargs.get("visit_file_sequence", 1)
+    obs["visit_file_activity"] = kwargs.get("visit_file_activity", "01")
+    obs["exposure"] = kwargs.get("exposure", 1)
+    # obs["template"] = kwargs.get("template", NOSTR)
+    # obs["observation_label"] = kwargs.get("observation_label", NOSTR)
+    # obs["survey"] = kwargs.get("survey", "N/A")
 
     return obs
 
@@ -194,32 +191,20 @@ def mk_visit(**kwargs):
     roman_datamodels.stnode.Visit
     """
     visit = stnode.Visit()
+    visit["dither"] = kwargs.get(
+        "dither", {"primary_name": None, "subpixel_name": None, "executed_pattern": np.arange(1, 10).tolist()}
+    )
     visit["engineering_quality"] = kwargs.get("engineering_quality", "OK")
-    visit["pointing_engdb_quality"] = kwargs.get("pointing_engdb_quality", "CALCULATED")
-    visit["type"] = kwargs.get("type", NOSTR)
+    visit["pointing_engineering_source"] = kwargs.get("pointing_engineering_source", "CALCULATED")
+    visit["type"] = kwargs.get("type", "PRIME_TARGETED_FIXED")
     visit["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
     visit["end_time"] = kwargs.get("end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    visit["status"] = kwargs.get("status", NOSTR)
-    visit["total_exposures"] = kwargs.get("total_exposures", NONUM)
+    visit["status"] = kwargs.get("status", "UNSUCCESSFUL")
+    visit["nexposures"] = kwargs.get("nexposures", NONUM)
     visit["internal_target"] = kwargs.get("internal_target", False)
-    visit["target_of_opportunity"] = kwargs.get("target_of_opportunity", False)
+    # visit["target_of_opportunity"] = kwargs.get("target_of_opportunity", False)
 
     return visit
-
-
-def mk_source_detection(**kwargs):
-    """
-    Create a dummy Source Detection instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below
-
-    Returns
-    -------
-    roman_datamodels.stnode.SourceDetection
-    """
-    sd = stnode.SourceDetection()
-    sd["tweakreg_catalog_name"] = kwargs.get("tweakreg_catalog_name", "filename_tweakreg_catalog.asdf")
-
-    return sd
 
 
 def mk_coordinates(**kwargs):
@@ -237,22 +222,6 @@ def mk_coordinates(**kwargs):
     return coord
 
 
-def mk_aperture(**kwargs):
-    """
-    Create a dummy Aperture instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
-
-    Returns
-    -------
-    roman_datamodels.stnode.Aperture
-    """
-    aper = stnode.Aperture()
-    aper["name"] = kwargs.get("name", f"WFI_{5 + 1:02d}_FULL")
-    aper["position_angle"] = kwargs.get("position_angle", 30.0)
-
-    return aper
-
-
 def mk_pointing(**kwargs):
     """
     Create a dummy Pointing instance with valid values for attributes
@@ -266,35 +235,11 @@ def mk_pointing(**kwargs):
     point["ra_v1"] = kwargs.get("ra_v1", NONUM)
     point["dec_v1"] = kwargs.get("dec_v1", NONUM)
     point["pa_v3"] = kwargs.get("pa_v3", NONUM)
+    point["target_aperture"] = kwargs.get("target_aperture", NOSTR)
+    point["target_ra"] = kwargs.get("target_ra", NONUM)
+    point["target_dec"] = kwargs.get("target_dec", NONUM)
 
     return point
-
-
-def mk_target(**kwargs):
-    """
-    Create a dummy Target instance with valid values for attributes
-    required by the schema. Utilized by the model maker utilities below.
-
-    Returns
-    -------
-    roman_datamodels.stnode.Target
-    """
-    targ = stnode.Target()
-    targ["proposer_name"] = kwargs.get("proposer_name", NOSTR)
-    targ["catalog_name"] = kwargs.get("catalog_name", NOSTR)
-    targ["type"] = kwargs.get("type", "FIXED")
-    targ["ra"] = kwargs.get("ra", NONUM)
-    targ["dec"] = kwargs.get("dec", NONUM)
-    targ["ra_uncertainty"] = kwargs.get("ra_uncertainty", NONUM)
-    targ["dec_uncertainty"] = kwargs.get("dec_uncertainty", NONUM)
-    targ["proper_motion_ra"] = kwargs.get("proper_motion_ra", NONUM)
-    targ["proper_motion_dec"] = kwargs.get("proper_motion_dec", NONUM)
-    targ["proper_motion_epoch"] = kwargs.get("proper_motion_epoch", NOSTR)
-    targ["proposer_ra"] = kwargs.get("proposer_ra", NONUM)
-    targ["proposer_dec"] = kwargs.get("proposer_dec", NONUM)
-    targ["source_type"] = kwargs.get("source_type", "POINT")
-
-    return targ
 
 
 def mk_velocity_aberration(**kwargs):
@@ -307,8 +252,8 @@ def mk_velocity_aberration(**kwargs):
     roman_datamodels.stnode.VelocityAberration
     """
     vab = stnode.VelocityAberration()
-    vab["ra_offset"] = kwargs.get("ra_offset", NONUM)
-    vab["dec_offset"] = kwargs.get("dec_offset", NONUM)
+    vab["ra_reference"] = kwargs.get("ra_reference", NONUM)
+    vab["dec_reference"] = kwargs.get("dec_reference", NONUM)
     vab["scale_factor"] = kwargs.get("scale_factor", NONUM)
 
     return vab
@@ -324,9 +269,11 @@ def mk_wcsinfo(**kwargs):
     roman_datamodels.stnode.Wcsinfo
     """
     wcsi = stnode.Wcsinfo()
+    wcsi["aperture_name"] = kwargs.get("aperture_name", "WFI01_FULL")
+    wcsi["pa_aperture"] = kwargs.get("pa_aperture", NONUM)
     wcsi["v2_ref"] = kwargs.get("v2_ref", NONUM)
     wcsi["v3_ref"] = kwargs.get("v3_ref", NONUM)
-    wcsi["vparity"] = kwargs.get("vparity", NONUM)
+    wcsi["vparity"] = kwargs.get("vparity", -1)
     wcsi["v3yangle"] = kwargs.get("v3yangle", NONUM)
     wcsi["ra_ref"] = kwargs.get("ra_ref", NONUM)
     wcsi["dec_ref"] = kwargs.get("dec_ref", NONUM)
@@ -351,11 +298,10 @@ def mk_l2_cal_step(**kwargs):
     l2calstep["dq_init"] = kwargs.get("dq_init", "INCOMPLETE")
     l2calstep["flat_field"] = kwargs.get("flat_field", "INCOMPLETE")
     l2calstep["flux"] = kwargs.get("flux", "INCOMPLETE")
-    l2calstep["jump"] = kwargs.get("jump", "INCOMPLETE")
     l2calstep["linearity"] = kwargs.get("linearity", "INCOMPLETE")
+    l2calstep["outlier_detection"] = kwargs.get("outlier_detection", "INCOMPLETE")
     l2calstep["photom"] = kwargs.get("photom", "INCOMPLETE")
     l2calstep["source_detection"] = kwargs.get("source_detection", "INCOMPLETE")
-    l2calstep["outlier_detection"] = kwargs.get("outlier_detection", "INCOMPLETE")
     l2calstep["ramp_fit"] = kwargs.get("ramp_fit", "INCOMPLETE")
     l2calstep["refpix"] = kwargs.get("refpix", "INCOMPLETE")
     l2calstep["saturation"] = kwargs.get("saturation", "INCOMPLETE")
@@ -394,34 +340,34 @@ def mk_guidestar(**kwargs):
     """
     guide = stnode.Guidestar()
 
-    guide["gw_id"] = kwargs.get("gw_id", NOSTR)
-    guide["gw_fgs_mode"] = kwargs.get("gw_fgs_mode", "WSM-ACQ-2")
-    guide["data_start"] = kwargs.get("data_start", NONUM)
-    guide["data_end"] = kwargs.get("data_end", NONUM)
-    guide["gw_window_xstart"] = kwargs.get("gw_window_xstart", NONUM)
-    guide["gw_window_ystart"] = kwargs.get("gw_window_ystart", NONUM)
-    guide["gw_window_xstop"] = kwargs.get("gw_window_xstop", guide["gw_window_xstart"] + 170)
-    guide["gw_window_ystop"] = kwargs.get("gw_window_ystop", guide["gw_window_ystart"] + 24)
-    guide["gw_window_xsize"] = kwargs.get("gw_window_xsize", 170)
-    guide["gw_window_ysize"] = kwargs.get("gw_window_ysize", 24)
+    guide["guide_window_id"] = kwargs.get("guide_window_id", NOSTR)
+    guide["guide_mode"] = kwargs.get("guide_mode", "WSM-ACQ-2")
+    guide["data_start"] = kwargs.get("data_start", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
+    guide["data_end"] = kwargs.get("data_end", time.Time("2020-01-01T01:00:00.0", format="isot", scale="utc"))
+    guide["window_xstart"] = kwargs.get("window_xstart", NONUM)
+    guide["window_ystart"] = kwargs.get("window_ystart", NONUM)
+    guide["window_xstop"] = kwargs.get("window_xstop", guide["window_xstart"] + 170)
+    guide["window_ystop"] = kwargs.get("window_ystop", guide["window_ystart"] + 24)
+    guide["window_xsize"] = kwargs.get("window_xsize", 170)
+    guide["window_ysize"] = kwargs.get("window_ysize", 24)
 
-    guide["gs_ra"] = kwargs.get("gs_ra", NONUM)
-    guide["gs_dec"] = kwargs.get("gs_dec", NONUM)
-    guide["gs_ura"] = kwargs.get("gs_ura", NONUM)
-    guide["gs_udec"] = kwargs.get("gs_udec", NONUM)
-    guide["gs_mag"] = kwargs.get("gs_mag", NONUM)
-    guide["gs_umag"] = kwargs.get("gs_umag", NONUM)
-    guide["gs_id"] = kwargs.get("gs_id", NOSTR)
-    guide["gs_catalog_version"] = kwargs.get("gs_catalog_version", NOSTR)
-    guide["gs_ctd_x"] = kwargs.get("gs_ctd_x", NONUM)
-    guide["gs_ctd_y"] = kwargs.get("gs_ctd_y", NONUM)
-    guide["gs_ctd_ux"] = kwargs.get("gs_ctd_ux", NONUM)
-    guide["gs_ctd_uy"] = kwargs.get("gs_ctd_uy", NONUM)
-    guide["gs_epoch"] = kwargs.get("gs_epoch", NOSTR)
-    guide["gs_mura"] = kwargs.get("gs_mura", NONUM)
-    guide["gs_mudec"] = kwargs.get("gs_mudec", NONUM)
-    guide["gs_para"] = kwargs.get("gs_para", NONUM)
-    guide["gs_pattern_error"] = kwargs.get("gs_pattern_error", NONUM)
+    guide["ra"] = kwargs.get("ra", NONUM)
+    guide["dec"] = kwargs.get("dec", NONUM)
+    guide["ra_uncertainty"] = kwargs.get("ra_uncertainty", NONUM)
+    guide["dec_uncertainty"] = kwargs.get("dec_uncertainty", NONUM)
+    guide["fgs_magnitude"] = kwargs.get("fgs_magnitude", NONUM)
+    guide["fgs_magnitude_uncertainty"] = kwargs.get("fgs_magnitude_uncertainty", NONUM)
+    guide["guide_star_id"] = kwargs.get("guide_star_id", NOSTR)
+    guide["gsc_version"] = kwargs.get("gsc_version", NOSTR)
+    guide["centroid_x"] = kwargs.get("centroid_x", NONUM)
+    guide["centroid_y"] = kwargs.get("centroid_y", NONUM)
+    guide["centroid_x_uncertainty"] = kwargs.get("centroid_x_uncertainty", NONUM)
+    guide["centroid_y_uncertainty"] = kwargs.get("centroid_y_uncertainty", NONUM)
+    guide["epoch"] = kwargs.get("epoch", NOSTR)
+    guide["proper_motion_ra"] = kwargs.get("proper_motion_ra", NONUM)
+    guide["proper_motion_dec"] = kwargs.get("proper_motion_dec", NONUM)
+    guide["parallax"] = kwargs.get("parallax", NONUM)
+    guide["centroid_rms"] = kwargs.get("centroid_rms", NONUM)
 
     return guide
 
@@ -445,7 +391,9 @@ def mk_ref_file(**kwargs):
     ref_file["readnoise"] = kwargs.get("readnoise", "N/A")
     ref_file["refpix"] = kwargs.get("refpix", "N/A")
     ref_file["saturation"] = kwargs.get("saturation", "N/A")
+    ref_file["inverse_linearity"] = kwargs.get("inverse_linearity", "N/A")
     ref_file["photom"] = kwargs.get("photom", "N/A")
+    ref_file["area"] = kwargs.get("area", "N/A")
     ref_file["crds"] = kwargs.get("crds", {"sw_version": "12.3.1", "context_used": "roman_0815.pmap"})
 
     return ref_file
@@ -460,18 +408,16 @@ def mk_common_meta(**kwargs):
     dict (defined by the common-1.0.0 schema)
     """
     meta = mk_basic_meta(**kwargs)
-    meta["aperture"] = mk_aperture(**kwargs.get("aperture", {}))
-    meta["cal_step"] = mk_l2_cal_step(**kwargs.get("cal_step", {}))
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["ephemeris"] = mk_ephemeris(**kwargs.get("ephemeris", {}))
     meta["exposure"] = mk_exposure(**kwargs.get("exposure", {}))
-    meta["guidestar"] = mk_guidestar(**kwargs.get("guidestar", {}))
+    meta["guide_star"] = mk_guidestar(**kwargs.get("guide_star", {}))
     meta["instrument"] = mk_wfi_mode(**kwargs.get("instrument", {}))
     meta["observation"] = mk_observation(**kwargs.get("observation", {}))
     meta["pointing"] = mk_pointing(**kwargs.get("pointing", {}))
     meta["program"] = mk_program(**kwargs.get("program", {}))
+    meta["rcs"] = mk_rcs(**kwargs.get("rcs", {}))
     meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
-    meta["target"] = mk_target(**kwargs.get("target", {}))
     meta["velocity_aberration"] = mk_velocity_aberration(**kwargs.get("velocity_aberration", {}))
     meta["visit"] = mk_visit(**kwargs.get("visit", {}))
     meta["wcsinfo"] = mk_wcsinfo(**kwargs.get("wcsinfo", {}))
@@ -479,7 +425,7 @@ def mk_common_meta(**kwargs):
     return meta
 
 
-def mk_photometry_meta(**kwargs):
+def mk_l2_meta(**kwargs):
     """
     Create a dummy common metadata dictionary with valid values for attributes and add
     the additional photometry metadata
@@ -490,9 +436,30 @@ def mk_photometry_meta(**kwargs):
     """
 
     meta = mk_common_meta(**kwargs)
+
+    meta["cal_step"] = mk_l2_cal_step(**kwargs.get("cal_step", {}))
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["outlier_detection"] = mk_outlier_detection(**kwargs.get("outlier_detection", {}))
     meta["background"] = mk_sky_background(**kwargs.get("background", {}))
+    meta["source_detection"] = mk_source_detection(**kwargs.get("source_detection", {}))
+    meta["cal_logs"] = mk_cal_logs(**kwargs)
+
+    return meta
+
+
+def mk_ramp_meta(**kwargs):
+    """
+    Create a dummy common metadata dictionary with valid values for attributes and add
+    the additional photometry metadata
+
+    Returns
+    -------
+    dict (defined by the common-1.0.0 schema with additional photometry metadata)
+    """
+
+    meta = mk_common_meta(**kwargs)
+
+    meta["cal_step"] = mk_l2_cal_step(**kwargs.get("cal_step", {}))
 
     return meta
 
@@ -599,6 +566,43 @@ def mk_msos_stack_meta(**kwargs):
     meta["image_list"] = kwargs.get("image_list", NOSTR)
 
     return meta
+
+
+def mk_rcs(**kwargs):
+    """
+    Create a dummy Relative Calibration System instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Rcs
+    """
+    rcs = stnode.Rcs()
+    rcs["active"] = kwargs.get("active", False)
+    rcs["electronics"] = kwargs.get("electronics", "A")
+    rcs["bank"] = kwargs.get("bank", "1")
+    rcs["led"] = kwargs.get("led", "1")
+    rcs["counts"] = kwargs.get("counts", NONUM)
+
+    return rcs
+
+
+def mk_statistics(**kwargs):
+    """
+    Create a dummy Statistical instance with valid values for attributes
+    required by the schema. Utilized by the model maker utilities below.
+
+    Returns
+    -------
+    roman_datamodels.stnode.Statistics
+    """
+    stats = stnode.Statistics()
+    stats["zodiacal_light"] = kwargs.get("zodiacal_light", NONUM)
+    stats["image_median"] = kwargs.get("image_median", NONUM)
+    stats["image_rms"] = kwargs.get("image_rms", NONUM)
+    stats["good_pixel_fraction"] = kwargs.get("good_pixel_fraction", NONUM)
+
+    return stats
 
 
 def mk_ref_common(reftype_, **kwargs):
@@ -769,7 +773,7 @@ def mk_mosaic_basic(**kwargs):
     mosbasic["visit"] = kwargs.get("visit", NONUM)
     mosbasic["segment"] = kwargs.get("segment", NONUM)
     mosbasic["pass"] = kwargs.get("pass", NONUM)
-    mosbasic["program"] = kwargs.get("program", NOSTR)
+    mosbasic["program"] = kwargs.get("program", NONUM)
     mosbasic["survey"] = kwargs.get("survey", NOSTR)
     mosbasic["optical_element"] = kwargs.get("optical_element", "F158")
     mosbasic["instrument"] = kwargs.get("instrument", "WFI")
@@ -832,22 +836,25 @@ def mk_individual_image_meta(**kwargs):
     table_dct = {"dummy": [NONUM]}
 
     imm["basic"] = kwargs.get("basic", QTable(table_dct))
-    imm["aperture"] = kwargs.get("aperture", QTable(table_dct))
-    imm["cal_step"] = kwargs.get("cal_step", QTable(table_dct))
-    imm["coordinates"] = kwargs.get("coordinates", QTable(table_dct))
-    imm["ephemeris"] = kwargs.get("ephemeris", QTable(table_dct))
-    imm["exposure"] = kwargs.get("exposure", QTable(table_dct))
-    imm["guidestar"] = kwargs.get("guidestar", QTable(table_dct))
-    imm["instrument"] = kwargs.get("instrument", QTable(table_dct))
-    imm["observation"] = kwargs.get("observation", QTable(table_dct))
-    imm["photometry"] = kwargs.get("photometry", QTable(table_dct))
-    imm["pointing"] = kwargs.get("pointing", QTable(table_dct))
-    imm["program"] = kwargs.get("program", QTable(table_dct))
-    imm["ref_file"] = kwargs.get("ref_file", QTable(table_dct))
-    imm["target"] = kwargs.get("target", QTable(table_dct))
-    imm["velocity_aberration"] = kwargs.get("velocity_aberration", QTable(table_dct))
-    imm["visit"] = kwargs.get("visit", QTable(table_dct))
-    imm["wcsinfo"] = kwargs.get("wcsinfo", QTable(table_dct))
+    # imm["background"] = kwargs.get("background", QTable(table_dct))
+    # imm["cal_logs"] = kwargs.get("cal_logs", QTable(table_dct))
+    # imm["cal_step"] = kwargs.get("cal_step", QTable(table_dct))
+    # imm["coordinates"] = kwargs.get("coordinates", QTable(table_dct))
+    # imm["ephemeris"] = kwargs.get("ephemeris", QTable(table_dct))
+    # imm["exposure"] = kwargs.get("exposure", QTable(table_dct))
+    # imm["guide_star"] = kwargs.get("guide_star", QTable(table_dct))
+    # imm["instrument"] = kwargs.get("instrument", QTable(table_dct))
+    # imm["observation"] = kwargs.get("observation", QTable(table_dct))
+    # imm["outlier_detection"] = kwargs.get("outlier_detection", QTable(table_dct))
+    # imm["photometry"] = kwargs.get("photometry", QTable(table_dct))
+    # imm["pointing"] = kwargs.get("pointing", QTable(table_dct))
+    # imm["program"] = kwargs.get("program", QTable(table_dct))
+    # imm["rcs"] = kwargs.get("rcs", QTable(table_dct))
+    # imm["ref_file"] = kwargs.get("ref_file", QTable(table_dct))
+    # imm["source_detection"] = kwargs.get("source_detection", QTable(table_dct))
+    # imm["velocity_aberration"] = kwargs.get("velocity_aberration", QTable(table_dct))
+    # imm["visit"] = kwargs.get("visit", QTable(table_dct))
+    # imm["wcsinfo"] = kwargs.get("wcsinfo", QTable(table_dct))
 
     return imm
 
