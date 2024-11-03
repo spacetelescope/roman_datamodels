@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import asdf
 
 NONUM = -999999
@@ -20,6 +22,11 @@ def save_node(node, filepath=None):
     """
 
     if filepath:
+        # Force sync filename with file path if we are saving to a file
+        if "meta" in node and "filename" in node["meta"]:
+            # Need the __class__ to avoid issues for tvac and fps
+            node["meta"]["filename"] = node["meta"]["filename"].__class__(Path(filepath).name)
+
         af = asdf.AsdfFile()
         af.tree = {"roman": node}
         af.write_to(filepath)

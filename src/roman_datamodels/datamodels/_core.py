@@ -221,8 +221,13 @@ class DataModel(abc.ABC):
         return output_path
 
     def open_asdf(self, init=None, **kwargs):
+        from ._utils import _open_path_like
+
         with validate.nuke_validation():
-            return asdf.open(init, **kwargs) if isinstance(init, str) else asdf.AsdfFile(init, **kwargs)
+            if isinstance(init, str):
+                return _open_path_like(init, **kwargs)
+
+            return asdf.AsdfFile(init, **kwargs)
 
     def to_asdf(self, init, *args, **kwargs):
         with validate.nuke_validation(), _temporary_update_filename(self, Path(init).name):

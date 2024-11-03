@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import asdf
@@ -31,7 +32,8 @@ def test_path_input(tmp_path):
         af.write_to(file_path)
 
     # Test with PurePath input:
-    with datamodels.open(file_path) as model:
+    #     FilenameMismatchWarning should be raised, as we have not synced the filename
+    with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(file_path) as model:
         assert model.meta.telescope == "ROMAN"
         af = model._asdf
 
@@ -40,7 +42,8 @@ def test_path_input(tmp_path):
     assert af._closed
 
     # Test with string input:
-    with datamodels.open(str(file_path)) as model:
+    #     FilenameMismatchWarning should be raised, as we have not synced the filename
+    with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(str(file_path)) as model:
         assert model.meta.telescope == "ROMAN"
         af = model._asdf
 
@@ -63,7 +66,10 @@ def test_model_input(tmp_path):
         af.tree["roman"].data = data
         af.write_to(file_path)
 
-    original_model = datamodels.open(file_path)
+    # We have not set the filename so we should get a warning that it doesn't match
+    with pytest.warns(datamodels.FilenameMismatchWarning):
+        original_model = datamodels.open(file_path)
+
     reopened_model = datamodels.open(original_model)
 
     # It's essential that we get a new instance so that the original
@@ -103,7 +109,8 @@ def test_memmap(tmp_path):
     # Since quantities don't inherit from np.memmap we have to test they are effectively
     # memapped.
     # rw mode needed because we have to test the memmap by manipulating the data on disk.
-    with datamodels.open(file_path, memmap=True, mode="rw") as model:
+    # We have not set the filename so we should get a warning that it doesn't match
+    with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(file_path, memmap=True, mode="rw") as model:
         # Test value before change
         assert (model.data == data).all()
         assert model.data[6, 19] != new_value
@@ -118,7 +125,8 @@ def test_memmap(tmp_path):
         assert (data != new_data).any()
 
     # Test that the file was modified without pushing an update to it
-    with datamodels.open(file_path, memmap=True, mode="rw") as model:
+    # We have not set the filename so we should get a warning that it doesn't match
+    with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(file_path, memmap=True, mode="rw") as model:
         assert model.data[6, 19] == new_value
         assert (model.data == new_data).all()
 
@@ -152,7 +160,8 @@ def test_no_memmap(tmp_path, kwargs):
     # Since quantities don't inherit from np.memmap we have to test they are effectively
     # memapped.
     # rw mode needed because we have to test the memmap by manipulating the data on disk.
-    with datamodels.open(file_path, mode="rw", **kwargs) as model:
+    # We have not set the filename so we should get a warning that it doesn't match
+    with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(file_path, mode="rw", **kwargs) as model:
         # Test value before change
         assert (model.data == data).all()
         assert model.data[6, 19] != new_value
@@ -167,7 +176,8 @@ def test_no_memmap(tmp_path, kwargs):
         assert (data != new_data).any()
 
     # Test that the file was modified without pushing an update to it
-    with datamodels.open(file_path, mode="rw", **kwargs) as model:
+    # We have not set the filename so we should get a warning that it doesn't match
+    with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(file_path, mode="rw", **kwargs) as model:
         assert model.data[6, 19] != new_value
         assert (model.data == data).all()
 
@@ -250,3 +260,28 @@ def test_open_asn(tmp_path):
     lib = datamodels.open(fn)
 
     assert isinstance(lib, romancal.datamodels.ModelLibrary)
+
+
+def test_filename_matches_meta(tmp_path):
+    save_path = tmp_path / "test_filename.asdf"
+    open_path = tmp_path / "test_filename_read.asdf"
+
+    # Create an image model and save it
+    image = utils.mk_datamodel(datamodels.ImageModel, shape=(0, 0))
+    image.to_asdf(save_path)
+
+    # Rename the model so filenames don't match
+    os.rename(save_path, open_path)
+
+    # Prove filename is different from meta.filename without using datamodels.open
+    with asdf.open(open_path) as af:
+        assert af["roman"]["meta"]["filename"] != open_path.name
+
+    # Show datamodels.open will update the filename in memory
+    with (
+        pytest.warns(
+            match="meta.filename: test_filename.asdf does not match filename: test_filename_read.asdf, updating the filename in memory!"
+        ),
+        datamodels.open(open_path) as model,
+    ):
+        assert model.meta.filename == open_path.name
