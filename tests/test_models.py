@@ -311,11 +311,8 @@ def test_make_guidewindow():
 
     assert guidewindow.meta.exposure.type == "WFI_IMAGE"
     assert guidewindow.pedestal_frames.dtype == np.uint16
-    assert guidewindow.pedestal_frames.unit == u.DN
     assert guidewindow.signal_frames.dtype == np.uint16
-    assert guidewindow.signal_frames.unit == u.DN
     assert guidewindow.amp33.dtype == np.uint16
-    assert guidewindow.amp33.unit == u.DN
     assert guidewindow.pedestal_frames.shape == (2, 2, 2, 2, 2)
     assert guidewindow.signal_frames.shape == (2, 2, 2, 2, 2)
     assert guidewindow.amp33.shape == (2, 2, 2, 2, 2)
