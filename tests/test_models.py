@@ -552,9 +552,9 @@ def test_add_model_attribute(tmp_path):
         assert readnoise2.new_attribute == 77
         readnoise2.new_attribute = 88
         assert readnoise2.new_attribute == 88
-        readnoise.data = "bad_data_value"
+        readnoise2.data = "bad_data_value"
         with pytest.raises(ValidationError):
-            readnoise.validate()
+            readnoise2.validate()
 
 
 def test_model_subscribable(tmp_path):

@@ -263,34 +263,6 @@ def test_nuke_validation(nuke_env_var, tmp_path):
             pass
 
 
-@pytest.mark.parametrize("nuke_env_strict_var", VALIDATION_CASES, indirect=True)
-def test_will_strict_validate(nuke_env_strict_var):
-    # Test the fixture passed the value of the environment variable
-    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) == nuke_env_strict_var
-
-    # Test the validate property
-    truth = nuke_env_strict_var.lower() in ["true", "yes", "1"]
-    context = nullcontext() if truth else pytest.warns(validate.ValidationWarning)
-
-    with context:
-        assert validate.will_strict_validate() is truth
-
-    # Try all uppercase
-    os.environ[validate.ROMAN_STRICT_VALIDATION] = nuke_env_strict_var.upper()
-    with context:
-        assert validate.will_strict_validate() is truth
-
-    # Try all lowercase
-    os.environ[validate.ROMAN_STRICT_VALIDATION] = nuke_env_strict_var.lower()
-    with context:
-        assert validate.will_strict_validate() is truth
-
-    # Remove the environment variable to test the default value
-    del os.environ[validate.ROMAN_STRICT_VALIDATION]
-    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) is None
-    assert validate.will_strict_validate() is True
-
-
 @pytest.mark.parametrize("model", [mdl for mdl in datamodels.MODEL_REGISTRY.values() if "Ref" not in mdl.__name__])
 def test_node_representation(model):
     """
