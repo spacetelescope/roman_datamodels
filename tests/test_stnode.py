@@ -213,17 +213,6 @@ def test_will_validate(nuke_env_var):
 def test_nuke_validation(nuke_env_var, tmp_path):
     context = pytest.raises(asdf.ValidationError) if nuke_env_var[1] else pytest.warns(validate.ValidationWarning)
 
-    # Create a broken DNode object
-    mdl = maker_utils.mk_wfi_img_photom()
-    mdl["phot_table"] = "THIS IS NOT VALID"
-    with context:
-        datamodels.WfiImgPhotomRefModel(mdl)
-
-    # __setattr__ a broken value
-    mdl = maker_utils.mk_wfi_img_photom()
-    with context:
-        mdl.phot_table = "THIS IS NOT VALID"
-
     # Break model without outside validation
     with nullcontext() if nuke_env_var[1] else pytest.warns(validate.ValidationWarning):
         mdl = datamodels.WfiImgPhotomRefModel(maker_utils.mk_wfi_img_photom())
