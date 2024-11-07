@@ -552,8 +552,9 @@ def test_add_model_attribute(tmp_path):
         assert readnoise2.new_attribute == 77
         readnoise2.new_attribute = 88
         assert readnoise2.new_attribute == 88
+        readnoise.data = "bad_data_value"
         with pytest.raises(ValidationError):
-            readnoise.data = "bad_data_value"
+            readnoise.validate()
 
 
 def test_model_subscribable(tmp_path):
@@ -679,8 +680,6 @@ def test_node_assignment():
     assert isinstance(exposure, stnode.DNode)
     wfi_image.meta.exposure = exposure
     assert isinstance(wfi_image.meta.exposure, stnode.DNode)
-    with pytest.raises(ValidationError):
-        wfi_image.meta.exposure = utils.mk_program()
     # The following tests that supplying a LNode passes validation.
     rampmodel = datamodels.RampModel(utils.mk_ramp(shape=(9, 9, 2)))
     assert isinstance(rampmodel.meta.exposure.read_pattern[1:], stnode.LNode)

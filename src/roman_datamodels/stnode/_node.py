@@ -11,7 +11,6 @@ from collections.abc import MutableMapping
 
 import asdf
 import asdf.schema as asdfschema
-import asdf.yamlutil as yamlutil
 import numpy as np
 from asdf.exceptions import ValidationError
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
@@ -19,7 +18,7 @@ from asdf.tags.core import ndarray
 from asdf.util import HashableDict
 from astropy.time import Time
 
-from roman_datamodels.validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
+from roman_datamodels.validate import ValidationWarning, _check_type, _error_message
 
 from ._registry import SCALAR_NODE_CLASSES_BY_KEY
 
@@ -60,22 +59,6 @@ def _check_value(value, schema, validator_context):
     validator = asdfschema.get_validator(temp_schema, validator_context, validator_callbacks)
     validator.validate(value, _schema=temp_schema)
     validator_context.close()
-
-
-def _validate(attr, instance, schema, ctx):
-    """
-    Validate the attribute against the schema.
-    """
-    # Note that the following checks cannot use isinstance since the TaggedObjectNode
-    # and TaggedListNode subclasses will break as a result. And currently there is no
-    # non-tagged subclasses of these classes that exist, nor are any envisioned yet.
-    if type(instance) == DNode:  # noqa: E721
-        instance = instance._data
-    elif type(instance) == LNode:  # noqa: E721
-        instance = instance.data
-
-    tagged_tree = yamlutil.custom_tree_to_tagged_tree(instance, ctx)
-    return _value_change(attr, tagged_tree, schema, False, will_strict_validate(), ctx)
 
 
 def _get_schema_for_property(schema, attr):
@@ -244,12 +227,6 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, value, self._data.get(key))
 
             if key in self._data or key in self._schema_attributes:
-                # Perform validation if enabled
-                if will_validate():
-                    schema = _get_schema_for_property(self._schema(), key)
-                    if schema:
-                        _validate(key, value, schema, self.ctx)
-
                 # Finally set the value
                 self._data[key] = value
             else:
