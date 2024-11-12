@@ -1,0 +1,2 @@
+Use multiclass of `np.uint32` and `Enum` rather than a subclass of `IntEnum` for
+the dqflags as suggested by the numpy devs.
