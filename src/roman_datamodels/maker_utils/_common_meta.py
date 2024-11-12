@@ -394,7 +394,7 @@ def mk_ref_file(**kwargs):
     ref_file["inverse_linearity"] = kwargs.get("inverse_linearity", "N/A")
     ref_file["photom"] = kwargs.get("photom", "N/A")
     ref_file["area"] = kwargs.get("area", "N/A")
-    ref_file["crds"] = kwargs.get("crds", {"sw_version": "12.3.1", "context_used": "roman_0815.pmap"})
+    ref_file["crds"] = kwargs.get("crds", {"version": "12.3.1", "context": "roman_0815.pmap"})
 
     return ref_file
 
@@ -675,7 +675,7 @@ def mk_ref_epsf_meta(**kwargs):
     """
     meta = mk_ref_common("EPSF", **kwargs)
     meta["oversample"] = kwargs.get("oversample", NONUM)
-    meta["effective_temperature"] = kwargs.get("effective_temperature", np.arange(1, 10).tolist())
+    meta["spectral_type"] = kwargs.get("spectral_type", ['None'])
     meta["defocus"] = kwargs.get("defocus", np.arange(1, 10).tolist())
     meta["pixel_x"] = kwargs.get("pixel_x", np.arange(1, 10, dtype=np.float32).tolist())
     meta["pixel_y"] = kwargs.get("pixel_y", np.arange(1, 10, dtype=np.float32).tolist())
