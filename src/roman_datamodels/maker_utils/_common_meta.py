@@ -675,7 +675,7 @@ def mk_ref_epsf_meta(**kwargs):
     """
     meta = mk_ref_common("EPSF", **kwargs)
     meta["oversample"] = kwargs.get("oversample", NONUM)
-    meta["spectral_type"] = kwargs.get("spectral_type", ['None'])
+    meta["spectral_type"] = kwargs.get("spectral_type", ["None"])
     meta["defocus"] = kwargs.get("defocus", np.arange(1, 10).tolist())
     meta["pixel_x"] = kwargs.get("pixel_x", np.arange(1, 10, dtype=np.float32).tolist())
     meta["pixel_y"] = kwargs.get("pixel_y", np.arange(1, 10, dtype=np.float32).tolist())
