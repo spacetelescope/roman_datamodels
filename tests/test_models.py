@@ -438,12 +438,12 @@ def test_make_distortion():
 
 # ePSF tests
 def test_make_epsf():
-    epsf = utils.mk_epsf(shape=(2, 4, 8, 8))
+    epsf = utils.mk_epsf(shape=(2, 3, 4, 8, 8))
     assert epsf.meta.reftype == "EPSF"
     assert isinstance(epsf.meta["pixel_x"], list)
     assert isinstance(epsf.meta["pixel_x"][0], float)
-    assert epsf["psf"].shape == (2, 4, 8, 8)
-    assert isinstance(epsf["psf"][0, 0, 0, 0], (float, np.float32))
+    assert epsf["psf"].shape == (2, 3, 4, 8, 8)
+    assert isinstance(epsf["psf"][0, 0, 0, 0, 0], (float, np.float32))
 
     # Test validation
     epsf_model = datamodels.EpsfRefModel(epsf)
