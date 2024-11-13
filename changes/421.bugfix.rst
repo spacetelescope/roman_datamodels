@@ -1,0 +1,2 @@
+Update RDM maker utils to include the keywords required by a bugfix to RAD that
+forces the ``archive_catalog`` and ``sdf`` keywords to be required.
