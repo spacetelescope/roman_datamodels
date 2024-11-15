@@ -1,3 +1,12 @@
+0.23.0 (unreleased)
+===================
+
+Misc
+----
+
+- Give VA scale factor a reasonable default. (`#396
+  <https://github.com/spacetelescope/roman_datamodels/pull/396`_)
+
 0.22.0 (2024-11-15)
 ===================
 
