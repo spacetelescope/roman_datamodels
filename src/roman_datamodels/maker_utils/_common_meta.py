@@ -256,7 +256,6 @@ def mk_velocity_aberration(**kwargs):
     vab["dec_reference"] = kwargs.get("dec_reference", NONUM)
     vab["scale_factor"] = kwargs.get("scale_factor", 1)
 
-
     return vab
 
 
