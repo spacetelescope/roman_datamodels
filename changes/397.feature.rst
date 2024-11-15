@@ -1,1 +1,0 @@
-Add ``ref_file`` entry for reference pixel subtraction reference file
