@@ -45,7 +45,7 @@ New Features
 Misc
 ----
 
-- Use multiclass of `np.uint32` and `Enum` rather than a subclass of `IntEnum`
+- Use multiclass of ``np.uint32`` and ``Enum`` rather than a subclass of ``IntEnum``
   for
   the dqflags as suggested by the numpy devs. (`#402
   <https://github.com/spacetelescope/roman_datamodels/issues/402>`_)
