@@ -498,11 +498,11 @@ def mk_mosaic_associations(**kwargs):
     roman_datamodels.stnode.MosaicAssociations
     """
 
-    mosass = stnode.MosaicAssociations()
-    mosass["pool_name"] = kwargs.get("pool_name", NOSTR)
-    mosass["table_name"] = kwargs.get("table_name", NOSTR)
+    mosasn = stnode.MosaicAssociations()
+    mosasn["pool_name"] = kwargs.get("pool_name", NOSTR)
+    mosasn["table_name"] = kwargs.get("table_name", NOSTR)
 
-    return mosass
+    return mosasn
 
 
 def mk_guidewindow_meta(**kwargs):
