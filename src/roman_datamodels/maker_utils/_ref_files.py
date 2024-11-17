@@ -234,7 +234,7 @@ def mk_distortion(*, filepath=None, **kwargs):
     return save_node(distortionref, filepath=filepath)
 
 
-def mk_epsf(*, shape=(3, 9, 361, 361), filepath=None, **kwargs):
+def mk_epsf(*, shape=(3, 6, 9, 361, 361), filepath=None, **kwargs):
     """
     Create a dummy ePSF instance (or file) with arrays and valid values
     for attributes required by the schema.
@@ -252,15 +252,15 @@ def mk_epsf(*, shape=(3, 9, 361, 361), filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.EpsfRef
     """
-    if len(shape) != 4:
-        shape = (3, 9, 361, 361)
-        warnings.warn("Input shape must be 4D. Defaulting to (3, 9, 361, 361)")
+    if len(shape) != 5:
+        shape = (3, 6, 9, 361, 361)
+        warnings.warn("Input shape must be 5D. Defaulting to (3, 6, 9, 361, 361)")
 
     epsfref = stnode.EpsfRef()
     epsfref["meta"] = mk_ref_epsf_meta(**kwargs.get("meta", {}))
 
     epsfref["psf"] = kwargs.get("psf", np.zeros(shape, dtype=np.float32))
-    epsfref["extended_psf"] = kwargs.get("extended_psf", np.zeros(shape[2:], dtype=np.float32))
+    epsfref["extended_psf"] = kwargs.get("extended_psf", np.zeros(shape[-2:], dtype=np.float32))
 
     return save_node(epsfref, filepath=filepath)
 
