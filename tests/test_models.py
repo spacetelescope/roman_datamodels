@@ -778,9 +778,9 @@ def test_make_tvac():
     assert tvac_model.validate() is None
 
 
-def test_make_source_catalog():
-    source_catalog = utils.mk_source_catalog()
-    source_catalog_model = datamodels.SourceCatalogModel(source_catalog)
+def test_make_image_source_catalog():
+    source_catalog = utils.mk_image_source_catalog()
+    source_catalog_model = datamodels.ImageSourceCatalogModel(source_catalog)
 
     assert isinstance(source_catalog_model.source_catalog, Table)
 

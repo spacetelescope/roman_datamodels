@@ -211,7 +211,7 @@ def test_opening_model(tmp_path, node_class):
             assert model.asn_type == "image"
         elif node_class == stnode.WfiMosaic:
             assert model.meta.basic.optical_element == "F158"
-        elif node_class in (stnode.SegmentationMap, stnode.SourceCatalog):
+        elif node_class in (stnode.SegmentationMap, stnode.ImageSourceCatalog):
             assert model.meta.optical_element == "F158"
         elif node_class in (stnode.MosaicSegmentationMap, stnode.MosaicSourceCatalog):
             assert hasattr(model.meta, "basic")

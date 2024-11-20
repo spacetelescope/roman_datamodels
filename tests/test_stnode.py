@@ -289,7 +289,7 @@ def test_node_representation(model):
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
             assert mdl.meta.filename == NOFN
-        elif isinstance(mdl, datamodels.SegmentationMapModel | datamodels.SourceCatalogModel):
+        elif isinstance(mdl, datamodels.SegmentationMapModel | datamodels.ImageSourceCatalogModel):
             assert mdl.meta.optical_element == "F158"
         else:
             assert repr(mdl.meta.instrument) == repr(
