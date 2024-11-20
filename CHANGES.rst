@@ -1,3 +1,68 @@
+0.22.0 (2024-11-15)
+===================
+
+Bug Fixes
+---------
+
+- Only use ``roman.meta`` attributes for crds parameter selection. (`#372
+  <https://github.com/spacetelescope/roman_datamodels/issues/372>`_)
+- Use a shorter string "?" for maker_utils default values for strings. (`#388
+  <https://github.com/spacetelescope/roman_datamodels/issues/388>`_)
+- Fix Enum bug in python < 3.11 for the dqflags. (`#425
+  <https://github.com/spacetelescope/roman_datamodels/issues/425>`_)
+
+
+Documentation
+-------------
+
+- use ``towncrier`` to handle change log entries (`#384
+  <https://github.com/spacetelescope/roman_datamodels/issues/384>`_)
+
+
+New Features
+------------
+
+- Open ``.json`` files as ``ModelLibrary`` if ``romancal`` is installed. (`#389
+  <https://github.com/spacetelescope/roman_datamodels/issues/389>`_)
+- Added datamodels and tests for ePSF, ABVegaOffset, and ApCorr reference
+  files. (`#393
+  <https://github.com/spacetelescope/roman_datamodels/issues/393>`_)
+- Add ``ref_file`` entry for reference pixel subtraction reference file (`#397
+  <https://github.com/spacetelescope/roman_datamodels/issues/397>`_)
+- Add python 3.13 support. (`#401
+  <https://github.com/spacetelescope/roman_datamodels/issues/401>`_)
+- Update datamodels and tests for L1/L2 Roman Doc (`#404
+  <https://github.com/spacetelescope/roman_datamodels/issues/404>`_)
+- Have datamodels update their ``meta.filename`` attribute match the filename
+  of the
+  file they were loaded from. This means users can rename files on disk, but
+  when they
+  open them in datamodels, the filename will be updated to match the new
+  filename. (`#409
+  <https://github.com/spacetelescope/roman_datamodels/issues/409>`_)
+
+
+Misc
+----
+
+- Use multiclass of ``np.uint32`` and ``Enum`` rather than a subclass of ``IntEnum``
+  for
+  the dqflags as suggested by the numpy devs. (`#402
+  <https://github.com/spacetelescope/roman_datamodels/issues/402>`_)
+- Corrected CRDS keywords.
+  Updated for Build 17 release of the RAD software package. (`#423
+  <https://github.com/spacetelescope/roman_datamodels/issues/423>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- Remove units from roman_datamodels. (`#405
+  <https://github.com/spacetelescope/roman_datamodels/issues/405>`_)
+- Remove units from Guidewindow related data models. (`#415
+  <https://github.com/spacetelescope/roman_datamodels/issues/415>`_)
+
+
 0.22.0 (2024-08-06)
 ===================
 

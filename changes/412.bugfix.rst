@@ -1,0 +1,1 @@
+Renamed mosaic association model variable name.

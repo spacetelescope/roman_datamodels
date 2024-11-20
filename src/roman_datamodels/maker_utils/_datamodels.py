@@ -1,7 +1,6 @@
 import warnings
 
 import numpy as np
-from astropy import units as u
 from astropy.table import Table
 
 from roman_datamodels import stnode
@@ -399,13 +398,9 @@ def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
     guidewindow = stnode.Guidewindow()
     guidewindow["meta"] = mk_guidewindow_meta(**kwargs.get("meta", {}))
 
-    guidewindow["pedestal_frames"] = kwargs.get(
-        "pedestal_frames", u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16)
-    )
-    guidewindow["signal_frames"] = kwargs.get(
-        "signal_frames", u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16)
-    )
-    guidewindow["amp33"] = kwargs.get("amp33", u.Quantity(np.zeros(shape, dtype=np.uint16), u.DN, dtype=np.uint16))
+    guidewindow["pedestal_frames"] = kwargs.get("pedestal_frames", np.zeros(shape, dtype=np.uint16))
+    guidewindow["signal_frames"] = kwargs.get("signal_frames", np.zeros(shape, dtype=np.uint16))
+    guidewindow["amp33"] = kwargs.get("amp33", np.zeros(shape, dtype=np.uint16))
 
     return save_node(guidewindow, filepath=filepath)
 
