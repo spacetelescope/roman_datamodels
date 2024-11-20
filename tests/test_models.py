@@ -26,7 +26,7 @@ NODES_LACKING_ARCHIVE_CATALOG = [
     stnode.IndividualImageMeta,
     stnode.Resample,
     stnode.SkyBackground,
-    stnode.SourceDetection,
+    stnode.SourceCatalog,
 ]
 
 
