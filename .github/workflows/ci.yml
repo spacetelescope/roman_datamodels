@@ -33,9 +33,21 @@ jobs:
     with:
       envs: |
         - linux: rad
+
+  latest_crds_contexts:
+    uses: ./.github/workflows/contexts.yml
+  crds_context:
+    needs: [ latest_crds_contexts ]
+    runs-on: ubuntu-latest
+    steps:
+      - id: context
+        run: echo context=${{ github.event_name == 'workflow_dispatch' && (inputs.crds_context != '' && inputs.crds_context || needs.latest_crds_contexts.outputs.roman) || needs.latest_crds_contexts.outputs.roman }} >> $GITHUB_OUTPUT
+    outputs:
+      context: ${{ steps.context.outputs.context }}
   test_with_romancal:
+    needs: [ crds_context ]
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@924441154cf3053034c6513d5e06c69d262fb9a6  # v1.13.0
     with:
       envs: |
-        - linux: withromancal
+        - linux: romancal
           coverage: codecov
