@@ -25,7 +25,8 @@ jobs:
         - linux: py310
         - linux: py311-cov
           coverage: codecov
-        - linux: py312
+        - linux: py312-withromancal-cov
+          coverage: codecov
         - linux: py313
         - macos: py311
   test_upstream:
@@ -34,20 +35,26 @@ jobs:
       envs: |
         - linux: rad
 
-  latest_crds_contexts:
-    uses: ./.github/workflows/contexts.yml
-  crds_context:
-    needs: [ latest_crds_contexts ]
+  environment:
     runs-on: ubuntu-latest
     steps:
-      - id: context
-        run: echo context=${{ github.event_name == 'workflow_dispatch' && (inputs.crds_context != '' && inputs.crds_context || needs.latest_crds_contexts.outputs.roman) || needs.latest_crds_contexts.outputs.roman }} >> $GITHUB_OUTPUT
+      - id: data_path
+        run: echo "path=${{ runner.temp }}/data" >> $GITHUB_OUTPUT
     outputs:
-      context: ${{ steps.context.outputs.context }}
-  test_with_romancal:
-    needs: [ crds_context ]
+      data_path: ${{ steps.data_path.outputs.path }}
+  crds_contexts:
+    uses: ./.github/workflows/contexts.yml
+  romancal:
+    needs: [ environment, crds_contexts ]
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@924441154cf3053034c6513d5e06c69d262fb9a6  # v1.13.0
     with:
+      setenv: |
+        CRDS_PATH: ${{ needs.environment.outputs.data_path }}/crds
+        CRDS_SERVER_URL: https://roman-crds.stsci.edu
+        CRDS_CLIENT_RETRY_COUNT: 3
+        CRDS_CLIENT_RETRY_DELAY_SECONDS: 20
+      cache-path: ${{ needs.environment.outputs.data_path }}/crds
+      cache-key: crds-${{ needs.crds_contexts.outputs.roman }}
       envs: |
         - linux: romancal
           coverage: codecov
