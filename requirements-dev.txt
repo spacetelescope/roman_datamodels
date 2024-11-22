@@ -5,11 +5,9 @@ git+https://github.com/asdf-format/asdf-wcs-schemas
 git+https://github.com/astropy/asdf-astropy
 
 # Use weekly astropy dev build
---extra-index-url https://pypi.anaconda.org/astropy/simple astropy --pre
---extra-index-url https://pypi.anaconda.org/liberfa/simple pyerfa --pre
+astropy>=0.0.dev0
+pyerfa>=0.0.dev0
 
-# Use Bi-weekly numpy/scipy dev builds
---extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
 numpy>=0.0.dev0
 scipy>=0.0.dev0
 
