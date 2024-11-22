@@ -5,77 +5,18 @@ Base node classes for all STNode classes.
 
 import datetime
 import re
-import warnings
 from collections import UserList
 from collections.abc import MutableMapping
 
 import asdf
-import asdf.schema as asdfschema
-import asdf.yamlutil as yamlutil
 import numpy as np
-from asdf.exceptions import ValidationError
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
-from asdf.util import HashableDict
 from astropy.time import Time
-
-from roman_datamodels.validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
 
 from ._registry import SCALAR_NODE_CLASSES_BY_KEY
 
 __all__ = ["DNode", "LNode"]
-
-validator_callbacks = HashableDict(asdfschema.YAML_VALIDATORS)
-validator_callbacks.update({"type": _check_type})
-
-
-def _value_change(path, value, schema, pass_invalid_values, strict_validation, ctx):
-    """
-    Validate a change in value against a schema.
-    Trap error and return a flag.
-    """
-    try:
-        _check_value(value, schema, ctx)
-        update = True
-
-    except ValidationError as error:
-        update = False
-        errmsg = _error_message(path, error)
-        if pass_invalid_values:
-            update = True
-        if strict_validation:
-            raise ValidationError(errmsg)
-        else:
-            warnings.warn(errmsg, ValidationWarning)
-    return update
-
-
-def _check_value(value, schema, validator_context):
-    """
-    Perform the actual validation.
-    """
-
-    temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
-    temp_schema.update(schema)
-    validator = asdfschema.get_validator(temp_schema, validator_context, validator_callbacks)
-    validator.validate(value, _schema=temp_schema)
-    validator_context.close()
-
-
-def _validate(attr, instance, schema, ctx):
-    """
-    Validate the attribute against the schema.
-    """
-    # Note that the following checks cannot use isinstance since the TaggedObjectNode
-    # and TaggedListNode subclasses will break as a result. And currently there is no
-    # non-tagged subclasses of these classes that exist, nor are any envisioned yet.
-    if type(instance) == DNode:  # noqa: E721
-        instance = instance._data
-    elif type(instance) == LNode:  # noqa: E721
-        instance = instance.data
-
-    tagged_tree = yamlutil.custom_tree_to_tagged_tree(instance, ctx)
-    return _value_change(attr, tagged_tree, schema, False, will_strict_validate(), ctx)
 
 
 def _get_schema_for_property(schema, attr):
@@ -244,12 +185,6 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, value, self._data.get(key))
 
             if key in self._data or key in self._schema_attributes:
-                # Perform validation if enabled
-                if will_validate():
-                    schema = _get_schema_for_property(self._schema(), key)
-                    if schema:
-                        _validate(key, value, schema, self.ctx)
-
                 # Finally set the value
                 self._data[key] = value
             else:

@@ -344,7 +344,7 @@ class DataModel(abc.ABC):
         """
         Re-validate the model instance against the tags
         """
-        validate.value_change(self._instance, pass_invalid_values=False, strict_validation=True)
+        self._asdf.validate()
 
     @_set_default_asdf
     def info(self, *args, **kwargs):
