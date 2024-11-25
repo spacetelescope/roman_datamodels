@@ -56,5 +56,5 @@ jobs:
       cache-path: ${{ needs.environment.outputs.data_path }}/crds
       cache-key: crds-${{ needs.crds_contexts.outputs.roman }}
       envs: |
-        - linux: py310-romancal
+        - linux: romancal
           coverage: codecov
