@@ -41,9 +41,10 @@ page::
     print(dm.meta.exposure.start_time_mjd)
     60000.0
 
-    # Try to assign invalid type
+    # Assign invalid type
 
     >>> d.meta.exposure.start_time_mjd = "hello"
+    >>> d.validate()
 
     # Last part of resulting traceback
 
@@ -72,13 +73,28 @@ page::
 
     # Try to assign wrong kind of node
 
-    >>> dm.meta.observation = dm.meta.exposure
-    Failed validating 'tag' in schema:
-        {'$schema': 'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema',
-         'tag': 'asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0'}
+    >>> dm.meta.exposure = dm.meta.observation
+    >>> dm.validate()
 
-    On instance:
-        {'groupgap': 0, 'ma_table_name': 'High Latitude Spec. Survey', 'ma_table_number': 1, 'nframes': 8, 'ngroups': 6, 'p_exptype': 'WFI_IMAGE|', 'type': 'WFI_IMAGE'}
+    ValidationError: mismatched tags, wanted 'asdf://stsci.edu/datamodels/roman/tags/exposure-1.0.0', got 'asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0'
+
+    Failed validating 'tag' in schema['properties']['meta']['allOf'][0]['allOf'][1]['properties']['exposure']:
+        {'tag': 'asdf://stsci.edu/datamodels/roman/tags/exposure-1.0.0',
+         'title': 'Exposure Information'}
+
+    On instance['meta']['exposure']:
+        {'execution_plan': 1,
+         'exposure': 1,
+         'observation': 1,
+         'observation_id': '?',
+         'pass': 1,
+         'program': 1,
+         'segment': 1,
+         'visit': 1,
+         'visit_file_activity': '01',
+         'visit_file_group': 1,
+         'visit_file_sequence': 1,
+         'visit_id': '?'}
 
     # Show and then change pixel value in data
 
