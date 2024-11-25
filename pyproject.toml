@@ -14,7 +14,7 @@ dependencies = [
     "asdf >=3.3.0",
     "asdf-astropy >=0.5.0",
     "gwcs >=0.19.0",
-    "numpy >=1.22",
+    "numpy >=1.24",
     "astropy >=5.3.0",
     "rad >=0.22.0, <0.23.0",
     # "rad @ git+https://github.com/spacetelescope/rad.git",
@@ -29,7 +29,7 @@ file = "LICENSE"
 test = [
     "pytest >=6.0.0",
     "pytest-doctestplus",
-    "pytest-doctestplus >=0.10.0",
+    "pytest-doctestplus >=1.2.1",
     "pytest-env >= 0.8",
 ]
 aws = ["stsci-aws-utils >= 0.1.2"]
@@ -63,7 +63,10 @@ minversion = 4.6
 doctest_plus = true
 doctest_rst = true
 text_file_format = "rst"
-addopts = "--color=yes --doctest-rst"
+addopts = [
+    "--color=yes",
+    "--doctest-rst",
+]
 testpaths = ["tests"]
 filterwarnings = [
     "error",
