@@ -59,13 +59,18 @@ write_to = "src/roman_datamodels/_version.py"
 where = ["src"]
 
 [tool.pytest.ini_options]
-minversion = 4.6
+minversion = 6
 doctest_plus = true
 doctest_rst = true
 text_file_format = "rst"
+log_cli_level = "INFO"
+xfail_strict = true
 addopts = [
-    "--color=yes",
-    "--doctest-rst",
+    "--color=yes",      # color test output
+    "--doctest-rst",    # enable doctests
+    "--strict-config",  # fail on unknown config options
+    "--strict-markers", # fail on unknown markers
+    "-ra",              # Show summary of all failures/errors
 ]
 testpaths = ["tests"]
 filterwarnings = [
