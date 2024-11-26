@@ -3,7 +3,9 @@ name = "roman_datamodels"
 description = "data models supporting calibration of the Nancy Grace Roman Space Telescope"
 readme = "README.md"
 requires-python = ">=3.11"
-authors = [{ name = "STScI", email = "help@stsci.edu" }]
+authors = [
+    { name = "STScI", email = "help@stsci.edu" },
+]
 classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Astronomy",
@@ -32,7 +34,6 @@ test = [
     "pytest-doctestplus >=1.2.1",
     "pytest-env >= 0.8",
 ]
-aws = ["stsci-aws-utils >= 0.1.2"]
 docs = [
     "sphinx",
     "sphinx-automodapi",
@@ -49,7 +50,10 @@ repository = "https://github.com/spacetelescope/roman_datamodels"
 roman_datamodels = "roman_datamodels.stnode._integration:get_extensions"
 
 [build-system]
-requires = ["setuptools >=61", "setuptools_scm[toml] >=3.4", "wheel"]
+requires = [
+    "setuptools >=61",
+    "setuptools_scm[toml] >=3.4",
+]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
