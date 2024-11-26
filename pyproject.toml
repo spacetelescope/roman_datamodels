@@ -2,7 +2,7 @@
 name = "roman_datamodels"
 description = "data models supporting calibration of the Nancy Grace Roman Space Telescope"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [{ name = "STScI", email = "help@stsci.edu" }]
 classifiers = [
     "Intended Audience :: Science/Research",
