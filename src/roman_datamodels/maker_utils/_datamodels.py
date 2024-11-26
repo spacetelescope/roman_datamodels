@@ -175,7 +175,7 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
     wfi_mosaic["meta"] = mk_mosaic_meta(**kwargs.get("meta", {}))
     wfi_mosaic["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
     wfi_mosaic["err"] = kwargs.get("err", np.zeros(shape, dtype=np.float32))
-    wfi_mosaic["context"] = kwargs.get("context", np.zeros((n_images,) + shape, dtype=np.uint32))
+    wfi_mosaic["context"] = kwargs.get("context", np.zeros((n_images, *shape), dtype=np.uint32))
     wfi_mosaic["weight"] = kwargs.get("weight", np.zeros(shape, dtype=np.float32))
 
     wfi_mosaic["var_poisson"] = kwargs.get("var_poisson", np.zeros(shape, dtype=np.float32))

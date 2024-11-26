@@ -4,10 +4,8 @@ from contextlib import nullcontext
 import asdf
 import pytest
 
-from roman_datamodels import datamodels
-from roman_datamodels import maker_utils
+from roman_datamodels import datamodels, maker_utils, stnode, validate
 from roman_datamodels import maker_utils as utils
-from roman_datamodels import stnode, validate
 from roman_datamodels.maker_utils._base import NOFN, NONUM, NOSTR
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
@@ -19,7 +17,7 @@ def test_generated_node_classes(tag):
     class_name = stnode._factories.class_name_from_tag_uri(tag["tag_uri"])
     node_class = getattr(stnode, class_name)
 
-    assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode))
+    assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
     assert node_class._tag == tag["tag_uri"]
     assert tag["description"] in node_class.__doc__
     assert tag["tag_uri"] in node_class.__doc__
@@ -264,7 +262,7 @@ def test_node_representation(model):
     mdl = maker_utils.mk_datamodel(model)
 
     if hasattr(mdl, "meta"):
-        if isinstance(mdl, (datamodels.MosaicModel, datamodels.MosaicSegmentationMapModel, datamodels.MosaicSourceCatalogModel)):
+        if isinstance(mdl, datamodels.MosaicModel | datamodels.MosaicSegmentationMapModel | datamodels.MosaicSourceCatalogModel):
             assert repr(mdl.meta.basic) == repr(
                 {
                     "time_first_mjd": NONUM,
@@ -291,7 +289,7 @@ def test_node_representation(model):
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
             assert mdl.meta.filename == NOFN
-        elif isinstance(mdl, (datamodels.SegmentationMapModel, datamodels.SourceCatalogModel)):
+        elif isinstance(mdl, datamodels.SegmentationMapModel | datamodels.SourceCatalogModel):
             assert mdl.meta.optical_element == "F158"
         else:
             assert repr(mdl.meta.instrument) == repr(

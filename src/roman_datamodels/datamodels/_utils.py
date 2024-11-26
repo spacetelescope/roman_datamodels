@@ -13,7 +13,7 @@ from roman_datamodels import validate
 
 from ._core import MODEL_REGISTRY, DataModel
 
-__all__ = ["rdm_open", "FilenameMismatchWarning"]
+__all__ = ["FilenameMismatchWarning", "rdm_open"]
 
 
 class FilenameMismatchWarning(UserWarning):

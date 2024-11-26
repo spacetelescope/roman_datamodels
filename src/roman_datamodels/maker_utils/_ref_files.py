@@ -20,21 +20,21 @@ from ._common_meta import (
 __all__ = [
     "mk_abvegaoffset",
     "mk_apcorr",
-    "mk_flat",
     "mk_dark",
     "mk_distortion",
     "mk_epsf",
+    "mk_flat",
     "mk_gain",
+    "mk_inverselinearity",
     "mk_ipc",
     "mk_linearity",
-    "mk_inverselinearity",
     "mk_mask",
     "mk_pixelarea",
-    "mk_wfi_img_photom",
     "mk_readnoise",
+    "mk_refpix",
     "mk_saturation",
     "mk_superbias",
-    "mk_refpix",
+    "mk_wfi_img_photom",
 ]
 
 OPT_ELEM = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK")
