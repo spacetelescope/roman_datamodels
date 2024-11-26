@@ -201,7 +201,8 @@ class DNode(MutableMapping):
         return self._x_schema_attributes
 
     def _recursive_items(self):
-        def recurse(tree, path=[]):
+        def recurse(tree, path=None):
+            path = path or []  # Avoid mutable default arguments
             if isinstance(tree, DNode | dict | AsdfDictNode):
                 for key, val in tree.items():
                     yield from recurse(val, [*path, key])

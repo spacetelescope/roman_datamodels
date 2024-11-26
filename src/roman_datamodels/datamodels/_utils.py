@@ -60,6 +60,7 @@ def _open_path_like(init, lazy_tree=True, **kwargs):
         warnings.warn(
             f"meta.filename: {asdf_file['roman']['meta']['filename']} does not match filename: {init.name}, updating the filename in memory!",
             FilenameMismatchWarning,
+            stacklevel=2,
         )
         asdf_file["roman"]["meta"]["filename"] = init.name
 
@@ -92,8 +93,8 @@ def rdm_open(init, memmap=False, **kwargs):
                 from romancal.datamodels.library import ModelLibrary
 
                 return ModelLibrary(init)
-            except ImportError:
-                raise ImportError("Please install romancal to allow opening associations with roman_datamodels")
+            except ImportError as err:
+                raise ImportError("Please install romancal to allow opening associations with roman_datamodels") from err
     with validate.nuke_validation():
         if isinstance(init, DataModel):
             # Copy the object so it knows not to close here

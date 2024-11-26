@@ -35,7 +35,7 @@ def validation_is_disabled():
             to "true".
         """
     )
-    warnings.warn(MESSAGE, ValidationWarning)
+    warnings.warn(MESSAGE, ValidationWarning, stacklevel=2)
 
 
 def will_validate():

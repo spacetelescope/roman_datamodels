@@ -40,7 +40,7 @@ def assert_node_equal(node1, node2):
     elif isinstance(node1, TaggedListNode):
         assert len(node1) == len(node2)
 
-        for value1, value2 in zip(node1, node2):
+        for value1, value2 in zip(node1, node2, strict=True):
             _assert_value_equal(value1, value2)
     elif isinstance(node1, TaggedScalarNode):
         value1 = node1.__class__.__bases__[0](node1)
@@ -91,7 +91,7 @@ def assert_node_is_copy(node1, node2, deepcopy=False):
             value2 = node2[key]
             _assert_value_is_copy(value1, value2, deepcopy=deepcopy)
     elif isinstance(node1, TaggedListNode):
-        for value1, value2 in zip(node1, node2):
+        for value1, value2 in zip(node1, node2, strict=True):
             _assert_value_is_copy(value1, value2, deepcopy=deepcopy)
     elif isinstance(node1, TaggedScalarNode):
         value1 = node1.__class__.__bases__[0](node1)
