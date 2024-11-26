@@ -38,12 +38,8 @@ repos:
   rev: 'v0.8.0'
   hooks:
     - id: ruff
-      args: ["--fix"]
-
-- repo: https://github.com/psf/black
-  rev: 24.10.0
-  hooks:
-    - id: black
+      args: ["--fix", "--show-fixes"]
+    - id: ruff-format
 
 - repo: https://github.com/twisted/towncrier
   rev: 24.8.0  # run 'pre-commit autoupdate' to update

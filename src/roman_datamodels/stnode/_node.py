@@ -180,7 +180,6 @@ class DNode(MutableMapping):
 
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
-
             # Wrap things in the tagged scalar classes if necessary
             value = self._convert_to_scalar(key, value, self._data.get(key))
 
