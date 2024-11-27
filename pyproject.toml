@@ -91,15 +91,6 @@ exclude_lines = [
     "pass\\n",
 ]
 
-[tool.isort]
-profile = "black"
-filter_files = true
-line_length = 130
-
-[tool.black]
-line-length = 130
-force-exclude = "^/(\n  (\n      \\.eggs\n    | \\.git\n    | \\.pytest_cache\n    | \\.tox\n  )/\n)\n"
-
 [tool.ruff]
 line-length = 130
 
