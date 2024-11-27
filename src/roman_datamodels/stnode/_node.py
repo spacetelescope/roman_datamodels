@@ -107,7 +107,7 @@ class DNode(MutableMapping):
         # Handle if we are passed different data types
         if node is None:
             self.__dict__["_data"] = {}
-        elif isinstance(node, (dict, AsdfDictNode)):
+        elif isinstance(node, dict | AsdfDictNode):
             self.__dict__["_data"] = node
         else:
             raise ValueError("Initializer only accepts dicts")
@@ -161,10 +161,10 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, self._data[key])
 
             # Return objects as node classes, if applicable
-            if isinstance(value, (dict, AsdfDictNode)):
+            if isinstance(value, dict | AsdfDictNode):
                 return DNode(value, parent=self, name=key)
 
-            elif isinstance(value, (list, AsdfListNode)):
+            elif isinstance(value, list | AsdfListNode):
                 return LNode(value)
 
             else:
@@ -180,7 +180,6 @@ class DNode(MutableMapping):
 
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
-
             # Wrap things in the tagged scalar classes if necessary
             value = self._convert_to_scalar(key, value, self._data.get(key))
 
@@ -202,13 +201,14 @@ class DNode(MutableMapping):
         return self._x_schema_attributes
 
     def _recursive_items(self):
-        def recurse(tree, path=[]):
-            if isinstance(tree, (DNode, dict, AsdfDictNode)):
+        def recurse(tree, path=None):
+            path = path or []  # Avoid mutable default arguments
+            if isinstance(tree, DNode | dict | AsdfDictNode):
                 for key, val in tree.items():
-                    yield from recurse(val, path + [key])
-            elif isinstance(tree, (LNode, list, tuple, AsdfListNode)):
+                    yield from recurse(val, [*path, key])
+            elif isinstance(tree, LNode | list | tuple | AsdfListNode):
                 for i, val in enumerate(tree):
-                    yield from recurse(val, path + [i])
+                    yield from recurse(val, [*path, i])
             elif tree is not None:
                 yield (".".join(str(x) for x in path), tree)
 
@@ -242,7 +242,7 @@ class DNode(MutableMapping):
             return {key: convert_val(val) for (key, val) in item_getter()}
         else:
             return {
-                key: convert_val(val) for (key, val) in item_getter() if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
+                key: convert_val(val) for (key, val) in item_getter() if not isinstance(val, np.ndarray | ndarray.NDArrayType)
             }
 
     def _schema(self):
@@ -279,7 +279,7 @@ class DNode(MutableMapping):
         value = self._convert_to_scalar(key, value, self._data.get(key))
 
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
-        if isinstance(value, (dict, AsdfDictNode)):
+        if isinstance(value, dict | AsdfDictNode):
             for sub_key, sub_value in value.items():
                 value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
 
@@ -316,7 +316,7 @@ class LNode(UserList):
     def __init__(self, node=None):
         if node is None:
             self.data = []
-        elif isinstance(node, (list, AsdfListNode)):
+        elif isinstance(node, list | AsdfListNode):
             self.data = node
         elif isinstance(node, self.__class__):
             self.data = node.data
@@ -325,9 +325,9 @@ class LNode(UserList):
 
     def __getitem__(self, index):
         value = self.data[index]
-        if isinstance(value, (dict, AsdfDictNode)):
+        if isinstance(value, dict | AsdfDictNode):
             return DNode(value)
-        elif isinstance(value, (list, AsdfListNode)):
+        elif isinstance(value, list | AsdfListNode):
             return LNode(value)
         else:
             return value

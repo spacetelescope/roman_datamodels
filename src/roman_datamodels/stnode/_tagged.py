@@ -17,8 +17,8 @@ from ._registry import (
 )
 
 __all__ = [
-    "TaggedObjectNode",
     "TaggedListNode",
+    "TaggedObjectNode",
     "TaggedScalarNode",
 ]
 
