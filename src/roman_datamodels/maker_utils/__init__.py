@@ -1,5 +1,3 @@
-from roman_datamodels.datamodels import MODEL_REGISTRY as _MODEL_REGISTRY  # Hide from public API
-
 from ._basic_meta import *  # noqa: F403
 from ._common_meta import *  # noqa: F403
 from ._datamodels import *  # noqa: F403
@@ -18,9 +16,6 @@ SPECIAL_MAKERS = {
     "WfiImage": "mk_level2_image",
     "WfiMosaic": "mk_level3_mosaic",
 }
-
-# This is static at runtime, so we might as well compute it once
-NODE_REGISTRY = {mdl: node for node, mdl in _MODEL_REGISTRY.items()}
 
 
 def _camel_case_to_snake_case(value):
@@ -99,4 +94,4 @@ def mk_datamodel(model_class, **kwargs):
     `roman_datamodels.datamodels.Datamodel`
     """
 
-    return model_class(mk_node(NODE_REGISTRY[model_class], **kwargs))
+    return model_class.create_default(**kwargs)

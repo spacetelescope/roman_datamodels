@@ -100,7 +100,7 @@ def test_deprecated():
         maker_utils.mk_rampfitoutput(shape=(8, 8, 8))
 
 
-@pytest.mark.parametrize("model_class", [mdl for mdl in maker_utils.NODE_REGISTRY])
+@pytest.mark.parametrize("model_class", [mdl for mdl in datamodels.MODEL_REGISTRY.values()])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
