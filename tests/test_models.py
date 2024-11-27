@@ -10,8 +10,8 @@ from astropy.modeling import Model
 from astropy.table import QTable, Table
 from numpy.testing import assert_array_equal
 
+from roman_datamodels import _maker_utils as utils
 from roman_datamodels import datamodels, stnode, validate
-from roman_datamodels import maker_utils as utils
 from roman_datamodels.testing import assert_node_equal
 
 from .conftest import MANIFEST

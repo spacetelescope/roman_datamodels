@@ -7,9 +7,9 @@ import pytest
 from astropy import units as u
 from astropy.time import Time
 
-from roman_datamodels import datamodels, maker_utils, stnode
+from roman_datamodels import _maker_utils, datamodels, stnode
+from roman_datamodels._maker_utils import _ref_files as ref_files
 from roman_datamodels.datamodels._datamodels import _RomanDataModel
-from roman_datamodels.maker_utils import _ref_files as ref_files
 from roman_datamodels.testing import assert_node_equal
 
 
@@ -20,7 +20,7 @@ def test_maker_utility_implemented(node_class):
 
     (note: will be using full defaults for this one)
     """
-    instance = maker_utils.mk_node(node_class)
+    instance = _maker_utils.mk_node(node_class)
     assert isinstance(instance, node_class)
 
 
@@ -34,7 +34,7 @@ def test_instance_valid(node_class):
     is valid against its schema.
     """
     with asdf.AsdfFile() as af:
-        af["node"] = maker_utils.mk_node(node_class, shape=(8, 8, 8))
+        af["node"] = _maker_utils.mk_node(node_class, shape=(8, 8, 8))
         af.validate()
 
 
@@ -43,7 +43,7 @@ def test_instance_valid(node_class):
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_no_extra_fields(node_class, manifest):
-    instance = maker_utils.mk_node(node_class, shape=(8, 8, 8))
+    instance = _maker_utils.mk_node(node_class, shape=(8, 8, 8))
     instance_keys = set(instance.keys())
 
     schema_uri = next(t["schema_uri"] for t in manifest["tags"] if t["tag_uri"] == instance.tag)
@@ -65,7 +65,7 @@ def test_ref_files_all(name):
     """
     Meta test to confirm that the __all__ in _ref_files.py has an entry for every ref file maker.
     """
-    from roman_datamodels.maker_utils import _camel_case_to_snake_case
+    from roman_datamodels._maker_utils import _camel_case_to_snake_case
 
     method_name = f"mk_{_camel_case_to_snake_case(name)}"
     assert method_name[:-4] in ref_files.__all__
@@ -76,12 +76,12 @@ def test_make_datamodel_tests(node_class):
     """
     Meta test to confirm that correct tests exist for each datamodel maker utility.
     """
-    from roman_datamodels.maker_utils import _camel_case_to_snake_case
+    from roman_datamodels._maker_utils import _camel_case_to_snake_case
 
     from . import test_models as tests
 
     name = node_class.__name__
-    name = maker_utils.SPECIAL_MAKERS.get(name, _camel_case_to_snake_case(name))
+    name = _maker_utils.SPECIAL_MAKERS.get(name, _camel_case_to_snake_case(name))
     if name.startswith("mk_"):
         name = name[3:]
     if name.endswith("_ref"):
@@ -97,7 +97,7 @@ def test_deprecated():
     """
 
     with pytest.warns(DeprecationWarning):
-        maker_utils.mk_rampfitoutput(shape=(8, 8, 8))
+        _maker_utils.mk_rampfitoutput(shape=(8, 8, 8))
 
 
 @pytest.mark.parametrize("model_class", [mdl for mdl in datamodels.MODEL_REGISTRY.values()])
@@ -109,7 +109,7 @@ def test_datamodel_maker(model_class):
     Test that the datamodel maker utility creates a valid datamodel.
     """
 
-    model = maker_utils.mk_datamodel(model_class, shape=(8, 8, 8))
+    model = _maker_utils.mk_datamodel(model_class, shape=(8, 8, 8))
 
     assert isinstance(model, model_class)
     model.validate()
@@ -183,11 +183,11 @@ def test_override_data(node_class):
             return mutate_value(node)
 
     # Create a node then mutate it.
-    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
+    node = _maker_utils.mk_node(node_class, shape=(8, 8, 8))
     kwargs = mutate_node(node)
 
     # Create a new node using the recorded mutation data. Then check it is equal to the mutated object.
-    new_node = maker_utils.mk_node(node_class, **kwargs)
+    new_node = _maker_utils.mk_node(node_class, **kwargs)
     assert new_node is not node
     assert_node_equal(new_node, node)
 
@@ -198,7 +198,7 @@ def test_keyword_only(node_class):
     Ensure all the maker utils at the top level are keyword only.
     """
 
-    maker = maker_utils._get_node_maker(node_class)
+    maker = _maker_utils._get_node_maker(node_class)
     sig = inspect.signature(maker)
 
     assert "kwargs" in sig.parameters
@@ -216,6 +216,6 @@ def test_mk_level2_image_shape():
     Regression test for https://github.com/spacetelescope/roman_datamodels/issues/377
     where n_groups was incorrect when provided a 3d shape
     """
-    n = maker_utils.mk_level2_image(shape=(2, 3, 4))
+    n = _maker_utils.mk_level2_image(shape=(2, 3, 4))
     assert n.amp33.shape == (2, 4096, 128)
     assert n.data.shape == (3, 4)

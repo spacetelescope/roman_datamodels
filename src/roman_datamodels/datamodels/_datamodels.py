@@ -285,7 +285,7 @@ class RampModel(_RomanDataModel):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base ramp node with dummy values (for validation)
-        from roman_datamodels.maker_utils import mk_ramp
+        from roman_datamodels._maker_utils import mk_ramp
 
         ramp = mk_ramp(shape=model.shape)
 

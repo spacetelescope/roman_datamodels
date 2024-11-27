@@ -88,7 +88,7 @@ class DataModel(abc.ABC):
         """
         Create a default instance of this model using the maker_utils
         """
-        from roman_datamodels.maker_utils import mk_node
+        from roman_datamodels._maker_utils import mk_node
 
         # don't use the maker util save, instead save through
         # the datamodel itself
