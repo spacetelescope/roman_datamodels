@@ -84,13 +84,20 @@ class DataModel(abc.ABC):
         pass
 
     @classmethod
-    def create_default(cls, **kwargs):
+    def create_default(cls, *, filepath=None, **kwargs):
         """
         Create a default instance of this model using the maker_utils
         """
         from roman_datamodels.maker_utils import mk_node
 
-        return cls(mk_node(cls._node_type, **kwargs))
+        # don't use the maker util save, instead save through
+        # the datamodel itself
+        default = cls(mk_node(cls._node_type, filepath=None, **kwargs))
+
+        if filepath is not None:
+            default.save(filepath)
+
+        return default
 
     def __init_subclass__(cls, **kwargs):
         """Register each subclass in the MODEL_REGISTRY"""

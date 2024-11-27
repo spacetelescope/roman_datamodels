@@ -51,6 +51,31 @@ class _RomanDataModel(_DataModel):
 class MosaicModel(_RomanDataModel):
     _node_type = stnode.WfiMosaic
 
+    @classmethod
+    def create_default(cls, shape=(4088, 4088), n_images=2, filepath=None, **kwargs):
+        """
+        Create a MosaicModel with all data required for writing a file filled.
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape (y, x) of data array in the model (and
+            its corresponding dq/err arrays). Default is 4088 x 4088.
+            If shape is a tuple of length 3, the first element is assumed to be
+            n_images and will override the n_images parameter.
+
+        n_images : int
+            Number of images used to create the level 3 image. Defaults to 2.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+
+        return super().create_default(shape=shape, n_images=n_images, filepath=filepath, **kwargs)
+
     def append_individual_image_meta(self, meta):
         """
         Add the contents of meta to the appropriate keyword in individual_image_meta as an astropy QTable.
@@ -126,17 +151,112 @@ class MosaicModel(_RomanDataModel):
 class ImageModel(_RomanDataModel):
     _node_type = stnode.WfiImage
 
+    @classmethod
+    def create_default(cls, shape=(4088, 4088), n_groups=8, filepath=None, **kwargs):
+        """
+        Create a ImageModel with all data required for writing a file filled.
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape (y, x) of data array in the model (and
+            its corresponding dq/err arrays). This specified size does NOT include
+            the four-pixel border of reference pixels - those are trimmed at level
+            2.  This size, however, is used to construct the additional arrays that
+            contain the original border reference pixels (i.e if shape = (10, 10),
+            the border reference pixel arrays will have (y, x) dimensions (14, 4)
+            and (4, 14)). Default is 4088 x 4088.
+            If shape is a tuple of length 3, the first element is assumed to be the
+            n_groups and will override any settings there.
+
+        n_groups : int
+            (optional, keyword-only) The level 2 file is flattened, but it contains
+            arrays for the original reference pixels which remain 3D. n_groups
+            specifies what the z dimension of these arrays should be. Defaults to 8.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, n_groups=n_groups, filepath=filepath, **kwargs)
+
 
 class ScienceRawModel(_RomanDataModel):
     _node_type = stnode.WfiScienceRaw
+
+    @classmethod
+    def create_default(cls, shape=(8, 4096, 4096), dq=False, filepath=None, **kwargs):
+        """
+        Create a default instance of this model using the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) (z, y, x) Shape of data array. This includes a
+            four-pixel border representing the reference pixels. Default is
+                (8, 4096, 4096)
+            (8 integrations, 4088 x 4088 represent the science pixels, with the
+            additional being the border reference pixels).
+
+        dq : bool
+            (optional, keyword-only) Toggle to add a data quality array for
+            dropout pixels
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, dq=dq, filepath=filepath, **kwargs)
 
 
 class MsosStackModel(_RomanDataModel):
     _node_type = stnode.MsosStack
 
+    @classmethod
+    def create_default(cls, shape=(4096, 4096), filepath=None, **kwargs):
+        """
+        Create a MsosStackModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) File name and path to write model to.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
+
 
 class RampModel(_RomanDataModel):
     _node_type = stnode.Ramp
+
+    @classmethod
+    def create_default(cls, shape=(8, 4096, 4096), filepath=None, **kwargs):
+        """
+        Create a RampModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional) Shape (z, y, x) of data array in the model (and its
+            corresponding dq/err arrays). This specified size includes the
+            four-pixel border of reference pixels. Default is 8 x 4096 x 4096.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
     @classmethod
     def from_science_raw(cls, model):
@@ -201,10 +321,48 @@ class RampModel(_RomanDataModel):
 class RampFitOutputModel(_RomanDataModel):
     _node_type = stnode.RampFitOutput
 
+    @classmethod
+    def create_default(cls, shape=(8, 4096, 4096), filepath=None, **kwargs):
+        """
+        Create a RampFitOutputModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional) Shape (z, y, x) of data array in the model (and its
+            corresponding dq/err arrays). This specified size includes the
+            four-pixel border of reference pixels. Default is 8 x 4096 x 4096.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
+
 
 class AssociationsModel(_DataModel):
     # Need an init to allow instantiation from a JSON file
     _node_type = stnode.Associations
+
+    @classmethod
+    def create_default(cls, shape=(8, 4096, 4096), filepath=None, **kwargs):
+        """
+        Create a AssociationsModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) The shape of the member elements of products.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
     @classmethod
     def is_association(cls, asn_data):
@@ -222,41 +380,215 @@ class AssociationsModel(_DataModel):
 class GuidewindowModel(_RomanDataModel):
     _node_type = stnode.Guidewindow
 
+    @classmethod
+    def create_default(cls, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
+        """
+        Create a GuideWondowModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
+
 
 class FlatRefModel(_DataModel):
     _node_type = stnode.FlatRef
+
+    @classmethod
+    def create_default(cls, shape=(4096, 4096), filepath=None, **kwargs):
+        """
+        Create a FlatRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
 
 class AbvegaoffsetRefModel(_DataModel):
     _node_type = stnode.AbvegaoffsetRef
 
+    @classmethod
+    def create_default(cls, filepath=None, **kwargs):
+        """
+        Create a AbvegaoffsetRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(filepath=filepath, **kwargs)
+
 
 class ApcorrRefModel(_DataModel):
     _node_type = stnode.ApcorrRef
+
+    @classmethod
+    def create_default(cls, shape=(10,), filepath=None, **kwargs):
+        """
+        Create a ApcorrRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
 
 class DarkRefModel(_DataModel):
     _node_type = stnode.DarkRef
 
+    @classmethod
+    def create_default(cls, shape=(2, 4096, 4096), filepath=None, **kwargs):
+        """
+        Create a DarkRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
+
 
 class DistortionRefModel(_DataModel):
     _node_type = stnode.DistortionRef
+
+    @classmethod
+    def create_default(cls, filepath=None, **kwargs):
+        """
+        Create a DistortionRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(filepath=filepath, **kwargs)
 
 
 class EpsfRefModel(_DataModel):
     _node_type = stnode.EpsfRef
 
+    @classmethod
+    def create_default(cls, shape=(3, 6, 9, 361, 361), filepath=None, **kwargs):
+        """
+        Create EpsfRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
+
 
 class GainRefModel(_DataModel):
     _node_type = stnode.GainRef
+
+    @classmethod
+    def create_default(cls, shape=(4096, 4096), filepath=None, **kwargs):
+        """
+        Create GainRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
 
 class IpcRefModel(_DataModel):
     _node_type = stnode.IpcRef
 
+    @classmethod
+    def create_default(cls, shape=(3, 3), filepath=None, **kwargs):
+        """
+        Create IpcRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
+
 
 class LinearityRefModel(_DataModel):
     _node_type = stnode.LinearityRef
+
+    @classmethod
+    def create_default(cls, shape=(2, 4096, 4096), filepath=None, **kwargs):
+        """
+        Create LinearityRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
     def get_primary_array_name(self):
         """
@@ -271,6 +603,24 @@ class LinearityRefModel(_DataModel):
 class InverselinearityRefModel(_DataModel):
     _node_type = stnode.InverselinearityRef
 
+    @classmethod
+    def create_default(cls, shape=(2, 4096, 4096), filepath=None, **kwargs):
+        """
+        Create InverselinearityRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
+
     def get_primary_array_name(self):
         """
         Returns the name "primary" array for this model, which
@@ -283,6 +633,24 @@ class InverselinearityRefModel(_DataModel):
 
 class MaskRefModel(_DataModel):
     _node_type = stnode.MaskRef
+
+    @classmethod
+    def create_default(cls, shape=(4096, 4096), filepath=None, **kwargs):
+        """
+        Create MaskRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
     def get_primary_array_name(self):
         """
@@ -297,46 +665,264 @@ class MaskRefModel(_DataModel):
 class PixelareaRefModel(_DataModel):
     _node_type = stnode.PixelareaRef
 
+    @classmethod
+    def create_default(cls, shape=(4096, 4096), filepath=None, **kwargs):
+        """
+        Create PixelareaRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
+
 
 class ReadnoiseRefModel(_DataModel):
     _node_type = stnode.ReadnoiseRef
+
+    @classmethod
+    def create_default(cls, shape=(4096, 4096), filepath=None, **kwargs):
+        """
+        Create ReadnoiseRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
 
 class SuperbiasRefModel(_DataModel):
     _node_type = stnode.SuperbiasRef
 
+    @classmethod
+    def create_default(cls, shape=(4096, 4096), filepath=None, **kwargs):
+        """
+        Create SuperbiasRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
+
 
 class SaturationRefModel(_DataModel):
     _node_type = stnode.SaturationRef
+
+    @classmethod
+    def create_default(cls, shape=(4096, 4096), filepath=None, **kwargs):
+        """
+        Create SaturationRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
 
 class WfiImgPhotomRefModel(_DataModel):
     _node_type = stnode.WfiImgPhotomRef
 
+    @classmethod
+    def create_default(cls, filepath=None, **kwargs):
+        """
+        Create WfiImgPhotomRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(filepath=filepath, **kwargs)
+
 
 class RefpixRefModel(_DataModel):
     _node_type = stnode.RefpixRef
+
+    @classmethod
+    def create_default(cls, shape=(32, 286721), filepath=None, **kwargs):
+        """
+        Create RefpixRefModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) Shape of arrays in the model.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
 
 class FpsModel(_DataModel):
     _node_type = stnode.Fps
 
+    @classmethod
+    def create_default(cls, shape=(8, 4096, 4096), filepath=None, **kwargs):
+        """
+        Create FpsModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) (z, y, x) Shape of data array. This includes a
+            four-pixel border representing the reference pixels. Default is
+                (8, 4096, 4096)
+            (8 integrations, 4088 x 4088 represent the science pixels, with the
+            additional being the border reference pixels).
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
+
 
 class TvacModel(_DataModel):
     _node_type = stnode.Tvac
+
+    @classmethod
+    def create_default(cls, shape=(8, 4096, 4096), filepath=None, **kwargs):
+        """
+        Create TvacModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) (z, y, x) Shape of data array. This includes a
+            four-pixel border representing the reference pixels. Default is
+                (8, 4096, 4096)
+            (8 integrations, 4088 x 4088 represent the science pixels, with the
+            additional being the border reference pixels).
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
 
 class MosaicSourceCatalogModel(_RomanDataModel):
     _node_type = stnode.MosaicSourceCatalog
 
+    @classmethod
+    def create_default(cls, filepath=None, **kwargs):
+        """
+        Create MosaicSourceCatalogModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(filepath=filepath, **kwargs)
+
 
 class MosaicSegmentationMapModel(_RomanDataModel):
     _node_type = stnode.MosaicSegmentationMap
+
+    @classmethod
+    def create_default(cls, shape=(4096, 4096), filepath=None, **kwargs):
+        """
+        Create a MosaicSegmentationMapModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) File name and path to write model to.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
 
 
 class SourceCatalogModel(_RomanDataModel):
     _node_type = stnode.SourceCatalog
 
+    @classmethod
+    def create_default(cls, filepath=None, **kwargs):
+        """
+        Create SourceCatalogModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(filepath=filepath, **kwargs)
+
 
 class SegmentationMapModel(_RomanDataModel):
     _node_type = stnode.SegmentationMap
+
+    @classmethod
+    def create_default(cls, shape=(4096, 4096), filepath=None, **kwargs):
+        """
+        Create a SegmentationMapModel with all data required for writing the maker_utils
+
+        Parameters
+        ----------
+        shape : tuple, int
+            (optional, keyword-only) File name and path to write model to.
+
+        filepath : str
+            (optional) File name and path to write model to.
+
+        kwargs : dict[str, Any]
+            (optional) Override default construction for any node
+        """
+        return super().create_default(shape=shape, filepath=filepath, **kwargs)
