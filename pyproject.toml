@@ -39,7 +39,6 @@ docs = [
     "sphinx-automodapi",
     "sphinx-rtd-theme",
     "sphinx-astropy",
-    "tomli; python_version <\"3.11\"",
 ]
 
 [project.urls]

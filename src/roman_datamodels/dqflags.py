@@ -19,24 +19,16 @@ which provides 32 bits. Bits of an integer are most easily referred to using
 the formula `2**bit_number` where `bit_number` is the 0-index bit of interest.
 """
 
-import sys
-from enum import unique
-
 # Something with pickling of multiclassed enums was changed in 3.11 + allowing
 # us to directly us `np.uint32` as the enum object rather than a python `int`.
-if sys.version_info < (3, 11):
-    from enum import IntEnum
-else:
-    from enum import Enum
+from enum import Enum, unique
 
-    import numpy as np
-
-    class IntEnum(np.uint32, Enum): ...
+import numpy as np
 
 
 # fmt: off
 @unique
-class pixel(IntEnum):
+class pixel(np.uint32, Enum):
     """Pixel-specific data quality flags"""
 
     GOOD             = 0      # No bits set, all is good
@@ -74,7 +66,7 @@ class pixel(IntEnum):
 
 
 @unique
-class group(IntEnum):
+class group(np.uint32, Enum):
     """Group-specific data quality flags
         Once groups are combined, these flags are equivalent to the pixel-specific flags.
     """
