@@ -19,49 +19,54 @@ page::
     >>> dm = rdm.open('my_wonderful_roman_data.asdf')
 
     >>> type(dm)
-    roman_datamodels.datamodels.ScienceRawModel
+    <class 'roman_datamodels.datamodels._datamodels.ScienceRawModel'>
+
+    # Can view the associated schema
+    >>> dm.tag
+    'asdf://stsci.edu/datamodels/roman/tags/wfi_science_raw-1.0.0'
 
     >>> print(dm.meta.instrument.optical_element)
     GRISM
 
-    # most nodes have special types
+    # Most nodes have special types
 
     >>> type(dm.meta.exposure)
     roman_datamodels.stnode.Exposure
 
     >>> print(dm.data.shape)
-    (6, 4096, 4096)
+    (8, 4096, 4096)
 
     >>> print(dm.data.dtype)
     uint16
 
     # Change metadata value
 
-    >>> dm.meta.exposure.start_time_mjd = 60000.
-    print(dm.meta.exposure.start_time_mjd)
+    >>> dm.meta.exposure.exposure_time = 60000.
+    >>> print(dm.meta.exposure.exposure_time)
     60000.0
 
     # Try to assign invalid type
 
-    >>> d.meta.exposure.start_time_mjd = "hello"
+    >>> dm.meta.exposure.exposure_time = "hello"
 
     # Last part of resulting traceback
 
-    ValidationError: While validating start_time_mjd the following error occurred:
+    ValidationError: While validating exposure_time the following error occurred:
     'hello' is not of type 'number'
 
     Failed validating 'type' in schema:
         {'$schema': 'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema',
          'archive_catalog': {'datatype': 'float',
-                             'destination': ['ScienceCommon.exposure_start_time_mjd']},
-         'description': 'This records the time at the start of the exposure '
-                        'using the\n'
-                        'Modified Julian Date (MJD). This is used in the '
-                        'archive catalog for\n'
-                        'multi-mission matching.\n',
+                             'destination': ['WFIExposure.exposure_time',
+                                             'GuideWindow.exposure_time',
+                                             'WFICommon.exposure_time']},
+         'description': 'The difference in time (in units of seconds) between\n'
+                        'the start of the first reset/read and end of the last '
+                        'read in\n'
+                        'the readout pattern.\n',
          'sdf': {'source': {'origin': 'TBD'},
                  'special_processing': 'VALUE_REQUIRED'},
-         'title': '[d] exposure start time in MJD',
+         'title': 'Exposure Time (s)',
          'type': 'number'}
 
     On instance:
@@ -75,10 +80,23 @@ page::
     >>> dm.meta.observation = dm.meta.exposure
     Failed validating 'tag' in schema:
         {'$schema': 'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema',
-         'tag': 'asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0'}
+         'tag': 'asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0',
+         'title': 'Observation Identifiers'}
 
     On instance:
-        {'groupgap': 0, 'ma_table_name': 'High Latitude Spec. Survey', 'ma_table_number': 1, 'nframes': 8, 'ngroups': 6, 'p_exptype': 'WFI_IMAGE|', 'type': 'WFI_IMAGE'}
+        {'data_problem': False,
+         'effective_exposure_time': -999999,
+         'end_time': '2020-01-01T02:00:00.000',
+         'exposure_time': 60000.0,
+         'frame_time': -999999,
+         'ma_table_name': '?',
+         'ma_table_number': -999999,
+         'mid_time': '2020-01-01T01:00:00.000',
+         'nresultants': 6,
+         'read_pattern': [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]],
+         'start_time': '2020-01-01T00:00:00.000',
+         'truncated': False,
+         'type': 'WFI_IMAGE'}
 
     # Show and then change pixel value in data
 
@@ -94,7 +112,7 @@ page::
     >>> dm2 = rdm.open('test.asdf')
     >>> dm2.data[0, 10, 10]
     42
-    >>> dm2.meta.exposure_start_time_mjd
+    >>> dm2.meta.exposure.exposure_time
     60000.0
 
 
