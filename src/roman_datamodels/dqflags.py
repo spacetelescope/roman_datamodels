@@ -1,4 +1,4 @@
-""" Roman Data Quality Flags
+"""Roman Data Quality Flags
 
 The definitions are documented in the Roman RTD:
 

@@ -17,7 +17,7 @@ on:
 
 jobs:
   test:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@924441154cf3053034c6513d5e06c69d262fb9a6  # v1.13.0
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@d68193b68216da64eafaa618f53c59f5d271c56e  # v1.14.0
     with:
       envs: |
         - linux: py310-oldestdeps-cov
@@ -25,17 +25,35 @@ jobs:
         - linux: py310
         - linux: py311-cov
           coverage: codecov
-        - linux: py312
+        - linux: py312-withromancal-cov
+          coverage: codecov
         - linux: py313
         - macos: py311
   test_upstream:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@924441154cf3053034c6513d5e06c69d262fb9a6  # v1.13.0
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@d68193b68216da64eafaa618f53c59f5d271c56e  # v1.14.0
     with:
       envs: |
         - linux: rad
-  test_with_romancal:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@924441154cf3053034c6513d5e06c69d262fb9a6  # v1.13.0
+
+  environment:
+    runs-on: ubuntu-latest
+    steps:
+      - id: data_path
+        run: echo "path=${{ runner.temp }}/data" >> $GITHUB_OUTPUT
+    outputs:
+      data_path: ${{ steps.data_path.outputs.path }}
+  crds_contexts:
+    uses: spacetelescope/crds/.github/workflows/contexts.yml@master
+  romancal:
+    needs: [ environment, crds_contexts ]
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@d68193b68216da64eafaa618f53c59f5d271c56e  # v1.14.0
     with:
+      setenv: |
+        CRDS_PATH: ${{ needs.environment.outputs.data_path }}/crds
+        CRDS_SERVER_URL: https://roman-crds.stsci.edu
+        CRDS_CLIENT_RETRY_COUNT: 3
+        CRDS_CLIENT_RETRY_DELAY_SECONDS: 20
+      cache-path: ${{ needs.environment.outputs.data_path }}/crds
+      cache-key: crds-${{ needs.crds_contexts.outputs.roman }}
       envs: |
-        - linux: withromancal
-          coverage: codecov
+        - linux: romancal

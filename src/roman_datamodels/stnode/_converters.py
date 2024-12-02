@@ -8,10 +8,10 @@ from astropy.time import Time
 from ._registry import LIST_NODE_CLASSES_BY_TAG, NODE_CONVERTERS, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
 
 __all__ = [
-    "TaggedObjectNodeConverter",
-    "TaggedListNodeConverter",
-    "TaggedScalarNodeConverter",
     "NODE_EXTENSIONS",
+    "TaggedListNodeConverter",
+    "TaggedObjectNodeConverter",
+    "TaggedScalarNodeConverter",
 ]
 
 

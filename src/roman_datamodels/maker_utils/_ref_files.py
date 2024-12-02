@@ -20,21 +20,21 @@ from ._common_meta import (
 __all__ = [
     "mk_abvegaoffset",
     "mk_apcorr",
-    "mk_flat",
     "mk_dark",
     "mk_distortion",
     "mk_epsf",
+    "mk_flat",
     "mk_gain",
+    "mk_inverselinearity",
     "mk_ipc",
     "mk_linearity",
-    "mk_inverselinearity",
     "mk_mask",
     "mk_pixelarea",
-    "mk_wfi_img_photom",
     "mk_readnoise",
+    "mk_refpix",
     "mk_saturation",
     "mk_superbias",
-    "mk_refpix",
+    "mk_wfi_img_photom",
 ]
 
 OPT_ELEM = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK")
@@ -94,7 +94,7 @@ def mk_ref_apcorr_data(shape=(10,), **kwargs):
     if len(shape) > 1:
         shape = shape[:1]
 
-        warnings.warn(f"{MESSAGE} assuming the first entry. The remaining are thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first entry. The remaining are thrown out!", UserWarning, stacklevel=2)
 
     data = {}
     for optical_elem in OPT_ELEM:
@@ -131,7 +131,7 @@ def mk_apcorr(*, shape=(10,), filepath=None, **kwargs):
     if len(shape) > 1:
         shape = shape[:1]
 
-        warnings.warn(f"{MESSAGE} assuming the first entry. The remaining is thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first entry. The remaining is thrown out!", UserWarning, stacklevel=2)
 
     apcorrref = stnode.ApcorrRef()
     apcorrref["meta"] = mk_ref_common("APCORR", **kwargs.get("meta", {}))
@@ -161,7 +161,7 @@ def mk_flat(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning, stacklevel=2)
 
     flatref = stnode.FlatRef()
     flatref["meta"] = mk_ref_common("FLAT", **kwargs.get("meta", {}))
@@ -192,7 +192,7 @@ def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
     if len(shape) != 3:
         shape = (2, 4096, 4096)
-        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)", UserWarning, stacklevel=2)
 
     darkref = stnode.DarkRef()
     darkref["meta"] = mk_ref_dark_meta(**kwargs.get("meta", {}))
@@ -254,7 +254,7 @@ def mk_epsf(*, shape=(3, 6, 9, 361, 361), filepath=None, **kwargs):
     """
     if len(shape) != 5:
         shape = (3, 6, 9, 361, 361)
-        warnings.warn("Input shape must be 5D. Defaulting to (3, 6, 9, 361, 361)")
+        warnings.warn("Input shape must be 5D. Defaulting to (3, 6, 9, 361, 361)", UserWarning, stacklevel=2)
 
     epsfref = stnode.EpsfRef()
     epsfref["meta"] = mk_ref_epsf_meta(**kwargs.get("meta", {}))
@@ -286,7 +286,7 @@ def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning, stacklevel=2)
 
     gainref = stnode.GainRef()
     gainref["meta"] = mk_ref_common("GAIN", **kwargs.get("meta", {}))
@@ -317,7 +317,7 @@ def mk_ipc(*, shape=(3, 3), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning, stacklevel=2)
 
     ipcref = stnode.IpcRef()
     ipcref["meta"] = mk_ref_common("IPC", **kwargs.get("meta", {}))
@@ -350,7 +350,7 @@ def mk_linearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
     if len(shape) != 3:
         shape = (2, 4096, 4096)
-        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)", UserWarning, stacklevel=2)
 
     linearityref = stnode.LinearityRef()
     linearityref["meta"] = mk_ref_units_dn_meta("LINEARITY", **kwargs.get("meta", {}))
@@ -380,7 +380,7 @@ def mk_inverselinearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     """
     if len(shape) != 3:
         shape = (2, 4096, 4096)
-        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)")
+        warnings.warn("Input shape must be 3D. Defaulting to (2, 4096, 4096)", UserWarning, stacklevel=2)
 
     inverselinearityref = stnode.InverselinearityRef()
     inverselinearityref["meta"] = mk_ref_units_dn_meta("INVERSELINEARITY", **kwargs.get("meta", {}))
@@ -412,7 +412,7 @@ def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning, stacklevel=2)
 
     maskref = stnode.MaskRef()
     maskref["meta"] = mk_ref_common("MASK", **kwargs.get("meta", {}))
@@ -443,7 +443,7 @@ def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning, stacklevel=2)
 
     pixelarearef = stnode.PixelareaRef()
     pixelarearef["meta"] = mk_ref_pixelarea_meta(**kwargs.get("meta", {}))
@@ -523,7 +523,7 @@ def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning, stacklevel=2)
 
     readnoiseref = stnode.ReadnoiseRef()
     readnoiseref["meta"] = mk_ref_readnoise_meta(**kwargs.get("meta", {}))
@@ -554,7 +554,7 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning, stacklevel=2)
 
     saturationref = stnode.SaturationRef()
     saturationref["meta"] = mk_ref_common("SATURATION", **kwargs.get("meta", {}))
@@ -586,7 +586,7 @@ def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning, stacklevel=2)
 
     superbiasref = stnode.SuperbiasRef()
     superbiasref["meta"] = mk_ref_common("BIAS", **kwargs.get("meta", {}))
@@ -633,7 +633,7 @@ def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
     if len(shape) > 2:
         shape = shape[:2]
 
-        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning)
+        warnings.warn(f"{MESSAGE} assuming the first two entries. The remaining is thrown out!", UserWarning, stacklevel=2)
 
     refpix = stnode.RefpixRef()
     refpix["meta"] = mk_ref_units_dn_meta("REFPIX", **kwargs.get("meta", {}))

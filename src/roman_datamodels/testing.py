@@ -40,7 +40,7 @@ def assert_node_equal(node1, node2):
     elif isinstance(node1, TaggedListNode):
         assert len(node1) == len(node2)
 
-        for value1, value2 in zip(node1, node2):
+        for value1, value2 in zip(node1, node2, strict=True):
             _assert_value_equal(value1, value2)
     elif isinstance(node1, TaggedScalarNode):
         value1 = node1.__class__.__bases__[0](node1)
@@ -52,9 +52,9 @@ def assert_node_equal(node1, node2):
 
 
 def _assert_value_equal(value1, value2):
-    if isinstance(value1, (TaggedObjectNode, TaggedListNode, TaggedScalarNode, DNode)):
+    if isinstance(value1, TaggedObjectNode | TaggedListNode | TaggedScalarNode | DNode):
         assert_node_equal(value1, value2)
-    elif isinstance(value1, (np.ndarray, NDArrayType)):
+    elif isinstance(value1, np.ndarray | NDArrayType):
         assert_array_equal(value1, value2)
     elif isinstance(value1, Model):
         assert_model_equal(value1, value2)
@@ -91,7 +91,7 @@ def assert_node_is_copy(node1, node2, deepcopy=False):
             value2 = node2[key]
             _assert_value_is_copy(value1, value2, deepcopy=deepcopy)
     elif isinstance(node1, TaggedListNode):
-        for value1, value2 in zip(node1, node2):
+        for value1, value2 in zip(node1, node2, strict=True):
             _assert_value_is_copy(value1, value2, deepcopy=deepcopy)
     elif isinstance(node1, TaggedScalarNode):
         value1 = node1.__class__.__bases__[0](node1)
@@ -104,7 +104,7 @@ def assert_node_is_copy(node1, node2, deepcopy=False):
 
 def _assert_value_is_copy(value1, value2, deepcopy=False):
     if deepcopy:
-        if isinstance(value1, (TaggedObjectNode, TaggedListNode, TaggedScalarNode)):
+        if isinstance(value1, TaggedObjectNode | TaggedListNode | TaggedScalarNode):
             assert_node_is_copy(value1, value2)
         elif isinstance(value1, Model):
             assert value1 is not value2
@@ -141,7 +141,7 @@ def wraps_hashable(node):
 
 
 def _wraps_hashable(value):
-    if isinstance(value, (TaggedObjectNode, TaggedListNode, TaggedScalarNode)):
+    if isinstance(value, TaggedObjectNode | TaggedListNode | TaggedScalarNode):
         return wraps_hashable(value)
 
     # Immutable types are usually hashable

@@ -10,9 +10,8 @@ from astropy.modeling import Model
 from astropy.table import QTable, Table
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels
+from roman_datamodels import datamodels, stnode, validate
 from roman_datamodels import maker_utils as utils
-from roman_datamodels import stnode, validate
 from roman_datamodels.testing import assert_node_equal
 
 from .conftest import MANIFEST
@@ -443,7 +442,7 @@ def test_make_epsf():
     assert isinstance(epsf.meta["pixel_x"], list)
     assert isinstance(epsf.meta["pixel_x"][0], float)
     assert epsf["psf"].shape == (2, 3, 4, 8, 8)
-    assert isinstance(epsf["psf"][0, 0, 0, 0, 0], (float, np.float32))
+    assert isinstance(epsf["psf"][0, 0, 0, 0, 0], float | np.float32)
 
     # Test validation
     epsf_model = datamodels.EpsfRefModel(epsf)
@@ -552,8 +551,9 @@ def test_add_model_attribute(tmp_path):
         assert readnoise2.new_attribute == 77
         readnoise2.new_attribute = 88
         assert readnoise2.new_attribute == 88
+        readnoise2.data = "bad_data_value"
         with pytest.raises(ValidationError):
-            readnoise.data = "bad_data_value"
+            readnoise2.validate()
 
 
 def test_model_subscribable(tmp_path):
@@ -679,8 +679,6 @@ def test_node_assignment():
     assert isinstance(exposure, stnode.DNode)
     wfi_image.meta.exposure = exposure
     assert isinstance(wfi_image.meta.exposure, stnode.DNode)
-    with pytest.raises(ValidationError):
-        wfi_image.meta.exposure = utils.mk_program()
     # The following tests that supplying a LNode passes validation.
     rampmodel = datamodels.RampModel(utils.mk_ramp(shape=(9, 9, 2)))
     assert isinstance(rampmodel.meta.exposure.read_pattern[1:], stnode.LNode)
@@ -912,7 +910,7 @@ def test_datamodel_schema_info_existence(name):
         info = model.schema_info("archive_catalog")
         for keyword in model.meta.keys():
             # Only DNodes or LNodes need to be canvassed
-            if isinstance(model.meta[keyword], (stnode.DNode, stnode.LNode)):
+            if isinstance(model.meta[keyword], stnode.DNode | stnode.LNode):
                 # Ignore metadata schemas that lack archive_catalog entries
                 if type(model.meta[keyword]) not in NODES_LACKING_ARCHIVE_CATALOG:
                     assert keyword in info["roman"]["meta"]

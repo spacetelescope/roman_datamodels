@@ -384,7 +384,8 @@ ref_optical_element-1.0.0::
   ...
 
 If one tries to modify the datamodel contents with a value inconsistent with
-what a schema requires, validation will raise an error.
+what a schema requires, validation will raise an error when the datamodel is
+validated.
 
 Level 1 Example
 ...............

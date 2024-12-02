@@ -45,9 +45,10 @@ page::
     >>> print(dm.meta.exposure.exposure_time)
     60000.0
 
-    # Try to assign invalid type
+    # Assign invalid type
 
     >>> dm.meta.exposure.exposure_time = "hello"
+    >>> dm.validate()
 
     # Last part of resulting traceback
 
@@ -78,6 +79,8 @@ page::
     # Try to assign wrong kind of node
 
     >>> dm.meta.observation = dm.meta.exposure
+    >>> dm.validate()
+    
     Failed validating 'tag' in schema:
         {'$schema': 'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema',
          'tag': 'asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0',

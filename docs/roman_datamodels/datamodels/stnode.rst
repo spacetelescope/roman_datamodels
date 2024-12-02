@@ -78,8 +78,8 @@ The specific stnode objects will be subclasses of the
 `~roman_datamodels.stnode.TaggedObjectNode` or
 `~roman_datamodels.stnode.TaggedListNode` classes. These classes are extensions
 of the `~roman_datamodels.stnode.DNode` and `~roman_datamodels.stnode.LNode`
-classes which have extensions to handle looking up the schema information for on
-the fly data validation. In particular, they will track the ``tag`` information
+classes which have extensions to handle looking up the schema information.
+In particular, they will track the ``tag`` information
 contained within the manifest from RAD.
 
 These "tagged-nodes" are then turned into specific stnode objects via the
@@ -124,46 +124,6 @@ is reorganized, then scalar node concept can be removed from the codebase.
     dictionary keys off the ``type`` keyword that all schemas have to define. If
     a new type needs to be added, then one needs to add a new entry to this
     dictionary.
-
-
-Validation
-----------
-
-The stnode objects are designed to attempt to validate the data they contain or
-have set in them against the schema information in RAD. This is typically done
-on the fly when the data is set via the ``.`` interface; however, ASDF by
-default will validate the data stored in the node against its schema during both
-serialization and de-serialization.
-
-In order to avoid the overhead of re-validating all of the data in a node when
-one thing is updated (this can induce a lot of overhead), the stnode objects
-will attempt to parse a given "tagged-node's" schema down so that it is only
-validating the field being updated. It performs the validation by attempting to
-construct in-memory an ASDF-schema representing just the portion of the schema
-it needs to validate just that single field against.  It then passes that schema
-into the ASDF validation routines to check the data. Unfortunately, this is not
-a perfect process nor is it particularly robust. It is possible for a schema to
-have fields that the parse down process cannot handle, or use JSON-schema
-constructs which the parser is unaware of. In these cases, validation might
-raise an error or pass invalid data.
-
-.. warning::
-
-    The only validation process that is guaranteed to validate the data
-    correctly is the full ASDF validation process. This is because ASDF will be
-    using the full schema and be checking everything against it. The on-the-fly
-    validation's parsing may create unreliable validation scenarios.
-
-.. note::
-
-    In order to avoid the "on-the-fly" validation process, one can set values in
-    a node/datamodel via the dictionary, ``[]``, interface instead of the ``.``
-    interface. This is because the ``[]`` purposely bypasses the on-the-fly
-    validation process. Thus in general it is recommend that one uses the ``.``
-    interface for setting values in a node/datamodel, and only using the ``[]``
-    when one needs to store temporary invalid data in a node/datamodel. The use
-    ``[]`` runs the risk of placing the node/datamodel in a state where it
-    cannot be serialized to ASDF.
 
 
 ASDF
