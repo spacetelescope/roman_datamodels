@@ -14,16 +14,11 @@ import datetime
 import importlib
 import os
 import sys
+import tomllib
 from distutils.version import LooseVersion
 from pathlib import Path
 
 import sphinx
-
-if sys.version_info < (3, 11):
-    import tomli as tomllib
-else:
-    import tomllib
-
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

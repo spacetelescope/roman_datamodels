@@ -1,4 +1,3 @@
-import sys
 from math import log10
 
 import numpy as np
@@ -32,10 +31,7 @@ def test_pixel_flags(flag):
     assert isinstance(flag, dqflags.pixel)
 
     # Test that the pixel flags are ints
-    if sys.version_info < (3, 11):
-        assert isinstance(flag, int)
-    else:
-        assert isinstance(flag, np.uint32)
+    assert isinstance(flag, np.uint32)
 
     # Test that the pixel flags are dict accessible
     assert dqflags.pixel[flag.name] is flag
@@ -83,10 +79,7 @@ def test_group_flags(flag):
     assert isinstance(flag, dqflags.group)
 
     # Test that the group flags are ints
-    if sys.version_info < (3, 11):
-        assert isinstance(flag, int)
-    else:
-        assert isinstance(flag, np.uint32)
+    assert isinstance(flag, np.uint32)
 
     # Test that the group flags are dict accessible
     assert dqflags.group[flag.name] is flag
