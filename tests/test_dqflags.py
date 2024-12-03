@@ -6,7 +6,7 @@ import pytest
 
 from roman_datamodels import datamodels as rdm
 from roman_datamodels import dqflags
-from roman_datamodels.maker_utils import mk_datamodel
+from roman_datamodels._maker_utils import mk_datamodel
 
 
 def _is_power_of_two(x):

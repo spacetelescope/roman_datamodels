@@ -4,9 +4,9 @@ from contextlib import nullcontext
 import asdf
 import pytest
 
-from roman_datamodels import datamodels, maker_utils, stnode, validate
-from roman_datamodels import maker_utils as utils
-from roman_datamodels.maker_utils._base import NOFN, NONUM, NOSTR
+from roman_datamodels import _maker_utils, datamodels, stnode, validate
+from roman_datamodels import _maker_utils as utils
+from roman_datamodels._maker_utils._base import NOFN, NONUM, NOSTR
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 from .conftest import MANIFEST
@@ -31,7 +31,7 @@ def test_generated_node_classes(tag):
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_copy(node_class):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
-    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
+    node = _maker_utils.mk_node(node_class, shape=(8, 8, 8))
     node_copy = node.copy()
 
     # Assert the copy is shallow:
@@ -49,7 +49,7 @@ def test_copy(node_class):
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_deepcopy_model(node_class):
-    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
+    node = _maker_utils.mk_node(node_class, shape=(8, 8, 8))
     model = datamodels.MODEL_REGISTRY[node_class](node)
     model_copy = model.copy()
 
@@ -93,7 +93,7 @@ def test_wfi_mode():
 def test_serialization(node_class, tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
+    node = _maker_utils.mk_node(node_class, shape=(8, 8, 8))
     with asdf.AsdfFile() as af:
         af["node"] = node
         af.write_to(file_path)
@@ -213,7 +213,7 @@ def test_nuke_validation(nuke_env_var, tmp_path):
 
     # Break model without outside validation
     with nullcontext() if nuke_env_var[1] else pytest.warns(validate.ValidationWarning):
-        mdl = datamodels.WfiImgPhotomRefModel(maker_utils.mk_wfi_img_photom())
+        mdl = datamodels.WfiImgPhotomRefModel(_maker_utils.mk_wfi_img_photom())
     mdl._instance["phot_table"] = "THIS IS NOT VALID"
 
     # Broken can be written to file
@@ -259,7 +259,7 @@ def test_node_representation(model):
     the representation of the object. The reported issue was with ``mdl.meta.instrument``,
     so that is directly checked here.
     """
-    mdl = maker_utils.mk_datamodel(model)
+    mdl = _maker_utils.mk_datamodel(model)
 
     if hasattr(mdl, "meta"):
         if isinstance(mdl, datamodels.MosaicModel | datamodels.MosaicSegmentationMapModel | datamodels.MosaicSourceCatalogModel):

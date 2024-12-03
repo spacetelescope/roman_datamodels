@@ -337,7 +337,7 @@ def mk_associations(*, shape=(2, 3, 1), filepath=None, **kwargs):
 
     Returns
     -------
-    roman_datamodels.stnode.AssociationsModel
+    roman_datamodels.stnode.Associations
     """
 
     associations = stnode.Associations()

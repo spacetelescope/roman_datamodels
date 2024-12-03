@@ -77,10 +77,27 @@ class DataModel(abc.ABC):
 
     crds_observatory = "roman"
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def _node_type(self):
         """Define the top-level node type for this model"""
         pass
+
+    @classmethod
+    def create_default(cls, *, filepath=None, **kwargs):
+        """
+        Create a default instance of this model using the maker_utils
+        """
+        from roman_datamodels._maker_utils import mk_node
+
+        # don't use the maker util save, instead save through
+        # the datamodel itself
+        default = cls(mk_node(cls._node_type, filepath=None, **kwargs))
+
+        if filepath is not None:
+            default.save(filepath)
+
+        return default
 
     def __init_subclass__(cls, **kwargs):
         """Register each subclass in the MODEL_REGISTRY"""

@@ -243,7 +243,7 @@ def mk_epsf(*, shape=(3, 6, 9, 361, 361), filepath=None, **kwargs):
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
-        If shape is greater than 1D, the first dimension is used.
+        If shape is greater than 5D, the first 5 dimensions are used.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
@@ -376,7 +376,7 @@ def mk_inverselinearity(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
 
     Returns
     -------
-    roman_datamodels.stnode.InverseLinearityRef
+    roman_datamodels.stnode.InverselinearityRef
     """
     if len(shape) != 3:
         shape = (2, 4096, 4096)
