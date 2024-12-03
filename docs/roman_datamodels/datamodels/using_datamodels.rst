@@ -22,8 +22,8 @@ page::
     <class 'roman_datamodels.datamodels._datamodels.ScienceRawModel'>
 
     # Can view the associated schema
-    >>> dm.tag
-    'asdf://stsci.edu/datamodels/roman/tags/wfi_science_raw-1.0.0'
+    >>> dm.schema_uri
+    'asdf://stsci.edu/datamodels/roman/schemas/wfi_science_raw-1.0.0'
 
     >>> print(dm.meta.instrument.optical_element)
     GRISM
