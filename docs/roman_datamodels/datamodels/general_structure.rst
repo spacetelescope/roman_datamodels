@@ -133,11 +133,11 @@ The corresponding schema for the dark model above is::
     ---
     $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
     id: asdf://stsci.edu/datamodels/roman/schemas/reference_files/dark-1.0.0
-    
+
     title: Dark Reference File Schema
-    
+
     datamodel_name: DarkRefModel
-    
+
     type: object
     properties:
       meta:
@@ -259,9 +259,9 @@ ref_common-1.0.0::
     ---
     $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
     id: asdf://stsci.edu/datamodels/roman/schemas/reference_files/ref_common-1.0.0
-    
+
     title: Common Reference File Metadata Properties
-    
+
     type: object
     properties:
       reftype:
@@ -332,9 +332,9 @@ ref_exposure_type-1.0.0::
     ---
     $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
     id: asdf://stsci.edu/datamodels/roman/schemas/reference_files/ref_exposure_type-1.0.0
-    
+
     title: Exposure Type Reference Schema
-    
+
     type: object
     properties:
       exposure:
@@ -366,9 +366,9 @@ ref_optical_element-1.0.0::
   ---
   $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
   id: asdf://stsci.edu/datamodels/roman/schemas/reference_files/ref_optical_element-1.0.0
-  
+
   title: Optical Element Reference Schema
-  
+
   type: object
   properties:
     instrument:
@@ -423,7 +423,7 @@ of meta will consist of the same attributes with few variations between data fil
   │       └─version (str): 0.22.1.dev9+g6580f18.d20241120
   └─roman (WfiScienceRaw) # Level 1 (L1) Uncalibrated Roman Wide Field
   Instrument (WFI) Ramp Cube
-  
+
     ├─meta (dict)
     │ ├─calibration_software_name (CalibrationSoftwareName): RomanCAL # Calibration Software Name
     │ ├─calibration_software_version (CalibrationSoftwareVersion): 9.9.0 # Calibration Software Version Number
@@ -443,7 +443,7 @@ of meta will consist of the same attributes with few variations between data fil
     │ │ ├─velocity_y (int): -999999 # Y Component of Roman Velocity (km/s)
     │ │ └─velocity_z (int): -999999 # Z Component of Roman Velocity (km/s)
     │ ├─exposure (Exposure) # Exposure Information
-  
+
     │ │ ├─type (str): WFI_IMAGE
     │ │ ├─start_time (Time): 2020-01-01T00:00:00.000 # Exposure Start Time (UTC)
     │ │ ├─mid_time (Time): 2020-01-01T01:00:00.000 # Exposure Mid Time (UTC)
@@ -614,15 +614,15 @@ wfi_science_raw-1.0.0.yaml::
   ---
   $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
   id: asdf://stsci.edu/datamodels/roman/schemas/wfi_science_raw-1.0.0
-  
+
   title: |
     Level 1 (L1) Uncalibrated Roman Wide Field
     Instrument (WFI) Ramp Cube
-  
+
   datamodel_name: ScienceRawModel
-  
+
   archive_meta: None
-  
+
   type: object
   properties:
     meta:
@@ -670,9 +670,9 @@ common-1.0.0.yaml::
   ---
   $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
   id: asdf://stsci.edu/datamodels/roman/schemas/common-1.0.0
-  
+
   title: Common metadata properties
-  
+
   allOf:
   # Meta Variables
   - $ref: asdf://stsci.edu/datamodels/roman/schemas/basic-1.0.0

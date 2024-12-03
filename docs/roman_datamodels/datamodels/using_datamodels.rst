@@ -80,7 +80,7 @@ page::
 
     >>> dm.meta.observation = dm.meta.exposure
     >>> dm.validate()
-    
+
     Failed validating 'tag' in schema:
         {'$schema': 'http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema',
          'tag': 'asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0',
