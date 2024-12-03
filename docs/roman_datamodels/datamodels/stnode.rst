@@ -44,7 +44,7 @@ objects "look" like they are nice Python derived types.
 .. warning::
 
     Because the `~roman_datamodels.stnode.DNode` "attributes" are actually like
-    they are Python dictionary key, using the ``__getattr__`` to enable ``.``
+    Python dictionary keys, using the ``__getattr__`` to enable ``.``
     access, things like ``dir(node)``, IDE autocompletion, and some other Python
     introspection tools will not work as expected. In some cases this may result
     in spurious warnings about accessing undefined attributes. It also means
