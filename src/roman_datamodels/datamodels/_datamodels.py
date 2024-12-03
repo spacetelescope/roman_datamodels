@@ -334,8 +334,8 @@ class MosaicSegmentationMapModel(_RomanDataModel):
     _node_type = stnode.MosaicSegmentationMap
 
 
-class SourceCatalogModel(_RomanDataModel):
-    _node_type = stnode.SourceCatalog
+class ImageSourceCatalogModel(_RomanDataModel):
+    _node_type = stnode.ImageSourceCatalog
 
 
 class SegmentationMapModel(_RomanDataModel):

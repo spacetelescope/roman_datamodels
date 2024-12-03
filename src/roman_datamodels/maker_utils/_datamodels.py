@@ -423,7 +423,7 @@ def mk_mosaic_source_catalog(*, filepath=None, **kwargs):
 
     Returns
     -------
-    roman_datamodels.stnode.SourceCatalog
+    roman_datamodels.stnode.MosaicSourceCatalog
     """
     source_catalog = stnode.MosaicSourceCatalog()
 
@@ -466,7 +466,7 @@ def mk_mosaic_segmentation_map(*, filepath=None, shape=(4096, 4096), **kwargs):
     return save_node(segmentation_map, filepath=filepath)
 
 
-def mk_source_catalog(*, filepath=None, **kwargs):
+def mk_image_source_catalog(*, filepath=None, **kwargs):
     """
     Create a dummy Source Catalog instance (or file) with arrays and valid values
     for attributes required by the schema.
@@ -478,9 +478,9 @@ def mk_source_catalog(*, filepath=None, **kwargs):
 
     Returns
     -------
-    roman_datamodels.stnode.SourceCatalog
+    roman_datamodels.stnode.ImageSourceCatalog
     """
-    source_catalog = stnode.SourceCatalog()
+    source_catalog = stnode.ImageSourceCatalog()
 
     source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
     source_catalog["meta"] = mk_catalog_meta(**kwargs.get("meta", {}))

@@ -10,7 +10,7 @@ from roman_datamodels import stnode
 
 from ._base import NONUM, NOSTR
 from ._basic_meta import mk_basic_meta
-from ._tagged_nodes import mk_cal_logs, mk_photometry, mk_resample, mk_source_detection
+from ._tagged_nodes import mk_cal_logs, mk_photometry, mk_resample, mk_source_catalog
 
 
 def mk_exposure(**kwargs):
@@ -301,7 +301,7 @@ def mk_l2_cal_step(**kwargs):
     l2calstep["linearity"] = kwargs.get("linearity", "INCOMPLETE")
     l2calstep["outlier_detection"] = kwargs.get("outlier_detection", "INCOMPLETE")
     l2calstep["photom"] = kwargs.get("photom", "INCOMPLETE")
-    l2calstep["source_detection"] = kwargs.get("source_detection", "INCOMPLETE")
+    l2calstep["source_catalog"] = kwargs.get("source_catalog", "INCOMPLETE")
     l2calstep["ramp_fit"] = kwargs.get("ramp_fit", "INCOMPLETE")
     l2calstep["refpix"] = kwargs.get("refpix", "INCOMPLETE")
     l2calstep["saturation"] = kwargs.get("saturation", "INCOMPLETE")
@@ -441,7 +441,7 @@ def mk_l2_meta(**kwargs):
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
     meta["outlier_detection"] = mk_outlier_detection(**kwargs.get("outlier_detection", {}))
     meta["background"] = mk_sky_background(**kwargs.get("background", {}))
-    meta["source_detection"] = mk_source_detection(**kwargs.get("source_detection", {}))
+    meta["source_catalog"] = mk_source_catalog(**kwargs.get("source_catalog", {}))
     meta["cal_logs"] = mk_cal_logs(**kwargs)
 
     return meta
@@ -851,7 +851,7 @@ def mk_individual_image_meta(**kwargs):
     # imm["program"] = kwargs.get("program", QTable(table_dct))
     # imm["rcs"] = kwargs.get("rcs", QTable(table_dct))
     # imm["ref_file"] = kwargs.get("ref_file", QTable(table_dct))
-    # imm["source_detection"] = kwargs.get("source_detection", QTable(table_dct))
+    # imm["source_catalog"] = kwargs.get("source_catalog", QTable(table_dct))
     # imm["velocity_aberration"] = kwargs.get("velocity_aberration", QTable(table_dct))
     # imm["visit"] = kwargs.get("visit", QTable(table_dct))
     # imm["wcsinfo"] = kwargs.get("wcsinfo", QTable(table_dct))

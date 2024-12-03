@@ -61,16 +61,16 @@ def mk_cal_logs(**kwargs):
     )
 
 
-def mk_source_detection(**kwargs):
+def mk_source_catalog(**kwargs):
     """
-    Create a dummy Source Detection instance with valid values for attributes
+    Create a dummy Source Catalog instance with valid values for attributes
     required by the schema. Utilized by the model maker utilities below.
 
     Returns
     -------
-    roman_datamodels.stnode.SourceDetection
+    roman_datamodels.stnode.SourceCatalog
     """
-    sd = stnode.SourceDetection()
+    sd = stnode.SourceCatalog()
     sd["tweakreg_catalog_name"] = kwargs.get("tweakreg_catalog_name", "catalog")
 
     return sd
