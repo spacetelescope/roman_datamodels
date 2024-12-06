@@ -747,6 +747,22 @@ def mk_ref_readnoise_meta(**kwargs):
 
     return meta
 
+def mk_ref_skycells_meta(**kwargs):
+    """
+    Create dummy metadata for skycells reference file instances.
+
+    Returns
+    -------
+    dict (follows reference_file/ref_common-1.0.0 schema + skycell reference file meta data)
+    """
+    meta = mk_ref_common("SKYCELLS", **kwargs)
+    del meta["instrument"]["detector"]
+    del meta["instrument"]["optical_element"]
+    meta["nxy_skycell"] = 5000
+    meta["skycell_border_pixels"] = 100
+    meta["plate_scale"] = 0.055
+
+    return meta
 
 def mk_mosaic_basic(**kwargs):
     """

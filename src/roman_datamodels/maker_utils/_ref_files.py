@@ -14,6 +14,7 @@ from ._common_meta import (
     mk_ref_pixelarea_meta,
     mk_ref_readnoise_meta,
     mk_ref_units_dn_meta,
+    mk_ref_skycells_meta,
 )
 
 __all__ = [
@@ -34,6 +35,7 @@ __all__ = [
     "mk_saturation",
     "mk_superbias",
     "mk_wfi_img_photom",
+    "mk_roman_skycells",
 ]
 
 OPT_ELEM = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK")
@@ -559,6 +561,60 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
 
     return save_node(saturationref, filepath=filepath)
 
+def mk_roman_skycells(*, filepath=None, **kwargs):
+    skycellref = stnode.RomanSkycellsRef()
+    skycellref["meta"] = mk_ref_skycells_meta(**kwargs)
+    proj_dtype = np.dtype([('index', '<i4'),
+                           ('ra_tangent', '<f8'),
+                           ('dec_tangent', '<f8'),
+                           ('ra_min', '<f8'),
+                           ('ra_max', '<f8'),
+                           ('dec_min', '<f8'),
+                           ('dec_max', '<f8'),
+                           ('orientat', '<f4'),
+                           ('x_tangent', '<f8'),
+                           ('y_tangent', '<f8'),
+                           ('nx', '<i4'),
+                           ('ny', '<i4'),
+                           ('skycell_start', '<i4'),
+                           ('skycell_end', '<i4'),
+                           ('nxy_skycell', '<i4'),
+                           ('skycell_border_pixels', '<i4'),
+                           ('pixel_scale', '<f4')])
+    skycell_dtype = np.dtype([('name', '<U16'),
+                              ('ra_center', '<f8'),
+                              ('dec_center', '<f8'),
+                              ('orientat', '<f4'),
+                              ('x_tangent', '<f8'),
+                              ('y_tangent', '<f8'),
+                              ('ra_corn1', '<f8'),
+                              ('dec_corn1', '<f8'),
+                              ('ra_corn2', '<f8'),
+                              ('dec_corn2', '<f8'),
+                              ('ra_corn3', '<f8'),
+                              ('dec_corn3', '<f8'),
+                              ('ra_corn4', '<f8'),
+                              ('dec_corn4', '<f8')])
+    proj_tab = np.array(
+        [(   0, 225.,  90.        ,   0. , 360. ,  88.20062575,  90.        , 0.,
+            117776.5, 117776.5, 235554, 235554,       0,    1985, 5000, 100, 1.5277777e-05),
+         (   1,   0.,  86.40080763, -22.5,  22.5,  84.60010081,  88.20062575, 0.,
+            138592.5, 117834.5, 277186, 235670,    1985,    3986, 5000, 100, 1.5277777e-05),
+         (   2,  45.,  86.40080763,  22.5,  67.5,  84.60010081,  88.20062575, 0.,
+            138592.5, 117834.5, 277186, 235670,    3986,    5987, 5000, 100, 1.5277777e-05),
+         ], dtype=proj_dtype)
+    skycell_tab = np.array(
+        [('a225dp90xm25yp01', 317.2901524 ,  88.16584325, -92.29015 ,  122499.5,  7299.5, 318.40988935,  88.12583697,
+           318.55462778,  88.20200659, 316.1209133 ,  88.20512017, 316.07517233,  88.12882346),
+         ('a225dp90xm25yp00', 314.99952253,  88.16730723, -89.99952 ,  122499.5,  2499.5, 316.16868134,  88.1287637,
+            316.2183982 ,  88.20505786, 313.78062699,  88.20505721, 313.8303836 ,  88.12876307),
+         ('a225dp90xm25yp01', 312.70889418,  88.16584203, -87.70889 ,  122499.5, -2300.5, 313.92389255,  88.12882289,
+            313.87811182,  88.20511958, 311.44440071,  88.2020047 , 311.58917851,  88.12583515),
+         ], dtype=skycell_dtype)
+    skycellref["projection_regions"] = proj_tab
+    skycellref["skycells"] = skycell_tab
+
+    return save_node(skycellref, filepath=filepath)
 
 def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):
     """

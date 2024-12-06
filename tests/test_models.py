@@ -322,6 +322,27 @@ def test_make_guidewindow():
     assert guidewindow_model.validate() is None
 
 
+# Testing all reference file schemas
+def test_reference_file_model_base(tmp_path):
+    # Set temporary asdf file
+
+    # Get all reference file classes
+    tags = [t for t in stnode.NODE_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri]
+    for tag in tags:
+        # skycells doesn't use EXPECTED_COMMON_REFERENCE
+        if repr(tag).find('skycells') > 0:
+            return
+        schema = asdf.schema.load_schema(tag.schema_uris[0])
+        # Check that schema references common reference schema
+        allofs = schema["properties"]["meta"]["allOf"]
+        found_common = False
+        for item in allofs:
+            if item == EXPECTED_COMMON_REFERENCE:
+                found_common = True
+        if not found_common:
+            raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
+
+
 # AB Vega Offset Correction tests
 def test_make_abvegaoffset():
     abvegaoffset = utils.mk_abvegaoffset()
@@ -581,6 +602,16 @@ def test_make_refpix():
     assert refpix.gamma.shape == (8, 8)
     assert refpix.zeta.shape == (8, 8)
     assert refpix.alpha.shape == (8, 8)
+
+
+    assert refpix.meta.input_units == u.DN
+    assert refpix.meta.output_units == u.DN
+
+# Skycells tests
+def test_make_skycells():
+    skycells_ref = utils.mk_skycells()
+    assert skycells_ref.projection_regions["index"][2] == 2
+    assert skycells_ref.skycells['dec_corn2'][0] > 88
 
 
 # WFI Photom tests
