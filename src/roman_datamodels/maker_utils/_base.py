@@ -29,6 +29,6 @@ def save_node(node, filepath=None):
 
         af = asdf.AsdfFile()
         af.tree = {"roman": node}
-        af.write_to(filepath, all_array_compression="zlib")
+        af.write_to(filepath, all_array_compression="lz4")
 
     return node

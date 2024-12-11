@@ -234,7 +234,7 @@ class DataModel(abc.ABC):
             asdf_file = self.open_asdf(**kwargs)
             asdf_file["roman"] = self._instance
             if "all_array_compression" not in kwargs:
-                kwargs["all_array_compression"] = "zlib"
+                kwargs["all_array_compression"] = "lz4"
             asdf_file.write_to(init, *args, **kwargs)
 
     def get_primary_array_name(self):
