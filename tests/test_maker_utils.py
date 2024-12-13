@@ -147,6 +147,7 @@ def test_override_data(node_class):
     # Skip the test if it is a RomanSkycellsRef class
     if node_class.__name__ == "RomanSkycellsRef":
         return
+
     def mutate_value(value):
         """
         Generate a mutated value for a given value.

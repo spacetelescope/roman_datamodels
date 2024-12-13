@@ -329,7 +329,7 @@ def test_reference_file_model_base(tmp_path):
     tags = [t for t in stnode.NODE_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri]
     for tag in tags:
         # roman_skycells doesn't use EXPECTED_COMMON_REFERENCE
-        if repr(tag).find('roman_skycells') > 0:
+        if repr(tag).find("roman_skycells") > 0:
             return
         schema = asdf.schema.load_schema(tag.schema_uris[0])
         # Check that schema references common reference schema
@@ -614,11 +614,13 @@ def test_make_refpix():
     assert refpix.meta.input_units == u.DN
     assert refpix.meta.output_units == u.DN
 
+
 # Skycells tests
 def test_make_roman_skycells():
     skycells_ref = utils.mk_roman_skycells()
     assert skycells_ref.projection_regions["index"][2] == 2
-    assert skycells_ref.skycells['dec_corn2'][0] > 88
+    assert skycells_ref.skycells["dec_corn2"][0] > 88
+
 
 # WFI Photom tests
 def test_make_wfi_img_photom():
