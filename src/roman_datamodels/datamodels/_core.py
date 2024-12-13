@@ -230,12 +230,11 @@ class DataModel(abc.ABC):
             return asdf.AsdfFile(init, **kwargs)
 
     def to_asdf(self, init, *args, **kwargs):
+        all_array_compression = kwargs.pop("all_array_compression", "lz4")
         with validate.nuke_validation(), _temporary_update_filename(self, Path(init).name):
             asdf_file = self.open_asdf(**kwargs)
             asdf_file["roman"] = self._instance
-            if "all_array_compression" not in kwargs:
-                kwargs["all_array_compression"] = "lz4"
-            asdf_file.write_to(init, *args, **kwargs)
+            asdf_file.write_to(init, *args, all_array_compression=all_array_compression, **kwargs)
 
     def get_primary_array_name(self):
         """
