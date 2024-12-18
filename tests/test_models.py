@@ -1109,3 +1109,28 @@ def test_model_assignment_access_types(model_class):
     assert type(model["meta"]["filename"]) == type(model2.meta["filename"])  # noqa: E721
     assert type(model["meta"]["filename"]) == type(model2.meta.filename)  # noqa: E721
     assert type(model.meta.filename) == type(model2.meta["filename"])  # noqa: E721
+
+
+def test_default_array_compression(tmp_path):
+    """
+    Test that saving a model results in compressed arrays
+    for default options.
+    """
+    fn = tmp_path / "foo.asdf"
+    model = utils.mk_datamodel(datamodels.ImageModel)
+    model.save(fn)
+    with asdf.open(fn) as af:
+        assert af.get_array_compression(af["roman"]["data"]) == "lz4"
+
+
+@pytest.mark.parametrize("compression", [None, "bzp2"])
+def test_array_compression_override(tmp_path, compression):
+    """
+    Test that providing a compression argument changes the
+    array compression.
+    """
+    fn = tmp_path / "foo.asdf"
+    model = utils.mk_datamodel(datamodels.ImageModel)
+    model.save(fn, all_array_compression=compression)
+    with asdf.open(fn) as af:
+        assert af.get_array_compression(af["roman"]["data"]) == compression
