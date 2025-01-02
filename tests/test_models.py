@@ -16,7 +16,7 @@ from roman_datamodels.testing import assert_node_equal
 
 from .conftest import MANIFEST
 
-EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
+EXPECTED_COMMON_REFERENCE = {"$ref": "asdf://stsci.edu/datamodels/roman/schemas/reference_files/ref_common-1.0.0"}
 
 # Nodes for metadata schema that do not contain any archive_catalog keywords
 NODES_LACKING_ARCHIVE_CATALOG = [
@@ -322,21 +322,16 @@ def test_make_guidewindow():
 
 
 # Testing all reference file schemas
-def test_reference_file_model_base(tmp_path):
-    # Set temporary asdf file
-
-    # Get all reference file classes
-    tags = [t for t in stnode.NODE_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri]
-    for tag in tags:
-        schema = asdf.schema.load_schema(tag.schema_uris[0])
-        # Check that schema references common reference schema
-        allofs = schema["properties"]["meta"]["allOf"]
-        found_common = False
-        for item in allofs:
-            if item == EXPECTED_COMMON_REFERENCE:
-                found_common = True
-        if not found_common:
-            raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
+@pytest.mark.parametrize("tag", [t for t in stnode.NODE_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri])
+def test_reference_file_model_base(tag):
+    schema = asdf.schema.load_schema(tag.schema_uris[0])
+    # Check that schema references common reference schema
+    allofs = schema["properties"]["meta"]["allOf"]
+    for item in allofs:
+        if item == EXPECTED_COMMON_REFERENCE:
+            break
+    else:
+        raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
 
 
 # AB Vega Offset Correction tests
