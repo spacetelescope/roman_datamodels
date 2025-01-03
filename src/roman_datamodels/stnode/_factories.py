@@ -115,7 +115,7 @@ def scalar_factory(pattern):
     return type(
         class_name,
         (type_, TaggedScalarNode),
-        {"_tag": pattern, "__module__": "roman_datamodels.stnode", "__doc__": docstring_from_tag(pattern)},
+        {"_pattern": pattern, "__module__": "roman_datamodels.stnode", "__doc__": docstring_from_tag(pattern)},
     )
 
 
@@ -147,7 +147,7 @@ def node_factory(pattern):
     return type(
         class_name,
         class_type,
-        {"_tag": pattern, "__module__": "roman_datamodels.stnode", "__doc__": docstring_from_tag(pattern)},
+        {"_pattern": pattern, "__module__": "roman_datamodels.stnode", "__doc__": docstring_from_tag(pattern)},
     )
 
 
