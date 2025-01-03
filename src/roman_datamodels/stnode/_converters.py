@@ -2,6 +2,7 @@
 The ASDF Converters to handle the serialization/deseialization of the STNode classes to ASDF.
 """
 
+import asdf
 from asdf.extension import Converter, ManifestExtension
 from astropy.time import Time
 
@@ -49,13 +50,22 @@ class TaggedObjectNodeConverter(_RomanConverter):
         return list(OBJECT_NODE_CLASSES_BY_TAG.values())
 
     def select_tag(self, obj, tags, ctx):
-        return obj.tag
+        # TODO rename obj.tag
+        pattern = obj.tag
+        for tag in tags:
+            if asdf.util.uri_match(pattern, tag):
+                return tag
+        raise ValueError(f"No matching tag for {pattern}")
 
     def to_yaml_tree(self, obj, tag, ctx):
         return dict(obj._data)
 
     def from_yaml_tree(self, node, tag, ctx):
-        return OBJECT_NODE_CLASSES_BY_TAG[tag](node)
+        # TODO this is messy
+        for pattern, node_class in OBJECT_NODE_CLASSES_BY_TAG.items():
+            if asdf.util.uri_match(pattern, tag):
+                return node_class(node)
+        raise ValueError(f"No matching class for {tag}")
 
 
 class TaggedListNodeConverter(_RomanConverter):
@@ -72,12 +82,23 @@ class TaggedListNodeConverter(_RomanConverter):
         return list(LIST_NODE_CLASSES_BY_TAG.values())
 
     def select_tag(self, obj, tags, ctx):
-        return obj.tag
+        # TODO rename obj.tag
+        pattern = obj.tag
+        for tag in tags:
+            if asdf.util.uri_match(pattern, tag):
+                return tag
+        raise ValueError(f"No matching tag for {pattern}")
 
     def to_yaml_tree(self, obj, tag, ctx):
         return list(obj)
 
     def from_yaml_tree(self, node, tag, ctx):
+        # TODO this is messy
+        for pattern, node_class in LIST_NODE_CLASSES_BY_TAG.items():
+            if asdf.util.uri_match(pattern, tag):
+                return node_class(node)
+        raise ValueError(f"No matching class for {tag}")
+
         return LIST_NODE_CLASSES_BY_TAG[tag](node)
 
 
@@ -95,30 +116,40 @@ class TaggedScalarNodeConverter(_RomanConverter):
         return list(SCALAR_NODE_CLASSES_BY_TAG.values())
 
     def select_tag(self, obj, tags, ctx):
-        return obj.tag
+        # TODO rename obj.tag
+        pattern = obj.tag
+        for tag in tags:
+            if asdf.util.uri_match(pattern, tag):
+                return tag
+        raise ValueError(f"No matching tag for {pattern}")
 
     def to_yaml_tree(self, obj, tag, ctx):
-        from ._stnode import FileDate, FpsFileDate, TvacFileDate
-
+        # TODO is there a better way to do this?
         node = obj.__class__.__bases__[0](obj)
 
-        if tag in (FileDate._tag, FpsFileDate._tag, TvacFileDate._tag):
+        if "file_date" in tag:
             converter = ctx.extension_manager.get_converter_for_type(type(node))
             node = converter.to_yaml_tree(node, tag, ctx)
 
         return node
 
     def from_yaml_tree(self, node, tag, ctx):
-        from ._stnode import FileDate, FpsFileDate, TvacFileDate
-
-        if tag in (FileDate._tag, FpsFileDate._tag, TvacFileDate._tag):
+        # TODO is there a better way to do this?
+        if "file_date" in tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
 
-        return SCALAR_NODE_CLASSES_BY_TAG[tag](node)
+        # TODO this is messy
+        for pattern, node_class in SCALAR_NODE_CLASSES_BY_TAG.items():
+            if asdf.util.uri_match(pattern, tag):
+                return node_class(node)
+        raise ValueError(f"No matching class for {tag}")
 
 
 # Create the ASDF extension for the STNode classes.
 NODE_EXTENSIONS = [
+    ManifestExtension.from_uri(
+        "asdf://stsci.edu/datamodels/roman/manifests/datamodels-2.0.0", converters=NODE_CONVERTERS.values()
+    ),
     ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0", converters=NODE_CONVERTERS.values()),
 ]

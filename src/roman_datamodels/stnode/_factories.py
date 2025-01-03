@@ -16,8 +16,8 @@ __all__ = ["stnode_factory"]
 # Map of scalar types by pattern (str is default)
 _SCALAR_TYPE_BY_PATTERN = {
     "asdf://stsci.edu/datamodels/roman/tags/file_date-*": Time,
-    "asdf://stsci.edu/datamodels/roman/tags/fps/file_date-": Time,
-    "asdf://stsci.edu/datamodels/roman/tags/tvac/file_date-": Time,
+    "asdf://stsci.edu/datamodels/roman/tags/fps/file_date-*": Time,
+    "asdf://stsci.edu/datamodels/roman/tags/tvac/file_date-*": Time,
 }
 # Map of node types by pattern (TaggedObjectNode is default)
 _NODE_TYPE_BY_PATTERN = {
