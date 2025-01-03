@@ -6,7 +6,12 @@ import asdf
 from asdf.extension import Converter, ManifestExtension
 from astropy.time import Time
 
-from ._registry import LIST_NODE_CLASSES_BY_TAG, NODE_CONVERTERS, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
+from ._registry import (
+    LIST_NODE_CLASSES_BY_PATTERN,
+    NODE_CONVERTERS,
+    OBJECT_NODE_CLASSES_BY_PATTERN,
+    SCALAR_NODE_CLASSES_BY_PATTERN,
+)
 
 __all__ = [
     "NODE_EXTENSIONS",
@@ -43,11 +48,11 @@ class TaggedObjectNodeConverter(_RomanConverter):
 
     @property
     def tags(self):
-        return list(OBJECT_NODE_CLASSES_BY_TAG.keys())
+        return list(OBJECT_NODE_CLASSES_BY_PATTERN.keys())
 
     @property
     def types(self):
-        return list(OBJECT_NODE_CLASSES_BY_TAG.values())
+        return list(OBJECT_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
         # TODO rename obj.tag
@@ -62,7 +67,7 @@ class TaggedObjectNodeConverter(_RomanConverter):
 
     def from_yaml_tree(self, node, tag, ctx):
         # TODO this is messy
-        for pattern, node_class in OBJECT_NODE_CLASSES_BY_TAG.items():
+        for pattern, node_class in OBJECT_NODE_CLASSES_BY_PATTERN.items():
             if asdf.util.uri_match(pattern, tag):
                 return node_class(node)
         raise ValueError(f"No matching class for {tag}")
@@ -75,11 +80,11 @@ class TaggedListNodeConverter(_RomanConverter):
 
     @property
     def tags(self):
-        return list(LIST_NODE_CLASSES_BY_TAG.keys())
+        return list(LIST_NODE_CLASSES_BY_PATTERN.keys())
 
     @property
     def types(self):
-        return list(LIST_NODE_CLASSES_BY_TAG.values())
+        return list(LIST_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
         # TODO rename obj.tag
@@ -94,12 +99,12 @@ class TaggedListNodeConverter(_RomanConverter):
 
     def from_yaml_tree(self, node, tag, ctx):
         # TODO this is messy
-        for pattern, node_class in LIST_NODE_CLASSES_BY_TAG.items():
+        for pattern, node_class in LIST_NODE_CLASSES_BY_PATTERN.items():
             if asdf.util.uri_match(pattern, tag):
                 return node_class(node)
         raise ValueError(f"No matching class for {tag}")
 
-        return LIST_NODE_CLASSES_BY_TAG[tag](node)
+        return LIST_NODE_CLASSES_BY_PATTERN[tag](node)
 
 
 class TaggedScalarNodeConverter(_RomanConverter):
@@ -109,11 +114,11 @@ class TaggedScalarNodeConverter(_RomanConverter):
 
     @property
     def tags(self):
-        return list(SCALAR_NODE_CLASSES_BY_TAG.keys())
+        return list(SCALAR_NODE_CLASSES_BY_PATTERN.keys())
 
     @property
     def types(self):
-        return list(SCALAR_NODE_CLASSES_BY_TAG.values())
+        return list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
         # TODO rename obj.tag
@@ -140,7 +145,7 @@ class TaggedScalarNodeConverter(_RomanConverter):
             node = converter.from_yaml_tree(node, tag, ctx)
 
         # TODO this is messy
-        for pattern, node_class in SCALAR_NODE_CLASSES_BY_TAG.items():
+        for pattern, node_class in SCALAR_NODE_CLASSES_BY_PATTERN.items():
             if asdf.util.uri_match(pattern, tag):
                 return node_class(node)
         raise ValueError(f"No matching class for {tag}")

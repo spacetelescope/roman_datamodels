@@ -4,8 +4,8 @@ Hold all the registry information for the STNode classes.
     whenever they generated.
 """
 
-OBJECT_NODE_CLASSES_BY_TAG = {}
-LIST_NODE_CLASSES_BY_TAG = {}
-SCALAR_NODE_CLASSES_BY_TAG = {}
+OBJECT_NODE_CLASSES_BY_PATTERN = {}
+LIST_NODE_CLASSES_BY_PATTERN = {}
+SCALAR_NODE_CLASSES_BY_PATTERN = {}
 SCALAR_NODE_CLASSES_BY_KEY = {}
 NODE_CONVERTERS = {}
