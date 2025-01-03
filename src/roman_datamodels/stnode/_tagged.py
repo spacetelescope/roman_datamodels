@@ -56,6 +56,10 @@ def name_from_tag_uri(tag_uri):
     return tag_uri_split
 
 
+def tag_for_type(obj, ctx):
+    return ctx.extension_manager.get_converter_for_type(type(obj)).select_tag(obj, ctx)
+
+
 class TaggedObjectNode(DNode):
     """
     Base class for all tagged objects defined by RAD
@@ -76,8 +80,9 @@ class TaggedObjectNode(DNode):
 
     @property
     def tag(self):
-        # TODO resolve tag from pattern
-        return self._pattern
+        if not hasattr(self, "_tag"):
+            self._tag = tag_for_type(self, self.ctx)
+        return self._tag
 
     def _schema(self):
         if self._x_schema is None:
@@ -109,8 +114,9 @@ class TaggedListNode(LNode):
 
     @property
     def tag(self):
-        # TODO resolve tag from pattern
-        return self._pattern
+        if not hasattr(self, "_tag"):
+            self._tag = tag_for_type(self, self.ctx)
+        return self._tag
 
 
 class TaggedScalarNode:
@@ -147,8 +153,9 @@ class TaggedScalarNode:
 
     @property
     def tag(self):
-        # TODO resolve tag from pattern
-        return self._pattern
+        if not hasattr(self, "_tag"):
+            self._tag = tag_for_type(self, self.ctx)
+        return self._tag
 
     @property
     def key(self):
