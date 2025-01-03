@@ -55,8 +55,9 @@ class TaggedObjectNodeConverter(_RomanConverter):
         return list(OBJECT_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
-        # TODO rename obj.tag
-        pattern = obj.tag
+        if hasattr(obj, "_tag"):
+            return obj._tag
+        pattern = obj._pattern
         for tag in tags:
             if asdf.util.uri_match(pattern, tag):
                 return tag
@@ -69,7 +70,9 @@ class TaggedObjectNodeConverter(_RomanConverter):
         # TODO this is messy
         for pattern, node_class in OBJECT_NODE_CLASSES_BY_PATTERN.items():
             if asdf.util.uri_match(pattern, tag):
-                return node_class(node)
+                obj = node_class(node)
+                obj._tag = tag
+                return obj
         raise ValueError(f"No matching class for {tag}")
 
 
@@ -87,8 +90,9 @@ class TaggedListNodeConverter(_RomanConverter):
         return list(LIST_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
-        # TODO rename obj.tag
-        pattern = obj.tag
+        if hasattr(obj, "_tag"):
+            return obj._tag
+        pattern = obj._pattern
         for tag in tags:
             if asdf.util.uri_match(pattern, tag):
                 return tag
@@ -101,7 +105,9 @@ class TaggedListNodeConverter(_RomanConverter):
         # TODO this is messy
         for pattern, node_class in LIST_NODE_CLASSES_BY_PATTERN.items():
             if asdf.util.uri_match(pattern, tag):
-                return node_class(node)
+                obj = node_class(node)
+                obj._tag = tag
+                return obj
         raise ValueError(f"No matching class for {tag}")
 
         return LIST_NODE_CLASSES_BY_PATTERN[tag](node)
@@ -121,8 +127,9 @@ class TaggedScalarNodeConverter(_RomanConverter):
         return list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
-        # TODO rename obj.tag
-        pattern = obj.tag
+        if hasattr(obj, "_tag"):
+            return obj._tag
+        pattern = obj._pattern
         for tag in tags:
             if asdf.util.uri_match(pattern, tag):
                 return tag
@@ -147,7 +154,9 @@ class TaggedScalarNodeConverter(_RomanConverter):
         # TODO this is messy
         for pattern, node_class in SCALAR_NODE_CLASSES_BY_PATTERN.items():
             if asdf.util.uri_match(pattern, tag):
-                return node_class(node)
+                obj = node_class(node)
+                obj._tag = tag
+                return obj
         raise ValueError(f"No matching class for {tag}")
 
 
