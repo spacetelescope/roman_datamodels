@@ -12,7 +12,7 @@ import yaml
 from rad import resources
 
 from ._factories import stnode_factory
-from ._registry import LIST_NODE_CLASSES_BY_TAG, OBJECT_NODE_CLASSES_BY_TAG, SCALAR_NODE_CLASSES_BY_TAG
+from ._registry import LIST_NODE_CLASSES_BY_PATTERN, OBJECT_NODE_CLASSES_BY_PATTERN, SCALAR_NODE_CLASSES_BY_PATTERN
 
 __all__ = [
     "NODE_CLASSES",
@@ -54,7 +54,7 @@ for manifest in _MANIFESTS:
 # List of node classes made available by this library.
 #   This is part of the public API.
 NODE_CLASSES = (
-    list(OBJECT_NODE_CLASSES_BY_TAG.values())
-    + list(LIST_NODE_CLASSES_BY_TAG.values())
-    + list(SCALAR_NODE_CLASSES_BY_TAG.values())
+    list(OBJECT_NODE_CLASSES_BY_PATTERN.values())
+    + list(LIST_NODE_CLASSES_BY_PATTERN.values())
+    + list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
 )
