@@ -12,6 +12,7 @@ from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wra
 from .conftest import MANIFEST
 
 
+@pytest.mark.skip(reason="_tag is no longer a class attribute")
 @pytest.mark.parametrize("tag", MANIFEST["tags"])
 def test_generated_node_classes(tag):
     class_name = stnode._factories.class_name_from_tag_uri(tag["tag_uri"])

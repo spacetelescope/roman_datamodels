@@ -55,13 +55,7 @@ class TaggedObjectNodeConverter(_RomanConverter):
         return list(OBJECT_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
-        if hasattr(obj, "_tag"):
-            return obj._tag
-        pattern = obj._pattern
-        for tag in tags:
-            if asdf.util.uri_match(pattern, tag):
-                return tag
-        raise ValueError(f"No matching tag for {pattern}")
+        return obj._tag
 
     def to_yaml_tree(self, obj, tag, ctx):
         return dict(obj._data)
@@ -71,7 +65,7 @@ class TaggedObjectNodeConverter(_RomanConverter):
         for pattern, node_class in OBJECT_NODE_CLASSES_BY_PATTERN.items():
             if asdf.util.uri_match(pattern, tag):
                 obj = node_class(node)
-                obj._tag = tag
+                obj._read_tag = tag
                 return obj
         raise ValueError(f"No matching class for {tag}")
 
@@ -90,13 +84,7 @@ class TaggedListNodeConverter(_RomanConverter):
         return list(LIST_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
-        if hasattr(obj, "_tag"):
-            return obj._tag
-        pattern = obj._pattern
-        for tag in tags:
-            if asdf.util.uri_match(pattern, tag):
-                return tag
-        raise ValueError(f"No matching tag for {pattern}")
+        return obj._tag
 
     def to_yaml_tree(self, obj, tag, ctx):
         return list(obj)
@@ -106,7 +94,7 @@ class TaggedListNodeConverter(_RomanConverter):
         for pattern, node_class in LIST_NODE_CLASSES_BY_PATTERN.items():
             if asdf.util.uri_match(pattern, tag):
                 obj = node_class(node)
-                obj._tag = tag
+                obj._read_tag = tag
                 return obj
         raise ValueError(f"No matching class for {tag}")
 
@@ -127,13 +115,7 @@ class TaggedScalarNodeConverter(_RomanConverter):
         return list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
-        if hasattr(obj, "_tag"):
-            return obj._tag
-        pattern = obj._pattern
-        for tag in tags:
-            if asdf.util.uri_match(pattern, tag):
-                return tag
-        raise ValueError(f"No matching tag for {pattern}")
+        return obj._tag
 
     def to_yaml_tree(self, obj, tag, ctx):
         # TODO is there a better way to do this?
@@ -155,7 +137,7 @@ class TaggedScalarNodeConverter(_RomanConverter):
         for pattern, node_class in SCALAR_NODE_CLASSES_BY_PATTERN.items():
             if asdf.util.uri_match(pattern, tag):
                 obj = node_class(node)
-                obj._tag = tag
+                obj._read_tag = tag
                 return obj
         raise ValueError(f"No matching class for {tag}")
 
