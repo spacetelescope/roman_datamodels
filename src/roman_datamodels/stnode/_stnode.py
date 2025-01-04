@@ -23,16 +23,17 @@ __all__ = [
 #   This is because the ASDF extensions have to be created before they can be registered
 #   and this module creates the classes used by the ASDF extension.
 _MANIFEST_DIR = importlib.resources.files(resources) / "manifests"
-_MANIFEST_PATHS = [path for path in _MANIFEST_DIR.glob("*.yaml")]
+# sort manifests by version (newest first)
+_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*.yaml")], reverse=True)
 _MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _MANIFEST_PATHS]
 
 
-def _factory(tag):
+def _factory(pattern, tag_def):
     """
     Wrap the __all__ append and class creation in a function to avoid the linter
         getting upset
     """
-    cls = stnode_factory(tag)
+    cls = stnode_factory(pattern, tag_def)
 
     class_name = cls.__name__
     globals()[class_name] = cls  # Add to namespace of module
@@ -43,11 +44,12 @@ def _factory(tag):
 #   Reads each tag entry from the manifest and creates a class for it
 _generated = set()
 for manifest in _MANIFESTS:
-    for tag in manifest["tags"]:
-        base, _ = tag["tag_uri"].rsplit("-", maxsplit=1)
+    for tag_def in manifest["tags"]:
+        # make pattern from tag
+        base, _ = tag_def["tag_uri"].rsplit("-", maxsplit=1)
         pattern = f"{base}-*"
         if pattern not in _generated:
-            _factory(pattern)
+            _factory(pattern, tag_def)
             _generated.add(pattern)
 
 
