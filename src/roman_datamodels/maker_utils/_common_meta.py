@@ -307,6 +307,7 @@ def mk_l2_cal_step(**kwargs):
     l2calstep["saturation"] = kwargs.get("saturation", "INCOMPLETE")
     l2calstep["skymatch"] = kwargs.get("skymatch", "INCOMPLETE")
     l2calstep["tweakreg"] = kwargs.get("tweakreg", "INCOMPLETE")
+    l2calstep["two_step"] = kwargs.get("two_step", "INCOMPLETE")
 
     return l2calstep
 
