@@ -12,6 +12,7 @@ from ._registry import (
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
 )
+from ._stnode import _MANIFESTS
 
 __all__ = [
     "NODE_EXTENSIONS",
@@ -120,9 +121,4 @@ class TaggedScalarNodeConverter(_RomanConverter):
 
 
 # Create the ASDF extension for the STNode classes.
-NODE_EXTENSIONS = [
-    ManifestExtension.from_uri(
-        "asdf://stsci.edu/datamodels/roman/manifests/datamodels-2.0.0", converters=NODE_CONVERTERS.values()
-    ),
-    ManifestExtension.from_uri("asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0", converters=NODE_CONVERTERS.values()),
-]
+NODE_EXTENSIONS = [ManifestExtension.from_uri(manifest["id"], converters=NODE_CONVERTERS.values()) for manifest in _MANIFESTS]
