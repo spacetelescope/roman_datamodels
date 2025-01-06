@@ -50,7 +50,7 @@ def docstring_from_tag(tag_def):
 
     Parameters
     ----------
-    tag: dict
+    tag_def: dict
         A tag entry from the RAD manifest
 
     Returns
@@ -68,7 +68,10 @@ def scalar_factory(pattern, tag_def):
 
     Parameters
     ----------
-    tag: dict
+    pattern: str
+        A tag pattern/wildcard
+
+    tag_def: dict
         A tag entry from the RAD manifest
 
     Returns
@@ -104,7 +107,10 @@ def node_factory(pattern, tag_def):
 
     Parameters
     ----------
-    tag: dict
+    pattern: str
+        A tag pattern/wildcard
+
+    tag_def: dict
         A tag entry from the RAD manifest
 
     Returns
@@ -141,7 +147,10 @@ def stnode_factory(pattern, tag_def):
 
     Parameters
     ----------
-    tag: dict
+    pattern: str
+        A tag pattern/wildcard
+
+    tag_def: dict
         A tag entry from the RAD manifest
 
     Returns
