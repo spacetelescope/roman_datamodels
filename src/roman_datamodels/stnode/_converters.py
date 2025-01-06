@@ -2,12 +2,12 @@
 The ASDF Converters to handle the serialization/deseialization of the STNode classes to ASDF.
 """
 
-import asdf
 from asdf.extension import Converter, ManifestExtension
 from astropy.time import Time
 
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
+    NODE_CLASSES_BY_TAG,
     NODE_CONVERTERS,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
@@ -61,13 +61,7 @@ class TaggedObjectNodeConverter(_RomanConverter):
         return dict(obj._data)
 
     def from_yaml_tree(self, node, tag, ctx):
-        # TODO this is messy
-        for pattern, node_class in OBJECT_NODE_CLASSES_BY_PATTERN.items():
-            if asdf.util.uri_match(pattern, tag):
-                obj = node_class(node)
-                obj._read_tag = tag
-                return obj
-        raise ValueError(f"No matching class for {tag}")
+        return NODE_CLASSES_BY_TAG[tag](node)
 
 
 class TaggedListNodeConverter(_RomanConverter):
@@ -90,15 +84,7 @@ class TaggedListNodeConverter(_RomanConverter):
         return list(obj)
 
     def from_yaml_tree(self, node, tag, ctx):
-        # TODO this is messy
-        for pattern, node_class in LIST_NODE_CLASSES_BY_PATTERN.items():
-            if asdf.util.uri_match(pattern, tag):
-                obj = node_class(node)
-                obj._read_tag = tag
-                return obj
-        raise ValueError(f"No matching class for {tag}")
-
-        return LIST_NODE_CLASSES_BY_PATTERN[tag](node)
+        return NODE_CLASSES_BY_TAG[tag](node)
 
 
 class TaggedScalarNodeConverter(_RomanConverter):
@@ -118,7 +104,6 @@ class TaggedScalarNodeConverter(_RomanConverter):
         return obj._tag
 
     def to_yaml_tree(self, obj, tag, ctx):
-        # TODO is there a better way to do this?
         node = obj.__class__.__bases__[0](obj)
 
         if "file_date" in tag:
@@ -128,18 +113,10 @@ class TaggedScalarNodeConverter(_RomanConverter):
         return node
 
     def from_yaml_tree(self, node, tag, ctx):
-        # TODO is there a better way to do this?
         if "file_date" in tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
-
-        # TODO this is messy
-        for pattern, node_class in SCALAR_NODE_CLASSES_BY_PATTERN.items():
-            if asdf.util.uri_match(pattern, tag):
-                obj = node_class(node)
-                obj._read_tag = tag
-                return obj
-        raise ValueError(f"No matching class for {tag}")
+        return NODE_CLASSES_BY_TAG[tag](node)
 
 
 # Create the ASDF extension for the STNode classes.
