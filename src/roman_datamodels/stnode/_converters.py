@@ -41,6 +41,14 @@ class _RomanConverter(Converter):
 
             NODE_CONVERTERS[cls.__name__] = cls()
 
+    def select_tag(self, obj, tags, ctx):
+        return obj.tag
+
+    def from_yaml_tree(self, node, tag, ctx):
+        obj = NODE_CLASSES_BY_TAG[tag](node)
+        obj._read_tag = tag
+        return obj
+
 
 class TaggedObjectNodeConverter(_RomanConverter):
     """
@@ -55,14 +63,8 @@ class TaggedObjectNodeConverter(_RomanConverter):
     def types(self):
         return list(OBJECT_NODE_CLASSES_BY_PATTERN.values())
 
-    def select_tag(self, obj, tags, ctx):
-        return obj.tag
-
     def to_yaml_tree(self, obj, tag, ctx):
         return dict(obj._data)
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return NODE_CLASSES_BY_TAG[tag](node)
 
 
 class TaggedListNodeConverter(_RomanConverter):
@@ -78,14 +80,8 @@ class TaggedListNodeConverter(_RomanConverter):
     def types(self):
         return list(LIST_NODE_CLASSES_BY_PATTERN.values())
 
-    def select_tag(self, obj, tags, ctx):
-        return obj.tag
-
     def to_yaml_tree(self, obj, tag, ctx):
         return list(obj)
-
-    def from_yaml_tree(self, node, tag, ctx):
-        return NODE_CLASSES_BY_TAG[tag](node)
 
 
 class TaggedScalarNodeConverter(_RomanConverter):
@@ -101,9 +97,6 @@ class TaggedScalarNodeConverter(_RomanConverter):
     def types(self):
         return list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
 
-    def select_tag(self, obj, tags, ctx):
-        return obj.tag
-
     def to_yaml_tree(self, obj, tag, ctx):
         node = obj.__class__.__bases__[0](obj)
 
@@ -117,7 +110,7 @@ class TaggedScalarNodeConverter(_RomanConverter):
         if "file_date" in tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
-        return NODE_CLASSES_BY_TAG[tag](node)
+        return super().from_yaml_tree(node, tag, ctx)
 
 
 # Create the ASDF extension for the STNode classes.
