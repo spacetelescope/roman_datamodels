@@ -76,6 +76,7 @@ class TaggedObjectNode(DNode):
 
     @property
     def _tag(self):
+        # _tag is required by asdf to allow __asdf_traverse__
         return getattr(self, "_read_tag", self._default_tag)
 
     @property
@@ -112,6 +113,7 @@ class TaggedListNode(LNode):
 
     @property
     def _tag(self):
+        # _tag is required by asdf to allow __asdf_traverse__
         return getattr(self, "_read_tag", self._default_tag)
 
     @property
@@ -153,6 +155,7 @@ class TaggedScalarNode:
 
     @property
     def _tag(self):
+        # _tag is required by asdf to allow __asdf_traverse__
         return getattr(self, "_read_tag", self._default_tag)
 
     @property
