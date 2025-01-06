@@ -1,15 +1,13 @@
 import os
 
-import asdf
 import pytest
-import yaml
 
-MANIFEST = yaml.safe_load(asdf.get_config().resource_manager["asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.0"])
+from roman_datamodels.stnode._stnode import _MANIFESTS as MANIFESTS
 
 
-@pytest.fixture(scope="session")
-def manifest():
-    return MANIFEST
+@pytest.fixture(scope="session", params=MANIFESTS)
+def manifest(request):
+    return request.param
 
 
 @pytest.fixture(scope="function")
