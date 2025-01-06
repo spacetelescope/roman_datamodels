@@ -55,7 +55,7 @@ class TaggedObjectNodeConverter(_RomanConverter):
         return list(OBJECT_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
-        return obj._tag
+        return obj.tag
 
     def to_yaml_tree(self, obj, tag, ctx):
         return dict(obj._data)
@@ -78,7 +78,7 @@ class TaggedListNodeConverter(_RomanConverter):
         return list(LIST_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
-        return obj._tag
+        return obj.tag
 
     def to_yaml_tree(self, obj, tag, ctx):
         return list(obj)
@@ -101,7 +101,7 @@ class TaggedScalarNodeConverter(_RomanConverter):
         return list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
 
     def select_tag(self, obj, tags, ctx):
-        return obj._tag
+        return obj.tag
 
     def to_yaml_tree(self, obj, tag, ctx):
         node = obj.__class__.__bases__[0](obj)
