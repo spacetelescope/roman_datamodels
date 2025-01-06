@@ -12,7 +12,12 @@ import yaml
 from rad import resources
 
 from ._factories import stnode_factory
-from ._registry import LIST_NODE_CLASSES_BY_PATTERN, OBJECT_NODE_CLASSES_BY_PATTERN, SCALAR_NODE_CLASSES_BY_PATTERN
+from ._registry import (
+    LIST_NODE_CLASSES_BY_PATTERN,
+    NODE_CLASSES_BY_TAG,
+    OBJECT_NODE_CLASSES_BY_PATTERN,
+    SCALAR_NODE_CLASSES_BY_PATTERN,
+)
 
 __all__ = [
     "NODE_CLASSES",
@@ -38,19 +43,20 @@ def _factory(pattern, tag_def):
     class_name = cls.__name__
     globals()[class_name] = cls  # Add to namespace of module
     __all__.append(class_name)  # add to __all__ so it's imported with `from . import *`
+    return cls
 
 
 # Main dynamic class creation loop
 #   Reads each tag entry from the manifest and creates a class for it
-_generated = set()
+_generated = {}
 for manifest in _MANIFESTS:
     for tag_def in manifest["tags"]:
         # make pattern from tag
         base, _ = tag_def["tag_uri"].rsplit("-", maxsplit=1)
         pattern = f"{base}-*"
         if pattern not in _generated:
-            _factory(pattern, tag_def)
-            _generated.add(pattern)
+            _generated[pattern] = _factory(pattern, tag_def)
+        NODE_CLASSES_BY_TAG[tag_def["tag_uri"]] = _generated[pattern]
 
 
 # List of node classes made available by this library.
