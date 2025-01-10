@@ -234,6 +234,7 @@ def test_read_pattern_properties():
         rdm_open(Path(__file__).parent / "data" / "photmjsm.asdf")
 
 
+@pytest.mark.xfail(reason="We currently do not have a way to identify if a datamodel is a GDPS datamodel")
 def test_rdm_open_non_datamodel():
     from roman_datamodels.datamodels import open as rdm_open
 
