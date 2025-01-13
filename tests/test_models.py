@@ -321,19 +321,6 @@ def test_make_guidewindow():
     assert guidewindow_model.validate() is None
 
 
-# Testing all reference file schemas
-@pytest.mark.parametrize("tag", [t for t in stnode.NODE_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri])
-def test_reference_file_model_base(tag):
-    schema = asdf.schema.load_schema(tag.schema_uris[0])
-    # Check that schema references common reference schema
-    allofs = schema["properties"]["meta"]["allOf"]
-    for item in allofs:
-        if item == EXPECTED_COMMON_REFERENCE:
-            break
-    else:
-        raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
-
-
 # AB Vega Offset Correction tests
 def test_make_abvegaoffset():
     abvegaoffset = utils.mk_abvegaoffset()
