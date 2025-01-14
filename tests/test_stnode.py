@@ -9,18 +9,27 @@ from roman_datamodels import maker_utils as utils
 from roman_datamodels.maker_utils._base import NOFN, NONUM, NOSTR
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
-from .conftest import MANIFEST
+from .conftest import MANIFESTS
 
 
-@pytest.mark.parametrize("tag", MANIFEST["tags"])
-def test_generated_node_classes(tag):
-    class_name = stnode._factories.class_name_from_tag_uri(tag["tag_uri"])
+@pytest.mark.parametrize("tag_def", [tag_def for manifest in MANIFESTS for tag_def in manifest["tags"]])
+def test_tag_has_node_class(tag_def):
+    class_name = stnode._factories.class_name_from_tag_uri(tag_def["tag_uri"])
     node_class = getattr(stnode, class_name)
 
+    assert asdf.util.uri_match(node_class._pattern, tag_def["tag_uri"])
+    if node_class._default_tag == tag_def["tag_uri"]:
+        assert tag_def["description"] in node_class.__doc__
+        assert tag_def["tag_uri"] in node_class.__doc__
+    else:
+        default_tag_version = node_class._default_tag.rsplit("-", maxsplit=1)[1]
+        tag_def_version = tag_def["tag_uri"].rsplit("-", maxsplit=1)[1]
+        assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
+
+
+@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+def test_node_classes_available_via_stnode(node_class):
     assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
-    assert node_class._tag == tag["tag_uri"]
-    assert tag["description"] in node_class.__doc__
-    assert tag["tag_uri"] in node_class.__doc__
     assert node_class.__module__ == stnode.__name__
     assert hasattr(stnode, node_class.__name__)
 

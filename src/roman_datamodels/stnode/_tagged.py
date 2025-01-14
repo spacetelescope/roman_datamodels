@@ -10,10 +10,10 @@ import asdf
 
 from ._node import DNode, LNode
 from ._registry import (
-    LIST_NODE_CLASSES_BY_TAG,
-    OBJECT_NODE_CLASSES_BY_TAG,
+    LIST_NODE_CLASSES_BY_PATTERN,
+    OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_KEY,
-    SCALAR_NODE_CLASSES_BY_TAG,
+    SCALAR_NODE_CLASSES_BY_PATTERN,
 )
 
 __all__ = [
@@ -65,14 +65,19 @@ class TaggedObjectNode(DNode):
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
-        Register any subclasses of this class in the OBJECT_NODE_CLASSES_BY_TAG
+        Register any subclasses of this class in the OBJECT_NODE_CLASSES_BY_PATTERN
         registry.
         """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedObjectNode":
-            if cls._tag in OBJECT_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._tag}' has been defined twice")
-            OBJECT_NODE_CLASSES_BY_TAG[cls._tag] = cls
+            if cls._pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
+                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._pattern}' has been defined twice")
+            OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+
+    @property
+    def _tag(self):
+        # _tag is required by asdf to allow __asdf_traverse__
+        return getattr(self, "_read_tag", self._default_tag)
 
     @property
     def tag(self):
@@ -85,7 +90,7 @@ class TaggedObjectNode(DNode):
 
     def get_schema(self):
         """Retrieve the schema associated with this tag"""
-        return get_schema_from_tag(self.ctx, self._tag)
+        return get_schema_from_tag(self.ctx, self.tag)
 
 
 class TaggedListNode(LNode):
@@ -97,14 +102,19 @@ class TaggedListNode(LNode):
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
-        Register any subclasses of this class in the LIST_NODE_CLASSES_BY_TAG
+        Register any subclasses of this class in the LIST_NODE_CLASSES_BY_PATTERN
         registry.
         """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedListNode":
-            if cls._tag in LIST_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(f"TaggedListNode class for tag '{cls._tag}' has been defined twice")
-            LIST_NODE_CLASSES_BY_TAG[cls._tag] = cls
+            if cls._pattern in LIST_NODE_CLASSES_BY_PATTERN:
+                raise RuntimeError(f"TaggedListNode class for tag '{cls._pattern}' has been defined twice")
+            LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+
+    @property
+    def _tag(self):
+        # _tag is required by asdf to allow __asdf_traverse__
+        return getattr(self, "_read_tag", self._default_tag)
 
     @property
     def tag(self):
@@ -119,20 +129,20 @@ class TaggedScalarNode:
         These will all be in the tagged_scalars directory.
     """
 
-    _tag = None
+    _pattern = None
     _ctx = None
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
-        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_TAG
+        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN
         and SCALAR_NODE_CLASSES_BY_KEY registry.
         """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedScalarNode":
-            if cls._tag in SCALAR_NODE_CLASSES_BY_TAG:
-                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._tag}' has been defined twice")
-            SCALAR_NODE_CLASSES_BY_TAG[cls._tag] = cls
-            SCALAR_NODE_CLASSES_BY_KEY[name_from_tag_uri(cls._tag)] = cls
+            if cls._pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
+                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._pattern}' has been defined twice")
+            SCALAR_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+            SCALAR_NODE_CLASSES_BY_KEY[name_from_tag_uri(cls._pattern)] = cls
 
     @property
     def ctx(self):
@@ -144,15 +154,20 @@ class TaggedScalarNode:
         return self
 
     @property
+    def _tag(self):
+        # _tag is required by asdf to allow __asdf_traverse__
+        return getattr(self, "_read_tag", self._default_tag)
+
+    @property
     def tag(self):
         return self._tag
 
     @property
     def key(self):
-        return name_from_tag_uri(self._tag)
+        return name_from_tag_uri(self.tag)
 
     def get_schema(self):
-        return get_schema_from_tag(self.ctx, self._tag)
+        return get_schema_from_tag(self.ctx, self.tag)
 
     def copy(self):
         return copy.copy(self)

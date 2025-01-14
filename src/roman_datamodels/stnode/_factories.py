@@ -3,59 +3,23 @@ Factories for creating Tagged STNode classes from tag_uris.
     These are used to dynamically create classes from the RAD manifest.
 """
 
-import importlib.resources
-
-import yaml
 from astropy.time import Time
-from rad import resources
 
 from . import _mixins
 from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, name_from_tag_uri
 
 __all__ = ["stnode_factory"]
 
-# Map of scalar types in the schemas to the python types
-SCALAR_TYPE_MAP = {
-    "string": str,
-    "http://stsci.edu/schemas/asdf/time/time-1.1.0": Time,
+# Map of scalar types by pattern (str is default)
+_SCALAR_TYPE_BY_PATTERN = {
+    "asdf://stsci.edu/datamodels/roman/tags/file_date-*": Time,
+    "asdf://stsci.edu/datamodels/roman/tags/fps/file_date-*": Time,
+    "asdf://stsci.edu/datamodels/roman/tags/tvac/file_date-*": Time,
 }
-
-BASE_SCHEMA_PATH = importlib.resources.files(resources) / "schemas"
-
-
-def load_schema_from_uri(schema_uri):
-    """
-    Load the actual schema from the rad resources directly (outside ASDF)
-        Outside ASDF because this has to occur before the ASDF extensions are
-        registered.
-
-    Parameters
-    ----------
-    schema_uri : str
-        The schema_uri found in the RAD manifest
-
-    Returns
-    -------
-    yaml library dictionary from the schema
-    """
-    filename = f"{schema_uri.split('/')[-1]}.yaml"
-
-    if "reference_files" in schema_uri:
-        schema_path = BASE_SCHEMA_PATH / "reference_files" / filename
-    elif "/fps/tagged_scalars" in schema_uri:
-        schema_path = BASE_SCHEMA_PATH / "fps/tagged_scalars" / filename
-    elif "/fps/" in schema_uri:
-        schema_path = BASE_SCHEMA_PATH / "fps" / filename
-    elif "/tvac/tagged_scalars" in schema_uri:
-        schema_path = BASE_SCHEMA_PATH / "tvac/tagged_scalars" / filename
-    elif "/tvac/" in schema_uri:
-        schema_path = BASE_SCHEMA_PATH / "tvac" / filename
-    elif "tagged_scalars" in schema_uri:
-        schema_path = BASE_SCHEMA_PATH / "tagged_scalars" / filename
-    else:
-        schema_path = BASE_SCHEMA_PATH / filename
-
-    return yaml.safe_load(schema_path.read_bytes())
+# Map of node types by pattern (TaggedObjectNode is default)
+_NODE_TYPE_BY_PATTERN = {
+    "asdf://stsci.edu/datamodels/roman/tags/cal_logs-*": TaggedListNode,
+}
 
 
 def class_name_from_tag_uri(tag_uri):
@@ -79,94 +43,83 @@ def class_name_from_tag_uri(tag_uri):
     return class_name
 
 
-def docstring_from_tag(tag):
+def docstring_from_tag(tag_def):
     """
     Read the docstring (if it exists) from the RAD manifest and generate a docstring
         for the dynamically generated class.
 
     Parameters
     ----------
-    tag: dict
+    tag_def: dict
         A tag entry from the RAD manifest
 
     Returns
     -------
     A docstring for the class based on the tag
     """
-    docstring = f"{tag['description']}\n\n" if "description" in tag else ""
+    docstring = f"{tag_def['description']}\n\n" if "description" in tag_def else ""
 
-    return docstring + f"Class generated from tag '{tag['tag_uri']}'"
+    return docstring + f"Class generated from tag '{tag_def['tag_uri']}'"
 
 
-def scalar_factory(tag):
+def scalar_factory(pattern, tag_def):
     """
     Factory to create a TaggedScalarNode class from a tag
 
     Parameters
     ----------
-    tag: dict
+    pattern: str
+        A tag pattern/wildcard
+
+    tag_def: dict
         A tag entry from the RAD manifest
 
     Returns
     -------
     A dynamically generated TaggedScalarNode subclass
     """
-    class_name = class_name_from_tag_uri(tag["tag_uri"])
-    schema = load_schema_from_uri(tag["schema_uri"])
+    class_name = class_name_from_tag_uri(pattern)
 
     # TaggedScalarNode subclasses are really subclasses of the type of the scalar,
     #   with the TaggedScalarNode as a mixin.  This is because the TaggedScalarNode
     #   is supposed to be the scalar, but it needs to be serializable under a specific
     #   ASDF tag.
-    # SCALAR_TYPE_MAP will need to be updated as new wrappers of scalar types are added
+    # _SCALAR_TYPE_BY_PATTERN will need to be updated as new wrappers of scalar types are added
     #   to the RAD manifest.
-    if "type" in schema:
-        type_ = schema["type"]
-    elif "allOf" in schema:
-        type_ = schema["allOf"][0]["$ref"]
-    else:
-        raise RuntimeError(f"Unknown schema type: {schema}")
+    # assume everything is a string if not otherwise defined
+    type_ = _SCALAR_TYPE_BY_PATTERN.get(pattern, str)
 
     return type(
         class_name,
-        (SCALAR_TYPE_MAP[type_], TaggedScalarNode),
-        {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring_from_tag(tag)},
+        (type_, TaggedScalarNode),
+        {
+            "_pattern": pattern,
+            "_default_tag": tag_def["tag_uri"],
+            "__module__": "roman_datamodels.stnode",
+            "__doc__": docstring_from_tag(tag_def),
+        },
     )
 
 
-def node_factory(tag):
+def node_factory(pattern, tag_def):
     """
     Factory to create a TaggedObjectNode or TaggedListNode class from a tag
 
     Parameters
     ----------
-    tag: dict
+    pattern: str
+        A tag pattern/wildcard
+
+    tag_def: dict
         A tag entry from the RAD manifest
 
     Returns
     -------
     A dynamically generated TaggedObjectNode or TaggedListNode subclass
     """
-    class_name = class_name_from_tag_uri(tag["tag_uri"])
-    schema = load_schema_from_uri(tag["schema_uri"])
+    class_name = class_name_from_tag_uri(pattern)
 
-    if "type" in schema:
-        # Determine if the class is a TaggedObjectNode or TaggedListNode based on the
-        #   type defined in the schema:
-        #   - TaggedObjectNode if type is "object"
-        #   - TaggedListNode if type is "array" (array in jsonschema represents Python list)
-        if schema["type"] == "object":
-            class_type = TaggedObjectNode
-        elif schema["type"] == "array":
-            class_type = TaggedListNode
-        else:
-            raise RuntimeError(f"Unknown schema type: {schema['type']}")
-    # Use of allOf in the schema indicates that the class is a TaggedObjectNode
-    #    which is "extending" another class.
-    elif "allOf" in schema:
-        class_type = TaggedObjectNode
-    else:
-        raise RuntimeError(f"Unknown schema type for: {tag['schema_uri']}")
+    class_type = _NODE_TYPE_BY_PATTERN.get(pattern, TaggedObjectNode)
 
     # In special cases one may need to add additional features to a tagged node class.
     #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
@@ -179,17 +132,25 @@ def node_factory(tag):
     return type(
         class_name,
         class_type,
-        {"_tag": tag["tag_uri"], "__module__": "roman_datamodels.stnode", "__doc__": docstring_from_tag(tag)},
+        {
+            "_pattern": pattern,
+            "_default_tag": tag_def["tag_uri"],
+            "__module__": "roman_datamodels.stnode",
+            "__doc__": docstring_from_tag(tag_def),
+        },
     )
 
 
-def stnode_factory(tag):
+def stnode_factory(pattern, tag_def):
     """
     Construct a tagged STNode class from a tag
 
     Parameters
     ----------
-    tag: dict
+    pattern: str
+        A tag pattern/wildcard
+
+    tag_def: dict
         A tag entry from the RAD manifest
 
     Returns
@@ -198,7 +159,7 @@ def stnode_factory(tag):
     """
     # TaggedScalarNodes are a special case because they are not a subclass of a
     #   _node class, but rather a subclass of the type of the scalar.
-    if "tagged_scalar" in tag["schema_uri"]:
-        return scalar_factory(tag)
+    if "tagged_scalar" in tag_def["schema_uri"]:
+        return scalar_factory(pattern, tag_def)
     else:
-        return node_factory(tag)
+        return node_factory(pattern, tag_def)

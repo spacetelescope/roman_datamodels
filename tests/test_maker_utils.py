@@ -42,11 +42,11 @@ def test_instance_valid(node_class):
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
-def test_no_extra_fields(node_class, manifest):
+def test_no_extra_fields(node_class):
     instance = maker_utils.mk_node(node_class, shape=(8, 8, 8))
     instance_keys = set(instance.keys())
 
-    schema_uri = next(t["schema_uri"] for t in manifest["tags"] if t["tag_uri"] == instance.tag)
+    schema_uri = instance._schema()["id"]
     schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
 
     schema_keys = set()
