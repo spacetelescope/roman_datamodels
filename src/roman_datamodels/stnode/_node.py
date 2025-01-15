@@ -5,77 +5,18 @@ Base node classes for all STNode classes.
 
 import datetime
 import re
-import warnings
 from collections import UserList
 from collections.abc import MutableMapping
 
 import asdf
-import asdf.schema as asdfschema
-import asdf.yamlutil as yamlutil
 import numpy as np
-from asdf.exceptions import ValidationError
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
-from asdf.util import HashableDict
 from astropy.time import Time
-
-from roman_datamodels.validate import ValidationWarning, _check_type, _error_message, will_strict_validate, will_validate
 
 from ._registry import SCALAR_NODE_CLASSES_BY_KEY
 
 __all__ = ["DNode", "LNode"]
-
-validator_callbacks = HashableDict(asdfschema.YAML_VALIDATORS)
-validator_callbacks.update({"type": _check_type})
-
-
-def _value_change(path, value, schema, pass_invalid_values, strict_validation, ctx):
-    """
-    Validate a change in value against a schema.
-    Trap error and return a flag.
-    """
-    try:
-        _check_value(value, schema, ctx)
-        update = True
-
-    except ValidationError as error:
-        update = False
-        errmsg = _error_message(path, error)
-        if pass_invalid_values:
-            update = True
-        if strict_validation:
-            raise ValidationError(errmsg)
-        else:
-            warnings.warn(errmsg, ValidationWarning)
-    return update
-
-
-def _check_value(value, schema, validator_context):
-    """
-    Perform the actual validation.
-    """
-
-    temp_schema = {"$schema": "http://stsci.edu/schemas/asdf-schema/0.1.0/asdf-schema"}
-    temp_schema.update(schema)
-    validator = asdfschema.get_validator(temp_schema, validator_context, validator_callbacks)
-    validator.validate(value, _schema=temp_schema)
-    validator_context.close()
-
-
-def _validate(attr, instance, schema, ctx):
-    """
-    Validate the attribute against the schema.
-    """
-    # Note that the following checks cannot use isinstance since the TaggedObjectNode
-    # and TaggedListNode subclasses will break as a result. And currently there is no
-    # non-tagged subclasses of these classes that exist, nor are any envisioned yet.
-    if type(instance) == DNode:  # noqa: E721
-        instance = instance._data
-    elif type(instance) == LNode:  # noqa: E721
-        instance = instance.data
-
-    tagged_tree = yamlutil.custom_tree_to_tagged_tree(instance, ctx)
-    return _value_change(attr, tagged_tree, schema, False, will_strict_validate(), ctx)
 
 
 def _get_schema_for_property(schema, attr):
@@ -166,7 +107,7 @@ class DNode(MutableMapping):
         # Handle if we are passed different data types
         if node is None:
             self.__dict__["_data"] = {}
-        elif isinstance(node, (dict, AsdfDictNode)):
+        elif isinstance(node, dict | AsdfDictNode):
             self.__dict__["_data"] = node
         else:
             raise ValueError("Initializer only accepts dicts")
@@ -220,10 +161,10 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, self._data[key])
 
             # Return objects as node classes, if applicable
-            if isinstance(value, (dict, AsdfDictNode)):
+            if isinstance(value, dict | AsdfDictNode):
                 return DNode(value, parent=self, name=key)
 
-            elif isinstance(value, (list, AsdfListNode)):
+            elif isinstance(value, list | AsdfListNode):
                 return LNode(value)
 
             else:
@@ -239,17 +180,10 @@ class DNode(MutableMapping):
 
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
-
             # Wrap things in the tagged scalar classes if necessary
             value = self._convert_to_scalar(key, value, self._data.get(key))
 
             if key in self._data or key in self._schema_attributes:
-                # Perform validation if enabled
-                if will_validate():
-                    schema = _get_schema_for_property(self._schema(), key)
-                    if schema:
-                        _validate(key, value, schema, self.ctx)
-
                 # Finally set the value
                 self._data[key] = value
             else:
@@ -267,13 +201,14 @@ class DNode(MutableMapping):
         return self._x_schema_attributes
 
     def _recursive_items(self):
-        def recurse(tree, path=[]):
-            if isinstance(tree, (DNode, dict, AsdfDictNode)):
+        def recurse(tree, path=None):
+            path = path or []  # Avoid mutable default arguments
+            if isinstance(tree, DNode | dict | AsdfDictNode):
                 for key, val in tree.items():
-                    yield from recurse(val, path + [key])
-            elif isinstance(tree, (LNode, list, tuple, AsdfListNode)):
+                    yield from recurse(val, [*path, key])
+            elif isinstance(tree, LNode | list | tuple | AsdfListNode):
                 for i, val in enumerate(tree):
-                    yield from recurse(val, path + [i])
+                    yield from recurse(val, [*path, i])
             elif tree is not None:
                 yield (".".join(str(x) for x in path), tree)
 
@@ -307,7 +242,7 @@ class DNode(MutableMapping):
             return {key: convert_val(val) for (key, val) in item_getter()}
         else:
             return {
-                key: convert_val(val) for (key, val) in item_getter() if not isinstance(val, (np.ndarray, ndarray.NDArrayType))
+                key: convert_val(val) for (key, val) in item_getter() if not isinstance(val, np.ndarray | ndarray.NDArrayType)
             }
 
     def _schema(self):
@@ -344,7 +279,7 @@ class DNode(MutableMapping):
         value = self._convert_to_scalar(key, value, self._data.get(key))
 
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
-        if isinstance(value, (dict, AsdfDictNode)):
+        if isinstance(value, dict | AsdfDictNode):
             for sub_key, sub_value in value.items():
                 value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
 
@@ -381,7 +316,7 @@ class LNode(UserList):
     def __init__(self, node=None):
         if node is None:
             self.data = []
-        elif isinstance(node, (list, AsdfListNode)):
+        elif isinstance(node, list | AsdfListNode):
             self.data = node
         elif isinstance(node, self.__class__):
             self.data = node.data
@@ -390,9 +325,9 @@ class LNode(UserList):
 
     def __getitem__(self, index):
         value = self.data[index]
-        if isinstance(value, (dict, AsdfDictNode)):
+        if isinstance(value, dict | AsdfDictNode):
             return DNode(value)
-        elif isinstance(value, (list, AsdfListNode)):
+        elif isinstance(value, list | AsdfListNode):
             return LNode(value)
         else:
             return value

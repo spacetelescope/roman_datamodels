@@ -10,12 +10,12 @@ format.
 
 Each model instance is created to contain a variety of attributes and data that
 are needed for analysis or to propagate information about the file and the
-contents of the file. For example, the `roman_datamodels.datamodels.ImageModel` class
+contents of the file. For example, the `roman_datamodels.datamodels.ScienceRawModel` class
 has the following arrays associated with it:
 
-    - ``data``: The science data
-    - ``dq``: The data quality array
-    - ``err``: The error array
+    - ``data``: The science data array
+    - ``amp33``: The amplifier 33 reference pixel array
+    - ``resultantdq``: The resultant data quality array
 
 Along with data arrays the datamodel also contains information about the
 observation that can include the observation program, exposure information,

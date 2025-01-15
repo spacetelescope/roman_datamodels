@@ -24,7 +24,7 @@ from astropy.time import Time
 
 from roman_datamodels import stnode, validate
 
-__all__ = ["DataModel", "MODEL_REGISTRY"]
+__all__ = ["MODEL_REGISTRY", "DataModel"]
 
 MODEL_REGISTRY = {}
 
@@ -140,7 +140,7 @@ class DataModel(abc.ABC):
         if init is None:
             self._instance = self._node_type()
 
-        elif isinstance(init, (str, bytes, PurePath)):
+        elif isinstance(init, str | bytes | PurePath):
             if isinstance(init, PurePath):
                 init = str(init)
             if isinstance(init, bytes):
@@ -230,10 +230,11 @@ class DataModel(abc.ABC):
             return asdf.AsdfFile(init, **kwargs)
 
     def to_asdf(self, init, *args, **kwargs):
+        all_array_compression = kwargs.pop("all_array_compression", "lz4")
         with validate.nuke_validation(), _temporary_update_filename(self, Path(init).name):
             asdf_file = self.open_asdf(**kwargs)
             asdf_file["roman"] = self._instance
-            asdf_file.write_to(init, *args, **kwargs)
+            asdf_file.write_to(init, *args, all_array_compression=all_array_compression, **kwargs)
 
     def get_primary_array_name(self):
         """
@@ -305,7 +306,7 @@ class DataModel(abc.ABC):
         return {
             f"roman.{key}": convert_val(val)
             for (key, val) in self.items()
-            if include_arrays or not isinstance(val, (np.ndarray, NDArrayType))
+            if include_arrays or not isinstance(val, np.ndarray | NDArrayType)
         }
 
     def items(self):
@@ -337,14 +338,14 @@ class DataModel(abc.ABC):
         return {
             f"roman.meta.{key}": val
             for key, val in self.meta.to_flat_dict(include_arrays=False, recursive=True).items()
-            if isinstance(val, (str, int, float, complex, bool))
+            if isinstance(val, str | int | float | complex | bool)
         }
 
     def validate(self):
         """
         Re-validate the model instance against the tags
         """
-        validate.value_change(self._instance, pass_invalid_values=False, strict_validation=True)
+        self._asdf.validate()
 
     @_set_default_asdf
     def info(self, *args, **kwargs):

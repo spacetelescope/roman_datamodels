@@ -2,14 +2,10 @@ import os
 from contextlib import nullcontext
 
 import asdf
-import astropy.units as u
 import pytest
-from asdf.exceptions import ValidationError
 
-from roman_datamodels import datamodels
-from roman_datamodels import maker_utils
+from roman_datamodels import datamodels, maker_utils, stnode, validate
 from roman_datamodels import maker_utils as utils
-from roman_datamodels import stnode, validate
 from roman_datamodels.maker_utils._base import NOFN, NONUM, NOSTR
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
@@ -21,7 +17,7 @@ def test_generated_node_classes(tag):
     class_name = stnode._factories.class_name_from_tag_uri(tag["tag_uri"])
     node_class = getattr(stnode, class_name)
 
-    assert issubclass(node_class, (stnode.TaggedObjectNode, stnode.TaggedListNode, stnode.TaggedScalarNode))
+    assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
     assert node_class._tag == tag["tag_uri"]
     assert tag["description"] in node_class.__doc__
     assert tag["tag_uri"] in node_class.__doc__
@@ -163,55 +159,10 @@ def test_schema_info():
     }
 
 
-def test_set_pattern_properties():
-    """
-    Regression test for patternProperties not being validated
-    """
-
-    # This model uses includes a patternProperty
-    mdl = maker_utils.mk_wfi_img_photom()
-
-    # This should be invalid because it is not a quantity
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.photmjsr = 3.14
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.uncertainty = 3.14
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.pixelareasr = 3.14
-
-    # This is invalid because it is not a scalar
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.photmjsr = [37.0] * (u.MJy / u.sr)
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.uncertainty = [37.0] * (u.MJy / u.sr)
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.pixelareasr = [37.0] * u.sr
-
-    # This should be invalid because it has the wrong unit
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.photmjsr = 3.14 * u.m
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.uncertainty = 3.14 * u.m
-    with pytest.raises(asdf.ValidationError):
-        mdl.phot_table.F062.pixelareasr = 3.14 * u.m
-
-    # Test some valid values (including the rest of the patternProperties)
-    mdl.phot_table.F062.photmjsr = 3.14 * (u.MJy / u.sr)
-    mdl.phot_table.F062.uncertainty = 0.1 * (u.MJy / u.sr)
-    mdl.phot_table.F062.pixelareasr = 37.0 * u.sr
-
-    # Test it can be None (including the rest of the patternProperties)
-    mdl.phot_table.F062.photmjsr = None
-    mdl.phot_table.F062.uncertainty = None
-    mdl.phot_table.F062.pixelareasr = None
-
-
 # Test that a currently undefined attribute can be assigned using dot notation
 # so long as the attribute is defined in the corresponding schema.
 def test_node_new_attribute_assignment():
     exp = stnode.Exposure()
-    with pytest.raises(AttributeError):
-        exp.bozo = 0
     exp.nresultants = 5
     assert exp.nresultants == 5
     # Test patternProperties attribute case
@@ -222,8 +173,6 @@ def test_node_new_attribute_assignment():
     photmod.phot_table.F213 = phottab["F213"]
     with pytest.raises(AttributeError):
         photmod.phot_table.F214 = phottab["F213"]
-    with pytest.raises(ValidationError):
-        photmod.phot_table.F106 = 0
 
 
 VALIDATION_CASES = ("true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ")
@@ -261,17 +210,6 @@ def test_will_validate(nuke_env_var):
 @pytest.mark.parametrize("nuke_env_var", VALIDATION_CASES, indirect=True)
 def test_nuke_validation(nuke_env_var, tmp_path):
     context = pytest.raises(asdf.ValidationError) if nuke_env_var[1] else pytest.warns(validate.ValidationWarning)
-
-    # Create a broken DNode object
-    mdl = maker_utils.mk_wfi_img_photom()
-    mdl["phot_table"] = "THIS IS NOT VALID"
-    with context:
-        datamodels.WfiImgPhotomRefModel(mdl)
-
-    # __setattr__ a broken value
-    mdl = maker_utils.mk_wfi_img_photom()
-    with context:
-        mdl.phot_table = "THIS IS NOT VALID"
 
     # Break model without outside validation
     with nullcontext() if nuke_env_var[1] else pytest.warns(validate.ValidationWarning):
@@ -312,34 +250,6 @@ def test_nuke_validation(nuke_env_var, tmp_path):
             pass
 
 
-@pytest.mark.parametrize("nuke_env_strict_var", VALIDATION_CASES, indirect=True)
-def test_will_strict_validate(nuke_env_strict_var):
-    # Test the fixture passed the value of the environment variable
-    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) == nuke_env_strict_var
-
-    # Test the validate property
-    truth = nuke_env_strict_var.lower() in ["true", "yes", "1"]
-    context = nullcontext() if truth else pytest.warns(validate.ValidationWarning)
-
-    with context:
-        assert validate.will_strict_validate() is truth
-
-    # Try all uppercase
-    os.environ[validate.ROMAN_STRICT_VALIDATION] = nuke_env_strict_var.upper()
-    with context:
-        assert validate.will_strict_validate() is truth
-
-    # Try all lowercase
-    os.environ[validate.ROMAN_STRICT_VALIDATION] = nuke_env_strict_var.lower()
-    with context:
-        assert validate.will_strict_validate() is truth
-
-    # Remove the environment variable to test the default value
-    del os.environ[validate.ROMAN_STRICT_VALIDATION]
-    assert os.getenv(validate.ROMAN_STRICT_VALIDATION) is None
-    assert validate.will_strict_validate() is True
-
-
 @pytest.mark.parametrize("model", [mdl for mdl in datamodels.MODEL_REGISTRY.values() if "Ref" not in mdl.__name__])
 def test_node_representation(model):
     """
@@ -352,7 +262,7 @@ def test_node_representation(model):
     mdl = maker_utils.mk_datamodel(model)
 
     if hasattr(mdl, "meta"):
-        if isinstance(mdl, (datamodels.MosaicModel, datamodels.MosaicSegmentationMapModel, datamodels.MosaicSourceCatalogModel)):
+        if isinstance(mdl, datamodels.MosaicModel | datamodels.MosaicSegmentationMapModel | datamodels.MosaicSourceCatalogModel):
             assert repr(mdl.meta.basic) == repr(
                 {
                     "time_first_mjd": NONUM,
@@ -379,7 +289,7 @@ def test_node_representation(model):
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
             assert mdl.meta.filename == NOFN
-        elif isinstance(mdl, (datamodels.SegmentationMapModel, datamodels.SourceCatalogModel)):
+        elif isinstance(mdl, datamodels.SegmentationMapModel | datamodels.ImageSourceCatalogModel):
             assert mdl.meta.optical_element == "F158"
         else:
             assert repr(mdl.meta.instrument) == repr(

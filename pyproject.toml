@@ -2,8 +2,10 @@
 name = "roman_datamodels"
 description = "data models supporting calibration of the Nancy Grace Roman Space Telescope"
 readme = "README.md"
-requires-python = ">=3.10"
-authors = [{ name = "STScI", email = "help@stsci.edu" }]
+requires-python = ">=3.11"
+authors = [
+    { name = "STScI", email = "help@stsci.edu" },
+]
 classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Astronomy",
@@ -12,12 +14,13 @@ classifiers = [
 ]
 dependencies = [
     "asdf >=3.3.0",
+    "lz4 >= 4.3.0",
     "asdf-astropy >=0.5.0",
     "gwcs >=0.19.0",
-    "numpy >=1.22",
+    "numpy >=1.24",
     "astropy >=5.3.0",
-    "rad >=0.22.0, <0.23.0",
-    # "rad @ git+https://github.com/spacetelescope/rad.git",
+    # "rad >=0.22.0, <0.23.0",
+    "rad @ git+https://github.com/spacetelescope/rad.git",
     "asdf-standard >=1.1.0",
 ]
 dynamic = ["version"]
@@ -29,16 +32,14 @@ file = "LICENSE"
 test = [
     "pytest >=6.0.0",
     "pytest-doctestplus",
-    "pytest-doctestplus >=0.10.0",
+    "pytest-doctestplus >=1.2.1",
     "pytest-env >= 0.8",
 ]
-aws = ["stsci-aws-utils >= 0.1.2"]
 docs = [
     "sphinx",
     "sphinx-automodapi",
     "sphinx-rtd-theme",
     "sphinx-astropy",
-    "tomli; python_version <\"3.11\"",
 ]
 
 [project.urls]
@@ -49,7 +50,10 @@ repository = "https://github.com/spacetelescope/roman_datamodels"
 roman_datamodels = "roman_datamodels.stnode._integration:get_extensions"
 
 [build-system]
-requires = ["setuptools >=61", "setuptools_scm[toml] >=3.4", "wheel"]
+requires = [
+    "setuptools >=61",
+    "setuptools_scm[toml] >=3.4",
+]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
@@ -59,11 +63,19 @@ write_to = "src/roman_datamodels/_version.py"
 where = ["src"]
 
 [tool.pytest.ini_options]
-minversion = 4.6
+minversion = 6
 doctest_plus = true
 doctest_rst = true
 text_file_format = "rst"
-addopts = "--color=yes --doctest-rst"
+log_cli_level = "INFO"
+xfail_strict = true
+addopts = [
+    "--color=yes",      # color test output
+    "--doctest-rst",    # enable doctests
+    "--strict-config",  # fail on unknown config options
+    "--strict-markers", # fail on unknown markers
+    "-ra",              # Show summary of all failures/errors
+]
 testpaths = ["tests"]
 filterwarnings = [
     "error",
@@ -83,17 +95,26 @@ exclude_lines = [
     "pass\\n",
 ]
 
-[tool.isort]
-profile = "black"
-filter_files = true
-line_length = 130
-
-[tool.black]
-line-length = 130
-force-exclude = "^/(\n  (\n      \\.eggs\n    | \\.git\n    | \\.pytest_cache\n    | \\.tox\n  )/\n)\n"
-
 [tool.ruff]
 line-length = 130
+
+[tool.ruff.lint]
+extend-select = [
+    "UP",   # PyUpgrade
+    "I",    # isort
+    "B",    # BugBear
+    "S",    # Bandit
+    "RUF",  # ruff specific
+    "NPY",  # numpy specific
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**.py" = [
+    "S101" # Bandit: Use of assert detected (fine in test files)
+]
+"src/roman_datamodels/testing.py" = [
+    "S101" # Bandit: Use of assert detected (useful public API for testing only)
+]
 
 [tool.codespell]
 skip = "*.pdf,*.fits,*.asdf,.tox,build,./tags,.git,docs/_build"

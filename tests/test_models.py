@@ -10,14 +10,13 @@ from astropy.modeling import Model
 from astropy.table import QTable, Table
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels
+from roman_datamodels import datamodels, stnode, validate
 from roman_datamodels import maker_utils as utils
-from roman_datamodels import stnode, validate
 from roman_datamodels.testing import assert_node_equal
 
 from .conftest import MANIFEST
 
-EXPECTED_COMMON_REFERENCE = {"$ref": "ref_common-1.0.0"}
+EXPECTED_COMMON_REFERENCE = {"$ref": "asdf://stsci.edu/datamodels/roman/schemas/reference_files/ref_common-1.0.0"}
 
 # Nodes for metadata schema that do not contain any archive_catalog keywords
 NODES_LACKING_ARCHIVE_CATALOG = [
@@ -27,7 +26,7 @@ NODES_LACKING_ARCHIVE_CATALOG = [
     stnode.IndividualImageMeta,
     stnode.Resample,
     stnode.SkyBackground,
-    stnode.SourceDetection,
+    stnode.SourceCatalog,
 ]
 
 
@@ -323,21 +322,16 @@ def test_make_guidewindow():
 
 
 # Testing all reference file schemas
-def test_reference_file_model_base(tmp_path):
-    # Set temporary asdf file
-
-    # Get all reference file classes
-    tags = [t for t in stnode.NODE_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri]
-    for tag in tags:
-        schema = asdf.schema.load_schema(tag.schema_uris[0])
-        # Check that schema references common reference schema
-        allofs = schema["properties"]["meta"]["allOf"]
-        found_common = False
-        for item in allofs:
-            if item == EXPECTED_COMMON_REFERENCE:
-                found_common = True
-        if not found_common:
-            raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
+@pytest.mark.parametrize("tag", [t for t in stnode.NODE_EXTENSIONS[0].tags if "/reference_files/" in t.tag_uri])
+def test_reference_file_model_base(tag):
+    schema = asdf.schema.load_schema(tag.schema_uris[0])
+    # Check that schema references common reference schema
+    allofs = schema["properties"]["meta"]["allOf"]
+    for item in allofs:
+        if item == EXPECTED_COMMON_REFERENCE:
+            break
+    else:
+        raise ValueError("Reference schema does not include ref_common")  # pragma: no cover
 
 
 # AB Vega Offset Correction tests
@@ -443,7 +437,7 @@ def test_make_epsf():
     assert isinstance(epsf.meta["pixel_x"], list)
     assert isinstance(epsf.meta["pixel_x"][0], float)
     assert epsf["psf"].shape == (2, 3, 4, 8, 8)
-    assert isinstance(epsf["psf"][0, 0, 0, 0, 0], (float, np.float32))
+    assert isinstance(epsf["psf"][0, 0, 0, 0, 0], float | np.float32)
 
     # Test validation
     epsf_model = datamodels.EpsfRefModel(epsf)
@@ -552,8 +546,9 @@ def test_add_model_attribute(tmp_path):
         assert readnoise2.new_attribute == 77
         readnoise2.new_attribute = 88
         assert readnoise2.new_attribute == 88
+        readnoise2.data = "bad_data_value"
         with pytest.raises(ValidationError):
-            readnoise.data = "bad_data_value"
+            readnoise2.validate()
 
 
 def test_model_subscribable(tmp_path):
@@ -679,8 +674,6 @@ def test_node_assignment():
     assert isinstance(exposure, stnode.DNode)
     wfi_image.meta.exposure = exposure
     assert isinstance(wfi_image.meta.exposure, stnode.DNode)
-    with pytest.raises(ValidationError):
-        wfi_image.meta.exposure = utils.mk_program()
     # The following tests that supplying a LNode passes validation.
     rampmodel = datamodels.RampModel(utils.mk_ramp(shape=(9, 9, 2)))
     assert isinstance(rampmodel.meta.exposure.read_pattern[1:], stnode.LNode)
@@ -780,9 +773,9 @@ def test_make_tvac():
     assert tvac_model.validate() is None
 
 
-def test_make_source_catalog():
-    source_catalog = utils.mk_source_catalog()
-    source_catalog_model = datamodels.SourceCatalogModel(source_catalog)
+def test_make_image_source_catalog():
+    source_catalog = utils.mk_image_source_catalog()
+    source_catalog_model = datamodels.ImageSourceCatalogModel(source_catalog)
 
     assert isinstance(source_catalog_model.source_catalog, Table)
 
@@ -912,7 +905,7 @@ def test_datamodel_schema_info_existence(name):
         info = model.schema_info("archive_catalog")
         for keyword in model.meta.keys():
             # Only DNodes or LNodes need to be canvassed
-            if isinstance(model.meta[keyword], (stnode.DNode, stnode.LNode)):
+            if isinstance(model.meta[keyword], stnode.DNode | stnode.LNode):
                 # Ignore metadata schemas that lack archive_catalog entries
                 if type(model.meta[keyword]) not in NODES_LACKING_ARCHIVE_CATALOG:
                     assert keyword in info["roman"]["meta"]
@@ -1111,3 +1104,28 @@ def test_model_assignment_access_types(model_class):
     assert type(model["meta"]["filename"]) == type(model2.meta["filename"])  # noqa: E721
     assert type(model["meta"]["filename"]) == type(model2.meta.filename)  # noqa: E721
     assert type(model.meta.filename) == type(model2.meta["filename"])  # noqa: E721
+
+
+def test_default_array_compression(tmp_path):
+    """
+    Test that saving a model results in compressed arrays
+    for default options.
+    """
+    fn = tmp_path / "foo.asdf"
+    model = utils.mk_datamodel(datamodels.ImageModel)
+    model.save(fn)
+    with asdf.open(fn) as af:
+        assert af.get_array_compression(af["roman"]["data"]) == "lz4"
+
+
+@pytest.mark.parametrize("compression", [None, "bzp2"])
+def test_array_compression_override(tmp_path, compression):
+    """
+    Test that providing a compression argument changes the
+    array compression.
+    """
+    fn = tmp_path / "foo.asdf"
+    model = utils.mk_datamodel(datamodels.ImageModel)
+    model.save(fn, all_array_compression=compression)
+    with asdf.open(fn) as af:
+        assert af.get_array_compression(af["roman"]["data"]) == compression

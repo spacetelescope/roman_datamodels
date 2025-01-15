@@ -13,7 +13,7 @@ from roman_datamodels import validate
 
 from ._core import MODEL_REGISTRY, DataModel
 
-__all__ = ["rdm_open", "FilenameMismatchWarning"]
+__all__ = ["FilenameMismatchWarning", "rdm_open"]
 
 
 class FilenameMismatchWarning(UserWarning):
@@ -60,6 +60,7 @@ def _open_path_like(init, lazy_tree=True, **kwargs):
         warnings.warn(
             f"meta.filename: {asdf_file['roman']['meta']['filename']} does not match filename: {init.name}, updating the filename in memory!",
             FilenameMismatchWarning,
+            stacklevel=2,
         )
         asdf_file["roman"]["meta"]["filename"] = init.name
 
@@ -92,8 +93,8 @@ def rdm_open(init, memmap=False, **kwargs):
                 from romancal.datamodels.library import ModelLibrary
 
                 return ModelLibrary(init)
-            except ImportError:
-                raise ImportError("Please install romancal to allow opening associations with roman_datamodels")
+            except ImportError as err:
+                raise ImportError("Please install romancal to allow opening associations with roman_datamodels") from err
     with validate.nuke_validation():
         if isinstance(init, DataModel):
             # Copy the object so it knows not to close here
@@ -106,6 +107,17 @@ def rdm_open(init, memmap=False, **kwargs):
         asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_path_like(init, memmap=memmap, **kwargs)
         if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
             return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
+
+        # Check if the datamodel is a GDPS datamodel
+        try:
+            import roman_gdps  # noqa: F401
+        except ImportError as err:
+            asdf_file.close()
+            raise ImportError("Please install roman-gdps to allow opening GDPS datamodels") from err
+
+        # We assume at this point that an asdf file with `roman` key is a GDPS datamodel
+        if "roman" in asdf_file.tree:
+            return asdf_file.tree["roman"]
 
         asdf_file.close()
         raise TypeError(f"Unknown datamodel type: {model_type}")

@@ -14,16 +14,11 @@ import datetime
 import importlib
 import os
 import sys
+import tomllib
 from distutils.version import LooseVersion
 from pathlib import Path
 
 import sphinx
-
-if sys.version_info < (3, 11):
-    import tomli as tomllib
-else:
-    import tomllib
-
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -116,7 +111,7 @@ suppress_warnings = [
 # General information about the project
 project = setup_cfg["name"]
 primary_author = setup_cfg["authors"][0]
-author = f'{primary_author["name"]} <{primary_author["email"]}>'
+author = f"{primary_author['name']} <{primary_author['email']}>"
 copyright = f"{datetime.datetime.now().year}, {author}"
 
 # The version info for the project you're documenting, acts as replacement for

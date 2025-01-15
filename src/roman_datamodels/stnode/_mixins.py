@@ -2,6 +2,13 @@
 Mixin classes for additional functionality for STNode classes
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import ClassVar
+
 __all__ = ["WfiModeMixin"]
 
 
@@ -14,7 +21,7 @@ class WfiModeMixin:
     # Every optical element is a grating or a filter
     #   There are less gratings than filters so its easier to list out the
     #   gratings.
-    _GRATING_OPTICAL_ELEMENTS = {"GRISM", "PRISM"}
+    _GRATING_OPTICAL_ELEMENTS: ClassVar = {"GRISM", "PRISM"}
 
     @property
     def filter(self):

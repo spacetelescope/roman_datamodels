@@ -22,11 +22,11 @@ Some of the most relevant methods are:
 
 - **clone:** an in-memory copy
 - **save:** save in a new file
-- **close:**
+- **close:** close the file
 - **get_primary_array_name:** the attribute name of the primary array
 - **shape**: shape of primary array
 - **to_flat_dict:** return all items as a flat dictionary with keys as dotted
-  attribute paths such as ``meta.observation.date``
+  attribute paths such as ``meta.exposure.start_time``
 - **items:** return all items as a list of key, value pairs, with keys expressed as
   dotted attribute paths
 - **get_crds_parameters:** obtain all parameters used to select reference files
@@ -38,8 +38,8 @@ Some of the most relevant methods are:
 While ASDF permits a wide variety of legal attribute names, the convention is that Roman
 only uses attribute name that are legal Python variable names. This is so they can be
 used as Python object attributes. Using the above example for the keys that ``to_flat_dict``
-returns, that permits using ``dm.meta.observation.date`` to obtain the value of that attribute
-instead of ``dm.tree['roman']['meta']['observation']['date']``. The latter can still be used
+returns, that permits using ``dm.meta.exposure.start_time`` to obtain the value of that attribute
+instead of ``dm.tree['roman']['meta']['exposure']['start_time']``. The latter can still be used
 if you enjoy typing lots of brackets and quotes instead of periods.
 
 Generally, the large data related items, such as the image array and associated data quality,
@@ -59,50 +59,59 @@ The following displays the output of the info method on a Dark reference file::
   │ ├─author (str): The ASDF Developers
   │ ├─homepage (str): http://github.com/asdf-format/asdf
   │ ├─name (str): asdf
-  │ └─version (str): 2.11.1
+  │ └─version (str): 3.4.0
   ├─history (dict)
   │ └─extensions (list)
   │   ├─[0] (ExtensionMetadata)
-  │   │ ├─extension_class (str): asdf.extension.BuiltinExtension
+  │   │ ├─extension_class (str): asdf.extension._manifest.ManifestExtension
+  │   │ ├─extension_uri (str): asdf://asdf-format.org/core/extensions/core-1.5.0
+  │   │ ├─manifest_software (Software)
+  │   │ │ ├─name (str): asdf_standard
+  │   │ │ └─version (str): 1.1.1
   │   │ └─software (Software)
-  │   │   ├─name (str): asdf
-  │   │   └─version (str): 2.11.1
+  │   │   ├─name (str): asdf-astropy
+  │   │   └─version (str): 0.6.1
   │   ├─[1] (ExtensionMetadata)
   │   │ ├─extension_class (str): asdf.extension._manifest.ManifestExtension
-  │   │ ├─extension_uri (str): asdf://stsci.edu/datamodels/roman/extensions/datamodels-1.0
+  │   │ ├─extension_uri (str): asdf://astropy.org/astropy/extensions/units-1.0.0
   │   │ └─software (Software)
-  │   │   ├─name (str): roman-datamodels
-  │   │   └─version (str): 0.12.2
+  │   │   ├─name (str): asdf-astropy
+  │   │   └─version (str): 0.6.1
   │   └─[2] (ExtensionMetadata)
   │     ├─extension_class (str): asdf.extension._manifest.ManifestExtension
-  │     ├─extension_uri (str): asdf://asdf-format.org/core/extensions/core-1.5.0
+  │     ├─extension_uri (str): asdf://stsci.edu/datamodels/roman/extensions/datamodels-1.0
+  │     ├─manifest_software (Software)
+  │     │ ├─name (str): rad
+  │     │ └─version (str): 0.22.1.dev4+gdf2aa07.d20241122
   │     └─software (Software)
-  │       ├─name (str): asdf-astropy
-  │       └─version (str): 0.2.1
-  └─roman (DarkRef) # Dark reference schema
+  │       ├─name (str): roman_datamodels
+  │       └─version (str): 0.22.1.dev9+g6580f18.d20241120
+  └─roman (DarkRef) # Dark Reference File Schema
     ├─meta (dict)
-    │ ├─author (str): WFI Reference File Pipeline version 0.0.1
-    │ ├─description (str): Updated reference files for CRDS 20220615. For Build 22Q3_B6 testing.
+    │ ├─author (str): test system
+    │ ├─description (str): blah blah blah
     │ ├─exposure (dict)
     │ │ ├─groupgap (int): 0
-    │ │ ├─ma_table_name (str): High Latitude Spec. Survey
-    │ │ ├─ma_table_number (int): 1
+    │ │ ├─ma_table_name (str): ?
+    │ │ ├─ma_table_number (int): -999999
     │ │ ├─nframes (int): 8
     │ │ ├─ngroups (int): 6
-    │ │ ├─p_exptype (str): WFI_IMAGE|
+    │ │ ├─p_exptype (str): WFI_IMAGE|WFI_GRISM|WFI_PRISM|
     │ │ └─type (str): WFI_IMAGE
     │ ├─instrument (dict)
-    │ │ ├─detector (str): WFI07
+    │ │ ├─detector (str): WFI01
     │ │ ├─name (str): WFI
     │ │ └─optical_element (str): F158
-    │ ├─origin (str): STScI
-    │ ├─pedigree (str): DUMMY
+    │ ├─origin (Origin): STSCI # Institution / Organization Name
+    │ ├─pedigree (str): GROUND
     │ ├─reftype (str): DARK
-    │ ├─telescope (str): ROMAN
-    │ └─useafter (Time)
-    ├─data (NDArrayType): shape=(6, 4096, 4096), dtype=float32 # Dark current array
-    ├─dq (NDArrayType): shape=(4096, 4096), dtype=uint32 # 2-D data quality array for all planes
-    └─err (NDArrayType): shape=(6, 4096, 4096), dtype=float32 # Error array
+    │ ├─telescope (Telescope): ROMAN # Telescope Name
+    │ └─useafter (Time): 2020-01-01T00:00:00.000
+    ├─data (Quantity): shape=(2, 4096, 4096), dtype=float32 # Dark Current Array
+    ├─dq (NDArrayType): shape=(4096, 4096), dtype=uint32 # 2-D Data Quality Array
+    ├─dark_slope (Quantity): shape=(4096, 4096), dtype=float32 # Dark Current Rate Array
+    └─dark_slope_error (Quantity): shape=(4096, 4096), dtype=float32 # Dark Current Rate Uncertainty Array
+
 
 Everything appearing before the ``roman`` attribute is general metadata about
 versions of various aspects of the ASDF file and the extensions it is using.
@@ -118,14 +127,16 @@ messages. But we will spend some space with some schema examples. Those
 doing an initial read of this documentation should feel free to skip
 the schema examples.
 
-The corresponding schema is::
+The corresponding schema for the dark model above is::
 
     %YAML 1.1
     ---
     $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
     id: asdf://stsci.edu/datamodels/roman/schemas/reference_files/dark-1.0.0
 
-    title: Dark reference schema
+    title: Dark Reference File Schema
+
+    datamodel_name: DarkRefModel
 
     type: object
     properties:
@@ -135,43 +146,109 @@ The corresponding schema is::
           - type: object
             properties:
               reftype:
+                type: string
                 enum: [DARK]
-              observation:
+              exposure:
                 type: object
                 properties:
+                  ngroups:
+                    title: Number of Resultants
+                    description: |
+                      The number of resultants averaged according to
+                      Multi-Accumulation (MA) Table read pattern.
+                    type: integer
+                  nframes:
+                    title: Number of frames per resultant # should be removed
+                    type: integer
+                  groupgap:
+                    title: Number of Skips Between Resultants
+                    description: |
+                      The number of frames skipped between resultants according to
+                      MA Table read pattern.
+                    type: integer
                   ma_table_name:
-                    title: Identifier for the multi-accumulation table used
+                    title: Multi-Accumulation Table Name
+                    description: |
+                      The name of the MA Table used. Not a unique identifier; see
+                      ma_table_number.
                     type: string
-                required: [ma_table_name]
-            required: [observation]
+                  ma_table_number:
+                    title: Multi-Accumulation Table Number
+                    description: |
+                      The unique number of the MA Table used. A modification to a MA
+                      Table that keeps the same name will have a new
+                      ma_table_number.
+                    type: integer
+                required: [ngroups, nframes, groupgap, ma_table_name, ma_table_number]
+            required: [exposure]
           - $ref: ref_exposure_type-1.0.0
           - $ref: ref_optical_element-1.0.0
       data:
-        title: Dark current array
-        tag: tag:stsci.edu:asdf/core/ndarray-1.0.0
-        datatype: float32
-        ndim: 3
+        title: Dark Current Array
+        description: |
+          The dark current array represents the integrated number of counts due to
+          the accumulation of dark current electrons in the pixels.
+        tag: tag:stsci.edu:asdf/unit/quantity-1.*
+        properties:
+          value:
+            tag: tag:stsci.edu:asdf/core/ndarray-1.*
+            datatype: float32
+            exact_datatype: true
+            ndim: 3
+          unit:
+            tag: tag:astropy.org:astropy/units/unit-1.*
+            enum: ["DN"]
       dq:
-        title: 2-D data quality array for all planes
-        tag: tag:stsci.edu:asdf/core/ndarray-1.0.0
+        title: 2-D Data Quality Array
+        description: |
+          The 2-D data quality array for the Dark Current Array.
+        tag: tag:stsci.edu:asdf/core/ndarray-1.*
         datatype: uint32
+        exact_datatype: true
         ndim: 2
-      err:
-        title: Error array
-        tag: tag:stsci.edu:asdf/core/ndarray-1.0.0
-        datatype: float32
-        ndim: 3
-    required: [meta, data, dq, err]
+      dark_slope:
+        title: Dark Current Rate Array
+        description: |
+          The dark current rate array represents the slope of the integrated number
+          of counts due to the accumulation of dark current electrons in the pixels
+          calculated from slope fitting the Dark Current Array.
+        tag: tag:stsci.edu:asdf/unit/quantity-1.*
+        properties:
+          value:
+            tag: tag:stsci.edu:asdf/core/ndarray-1.*
+            datatype: float32
+            exact_datatype: true
+            ndim: 2
+          unit:
+            tag: tag:astropy.org:astropy/units/unit-1.*
+            enum: ["DN / s"]
+      dark_slope_error:
+        title: Dark Current Rate Uncertainty Array
+        description: |
+          The uncertainty calculated from the slope fitting of the Dark Current
+          Array.
+        tag: tag:stsci.edu:asdf/unit/quantity-1.*
+        properties:
+          value:
+            tag: tag:stsci.edu:asdf/core/ndarray-1.*
+            datatype: float32
+            exact_datatype: true
+            ndim: 2
+          unit:
+            tag: tag:astropy.org:astropy/units/unit-1.*
+            enum: ["DN / s"]
+    required: [meta, data, dq, dark_slope, dark_slope_error]
     flowStyle: block
-    propertyOrder: [meta, data, dq, err]
+    propertyOrder: [meta, data, dq, dark_slope, dark_slope_error]
     ...
+
 
 This won't go in to a great deal of detail about schemas but a few things will be
 noted. The end of the schema lists the required attributes, and also specifies
-the order they should appear in the YAML. The data array attributes specifies the
+the order they should appear in the output. The data array attributes specifies the
 dimensionality of the arrays and their numeric type. The details of the ``meta``
 are mostly specified in other schemas (done this way since these are shared
-amongst many schemas), with exception of the ``reftype`` and ``observation``
+amongst many schemas), with exception of the ``reftype`` and ``exposure``
 attributes. For those one can see their type and sometimes their permissible
 values are listed. The other schemas referenced are: ref_common-1.0.0,
 ref_exposure_type-1.0.0, and ref_optical_element-1.0.0. These are displayed below.
@@ -183,68 +260,114 @@ ref_common-1.0.0::
     $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
     id: asdf://stsci.edu/datamodels/roman/schemas/reference_files/ref_common-1.0.0
 
-    title: Common reference metadata properties
+    title: Common Reference File Metadata Properties
 
-    allOf:
-    - type: object
-      properties:
-        reftype:
-          title: Reference File type
-          type: string
-        pedigree:
-          title: The pedigree of the reference file
-          type: string
-          enum: [GROUND, MODEL, DUMMY, SIMULATION]
-        description:
-          title: Description of the reference file
-          type: string
-        author:
-          title: Author of the reference file
-          type: string
-        useafter:
-          title: Use after date of the reference file
-          tag: tag:stsci.edu:asdf/time/time-1.1.0
-        telescope:
-          title: Telescope data reference data is used to calibrate
-          type: string
-          enum: [ROMAN]
-          type: string
-        origin:
-          title: Organization responsible for creating file
-          type: string
-      required: [reftype, author, description, pedigree, useafter, telescope, origin]
+    type: object
+    properties:
+      reftype:
+        title: Reference File Type
+        description: |
+          The capitalized string of the reference file type (e.g., DARK).
+        type: string
+      pedigree:
+        title: Pedigree
+        description: |
+          The pedigree of the reference file (e.g., GROUND).
+        type: string
+        enum: [GROUND, MODEL, DUMMY, SIMULATION]
+      description:
+        title: Description
+        description: |
+          A string describing the reference file, its intended usage, etc.
+        type: string
+      author:
+        title: Author
+        description: |
+          The author of who or what created the reference file.
+        type: string
+      useafter:
+        title: Use After Date
+        description: |
+          The use after date of the reference file for CRDS best references
+          matching.
+        tag: tag:stsci.edu:asdf/time/time-1.*
+      telescope:
+        title: Telescope
+        description: |
+          The telescope data used to select reference files, e.g. ROMAN for the
+          Nancy Grace Roman Space Telescope.
+        anyOf:
+          - tag: asdf://stsci.edu/datamodels/roman/tags/telescope-1.0.0
+          - type: string
+            enum: [ROMAN]
+      origin:
+        title: Organization
+        description: |
+          The organization responsible for creating the file, e.g. STSCI for the
+          Space Telescope Science Institute.
+        type: string
+      instrument:
+        type: object
+        properties:
+          name:
+            title: Instrument
+            description: |
+              The Wide Field Instrument (WFI).
+            type: string
+            enum: [WFI]
+          detector:
+            title: Detector
+            description: |
+              The numbered WFI detector in the focal plane (e.g., WFI01 for SCA 01).
+            $ref: ../wfi_detector-1.0.0
+        required: [name, detector]
+    required: [reftype, author, description, pedigree, useafter, telescope, origin, instrument]
     ...
+
 
 ref_exposure_type-1.0.0::
 
-  %YAML 1.1
-  ---
-  $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
-  id: asdf://stsci.edu/datamodels/roman/schemas/reference_files/ref_exposure_type-1.0.0
 
-  title: Type of data in the reference file exposure (viewing mode)
+    %YAML 1.1
+    ---
+    $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
+    id: asdf://stsci.edu/datamodels/roman/schemas/reference_files/ref_exposure_type-1.0.0
 
-  type: object
-  properties:
-    exposure:
-      type: object
-      properties:
-        type:
-          allOf:
-            - $ref: ../exposure_type-1.0.0
-            - title: Type of data in the exposure (viewing mode)
-      required: [type]
-  required: [exposure]
-  ...
+    title: Exposure Type Reference Schema
+
+    type: object
+    properties:
+      exposure:
+        type: object
+        properties:
+          type:
+            title: WFI Mode
+            description: |
+              The type of data taken with the WFI. Allowed values are WFI_IMAGE for
+              imaging mode, WFI_GRISM and WFI_PRISM for spectral mode, WFI_DARK for
+              dark exposures, WFI_FLAT for flat fields, and WFI_WFSC.
+            $ref: ../exposure_type-1.0.0
+          p_exptype:
+            title: WFI Mode for CRDS
+            description: |
+              The potentially multiple mode strings applied to data for reference
+              file matching in CRDS. Modes are separated by "|".
+            type: string
+            pattern: "^((WFI_IMAGE|WFI_GRISM|WFI_PRISM|WFI_DARK|WFI_FLAT|WFI_WFSC)\\s*\\|\\s*)+$"
+        required: [type,p_exptype]
+    required: [exposure]
+    ...
+
 
 ref_optical_element-1.0.0::
+
 
   %YAML 1.1
   ---
   $schema: asdf://stsci.edu/datamodels/roman/schemas/rad_schema-1.0.0
   id: asdf://stsci.edu/datamodels/roman/schemas/reference_files/ref_optical_element-1.0.0
 
-  title: Name of the filter element used
+  title: Optical Element Reference Schema
 
   type: object
   properties:
@@ -252,14 +375,17 @@ ref_optical_element-1.0.0::
       type: object
       properties:
         optical_element:
-          allOf:
-            - $ref: ../wfi_optical_element-1.0.0
+          title: Optical Element
+          description: |
+            The optical element filter name.
+          $ref: ../wfi_optical_element-1.0.0
       required: [optical_element]
   required: [instrument]
   ...
 
 If one tries to modify the datamodel contents with a value inconsistent with
-what a schema requires, validation will raise an error.
+what a schema requires, validation will raise an error when the datamodel is
+validated.
 
 Level 1 Example
 ...............
@@ -268,219 +394,221 @@ The following displays the output of the info method on Level 1 data file and wi
 used as a basis of discussion of the structure of the data model. Essentially, the contents
 of meta will consist of the same attributes with few variations between data files::
 
+
   root (AsdfObject)
   ├─asdf_library (Software)
   │ ├─author (str): The ASDF Developers
   │ ├─homepage (str): http://github.com/asdf-format/asdf
   │ ├─name (str): asdf
-  │ └─version (str): 2.10.0
+  │ └─version (str): 3.4.0
   ├─history (dict)
   │ └─extensions (list)
   │   ├─[0] (ExtensionMetadata)
-  │   │ ├─extension_class (str): asdf.extension.BuiltinExtension
-  │   │ └─software (Software)
-  │   │   ├─name (str): asdf
-  │   │   └─version (str): 2.10.0
-  │   ├─[1] (ExtensionMetadata)
   │   │ ├─extension_class (str): asdf.extension._manifest.ManifestExtension
   │   │ ├─extension_uri (str): asdf://asdf-format.org/core/extensions/core-1.5.0
+  │   │ ├─manifest_software (Software)
+  │   │ │ ├─name (str): asdf_standard
+  │   │ │ └─version (str): 1.1.1
   │   │ └─software (Software)
   │   │   ├─name (str): asdf-astropy
-  │   │   └─version (str): 0.2.1
-  │   └─[2] (ExtensionMetadata)
+  │   │   └─version (str): 0.6.1
+  │   └─[1] (ExtensionMetadata)
   │     ├─extension_class (str): asdf.extension._manifest.ManifestExtension
   │     ├─extension_uri (str): asdf://stsci.edu/datamodels/roman/extensions/datamodels-1.0
+  │     ├─manifest_software (Software)
+  │     │ ├─name (str): rad
+  │     │ └─version (str): 0.22.1.dev4+gdf2aa07.d20241122
   │     └─software (Software)
-  │       ├─name (str): roman-datamodels
-  │       └─version (str): 0.12.2
-  └─roman (WfiScienceRaw) # The schema for Level 1 WFI science data (both imaging and spectrographic).
+  │       ├─name (str): roman_datamodels
+  │       └─version (str): 0.22.1.dev9+g6580f18.d20241120
+  └─roman (WfiScienceRaw) # Level 1 (L1) Uncalibrated Roman Wide Field
+  Instrument (WFI) Ramp Cube
 
     ├─meta (dict)
-    │ ├─aperture (Aperture) # Aperture information
-    │ │ ├─name (str): WFI_CEN # PRD science aperture used
-    │ │ └─position_angle (int): 120 # [deg] Position angle of aperture used
-    │ ├─cal_step (L2CalStep) # Calibration Status
-    │ │ ├─assign_wcs (str): INCOMPLETE # Assign World Coordinate System
-    │ │ ├─flat_field (str): INCOMPLETE # Flat Field Step
-    │ │ ├─dark (str): INCOMPLETE # Dark Subtraction
-    │ │ ├─dq_init (str): INCOMPLETE # Data Quality Mask Step
-    │ │ ├─jump (str): INCOMPLETE # Jump Detection Step
-    │ │ ├─linearity (str): INCOMPLETE # Linearity Correction
-    │ │ ├─photom (str): INCOMPLETE # Photometry Step
-    │ │ ├─ramp_fit (str): INCOMPLETE # Ramp Fitting
-    │ │ └─saturation (str): INCOMPLETE # Saturation Checking
-    │ ├─calibration_software_version (str): 0.4.3.dev89+gca5771d
-    │ ├─coordinates (Coordinates) # Information about the coordinates in the file
-    │ │ └─reference_frame (str): ICRS # Name of the coordinate reference frame
-    │ ├─crds_context_used (str): roman_0031.pmap
-    │ ├─crds_software_version (str): 11.5.0
-    │ ├─ephemeris (Ephemeris) # Ephemeris data information
-    │ │ ├─earth_angle (float): 3.3161255787892263 # [radians] Earth Angle
-    │ │ ├─moon_angle (float): 3.3196162372932148 # [radians] Moon Angle
-    │ │ ├─sun_angle (float): 3.316474644639625 # [radians] Sun Angle
-    │ │ ├─type (str): PREDICTED # Type of ephemeris
-    │ │ ├─time (float): 59458.00172407407 # UTC time of position and velocity vectors in ephemeris (MJD)
-    │ │ ├─ephemeris_reference_frame (str): EME2000 # Ephemeris reference frame
-    │ │ ├─spatial_x (int): 100 # [km] X spatial coordinate of Roman
-    │ │ ├─spatial_y (int): 20 # [km] Y spatial coordinate of Roman
-    │ │ ├─spatial_z (int): 35 # [km] Z spatial coordinate of Roman
-    │ │ ├─velocity_x (int): 10 # [km/s] X component of Roman velocity
-    │ │ ├─velocity_y (int): 2 # [km/s] Y component of Roman velocity
-    │ │ └─velocity_z (float): 3.5 # [km/s] Z component of Roman velocity
-    │ ├─exposure (Exposure) # Exposure information
+    │ ├─calibration_software_name (CalibrationSoftwareName): RomanCAL # Calibration Software Name
+    │ ├─calibration_software_version (CalibrationSoftwareVersion): 9.9.0 # Calibration Software Version Number
+    │ ├─coordinates (Coordinates) # Name Of The Coordinate Reference Frame
+    │ │ └─reference_frame (str): ICRS # Name of the Celestial Coordinate Reference Frame
+    │ ├─ephemeris (Ephemeris) # Ephemeris Data Information
+    │ │ ├─earth_angle (int): -999999 # Earth Angle (radians)
+    │ │ ├─moon_angle (int): -999999 # Moon Angle (radians)
+    │ │ ├─sun_angle (int): -999999 # Sun Angle (radians)
+    │ │ ├─type (str): DEFINITIVE # Ephemeris Type
+    │ │ ├─time (int): -999999 # UTC Time of Ephemeris Information (MJD)
+    │ │ ├─ephemeris_reference_frame (str): ? # Ephemeris Reference Frame
+    │ │ ├─spatial_x (int): -999999 # X Spatial Coordinate of Roman (km)
+    │ │ ├─spatial_y (int): -999999 # Y Spatial Coordinate of Roman (km)
+    │ │ ├─spatial_z (int): -999999 # Z Spatial Coordinate of Roman (km)
+    │ │ ├─velocity_x (int): -999999 # X Component of Roman Velocity (km/s)
+    │ │ ├─velocity_y (int): -999999 # Y Component of Roman Velocity (km/s)
+    │ │ └─velocity_z (int): -999999 # Z Component of Roman Velocity (km/s)
+    │ ├─exposure (Exposure) # Exposure Information
 
-    │ │ ├─id (int): 1 # Exposure id number within visit
-    │ │ ├─type (str): WFI_GRISM
-    │ │ ├─start_time (Time) # UTC exposure start time
-    │ │ ├─mid_time (Time) # UTC exposure mid time
-    │ │ ├─end_time (Time) # UTC exposure end time
-    │ │ ├─start_time_mjd (float): 59458.00172407407 # [d] exposure start time in MJD
-    │ │ ├─mid_time_mjd (float): 59458.00258611111 # [d] exposure mid time in MJD
-    │ │ ├─end_time_mjd (float): 59458.00344814815 # [d] exposure end time in MJD
-    │ │ ├─start_time_tdb (float): 59458.00252479871 # [d] TDB time of exposure start in MJD
-    │ │ ├─mid_time_tdb (float): 59458.00338683575 # [d] TDB time of exposure mid in MJD
-    │ │ ├─end_time_tdb (float): 59458.004248872785 # [d] TDB time of exposure end in MJD
-    │ │ ├─ngroups (int): 6 # Number of groups in integration
-    │ │ ├─nframes (int): 8 # Number of frames per group
-    │ │ ├─data_problem (bool): False # Science telemetry indicated a problem
-    │ │ ├─sca_number (int): 1 # Sensor Chip Assembly number
-    │ │ ├─gain_factor (int): 2 # Gain scale factor
-    │ │ ├─integration_time (float): 197.47 # [s] Effective integration time
-    │ │ ├─elapsed_exposure_time (float): 193.44 # [s] Total elapsed exposure time
-    │ │ ├─frame_divisor (int): 6 # Divisor applied to frame-averaged groups
-    │ │ ├─groupgap (int): 0 # Number of frames dropped between groups
-    │ │ ├─frame_time (float): 4.03 # [s] Time between frames
-    │ │ ├─group_time (float): 24.18 # [s] Time between groups
-    │ │ ├─exposure_time (float): 145.92 # [s] exposure time
-    │ │ ├─effective_exposure_time (float): 169.26 # [s] Effective exposure time
-    │ │ ├─duration (float): 148.96 # [s] Total duration of exposure
-    │ │ ├─ma_table_name (str): High Latitude Imaging Survey # Identifier for the multi-accumulation table used
-    │ │ ├─ma_table_number (int): 1 # Numerical identifier for the multi-accumulation table used
-    │ │ └─level0_compressed (bool): True # Level 0 data was compressed
-    │ ├─file_date (Time)
-    │ ├─filename (str): r0000201001001001002_01101_0001_WFI07_uncal.asdf
-    │ ├─guidestar (Guidestar) # Guide star window information
-    │ │ ├─gw_start_time (Time) # UTC time when guide star window activity started
-    │ │ ├─gw_stop_time (Time) # UTC time when guide star window activity completed
-    │ │ ├─gw_id (str): TEST # guide star window identifier
-    │ │ ├─gs_ra (float): 83.87999291003202 # [deg] guide star right ascension
-    │ │ ├─gs_dec (float): -69.32761623392035 # [deg] guide star declination
-    │ │ ├─gs_ura (float): 0.0 # [deg] guide star right ascension uncertainty
-    │ │ ├─gs_udec (float): 0.0 # [deg] guide star declination uncertainty
-    │ │ ├─gs_mag (float): 17.0 # guide star magnitude in detector
-    │ │ ├─gs_umag (float): 0.0 # guide star magnitude uncertainty
-    │ │ ├─gw_fgs_mode (str): WIM-TRACK
-    │ │ ├─gw_function_start_time (Time) # Observatory UTC time at guider function start
-    │ │ ├─gw_function_end_time (Time) # Observatory UTC time at guider function end
-    │ │ ├─data_start (float): 59458.00170671297 # MJD start time of guider data within this file
-    │ │ ├─data_end (float): 59458.00172986111 # MJD end time of guider data within this file
-    │ │ ├─gw_acq_exec_stat (str): SUCCESSFUL # Guide star window acquisition execution status
-    │ │ ├─gs_ctd_x (float): 0.0 # [arcsec] guide star centroid x position in guider ideal frame
-    │ │ ├─gs_ctd_y (float): 0.0 # [arcsec] guide star centroid y position in guider ideal frame
-    │ │ ├─gs_ctd_ux (float): 0.0 # uncertainty in the x position of the centroid
-    │ │ ├─gs_ctd_uy (float): 0.0 # uncertainty in the y position of the centroid
-    │ │ ├─gs_epoch (str): J2000 # Epoch of guide star coordinates
-    │ │ ├─gs_mura (float): 0.0 # [mas/yr] Guide star ICRS right ascension proper motion
-    │ │ ├─gs_mudec (float): 0.0 # [mas/yr] Guide star ICRS declination proper motion
-    │ │ ├─gs_para (float): 0.02 # Guide star annual parallax
-    │ │ ├─gs_pattern_error (float): 0.0 # RMS of guide star position
-    │ │ ├─gw_window_xsize (int): 16
-    │ │ ├─gw_window_xstart (float): 2040.0
-    │ │ ├─gw_window_ysize (int): 32
-    │ │ └─gw_window_ystart (float): 2032.0
-    │ ├─instrument (WfiMode) # WFI observing configuration
+    │ │ ├─type (str): WFI_IMAGE
+    │ │ ├─start_time (Time): 2020-01-01T00:00:00.000 # Exposure Start Time (UTC)
+    │ │ ├─mid_time (Time): 2020-01-01T01:00:00.000 # Exposure Mid Time (UTC)
+    │ │ ├─end_time (Time): 2020-01-01T02:00:00.000 # Exposure End Time (UTC)
+    │ │ ├─nresultants (int): 6 # Number of Resultants
+    │ │ ├─data_problem (bool): False # Data Problem
+    │ │ ├─frame_time (int): -999999 # Detector Readout Time (s)
+    │ │ ├─exposure_time (int): -999999 # Exposure Time (s)
+    │ │ ├─effective_exposure_time (int): -999999 # Effective Exposure Time (s)
+    │ │ ├─ma_table_name (str): ? # Name of the Multi-Accumulation Table
+    │ │ ├─ma_table_number (int): -999999 # Multi-Accumulation Table Identification Number
+    │ │ ├─read_pattern (list) # Read Pattern
+    │ │ │ ├─[0] (list)
+    │ │ │ │ └─[0] (int): 1
+    │ │ │ ├─[1] (list)
+    │ │ │ │ ├─[0] (int): 2
+    │ │ │ │ └─[1] (int): 3
+    │ │ │ ├─[2] (list)
+    │ │ │ │ └─[0] (int): 4
+    │ │ │ ├─[3] (list)
+    │ │ │ │ ├─[0] (int): 5
+    │ │ │ │ ├─[1] (int): 6
+    │ │ │ │ ├─[2] (int): 7
+    │ │ │ │ └─[3] (int): 8
+    │ │ │ ├─[4] (list)
+    │ │ │ │ ├─[0] (int): 9
+    │ │ │ │ └─[1] (int): 10
+    │ │ │ └─[5] (list)
+    │ │ │   └─[0] (int): 11
+    │ │ └─truncated (bool): False # Truncated MA Table
+    │ ├─file_date (FileDate): 2020-01-01T00:00:00.000 # File Creation Date
+    │ ├─filename (Filename): l1_doc.asdf # File Name
+    │ ├─guide_star (Guidestar) # Guide Star and Guide Window Information
+    │ │ ├─guide_window_id (str): ? # Guide Window Identifier
+    │ │ ├─guide_mode (str): WSM-ACQ-2
+    │ │ ├─data_start (Time): 2020-01-01T00:00:00.000 # Guide Data Start Time (UTC)
+    │ │ ├─data_end (Time): 2020-01-01T01:00:00.000 # Guide Data End Time (UTC)
+    │ │ ├─window_xstart (int): -999999 # Guide Window X Start Position (pixels)
+    │ │ ├─window_ystart (int): -999999 # Guide Window Y Start Position (pixels)
+    │ │ ├─window_xstop (int): -999829 # Guide Window X Stop Position (pixels)
+    │ │ ├─window_ystop (int): -999975 # Guide Window Y Start Position (pixels)
+    │ │ ├─window_xsize (int): 170 # Guide Window Size in the X Direction (pixels)
+    │ │ ├─window_ysize (int): 24 # Guide Window Size in the Y Direction (pixels)
+    │ │ ├─guide_star_id (str): ? # Guide Star Identifier
+    │ │ ├─gsc_version (str): ? # Guide Star Catalog Version
+    │ │ ├─ra (int): -999999 # Guide Star Right Ascension (deg)
+    │ │ ├─dec (int): -999999 # Guide Star Declination (deg)
+    │ │ ├─ra_uncertainty (int): -999999 # Guide Star Right Ascension Uncertainty (deg)
+    │ │ ├─dec_uncertainty (int): -999999 # Guide Star Declination Uncertainty (deg)
+    │ │ ├─fgs_magnitude (int): -999999 # Guide Star Instrumental Magnitude
+    │ │ ├─fgs_magnitude_uncertainty (int): -999999 # Guide Star Instrumental Magnitude Uncertainty
+    │ │ ├─centroid_x (int): -999999 # Guide Star Centroid X Position (pixels)
+    │ │ ├─centroid_y (int): -999999 # Guide Star Centroid Y Position (pixels)
+    │ │ ├─centroid_x_uncertainty (int): -999999 # Guide Star Centroid X Position Uncertainty (pixels)
+    │ │ ├─centroid_y_uncertainty (int): -999999 # Guide Star Centroid Y Position Uncertainty (pixels)
+    │ │ ├─epoch (str): ? # Guide Star Coordinates Epoch
+    │ │ ├─proper_motion_ra (int): -999999 # Proper Motion of the Guide Star Right Ascension (mas / yr)
+    │ │ ├─proper_motion_dec (int): -999999 # Proper Motion of the Guide Star Declination (mas / yr)
+    │ │ ├─parallax (int): -999999 # Guide Star Parallax (mas)
+    │ │ └─centroid_rms (int): -999999 # Guide Star Centroid RMS
+    │ ├─instrument (WfiMode) # Wide Field Instrument (WFI) Configuration Information
+    │ │ ├─detector (str): WFI01 # Wide Field Instrument (WFI) Detector Identifier
+    │ │ ├─optical_element (str): F158 # Wide Field Instrument (WFI) Optical Element
+    │ │ └─name (str): WFI # Instrument Name
+    │ ├─model_type (ModelType): ScienceRawModel # Data Model Type
+    │ ├─observation (Observation) # Observation Identifiers
+    │ │ ├─observation_id (str): ? # Programmatic Observation Identifier
+    │ │ ├─visit_id (str): ? # Visit Identifier
+    │ │ ├─program (int): 1 # Program Number
+    │ │ ├─execution_plan (int): 1 # Execution Plan Number
+    │ │ ├─pass (int): 1 # Pass Number
+    │ │ ├─segment (int): 1 # Segment Number
+    │ │ ├─observation (int): 1 # Observation Number
+    │ │ ├─visit (int): 1 # Visit Number
+    │ │ ├─visit_file_group (int): 1 # Visit File Group
+    │ │ ├─visit_file_sequence (int): 1 # Visit File Sequence
+    │ │ ├─visit_file_activity (str): 01 # Visit File Activity
+    │ │ └─exposure (int): 1 # Exposure Number
+    │ ├─origin (Origin): STSCI/SOC # Institution / Organization Name
+    │ ├─pointing (Pointing) # Spacecraft Pointing Information
+    │ │ ├─ra_v1 (int): -999999 # Right Ascension of the Telescope V1 Axis (deg)
+    │ │ ├─dec_v1 (int): -999999 # Declination of the Telescope V1 Axis (deg)
+    │ │ ├─pa_v3 (int): -999999 # Position Angle of the Telescope V3 Axis (deg)
+    │ │ ├─target_aperture (str): ? # Aperture Name Used for Pointing
+    │ │ ├─target_ra (int): -999999 # Right Ascension of the Target Aperture (deg)
+    │ │ └─target_dec (int): -999999 # Declination of the Target Aperture
+    │ ├─prd_version (PrdVersion): 8.8.8 # SOC PRD Version Number
+    │ ├─product_type (ProductType): l2 # Product Type Descriptor
+    │ ├─program (Program) # Program Information
+    │ │ ├─title (str): ? # Proposal Title
+    │ │ ├─investigator_name (str): ? # Principal Investigator Name
+    │ │ ├─category (str): ? # Program Category
+    │ │ ├─subcategory (str): None # Program Subcategory
+    │ │ ├─science_category (str): ? # Science Category
+    │ │ └─continuation_id (int): -999999 # Program Continuation Identifier
+    │ ├─rcs (Rcs) # Relative Calibration System Information
+    │ │ ├─active (bool): False # Status of the Relative Calibration System (RCS)
+    │ │ ├─electronics (str): A # Relative Calibration System (RCS) Electronics Side
+    │ │ ├─bank (str): 1 # Light Emitting Diode (LED) Bank Selection
+    │ │ ├─led (str): 1 # Light Emitting Diode (LED) Passband
+    │ │ └─counts (int): -999999 # Light Emitting Diode (LED) Flux (DN)
+    │ ├─ref_file (RefFile) # Reference File Information
+    │ │ ├─area (str): N/A # Pixel Area Reference File Information
+    │ │ ├─crds (dict) # Calibration Reference Data System (CRDS) Information
+    │ │ │ ├─context (str): roman_0815.pmap # CRDS Context
+    │ │ │ └─version (str): 12.3.1 # CRDS Software Version
+    │ │ ├─dark (str): N/A # Dark Reference File Information
+    │ │ ├─distortion (str): N/A # Distortion Reference File Information
+    │ │ ├─flat (str): N/A # Flat Reference File Information
+    │ │ ├─gain (str): N/A # Gain Reference Rile Information
+    │ │ ├─inverse_linearity (str): N/A # Inverse Linearity Reference File Information
+    │ │ ├─linearity (str): N/A # Linearity Reference File Information
+    │ │ ├─mask (str): N/A # Bad Pixel Mask Reference File Information
+    │ │ ├─photom (str): N/A # Photometry Reference File Information
+    │ │ ├─readnoise (str): N/A # Read Noise Reference File Information
+    │ │ ├─refpix (str): N/A # Reference Pixel Reference File Information
+    │ │ └─saturation (str): N/A # Saturation Reference File Information
+    │ ├─sdf_software_version (SdfSoftwareVersion): 7.7.7 # SDF Version Number
+    │ ├─telescope (Telescope): ROMAN # Telescope Name
+    │ ├─velocity_aberration (VelocityAberration) # Velocity Aberration Correction Information
+    │ │ ├─ra_reference (int): -999999 # Velocity Aberrated Reference Right Ascension (deg)
+    │ │ ├─dec_reference (int): -999999 # Velocity Aberrated Reference Declination (deg)
+    │ │ └─scale_factor (int): -999999 # Velocity Aberration Correction Scale Factor
+    │ ├─visit (Visit) # Visit Information
+    │ │ ├─dither (dict) # Dither Pattern Information
+    │ │ │ ├─executed_pattern (list) # Executed Dither Pattern Offsets (arcsec)
+    │ │ │ │ ├─[0] (int): 1
+    │ │ │ │ ├─[1] (int): 2
+    │ │ │ │ ├─[2] (int): 3
+    │ │ │ │ ├─[3] (int): 4
+    │ │ │ │ ├─[4] (int): 5
+    │ │ │ │ ├─[5] (int): 6
+    │ │ │ │ ├─[6] (int): 7
+    │ │ │ │ ├─[7] (int): 8
+    │ │ │ │ └─[8] (int): 9
+    │ │ │ ├─primary_name (NoneType): None # Primary Dither Pattern Name
+    │ │ │ └─subpixel_name (NoneType): None # Subpixel Dither Pattern Name
+    │ │ ├─engineering_quality (str): OK # Engineering Data Quality
+    │ │ ├─pointing_engineering_source (str): CALCULATED # Pointing Engineering Source
+    │ │ ├─type (str): PRIME_TARGETED_FIXED # Visit Type
+    │ │ ├─start_time (Time): 2020-01-01T00:00:00.000 # Visit Start Time (UTC)
+    │ │ ├─end_time (Time): 2020-01-01T00:00:00.000 # Visit End Time (UTC)
+    │ │ ├─status (str): UNSUCCESSFUL # Visit Status
+    │ │ ├─nexposures (int): -999999 # Number of Planned Exposures
+    │ │ └─internal_target (bool): False # Internal Target
+    │ └─wcsinfo (Wcsinfo) # World Coordinate System (WCS) Information
+    │   ├─aperture_name (str): WFI01_FULL # Aperture Name
+    │   ├─pa_aperture (int): -999999 # Aperture Position Angle (deg)
+    │   ├─v2_ref (int): -999999 # V2 Reference Position (arcsec)
+    │   ├─v3_ref (int): -999999 # V3 Reference Position (arcsec)
+    │   ├─vparity (int): -1 # Relative Rotation Between the Ideal and Telescope Axes
+    │   ├─v3yangle (int): -999999 # Angle Between the V3 and Ideal Y Axes (deg)
+    │   ├─ra_ref (int): -999999 # Right Ascension of the Reference Position (deg)
+    │   ├─dec_ref (int): -999999 # Declination of the Reference Position (deg)
+    │   ├─roll_ref (int): -999999 # V3 Position Angle at the Reference Position
+    │   └─s_region (str): ? # Spatial Extent of the Exposure
+    ├─data (NDArrayType): shape=(8, 4096, 4096), dtype=uint16 # Science Data (DN)
+    └─amp33 (NDArrayType): shape=(8, 4096, 128), dtype=uint16 # Amplifier 33 Reference Pixel Data (DN)
 
-    │ │ ├─detector (str): WFI07
-    │ │ ├─optical_element (str): GRISM
-    │ │ └─name (str): WFI # Instrument used to acquire the data
-    │ ├─model_type (str): WfiScienceRaw
-    │ ├─observation (Observation) # Observation identifiers
-    │ │ ├─obs_id (str): 0000201001001001002011010001 # Programmatic observation identifier. The format is 'PPPPPCCAAASSSOOOVVVggsaaeeee' where 'PPPPP' is the Program, 'CC' is the execution plan, 'AAA' is the pass, 'SSS' is the segment, 'OOO' is the Observation, 'VVV' is the Visit, 'gg' is the visit file group, 's' is the visit file sequence, 'aa' is the visit file activity, and 'eeee' is the exposure ID. The observation ID is the complete concatenation of visit_id + visit_file_statement (visit_file_group + visit_file_sequence + visit_file_activity) + exposure.
-    │ │ ├─visit_id (str): 0000201001001001002 # A unique identifier for a visit. The format is 'PPPPPCCAAASSSOOOVVV' where 'PPPPP' is the Program, 'CC' is the execution plan, 'AAA' is the pass, 'SSS' is the segment number, 'OOO' is the Observation and 'VVV' is the Visit.
-    │ │ ├─program (int): 2 # Program number, defined range is 1..18445; included in obs_id and visit_id as 'PPPPP'.
-    │ │ ├─execution_plan (int): 1 # Execution plan within the program, defined range is 1..99; included in obs_id and visit_id as 'CC'.
-    │ │ ├─pass (int): 1 # Pass number within execution plan, defined range is 1..999; included in obs_id and visit_id as 'AA'.
-    │ │ ├─observation (int): 1 # Observation number within the segment, defined range is 1..999; included in obs_id and visit_id as 'OOO'.
-    │ │ ├─segment (int): 1 # Segment Number within pass, defined range is 1..999; included in obs_id and visit_id as 'SSS'.
-    │ │ ├─visit (int): 2 # Visit number within the observation, defined range of values is 1..999; included in obs_id and visit_id as 'VVV'.
-    │ │ ├─visit_file_group (int): 1 # Sequence group within the visit file, defined range of values is 1..99; included in obs_id as 'gg'.
-    │ │ ├─visit_file_sequence (int): 1 # Visit file sequence within the group, defined range of values is 1..5; included in obs_id as 's'.
-    │ │ ├─visit_file_activity (str): 01 # Visit file activity within the sequence, defined range of values is 1..99; included in obs_id as 'aa'.
-    │ │ ├─exposure (int): 1 # Exposure within the visit, defined range of values is 1..9999; included in obs_id as 'eeee'.
-    │ │ ├─template (str): NONE # Observation template used
-    │ │ ├─observation_label (str): TEST # Proposer label for the observation
-    │ │ ├─survey (str): N/A # Observation Survey
-    │ │ └─ma_table_name (str): High Latitude Spec. Survey
-    │ ├─origin (str): STSCI
-    │ ├─photometry (Photometry) # Photometry information
-    │ │ ├─conversion_microjanskys (NoneType): None # Flux density (uJy/arcsec2) producing 1 cps
-    │ │ ├─conversion_megajanskys (NoneType): None # Flux density (MJy/steradian) producing 1 cps
-    │ │ ├─pixelarea_steradians (NoneType): None # Nominal pixel area in steradians
-    │ │ ├─pixelarea_arcsecsq (NoneType): None # Nominal pixel area in arcsec^2
-    │ │ ├─conversion_megajanskys_uncertainty (NoneType): None # Uncertainty in flux density conversion to MJy/steradians
-    │ │ └─conversion_microjanskys_uncertainty (NoneType): None # Uncertainty in flux density conversion to uJy/steradians
-    │ ├─pointing (Pointing) # Spacecraft pointing information
-    │ │ ├─ra_v1 (float): 83.48452487142407 # [deg] RA of telescope V1 axis
-    │ │ ├─dec_v1 (float): -68.84784021148778 # [deg] Dec of telescope V1 axis
-    │ │ └─pa_v3 (float): 0.0 # [deg] Position angle of telescope V3 axis
-    │ ├─prd_software_version (str): 0.0.1
-    │ ├─program (Program) # Program information
-    │ │ ├─title (str): TEST DATA # Proposal title
-    │ │ ├─pi_name (str): DESJARDINS, TYLER # Principle Investigator name
-    │ │ ├─category (str): GO # Program category
-    │ │ ├─subcategory (str): NONE # Program subcategory
-    │ │ ├─science_category (str): NONE # Science category assigned during TAC process
-    │ │ └─continuation_id (int): 0 # Continuation of previous Program
-    │ ├─ref_file (RefFile) # Reference file information
-    │ │ └─crds (dict)
-    │ │   ├─context_used (str): roman_0031.pmap
-    │ │   └─sw_version (str): 11.5.0
-    │ ├─sdf_software_version (str): 0.0.1
-    │ ├─target (Target) # Target information
-    │ │ ├─proposer_name (str): 30 Dor # Proposer's name for the target
-    │ │ ├─catalog_name (str): NGC 2070 # Standard astronomical catalog name for target
-    │ │ ├─type (str): FIXED # Type of target
-    │ │ ├─ra (float): 84.675 # Target RA at mid time of exposure
-    │ │ ├─dec (float): -69.1 # Target Dec at mid time of exposure
-    │ │ ├─ra_uncertainty (float): 2.777777777777778e-05 # Target RA uncertainty
-    │ │ ├─dec_uncertainty (float): 2.777777777777778e-05 # Target Dec uncertainty
-    │ │ ├─proper_motion_ra (float): 0.0 # Target proper motion in RA
-    │ │ ├─proper_motion_dec (float): 0.0 # Target proper motion in Dec
-    │ │ ├─proper_motion_epoch (str): J2000 # Target proper motion epoch
-    │ │ ├─proposer_ra (float): 84.675 # Proposer's target RA
-    │ │ ├─proposer_dec (float): -69.1 # Proposer's target Dec
-    │ │ └─source_type (str): EXTENDED # Source type used for calibration
-    │ ├─telescope (str): ROMAN
-    │ ├─velocity_aberration (VelocityAberration) # Velocity aberration correction information
-    │ │ ├─ra_offset (float): -0.005234606668381048 # Velocity aberration right ascension offset
-    │ │ ├─dec_offset (float): 0.0012031304993342928 # Velocity aberration declination offset
-    │ │ └─scale_factor (float): 0.9999723133902021 # Velocity aberration scale factor
-    │ ├─visit (Visit) # Visit information
-    │ │ ├─engineering_quality (str): OK # Engineering data quality indicator from EngDB
-    │ │ ├─pointing_engdb_quality (str): CALCULATED # Quality of pointing information from EngDB
-    │ │ ├─type (str): None # Visit type
-    │ │ ├─start_time (Time) # UTC visit start time
-    │ │ ├─end_time (Time) # UTC visit end time
-    │ │ ├─status (str): None # Status of a visit
-    │ │ ├─total_exposures (int): 6 # Total number of planned exposures in visit
-    │ │ ├─internal_target (bool): False # At least one exposure in visit is internal
-    │ │ └─target_of_opportunity (bool): False # Visit scheduled as target of opportunity
-    │ └─wcsinfo (Wcsinfo) # WCS parameters
-    │   ├─v2_ref (float): 536.014439839392 # [arcsec] Telescope v2 coordinate of the reference point
-    │   ├─v3_ref (float): -1718.747756607601 # [arcsec] Telescope v3 coordinate of the reference point
-    │   ├─vparity (int): -1 # Relative sense of rotation between Ideal xy and V2V3
-    │   ├─v3yangle (int): -60 # [deg] Angle from V3 axis to Ideal y axis
-    │   ├─ra_ref (float): 83.87999291003202 # [deg] Right ascension of the reference point
-    │   ├─dec_ref (float): -69.32761623392035 # [deg] Declination of the reference point
-    │   ├─roll_ref (float): 0.0 # [deg] V3 roll angle at the ref point (N over E)
-    │   └─s_region (str): NONE # spatial extent of the observation
-    ├─data (NDArrayType): shape=(6, 4096, 4096), dtype=uint16 # Science data, including the border reference pixels.
-    └─amp33 (NDArrayType): shape=(6, 4096, 128), dtype=uint16 # Amp 33 reference pixel data.
 
 
 The corresponding schemas for this dataset are:
 
 wfi_science_raw-1.0.0.yaml::
+
 
   %YAML 1.1
   ---
@@ -488,29 +616,55 @@ wfi_science_raw-1.0.0.yaml::
   id: asdf://stsci.edu/datamodels/roman/schemas/wfi_science_raw-1.0.0
 
   title: |
-    The schema for Level 1 WFI science data (both imaging and spectrographic).
+    Level 1 (L1) Uncalibrated Roman Wide Field
+    Instrument (WFI) Ramp Cube
+
+  datamodel_name: ScienceRawModel
+
+  archive_meta: None
 
   type: object
   properties:
     meta:
-      allOf:
-        - $ref: common-1.0.0
+      $ref: common-1.0.0
     data:
-      title: Science data, including the border reference pixels.
-      tag: tag:stsci.edu:asdf/core/ndarray-1.0.0
-      datatype: uint16
+      title: Science Data (DN)
+      description: |
+        Uncalibrated science ramp cube in units of data
+        numbers (DNs)
+      tag: tag:stsci.edu:asdf/core/ndarray-1.*
       ndim: 3
+      datatype: uint16
+      unit: "DN"
+      exact_datatype: true
     amp33:
-      title: Amp 33 reference pixel data.
-      tag: tag:stsci.edu:asdf/core/ndarray-1.0.0
-      datatype: uint16
+      title: Amplifier 33 Reference Pixel Data (DN)
+      description: |
+        Reference pixel data from amplifier 33 in units of
+        data numbers (DNs)
+      tag: tag:stsci.edu:asdf/core/ndarray-1.*
       ndim: 3
-  propertyOrder: [meta, data, amp33]
+      datatype: uint16
+      unit: "DN"
+      exact_datatype: true
+    resultantdq:
+      title: Resultant Data Quality Array
+      description: |
+        Optional, 3-D data quality array with a plane for each
+        resultant.
+      tag: tag:stsci.edu:asdf/core/ndarray-1.*
+      ndim: 3
+      datatype: uint8
+      exact_datatype: true
+  propertyOrder: [meta, data, amp33, resultantdq]
   flowStyle: block
   required: [meta, data, amp33]
   ...
 
+
+
 common-1.0.0.yaml::
+
 
   %YAML 1.1
   ---
@@ -525,40 +679,51 @@ common-1.0.0.yaml::
   - type: object
     properties:
       # Meta Objects
-      aperture:
-        tag: asdf://stsci.edu/datamodels/roman/tags/aperture-1.0.0
-      cal_step:
-        tag: asdf://stsci.edu/datamodels/roman/tags/l2_cal_step-1.0.0
       coordinates:
+        title: Name Of The Coordinate Reference Frame
         tag: asdf://stsci.edu/datamodels/roman/tags/coordinates-1.0.0
       ephemeris:
+        title: Ephemeris Data Information
         tag: asdf://stsci.edu/datamodels/roman/tags/ephemeris-1.0.0
       exposure:
+        title: Exposure Information
         tag: asdf://stsci.edu/datamodels/roman/tags/exposure-1.0.0
-      guidestar:
+      guide_star:
+        title: Guide Star Window Information
         tag: asdf://stsci.edu/datamodels/roman/tags/guidestar-1.0.0
       instrument:
+        title: WFI Observing Configuration
         tag: asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.0.0
       observation:
+        title: Observation Identifiers
         tag: asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0
       pointing:
+        title: Spacecraft Pointing Information
         tag: asdf://stsci.edu/datamodels/roman/tags/pointing-1.0.0
       program:
+        title: Program Information
         tag: asdf://stsci.edu/datamodels/roman/tags/program-1.0.0
       ref_file:
+        title: Reference File Information
         tag: asdf://stsci.edu/datamodels/roman/tags/ref_file-1.0.0
-      target:
-        tag: asdf://stsci.edu/datamodels/roman/tags/target-1.0.0
+      rcs:
+        title: Relative Calibration System Information
+        tag: asdf://stsci.edu/datamodels/roman/tags/rcs-1.0.0
       velocity_aberration:
+        title: Velocity Aberration Correction Information
         tag: asdf://stsci.edu/datamodels/roman/tags/velocity_aberration-1.0.0
       visit:
+        title: Visit Information
         tag: asdf://stsci.edu/datamodels/roman/tags/visit-1.0.0
       wcsinfo:
+        title: World Coordinate System (WCS) Parameters
         tag: asdf://stsci.edu/datamodels/roman/tags/wcsinfo-1.0.0
-    required: [aperture, cal_step, coordinates, ephemeris, exposure, guidestar,
+    required: [coordinates, ephemeris, exposure, guide_star,
                instrument, observation, pointing, program, ref_file,
-               target, velocity_aberration, visit, wcsinfo]
+               rcs, velocity_aberration, visit, wcsinfo]
   ...
+
+
 
 The rest of the included schemas are not shown to save space.
 
@@ -566,52 +731,65 @@ Level 2 Example
 ...............
 
 The calibrated data has very much the same structure in the meta content.
-The following example of Level 2 dataset is shown to show that it now
-contains logging messages, and a noticeably different data content. Most
+The following example of Level 2 dataset is displayed to show that it now
+contains logging messages, and noticeably different data content. Most
 of the content has been removed to keep it reasonably short, as well as
 not showing the associated schemas::
+
 
   root (AsdfObject)
   ├─asdf_library (Software)
   <<<<<<general asdf header elided>>>>>>
-  └─roman (WfiImage) # The schema for WFI Level 2 images.
-
+  └─roman (WfiImage) # Level 2 (L2) Calibrated Roman Wide Field Instrument (WFI) Rate Image.
     ├─meta (dict)
-    │ ├─aperture (Aperture) # Aperture information
-    │ │ ├─name (str): WFI_CEN # PRD science aperture used
-    │ │ └─position_angle (int): 120 # [deg] Position angle of aperture used
+    │ ├─background (SkyBackground) # Sky Background Information
+    │ │ ├─level (int): -999999 # Sky Background Level
+    │ │ ├─method (str): None # Sky Background Method
+    │ │ └─subtracted (bool): False # Sky Background Subtraction Flag
+    │ ├─cal_logs (CalLogs) # Calibration Log Messages
+    │ │ ├─0 (str): 2021-11-15T09:15:07.12Z :: FlatFieldStep :: INFO :: Completed
+    │ │ └─1 (str): 2021-11-15T10:22.55.55Z :: RampFittingStep :: WARNING :: Wow, lots of Cosmic Rays detected
+    │ ├─cal_step (L2CalStep) # Level 2 Calibration Status
+    │ │ ├─dq_init (str): INCOMPLETE # Data Quality Initialization Step
+    │ │ ├─saturation (str): INCOMPLETE # Saturation Identification Step
+    │ │ ├─refpix (str): INCOMPLETE # Reference Pixel Correction Step
+    │ │ ├─linearity (str): INCOMPLETE # Classical Linearity Correction Step
+    │ │ ├─dark (str): INCOMPLETE # Dark Current Subtraction Step
+    │ │ ├─ramp_fit (str): INCOMPLETE # Ramp Fitting Step
+    │ │ ├─assign_wcs (str): INCOMPLETE # Assign World Coordinate System (WCS) Step
+    │ │ ├─flat_field (str): INCOMPLETE # Flat Field Correction Step
+    │ │ ├─photom (str): INCOMPLETE # Populate Photometric Keywords Step
+    │ │ ├─source_detection (str): INCOMPLETE # Source Detection Step
+    │ │ ├─tweakreg (str): INCOMPLETE # Tweakreg step
+    │ │ ├─flux (str): INCOMPLETE # Flux Scale Application Step
+    │ │ ├─skymatch (str): INCOMPLETE # Sky Matching for Combining Overlapping Images Step
+    │ │ └─outlier_detection (str): INCOMPLETE # Outlier Detection Step
+    │ ├─calibration_software_name (CalibrationSoftwareName): RomanCAL # Calibration Software Name
     <<<<<<most of meta content elided>>>>>>
     │ ├─wcs (WCS)
-    │ └─wcsinfo (Wcsinfo) # WCS parameters
-    │   ├─v2_ref (float): 536.014439839392 # [arcsec] Telescope v2 coordinate of the reference point
-    │   ├─v3_ref (float): -1718.747756607601 # [arcsec] Telescope v3 coordinate of the reference point
-    │   ├─vparity (int): -1 # Relative sense of rotation between Ideal xy and V2V3
-    │   ├─v3yangle (int): -60 # [deg] Angle from V3 axis to Ideal y axis
-    │   ├─ra_ref (float): 83.87999291003202 # [deg] Right ascension of the reference point
-    │   ├─dec_ref (float): -69.32761623392035 # [deg] Declination of the reference point
-    │   ├─roll_ref (float): 0.0 # [deg] V3 roll angle at the ref point (N over E)
-    │   └─s_region (str): NONE # spatial extent of the observation
-    ├─data (NDArrayType): shape=(4088, 4088), dtype=float32 # Science data, excluding border reference pixels.
-    ├─dq (NDArrayType): shape=(4088, 4088), dtype=uint32
-    ├─err (NDArrayType): shape=(4088, 4088), dtype=float32
-    ├─var_poisson (NDArrayType): shape=(4088, 4088), dtype=float32
-    ├─var_rnoise (NDArrayType): shape=(4088, 4088), dtype=float32
-    ├─amp33 (NDArrayType): shape=(6, 4096, 128), dtype=uint16 # Amp 33 reference pixel data
-    ├─border_ref_pix_left (NDArrayType): shape=(6, 4096, 4), dtype=float32 # Original border reference pixels, on left (from viewers perspective).
-    ├─border_ref_pix_right (NDArrayType): shape=(6, 4096, 4), dtype=float32 # Original border reference pixels, on right (from viewers perspective).
-    ├─border_ref_pix_top (NDArrayType): shape=(6, 4, 4096), dtype=float32 # Original border reference pixels, on top.
-    ├─border_ref_pix_bottom (NDArrayType): shape=(6, 4, 4096), dtype=float32 # Original border reference pixels, on bottom.
-    ├─dq_border_ref_pix_left (NDArrayType): shape=(4096, 4), dtype=uint32 # DQ for border reference pixels, on left (from viewers perspective).
-    ├─dq_border_ref_pix_right (NDArrayType): shape=(4096, 4), dtype=uint32 # DQ for border reference pixels, on right (from viewers perspective).
-    ├─dq_border_ref_pix_top (NDArrayType): shape=(4, 4096), dtype=uint32 # DQ for border reference pixels, on top.
-    ├─dq_border_ref_pix_bottom (NDArrayType): shape=(4, 4096), dtype=uint32 # DQ for border reference pixels, on bottom.
-    ├─cal_logs (CalLogs) # Calibration log messages
-    │ ├─0 (str): 2022-06-07T12:11:10.762Z :: stpipe.ExposurePipeline.rampfit :: INFO :: Step rampfit running with args (<roman_datamodels.datamodels.RampModel object at 0x7fd3492a38b0>,).
-    │ ├─1 (str): 2022-06-07T12:11:10.763Z :: stpipe.ExposurePipeline.rampfit :: INFO :: Step rampfit parameters are: {'pre_hooks': [], 'post_hooks': [], 'output_file': None, 'output_dir': None, 'output_ext': '.asdf', 'output_use_model': False, 'output_use_index': True, 'save_results': False, 'skip': False, 'suffix': None, 'search_output_file': True, 'input_dir': '', 'opt_name': '', 'maximum_cores': 'none', 'save_opt': False}
-    │ ├─2 (str): 2022-06-07T12:11:11.817Z :: stpipe.ExposurePipeline.rampfit :: INFO :: Using READNOISE reference file: /Users/dencheva/crds_cache/references/roman/wfi/roman_wfi_readnoise_0227.asdf
-    │ ├─3 (str): 2022-06-07T12:11:11.844Z :: stpipe.ExposurePipeline.rampfit :: INFO :: Using GAIN reference file: /Users/dencheva/crds_cache/references/roman/wfi/roman_wfi_gain_0089.asdf
-    │ ├─4 (str): 2022-06-07T12:11:11.866Z :: stpipe.ExposurePipeline.rampfit :: INFO :: Using algorithm = ols
-    <<<<<<most of the calibration log messages elided>>>>>>
-    │ ├─97 (str): 2022-06-07T12:13:51.075Z :: stpipe.ExposurePipeline.photom :: INFO :: Step photom done
-    │ └─98 (str): 2022-06-07T12:13:51.075Z :: stpipe.ExposurePipeline :: INFO :: Roman exposure calibration pipeline ending...
-    └─output_file (str): r0000201001001001002_01101_0001_WFI07.asdf
+    │ └─wcsinfo (Wcsinfo) # World Coordinate System (WCS) Information
+    │   ├─aperture_name (str): WFI01_FULL # Aperture Name
+    │   ├─pa_aperture (int): -999999 # Aperture Position Angle (deg)
+    │   ├─v2_ref (int): -999999 # V2 Reference Position (arcsec)
+    │   ├─v3_ref (int): -999999 # V3 Reference Position (arcsec)
+    │   ├─vparity (int): -1 # Relative Rotation Between the Ideal and Telescope Axes
+    │   ├─v3yangle (int): -999999 # Angle Between the V3 and Ideal Y Axes (deg)
+    │   ├─ra_ref (int): -999999 # Right Ascension of the Reference Position (deg)
+    │   ├─dec_ref (int): -999999 # Declination of the Reference Position (deg)
+    │   ├─roll_ref (int): -999999 # V3 Position Angle at the Reference Position
+    │   └─s_region (str): ? # Spatial Extent of the Exposure
+    ├─data (NDArrayType): shape=(4088, 4088), dtype=float32 # Science Data (DN/s) or (MJy/sr)
+    ├─dq (NDArrayType): shape=(4088, 4088), dtype=uint32 # Data Quality
+    ├─err (NDArrayType): shape=(4088, 4088), dtype=float32 # Error (DN / s) or (MJy / sr)
+    ├─var_poisson (NDArrayType): shape=(4088, 4088), dtype=float32 # Poisson Variance (DN^2/s^2) or (MJy^2/sr^2)
+    ├─var_rnoise (NDArrayType): shape=(4088, 4088), dtype=float32 # Read Noise Variance (DN^2/s^2) or (MJy^2/sr^2)
+    ├─var_flat (NDArrayType): shape=(4088, 4088), dtype=float32 # Flat Field Variance (DN^2/s^2) or (MJy^2/sr^2)
+    ├─amp33 (NDArrayType): shape=(8, 4096, 128), dtype=uint16 # Amplifier 33 Reference Pixel Data (DN)
+    ├─border_ref_pix_left (NDArrayType): shape=(8, 4096, 4), dtype=float32 # Left-Edge Border Reference Pixels (DN)
+    ├─border_ref_pix_right (NDArrayType): shape=(8, 4096, 4), dtype=float32 # Right-Edge Border Reference Pixels (DN)
+    ├─border_ref_pix_top (NDArrayType): shape=(8, 4096, 4), dtype=float32 # Border Reference Pixels on the Top of the Detector (DN)
+    ├─border_ref_pix_bottom (NDArrayType): shape=(8, 4096, 4), dtype=float32 # Bottom-Edge Border Reference Pixels (DN)
+    ├─dq_border_ref_pix_left (NDArrayType): shape=(4096, 4), dtype=uint32 # Left-Edge Border Reference Pixel Data Quality (DN)
+    ├─dq_border_ref_pix_right (NDArrayType): shape=(4096, 4), dtype=uint32 # Right-Edge Border Reference Pixel Data Quality (DN)
+    ├─dq_border_ref_pix_top (NDArrayType): shape=(4, 4096), dtype=uint32 # Border Reference Pixel Data Quality on the Top of the Detector (DN)
+    └─dq_border_ref_pix_bottom (NDArrayType): shape=(4, 4096), dtype=uint32 # Bottom-Edge Border Reference Pixel Data Quality (DN)

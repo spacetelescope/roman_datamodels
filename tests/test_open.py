@@ -8,9 +8,8 @@ import pytest
 from astropy.io import fits
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels
+from roman_datamodels import datamodels, stnode
 from roman_datamodels import maker_utils as utils
-from roman_datamodels import stnode
 from roman_datamodels.testing import assert_node_equal
 
 
@@ -212,7 +211,7 @@ def test_opening_model(tmp_path, node_class):
             assert model.asn_type == "image"
         elif node_class == stnode.WfiMosaic:
             assert model.meta.basic.optical_element == "F158"
-        elif node_class in (stnode.SegmentationMap, stnode.SourceCatalog):
+        elif node_class in (stnode.SegmentationMap, stnode.ImageSourceCatalog):
             assert model.meta.optical_element == "F158"
         elif node_class in (stnode.MosaicSegmentationMap, stnode.MosaicSourceCatalog):
             assert hasattr(model.meta, "basic")
@@ -235,6 +234,7 @@ def test_read_pattern_properties():
         rdm_open(Path(__file__).parent / "data" / "photmjsm.asdf")
 
 
+@pytest.mark.xfail(reason="We currently do not have a way to identify if a datamodel is a GDPS datamodel")
 def test_rdm_open_non_datamodel():
     from roman_datamodels.datamodels import open as rdm_open
 
