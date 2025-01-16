@@ -1,1 +1,0 @@
-Change default compression to lz4. The previous default was no compression.

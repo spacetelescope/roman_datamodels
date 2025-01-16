@@ -1,1 +1,0 @@
-Add support for opening SSC models using ``rdm_open``.
