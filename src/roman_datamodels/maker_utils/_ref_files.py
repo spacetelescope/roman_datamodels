@@ -1,7 +1,6 @@
 import warnings
 
 import numpy as np
-from astropy import units as u
 from astropy.modeling import models
 
 from roman_datamodels import stnode
@@ -197,14 +196,10 @@ def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     darkref = stnode.DarkRef()
     darkref["meta"] = mk_ref_dark_meta(**kwargs.get("meta", {}))
 
-    darkref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
+    darkref["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
     darkref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
-    darkref["dark_slope"] = kwargs.get(
-        "dark_slope", u.Quantity(np.zeros(shape[1:], dtype=np.float32), u.DN / u.s, dtype=np.float32)
-    )
-    darkref["dark_slope_error"] = kwargs.get(
-        "dark_slope_error", u.Quantity(np.zeros(shape[1:], dtype=np.float32), u.DN / u.s, dtype=np.float32)
-    )
+    darkref["dark_slope"] = kwargs.get("dark_slope", np.zeros(shape[1:], dtype=np.float32))
+    darkref["dark_slope_error"] = kwargs.get("dark_slope_error", np.zeros(shape[1:], dtype=np.float32))
 
     return save_node(darkref, filepath=filepath)
 
@@ -291,7 +286,7 @@ def mk_gain(*, shape=(4096, 4096), filepath=None, **kwargs):
     gainref = stnode.GainRef()
     gainref["meta"] = mk_ref_common("GAIN", **kwargs.get("meta", {}))
 
-    gainref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.electron / u.DN, dtype=np.float32))
+    gainref["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
 
     return save_node(gainref, filepath=filepath)
 
@@ -464,11 +459,11 @@ def _mk_phot_table_entry(key, **kwargs):
         }
     else:
         entry = {
-            "photmjsr": kwargs.get("photmjsr", 1.0e-15 * u.megajansky / u.steradian),
-            "uncertainty": kwargs.get("uncertainty", 1.0e-16 * u.megajansky / u.steradian),
+            "photmjsr": kwargs.get("photmjsr", 1.0e-15),
+            "uncertainty": kwargs.get("uncertainty", 1.0e-16),
         }
 
-    entry["pixelareasr"] = kwargs.get("pixelareasr", 1.0e-13 * u.steradian)
+    entry["pixelareasr"] = kwargs.get("pixelareasr", 1.0e-13)
 
     return entry
 
@@ -528,7 +523,7 @@ def mk_readnoise(*, shape=(4096, 4096), filepath=None, **kwargs):
     readnoiseref = stnode.ReadnoiseRef()
     readnoiseref["meta"] = mk_ref_readnoise_meta(**kwargs.get("meta", {}))
 
-    readnoiseref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
+    readnoiseref["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
 
     return save_node(readnoiseref, filepath=filepath)
 
@@ -560,7 +555,7 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
     saturationref["meta"] = mk_ref_common("SATURATION", **kwargs.get("meta", {}))
 
     saturationref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
-    saturationref["data"] = kwargs.get("data", u.Quantity(np.zeros(shape, dtype=np.float32), u.DN, dtype=np.float32))
+    saturationref["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
 
     return save_node(saturationref, filepath=filepath)
 
