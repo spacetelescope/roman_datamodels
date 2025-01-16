@@ -1,3 +1,47 @@
+0.23.0 (2025-01-16)
+===================
+
+Bug Fixes
+---------
+
+- Renamed mosaic association model variable name. (`#412
+  <https://github.com/spacetelescope/roman_datamodels/issues/412>`_)
+
+
+Documentation
+-------------
+
+- Updated the documentation to match the present code version. (`#437
+  <https://github.com/spacetelescope/roman_datamodels/issues/437>`_)
+
+
+New Features
+------------
+
+- Remove units from reference files. (`#408
+  <https://github.com/spacetelescope/roman_datamodels/issues/408>`_)
+- Rename source_detection to source_catalog to match romancal step. (`#428
+  <https://github.com/spacetelescope/roman_datamodels/issues/428>`_)
+- Change default compression to lz4. The previous default was no compression.
+  (`#440 <https://github.com/spacetelescope/roman_datamodels/issues/440>`_)
+- Add support for opening SSC models using ``rdm_open``. (`#448
+  <https://github.com/spacetelescope/roman_datamodels/issues/448>`_)
+
+
+Misc
+----
+
+- Bump min Python version to 3.11 per SPEC 0. (`#432
+  <https://github.com/spacetelescope/roman_datamodels/issues/432>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- Remove validation on assignment. (`#417
+  <https://github.com/spacetelescope/roman_datamodels/issues/417>`_)
+
+
 0.22.0 (2024-11-15)
 ===================
 
