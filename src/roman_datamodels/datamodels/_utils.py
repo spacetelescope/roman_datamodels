@@ -23,16 +23,19 @@ class FilenameMismatchWarning(UserWarning):
     """
 
 
-def _open_path_like(init, lazy_tree=True, **kwargs):
+def _open_asdf(init, lazy_tree=True, **kwargs):
     """
-    Attempt to open init as if it was a path-like object.
+    Open init with `asdf.open`.
+
+    If init is a path-like object the ``roman.meta.filename`` attribute
+    will be checked against ``Path.name`` and updated if they does not match.
 
     Parameters
     ----------
-    init : str
-        Any path-like object that can be opened by asdf such as a valid string
-    memmap : bool
-        If we should open the file with memmap
+    init : str, ``Path`` or file-like
+        An object that can be opened by `asdf.open`
+    lazy_tree : bool
+        If we should open the file with a "lazy tree"
     **kwargs:
         Any additional arguments to pass to asdf.open
 
@@ -43,7 +46,12 @@ def _open_path_like(init, lazy_tree=True, **kwargs):
     # asdf defaults to lazy_tree=False, this overwrites it to
     # lazy_tree=True for roman_datamodels
     kwargs["lazy_tree"] = lazy_tree
-    init = Path(init)
+    if isinstance(init, str):
+        path = Path(init)
+    elif isinstance(init, Path):
+        path = init
+    else:
+        path = None
 
     try:
         asdf_file = asdf.open(init, **kwargs)
@@ -51,18 +59,19 @@ def _open_path_like(init, lazy_tree=True, **kwargs):
         raise TypeError("Open requires a filepath, file-like object, or Roman datamodel") from err
 
     if (
-        "roman" in asdf_file
+        path is not None
+        and "roman" in asdf_file
         and isinstance(asdf_file["roman"], Mapping)  # Fix issue for Python 3.10
         and "meta" in asdf_file["roman"]
         and "filename" in asdf_file["roman"]["meta"]
-        and asdf_file["roman"]["meta"]["filename"] != init.name
+        and asdf_file["roman"]["meta"]["filename"] != path.name
     ):
         warnings.warn(
-            f"meta.filename: {asdf_file['roman']['meta']['filename']} does not match filename: {init.name}, updating the filename in memory!",
+            f"meta.filename: {asdf_file['roman']['meta']['filename']} does not match filename: {path.name}, updating the filename in memory!",
             FilenameMismatchWarning,
             stacklevel=2,
         )
-        asdf_file["roman"]["meta"]["filename"] = init.name
+        asdf_file["roman"]["meta"]["filename"] = path.name
 
     return asdf_file
 
@@ -75,11 +84,12 @@ def rdm_open(init, memmap=False, **kwargs):
 
     Parameters
     ----------
-    init : str, `DataModel`, `asdf.AsdfFile`
+    init : str, ``Path``, `DataModel`, `asdf.AsdfFile`, file-like
         May be any one of the following types:
             - `asdf.AsdfFile` instance
-            - string indicating the path to an ASDF file
+            - string or ``Path`` indicating the path to an ASDF file
             - `DataModel` Roman data model instance
+            - file-like object compatible with `asdf.open`
     memmap : bool
         Open ASDF file binary data using memmap (default: False)
 
@@ -104,7 +114,7 @@ def rdm_open(init, memmap=False, **kwargs):
         if "asn_n_members" in kwargs:
             del kwargs["asn_n_members"]
 
-        asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_path_like(init, memmap=memmap, **kwargs)
+        asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_asdf(init, memmap=memmap, **kwargs)
         if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
             return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
 
