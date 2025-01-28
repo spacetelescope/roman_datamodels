@@ -35,7 +35,7 @@ __all__ = [
     "mk_saturation",
     "mk_superbias",
     "mk_wfi_img_photom",
-    "mk_roman_skycells",
+    "mk_skycells",
 ]
 
 OPT_ELEM = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK")
@@ -561,8 +561,8 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
 
     return save_node(saturationref, filepath=filepath)
 
-def mk_roman_skycells(*, filepath=None, **kwargs):
-    skycellref = stnode.RomanSkycellsRef()
+def mk_skycells(*, filepath=None, **kwargs):
+    skycellref = stnode.SkycellsRef()
     skycellref["meta"] = mk_ref_skycells_meta(**kwargs)
     proj_dtype = np.dtype([('index', '<i4'),
                            ('ra_tangent', '<f8'),
