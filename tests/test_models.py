@@ -938,11 +938,15 @@ def test_model_only_init_with_correct_node(node, correct, model):
         model(img)
 
 
-@pytest.mark.parametrize('mk_raw',
-                         [lambda : datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8))),
-                          lambda : datamodels.TvacModel(utils.mk_tvac(shape=(2, 8, 8))),
-                          lambda : datamodels.FpsModel(utils.mk_fps(shape=(2, 8, 8))),
-                          lambda : datamodels.RampModel(utils.mk_ramp(shape=(2, 8, 8)))])
+@pytest.mark.parametrize(
+    "mk_raw",
+    [
+        lambda: datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8))),
+        lambda: datamodels.TvacModel(utils.mk_tvac(shape=(2, 8, 8))),
+        lambda: datamodels.FpsModel(utils.mk_fps(shape=(2, 8, 8))),
+        lambda: datamodels.RampModel(utils.mk_ramp(shape=(2, 8, 8))),
+    ],
+)
 def test_ramp_from_science_raw(mk_raw):
     raw = mk_raw()
     ramp = datamodels.RampModel.from_science_raw(raw)
@@ -975,10 +979,14 @@ def test_ramp_from_science_raw(mk_raw):
             raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")  # pragma: no cover
 
 
-@pytest.mark.parametrize('mk_tvac',
-                         [lambda : datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8))),
-                          lambda : datamodels.TvacModel(utils.mk_tvac(shape=(2, 8, 8))),
-                          lambda : datamodels.FpsModel(utils.mk_fps(shape=(2, 8, 8)))])
+@pytest.mark.parametrize(
+    "mk_tvac",
+    [
+        lambda: datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8))),
+        lambda: datamodels.TvacModel(utils.mk_tvac(shape=(2, 8, 8))),
+        lambda: datamodels.FpsModel(utils.mk_fps(shape=(2, 8, 8))),
+    ],
+)
 def test_science_raw_from_tvac_raw(mk_tvac):
     tvac = mk_tvac()
 

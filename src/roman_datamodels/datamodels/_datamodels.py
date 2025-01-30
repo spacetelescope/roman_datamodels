@@ -169,7 +169,7 @@ class ScienceRawModel(_RomanDataModel):
                             value = getattr(other, key).data
                         elif isinstance(raw[key], np.ndarray):
                             value = getattr(other, key).astype(raw[key].dtype)
-                            value = getattr(value, 'value', value)
+                            value = getattr(value, "value", value)
                         else:
                             value = getattr(other, key)
                         setattr(raw, key, value)
@@ -239,7 +239,7 @@ class RampModel(_RomanDataModel):
                             value = getattr(other, key).data
                         elif isinstance(ramp[key], np.ndarray):
                             value = getattr(other, key).astype(ramp[key].dtype)
-                            value = getattr(value, 'value', value)
+                            value = getattr(value, "value", value)
                         else:
                             value = getattr(other, key)
                         setattr(ramp, key, value)
