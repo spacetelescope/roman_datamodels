@@ -182,12 +182,15 @@ class RampModel(_RomanDataModel):
                 if key in ramp:
                     if isinstance(ramp[key], Mapping):
                         node_update(getattr(ramp, key), getattr(other, key))
-                    elif isinstance(ramp[key], list):
-                        setattr(ramp, key, getattr(other, key).data)
-                    elif isinstance(ramp[key], np.ndarray):
-                        setattr(ramp, key, getattr(other, key).astype(ramp[key].dtype))
                     else:
-                        setattr(ramp, key, getattr(other, key))
+                        if isinstance(ramp[key], list):
+                            value = getattr(other, key).data
+                        elif isinstance(ramp[key], np.ndarray):
+                            value = getattr(other, key).astype(ramp[key].dtype)
+                            value = getattr(value, 'value', value)
+                        else:
+                            value = getattr(other, key)
+                        setattr(ramp, key, value)
                 else:
                     ramp[key] = other[key]
 
