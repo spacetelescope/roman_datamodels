@@ -975,6 +975,43 @@ def test_ramp_from_science_raw(mk_raw):
             raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")  # pragma: no cover
 
 
+@pytest.mark.parametrize('mk_tvac',
+                         [lambda : datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8))),
+                          lambda : datamodels.TvacModel(utils.mk_tvac(shape=(2, 8, 8))),
+                          lambda : datamodels.FpsModel(utils.mk_fps(shape=(2, 8, 8)))])
+def test_science_raw_from_tvac_raw(mk_tvac):
+    tvac = mk_tvac()
+
+    raw = datamodels.ScienceRawModel.from_tvac_raw(tvac)
+    for key in raw:
+        if not hasattr(tvac, key):
+            continue
+
+        raw_value = getattr(raw, key)
+        tvac_value = getattr(tvac, key)
+        if isinstance(raw_value, np.ndarray):
+            assert_array_equal(raw_value, tvac_value.astype(raw_value.dtype))
+
+        elif key == "meta":
+            raw_meta = raw_value.to_flat_dict(include_arrays=False, recursive=True)
+            tvac_meta = tvac_value.to_flat_dict(include_arrays=False, recursive=True)
+            for meta_key in raw_meta:
+                if meta_key == "model_type":
+                    raw_value[meta_key] = raw.__class__.__name__
+                    tvac_value[meta_key] = tvac.__class__.__name__
+                    continue
+                elif meta_key == "cal_step":
+                    continue
+                if meta_key in tvac_meta:
+                    assert raw_meta[meta_key] == tvac_meta[meta_key]
+
+        elif isinstance(raw_value, stnode.DNode):
+            assert_node_equal(raw_value, tvac_value)
+
+        else:
+            raise ValueError(f"Unexpected type {type(raw_value)}, {key}")  # pragma: no cover
+
+
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
