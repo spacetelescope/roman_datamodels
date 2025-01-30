@@ -938,9 +938,13 @@ def test_model_only_init_with_correct_node(node, correct, model):
         model(img)
 
 
-def test_ramp_from_science_raw():
-    raw = datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8)))
-
+@pytest.mark.parametrize('mk_raw',
+                         [lambda : datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8))),
+                          lambda : datamodels.TvacModel(utils.mk_tvac(shape=(2, 8, 8))),
+                          lambda : datamodels.FpsModel(utils.mk_fps(shape=(2, 8, 8))),
+                          lambda : datamodels.RampModel(utils.mk_ramp(shape=(2, 8, 8)))])
+def test_ramp_from_science_raw(mk_raw):
+    raw = mk_raw()
     ramp = datamodels.RampModel.from_science_raw(raw)
     for key in ramp:
         if not hasattr(raw, key):
@@ -952,14 +956,17 @@ def test_ramp_from_science_raw():
             assert_array_equal(ramp_value, raw_value.astype(ramp_value.dtype))
 
         elif key == "meta":
-            for meta_key in ramp_value:
+            ramp_meta = ramp_value.to_flat_dict(include_arrays=False, recursive=True)
+            raw_meta = raw_value.to_flat_dict(include_arrays=False, recursive=True)
+            for meta_key in ramp_meta:
                 if meta_key == "model_type":
                     ramp_value[meta_key] = ramp.__class__.__name__
                     raw_value[meta_key] = raw.__class__.__name__
                     continue
                 elif meta_key == "cal_step":
                     continue
-                assert_node_equal(ramp_value[meta_key], raw_value[meta_key])
+                if meta_key in raw_meta:
+                    assert ramp_meta[meta_key] == raw_meta[meta_key]
 
         elif isinstance(ramp_value, stnode.DNode):
             assert_node_equal(ramp_value, raw_value)
