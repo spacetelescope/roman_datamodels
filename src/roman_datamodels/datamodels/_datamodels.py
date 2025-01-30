@@ -130,6 +130,58 @@ class ImageModel(_RomanDataModel):
 class ScienceRawModel(_RomanDataModel):
     _node_type = stnode.WfiScienceRaw
 
+    @classmethod
+    def from_tvac_raw(cls, model):
+        """Convert TVAC/FPS into ScienceRawModel
+
+        Parameters
+        ----------
+        model : ScienceRawModel, TvacModel, FpsModel
+            Model to convert from.
+
+        Returns
+        -------
+        science_raw_model : ScienceRawModel
+            The ScienceRawModel built from the input model.
+            If the input was a ScienceRawModel, that model is simply returned.
+        """
+        ALLOWED_MODELS = (FpsModel, ScienceRawModel, TvacModel)
+
+        if isinstance(model, cls):
+            return model
+        if not isinstance(model, ALLOWED_MODELS):
+            raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
+
+        # Create base ramp node with dummy values (for validation)
+        from roman_datamodels.maker_utils import mk_level1_science_raw
+
+        raw = mk_level1_science_raw(shape=model.shape)
+
+        # Define how to recursively copy all attributes.
+        def node_update(raw, other):
+            """Implement update to directly access each value"""
+            for key in other.keys():
+                if key in raw:
+                    if isinstance(raw[key], Mapping):
+                        node_update(getattr(raw, key), getattr(other, key))
+                    else:
+                        if isinstance(raw[key], list):
+                            value = getattr(other, key).data
+                        elif isinstance(raw[key], np.ndarray):
+                            value = getattr(other, key).astype(raw[key].dtype)
+                            value = getattr(value, 'value', value)
+                        else:
+                            value = getattr(other, key)
+                        setattr(raw, key, value)
+                else:
+                    raw[key] = other[key]
+
+        node_update(raw, model)
+
+        # Create model from node
+        raw_model = ScienceRawModel(raw)
+        return raw_model
+
 
 class MsosStackModel(_RomanDataModel):
     _node_type = stnode.MsosStack
