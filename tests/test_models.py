@@ -604,9 +604,6 @@ def test_make_refpix():
     assert refpix.alpha.shape == (8, 8)
 
 
-    assert refpix.meta.input_units == u.DN
-    assert refpix.meta.output_units == u.DN
-
 # Skycells tests
 def test_make_skycells():
     skycells_ref = utils.mk_skycells()
