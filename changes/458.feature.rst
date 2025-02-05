@@ -1,0 +1,3 @@
+Total refactor of ``stnode`` so that the ``maker_utils`` can be replaced with
+explicitly defined but lazy classes. This allows us to define explicit objects
+rather than dynamically creating them, while we are setting up our default values.
