@@ -21,7 +21,7 @@ __all__ = [
     "default_model_type",
 ]
 
-_S = TypeVar("_S")
+_T = TypeVar("_T")
 
 
 NOFN = "none"
@@ -61,14 +61,14 @@ def Wcs() -> WCS:
     )
 
 
-def default_model_type(self: _S, node: type[MdlType]) -> MdlType:
+def default_model_type(self: _T, node: type[MdlType]) -> MdlType:
     """
     Create a model_type
     """
 
-    # from roman_datamodels.stnode import RDM_NODE_REGISTRY, ImpliedNodeMixin
+    from roman_datamodels.stnode import RDM_NODE_REGISTRY, ImpliedNodeMixin
 
-    # if isinstance(self, ImpliedNodeMixin):
-    #     return node(RDM_NODE_REGISTRY.node_datamodel_mapping[self.asdf_implied_by].__name__)
+    if isinstance(self, ImpliedNodeMixin):
+        return node(RDM_NODE_REGISTRY.node_datamodel_mapping[self.asdf_implied_by].__name__)
 
     return node.default()

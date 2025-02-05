@@ -162,8 +162,6 @@ module = [
     # These are for testing of datamodels only, not for production use so
     # type checking is not as important
     "roman_datamodels.testing.*",
-    # Temporary ignores
-    "roman_datamodels.datamodels.*",
 ]
 ignore_errors = true
 

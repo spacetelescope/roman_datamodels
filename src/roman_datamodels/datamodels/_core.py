@@ -1,315 +1,171 @@
-"""
-This module provides the same interface as the datamodels for JWST, so that they can be
-    used in a common pipeline structure. Unlike the JWST datamodels, these models are
-    backed by an ASDF file and the schema structure is defined by the ASDF schema.
+from __future__ import annotations
 
-This provides the abstract base class ``Datamodel`` for all the specific datamodels
-    used for Roman. This dataclass is intended to be subclassed to form all of the actual
-    working datamodels.
-"""
-
-import abc
 import copy
-import datetime
-import functools
 import sys
-from contextlib import contextmanager
-from pathlib import Path, PurePath
+from collections.abc import Generator
+from pathlib import PurePath
+from types import TracebackType
+from typing import Any, TypeVar, cast
 
-import asdf
-import numpy as np
+import numpy.typing as npt
+from asdf import AsdfFile
 from asdf.exceptions import ValidationError
-from asdf.tags.core.ndarray import NDArrayType
-from astropy.time import Time
 
-from roman_datamodels import stnode, validate
+from roman_datamodels.stnode import DNode, rad
 
-__all__ = ["MODEL_REGISTRY", "DataModel"]
+from ._api import StpipeAPIMixin
 
-MODEL_REGISTRY = {}
+__all__ = ["DataModel"]
+
+_T = TypeVar("_T")
 
 
-def _set_default_asdf(func):
+class DataModel(StpipeAPIMixin[_T], rad.TagMixin):
     """
-    Decorator which ensures that a DataModel has an asdf file available for use
-    if required
+    Mixin class for all data models (top-level nodes)
+    -> this will be mixed with a TaggedObject Node class
     """
 
-    @functools.wraps(func)
-    def wrapper(self, *args, **kwargs):
-        if self._asdf is None:
-            try:
-                with validate.nuke_validation():
-                    af = asdf.AsdfFile()
-                    af["roman"] = self._instance
-                    af.validate()
-                    self._asdf = af
-            except ValidationError as err:
-                raise ValueError(f"DataModel needs to have all its data flushed out before calling {func.__name__}") from err
-
-        return func(self, *args, **kwargs)
-
-    return wrapper
-
-
-@contextmanager
-def _temporary_update_filename(datamodel, filename):
-    """
-    Context manager to temporarily update the filename of a datamodel so that it
-    can be saved with that new file name without changing the current model's filename
-    """
-    from roman_datamodels.stnode import Filename
-
-    if "meta" in datamodel._instance and "filename" in datamodel._instance.meta:
-        old_filename = datamodel._instance.meta.filename
-        datamodel._instance.meta.filename = Filename(filename)
-
-        yield
-        datamodel._instance.meta.filename = old_filename
-        return
-
-    yield
-    return
-
-
-class DataModel(abc.ABC):
-    """Base class for all top level datamodels"""
-
-    crds_observatory = "roman"
-
-    @abc.abstractproperty
-    def _node_type(self):
-        """Define the top-level node type for this model"""
-        pass
-
-    def __init_subclass__(cls, **kwargs):
-        """Register each subclass in the MODEL_REGISTRY"""
-        super().__init_subclass__(**kwargs)
-
-        # Allow for sub-registry classes to be defined
-        if cls.__name__.startswith("_"):
-            return
-
-        # Check the node_type is a tagged object node
-        if not issubclass(cls._node_type, stnode.TaggedObjectNode):
-            raise ValueError("Subclass must be a TaggedObjectNode subclass")
-
-        # Check for duplicates
-        if cls._node_type in MODEL_REGISTRY:
-            raise ValueError(f"Duplicate model type {cls._node_type}")
-
-        # Add to registry
-        MODEL_REGISTRY[cls._node_type] = cls
-
-    def __new__(cls, init=None, **kwargs):
+    def __new__(cls, init: DataModel[_T] | None = None, **kwargs: Any) -> DataModel[_T]:
         """
         Handle the case where one passes in an already instantiated version
         of the model. In this case the constructor should just directly return
         the model.
         """
-        if init.__class__.__name__ == cls.__name__:
+        if type(init) is cls:
             return init
 
         return super().__new__(cls)
 
-    def __init__(self, init=None, **kwargs):
-        if isinstance(init, self.__class__):
-            # Due to __new__ above, this is already initialized.
-            return
+    def _pre_initialize_node(self, init: dict[str, _T] | DNode[_T] | AsdfFile | None = None, **kwargs: Any) -> dict[str, Any]:  # type: ignore[override]
+        """
+        Overwrite the default node initializer function so that we can inject
+        pre processiong of the input data
+        """
+        if init is None:
+            return {}
 
-        self._iscopy = False
-        self._shape = None
-        self._instance = None
-        self._asdf = None
+        if isinstance(init, dict):
+            init = self.node_type()(init)
 
-        if isinstance(init, stnode.TaggedObjectNode):
-            if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
-                expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
-                raise ValidationError(
-                    f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
+        # Pass in a node/datamodel
+        if isinstance(init, rad.TaggedObjectNode):
+            if not isinstance(init, self.node_type()):
+                # ASDF has not implemented type hints so MyPy will complain about this
+                # until they do.
+                raise ValidationError(  # type: ignore[no-untyped-call]
+                    f"TaggedObjectNode: {type(init).__name__} is not of the type expected. Expected {self.node_type().__name__}"
                 )
 
-            with validate.nuke_validation():
-                self._instance = init
-                af = asdf.AsdfFile()
-                af["roman"] = self._instance
-                af.validate()
-                self._asdf = af
-                return
+            # Return the raw data (this will go directly into the node initializer)
+            return cast(DNode[_T], init)._data
 
-        if init is None:
-            self._instance = self._node_type()
-
-        elif isinstance(init, str | bytes | PurePath):
-            if isinstance(init, PurePath):
+        # Pass in a file path -> process into asdf file
+        if isinstance(init, str | bytes | PurePath):
+            if isinstance(init, PurePath):  # type: ignore[unreachable]
                 init = str(init)
             if isinstance(init, bytes):
                 init = init.decode(sys.getfilesystemencoding())
 
-            self._asdf = self.open_asdf(init, **kwargs)
-            if not self.check_type(self._asdf):
-                raise ValueError(f"ASDF file is not of the type expected. Expected {self.__class__.__name__}")
+            # Open the ASDF file
+            init = self.open_asdf(init, **kwargs)
 
-            self._instance = self._asdf.tree["roman"]
-        elif isinstance(init, asdf.AsdfFile):
+        # Handle if init is an ASDF file (or retrieved ASDF file)
+        if isinstance(init, AsdfFile):
+            if not self._check_type(init):
+                raise ValueError(f"ASDF file is not of the type expected. Expected {type(self).__name__}")
+
+            # Set the data model state
             self._asdf = init
 
-            self._instance = self._asdf.tree["roman"]
-        else:
-            raise OSError("Argument does not appear to be an ASDF file or TaggedObjectNode.")
+            # Return the raw data (this will go directly into the node initializer)
+            return cast(dict[str, Any], self._asdf.tree["roman"]._data)
 
-    def check_type(self, asdf_file):
+        raise OSError("Argument init does not appear to be a valid ASDFfile or TaggedObjectNode")
+
+    def __del__(self) -> None:
         """
-        Subclass is expected to check for proper type of node
+        Ensure closure of resources when deleted.
+
+        Note that due to the perplexities of Python's garbage collection, this
+        may not be called immediately upon the dereferencing of the object, instead
+        it will be called when python decides to garbage collect the object.
+        This may not happen at all, meaning that the resources will be left open
+        upon python exit in this case (eg exceptions)
         """
-        if "roman" not in asdf_file.tree:
-            raise ValueError('ASDF file does not have expected "roman" attribute')
+        self.close()
 
-        return MODEL_REGISTRY[asdf_file.tree["roman"].__class__] == self.__class__
-
-    @property
-    def schema_uri(self):
-        # Determine the schema corresponding to this model's tag
-        return next(t for t in stnode.NODE_EXTENSIONS[0].tags if t.tag_uri == self._instance._tag).schema_uris[0]
-
-    def close(self):
-        if not (self._iscopy or self._asdf is None):
-            self._asdf.close()
-
-    def __enter__(self):
+    def __enter__(self) -> DataModel[_T]:
+        """Return the data model object if it is acting as a context manager for itself"""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:
+        """Close the ASDF file when exiting the context manager defined by the object itself"""
         self.close()
 
-    def __del__(self):
-        """Ensure closure of resources when deleted."""
-        self.close()
-
-    def copy(self, deepcopy=True, memo=None):
-        result = self.__class__(init=None)
+    def copy(self, deepcopy: bool = True, memo: dict[int, Any] | None = None) -> DataModel[_T]:
+        result = cast(DataModel[_T], self.construct_model(None))
         self.clone(result, self, deepcopy=deepcopy, memo=memo)
         return result
 
     __copy__ = __deepcopy__ = copy
 
     @staticmethod
-    def clone(target, source, deepcopy=False, memo=None):
+    def clone(target: DataModel[_T], source: DataModel[_T], deepcopy: bool = False, memo: dict[int, Any] | None = None) -> None:
         if deepcopy:
-            target._asdf = source._asdf.copy()
-            target._instance = copy.deepcopy(source._instance, memo=memo)
+            target._asdf = source._asdf_file.copy()  # type: ignore[no-untyped-call]
+            target._data = copy.deepcopy(source._data, memo=memo)
         else:
-            target._asdf = source._asdf
-            target._instance = source._instance
+            target._asdf = source._asdf_file
+            target._data = source._data
 
-        target._iscopy = True
-        target._files_to_close = []
-        target._shape = source._shape
-        target._ctx = target
+        target._is_copy = True
 
-    def save(self, path, dir_path=None, *args, **kwargs):
-        path = Path(path(self.meta.filename) if callable(path) else path)
-        output_path = Path(dir_path) / path.name if dir_path else path
-        ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix
-
-        # TODO: Support gzip-compressed fits
-        if ext == ".asdf":
-            self.to_asdf(output_path, *args, **kwargs)
-        else:
-            raise ValueError(f"unknown filetype {ext}")
-
-        return output_path
-
-    def open_asdf(self, init=None, **kwargs):
-        from ._utils import _open_asdf
-
-        with validate.nuke_validation():
-            if isinstance(init, str):
-                return _open_asdf(init, **kwargs)
-
-            return asdf.AsdfFile(init, **kwargs)
-
-    def to_asdf(self, init, *args, **kwargs):
-        all_array_compression = kwargs.pop("all_array_compression", "lz4")
-        with validate.nuke_validation(), _temporary_update_filename(self, Path(init).name):
-            asdf_file = self.open_asdf(**kwargs)
-            asdf_file["roman"] = self._instance
-            asdf_file.write_to(init, *args, all_array_compression=all_array_compression, **kwargs)
-
-    def get_primary_array_name(self):
+    def get_primary_array_name(self) -> str:
         """
         Returns the name "primary" array for this model, which
         controls the size of other arrays that are implicitly created.
         This is intended to be overridden in the subclasses if the
         primary array's name is not "data".
         """
+        if isinstance(self, rad.ArrayFieldMixin):
+            return self.primary_array_name
+
         return "data" if hasattr(self, "data") else ""
 
     @property
-    def override_handle(self):
+    def override_handle(self) -> str:
         """override_handle identifies in-memory models where a filepath
         would normally be used.
         """
         # Arbitrary choice to look something like crds://
-        return f"override://{self.__class__.__name__}"
+        return f"override://{type(self).__name__}"
 
     @property
-    def shape(self):
-        if self._shape is None:
-            primary_array_name = self.get_primary_array_name()
-            if primary_array_name and hasattr(self, primary_array_name):
-                primary_array = getattr(self, primary_array_name)
-                self._shape = primary_array.shape
-        return self._shape
+    def shape(self) -> tuple[int, ...] | None:
+        """Return the shape of the model's primary array"""
+        if (array := getattr(self, self.get_primary_array_name(), None)) is not None:
+            return cast(tuple[int, ...], cast(npt.NDArray[Any], array.shape))
+        return None
 
-    def __setattr__(self, attr, value):
-        if attr.startswith("_"):
-            self.__dict__[attr] = value
-        else:
-            setattr(self._instance, attr, value)
+    def to_flat_dict(self, include_arrays: bool = True, recursive: bool = True) -> dict[str, Any]:
+        """
+        Get a flattened dictionary of the model's data
+        """
+        return {f"roman.{key}": val for key, val in super().to_flat_dict(include_arrays, recursive).items()}
 
-    def __getattr__(self, attr):
-        return getattr(self._instance, attr)
-
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: DNode[_T] | _T) -> None:
+        """
+        Set an item in the data model
+        """
         if key.startswith("_"):
             raise ValueError("May not specify attributes/keys that start with _")
-        self._instance[key] = value
+        super().__setitem__(key, value)
 
-    def __getitem__(self, key):
-        return self._instance[key]
-
-    def __iter__(self):
-        return iter(self._instance)
-
-    def to_flat_dict(self, include_arrays=True):
-        """
-        Returns a dictionary of all of the model items as a flat dictionary.
-
-        Each dictionary key is a dot-separated name.  For example, the
-        model element ``meta.observation.date`` will end up in the
-        dictionary as::
-
-            { "meta.observation.date": "2012-04-22T03:22:05.432" }
-
-        This differs from the JWST data model in that the schema is not
-        directly used
-        """
-
-        def convert_val(val):
-            if isinstance(val, datetime.datetime):
-                return val.isoformat()
-            elif isinstance(val, Time):
-                return str(val)
-            return val
-
-        return {
-            f"roman.{key}": convert_val(val)
-            for (key, val) in self.items()
-            if include_arrays or not isinstance(val, np.ndarray | NDArrayType)
-        }
-
-    def items(self):
+    # For backwards compatibility with the old version of the datamodels which
+    # did not directly inherit from their respective node types, we need to
+    # override the items method to ensure that the correct items are returned
+    def items(self) -> Generator[tuple[str, Any], None, None]:  # type: ignore[override]
         """
         Iterates over all of the model items in a flat way.
 
@@ -323,38 +179,4 @@ class DataModel(abc.ABC):
         schemas directly.
         """
 
-        yield from self._instance._recursive_items()
-
-    def get_crds_parameters(self):
-        """
-        Get parameters used by CRDS to select references for this model.
-
-        This will only return items under ``roman.meta``.
-
-        Returns
-        -------
-        dict
-        """
-        return {
-            f"roman.meta.{key}": val
-            for key, val in self.meta.to_flat_dict(include_arrays=False, recursive=True).items()
-            if isinstance(val, str | int | float | complex | bool)
-        }
-
-    def validate(self):
-        """
-        Re-validate the model instance against the tags
-        """
-        self._asdf.validate()
-
-    @_set_default_asdf
-    def info(self, *args, **kwargs):
-        return self._asdf.info(*args, **kwargs)
-
-    @_set_default_asdf
-    def search(self, *args, **kwargs):
-        return self._asdf.search(*args, **kwargs)
-
-    @_set_default_asdf
-    def schema_info(self, *args, **kwargs):
-        return self._asdf.schema_info(*args, **kwargs)
+        yield from self._recursive_items()

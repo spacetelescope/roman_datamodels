@@ -11,7 +11,6 @@ from numpy.testing import assert_array_equal
 from roman_datamodels import datamodels, nodes, stnode
 
 
-@pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
 @pytest.mark.usefixtures("use_testing_shape")
 def test_asdf_file_input():
     tree = nodes.WfiImage()
@@ -23,7 +22,6 @@ def test_asdf_file_input():
         # should the asdf file be closed by model.close()?
 
 
-@pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
 @pytest.mark.usefixtures("use_testing_shape")
 def test_path_input(tmp_path):
     file_path = tmp_path / "test.asdf"
@@ -56,7 +54,6 @@ def test_path_input(tmp_path):
             pass
 
 
-@pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
 @pytest.mark.usefixtures("use_testing_shape")
 def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
@@ -90,7 +87,6 @@ def test_invalid_input():
         datamodels.open(fits.HDUList())
 
 
-@pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
 @pytest.mark.usefixtures("use_testing_shape")
 def test_memmap(tmp_path):
     data = np.zeros(
@@ -136,7 +132,6 @@ def test_memmap(tmp_path):
         assert (model.data == new_data).all()
 
 
-@pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
 @pytest.mark.usefixtures("use_testing_shape")
 @pytest.mark.parametrize(
     "kwargs",
@@ -255,7 +250,6 @@ def test_open_asn(tmp_path):
     assert isinstance(lib, romancal.datamodels.ModelLibrary)
 
 
-@pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
 @pytest.mark.usefixtures("use_testing_shape")
 def test_filename_matches_meta(tmp_path):
     save_path = tmp_path / "test_filename.asdf"
