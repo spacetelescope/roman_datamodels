@@ -164,7 +164,6 @@ module = [
     "roman_datamodels.testing.*",
     # Temporary ignores
     "roman_datamodels.datamodels.*",
-    "roman_datamodels.maker_utils.*",
 ]
 ignore_errors = true
 

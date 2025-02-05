@@ -1,4 +1,4 @@
-from roman_datamodels.datamodels import MODEL_REGISTRY as _MODEL_REGISTRY  # Hide from public API
+from roman_datamodels.stnode import RDM_NODE_REGISTRY as _MODEL_REGISTRY
 
 from ._basic_meta import *  # noqa: F403
 from ._common_meta import *  # noqa: F403
@@ -20,16 +20,7 @@ SPECIAL_MAKERS = {
 }
 
 # This is static at runtime, so we might as well compute it once
-NODE_REGISTRY = {mdl: node for node, mdl in _MODEL_REGISTRY.items()}
-
-
-def _camel_case_to_snake_case(value):
-    """
-    Courtesy of https://stackoverflow.com/a/1176023
-    """
-    import re
-
-    return re.sub(r"(?<!^)(?=[A-Z])", "_", value).lower()
+NODE_REGISTRY = {mdl: node for node, mdl in _MODEL_REGISTRY.node_datamodel_mapping.items()}
 
 
 def _get_node_maker(node_class):
@@ -46,11 +37,12 @@ def _get_node_maker(node_class):
     -------
     maker function for node class
     """
+    from roman_datamodels.stnode import camel_case_to_snake_case
 
     if node_class.__name__ in SPECIAL_MAKERS:
         method_name = SPECIAL_MAKERS[node_class.__name__]
     else:
-        method_name = f"mk_{_camel_case_to_snake_case(node_class.__name__)}"
+        method_name = f"mk_{camel_case_to_snake_case(node_class.__name__)}"
 
         # Reference files are in their own module so the '_ref` monicker is left off
         if method_name.endswith("_ref"):

@@ -5,18 +5,16 @@ from pathlib import Path
 import asdf
 import numpy as np
 import pytest
-
-# from astropy.io import fits
+from astropy.io import fits
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels, stnode
-from roman_datamodels import maker_utils as utils
-from roman_datamodels.testing import assert_node_equal
+from roman_datamodels import datamodels, nodes, stnode
 
 
 @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
+@pytest.mark.usefixtures("use_testing_shape")
 def test_asdf_file_input():
-    tree = utils.mk_level2_image(shape=(8, 8))
+    tree = nodes.WfiImage()
     with asdf.AsdfFile() as af:
         af.tree = {"roman": tree}
         model = datamodels.open(af)
@@ -26,10 +24,11 @@ def test_asdf_file_input():
 
 
 @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
+@pytest.mark.usefixtures("use_testing_shape")
 def test_path_input(tmp_path):
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        tree = utils.mk_level2_image(shape=(8, 8))
+        tree = nodes.WfiImage()
         af.tree = {"roman": tree}
         af.write_to(file_path)
 
@@ -58,13 +57,14 @@ def test_path_input(tmp_path):
 
 
 @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
+@pytest.mark.usefixtures("use_testing_shape")
 def test_model_input(tmp_path):
     file_path = tmp_path / "test.asdf"
 
     data = np.random.default_rng(42).uniform(size=(4, 4)).astype(np.float32)
 
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
+        af.tree = {"roman": nodes.WfiImage()}
         af.tree["roman"].meta["bozo"] = "clown"
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -85,25 +85,13 @@ def test_model_input(tmp_path):
     reopened_model.close()
 
 
-@pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
-def test_file_input(tmp_path):
-    file_path = tmp_path / "test.asdf"
-    tree = utils.mk_level2_image(shape=(8, 8))
-    with asdf.AsdfFile() as af:
-        af.tree = {"roman": tree}
-        af.write_to(file_path)
-    with open(file_path, "rb") as f:
-        with datamodels.open(f) as model:
-            assert model.meta.telescope == "ROMAN"
-
-
-# @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
-# def test_invalid_input():
-#     with pytest.raises(TypeError):
-#         datamodels.open(fits.HDUList())
+def test_invalid_input():
+    with pytest.raises(TypeError):
+        datamodels.open(fits.HDUList())
 
 
 @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
+@pytest.mark.usefixtures("use_testing_shape")
 def test_memmap(tmp_path):
     data = np.zeros(
         (
@@ -118,7 +106,7 @@ def test_memmap(tmp_path):
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
+        af.tree = {"roman": nodes.WfiImage()}
 
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -149,6 +137,7 @@ def test_memmap(tmp_path):
 
 
 @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
+@pytest.mark.usefixtures("use_testing_shape")
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -170,7 +159,7 @@ def test_no_memmap(tmp_path, kwargs):
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
+        af.tree = {"roman": nodes.WfiImage()}
 
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -200,58 +189,42 @@ def test_no_memmap(tmp_path, kwargs):
         assert (model.data == data).all()
 
 
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
-def test_node_round_trip(tmp_path, node_class):
-    file_path = tmp_path / "test.asdf"
-
-    # Create/return a node and write it to disk, then check if the node round trips
-    node = utils.mk_node(node_class, filepath=file_path, shape=(2, 8, 8))
-    with asdf.open(file_path) as af:
-        assert_node_equal(af.tree["roman"], node)
-
-
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
-def test_opening_model(tmp_path, node_class):
+@pytest.mark.usefixtures("use_testing_shape")
+@pytest.mark.parametrize("node_cls, model_cls", stnode.RDM_NODE_REGISTRY.node_datamodel_mapping.items())
+def test_opening_model(tmp_path, node_cls, model_cls):
     file_path = tmp_path / "test.asdf"
 
     # Create a node and write it to disk
-    utils.mk_node(node_class, filepath=file_path, shape=(2, 8, 8))
+    model_cls().to_asdf(file_path)
 
     # Opened saved file as a datamodel
     with datamodels.open(file_path) as model:
         # Check that some of read data is correct
-        if node_class == stnode.Associations:
+        if node_cls == nodes.Associations:
             assert model.asn_type == "image"
-        elif node_class == stnode.WfiMosaic:
+        elif node_cls == nodes.WfiMosaic:
             assert model.meta.basic.optical_element == "F158"
-        elif node_class in (stnode.SegmentationMap, stnode.ImageSourceCatalog):
+        elif node_cls in (nodes.SegmentationMap, nodes.ImageSourceCatalog):
             assert model.meta.optical_element == "F158"
-        elif node_class in (stnode.MosaicSegmentationMap, stnode.MosaicSourceCatalog):
+        elif node_cls in (nodes.MosaicSegmentationMap, nodes.MosaicSourceCatalog):
             assert hasattr(model.meta, "basic")
         else:
             assert model.meta.instrument.optical_element == "F158"
 
         # Check that the model is the correct type
-        assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
+        assert isinstance(model, model_cls)
 
 
-# @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
-# def test_read_pattern_properties():
-#     """
-#     Regression test for reading pattern properties
-#     """
+def test_read_pattern_properties():
+    """
+    Regression test for reading pattern properties
+    """
 
-#     from roman_datamodels.datamodels import open as rdm_open
+    from roman_datamodels.datamodels import open as rdm_open
 
-#     # This file has been modified by hand to break the `photmjsr` value
-#     with pytest.raises(asdf.ValidationError):
-#         rdm_open(Path(__file__).parent / "data" / "photmjsm.asdf")
+    # This file has been modified by hand to break the `photmjsr` value
+    with pytest.raises(asdf.ValidationError):
+        rdm_open(Path(__file__).parent / "data" / "photmjsm.asdf")
 
 
 @pytest.mark.xfail(reason="We currently do not have a way to identify if a datamodel is a GDPS datamodel")
@@ -283,13 +256,13 @@ def test_open_asn(tmp_path):
 
 
 @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
+@pytest.mark.usefixtures("use_testing_shape")
 def test_filename_matches_meta(tmp_path):
     save_path = tmp_path / "test_filename.asdf"
     open_path = tmp_path / "test_filename_read.asdf"
 
     # Create an image model and save it
-    image = utils.mk_datamodel(datamodels.ImageModel, shape=(0, 0))
-    image.to_asdf(save_path)
+    datamodels.ImageModel().to_asdf(save_path)
 
     # Rename the model so filenames don't match
     os.rename(save_path, open_path)

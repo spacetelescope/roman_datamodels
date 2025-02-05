@@ -1,8 +1,4 @@
-from astropy import time
-
-from roman_datamodels import stnode
-
-from ._base import NOSTR
+from roman_datamodels.stnode import FlushOptions
 
 
 def mk_fps_calibration_software_version(**kwargs):
@@ -13,7 +9,11 @@ def mk_fps_calibration_software_version(**kwargs):
     -------
     roman_datamodels.stnode.FpsCalibrationSoftwareVersion
     """
-    return stnode.FpsCalibrationSoftwareVersion(kwargs.get("calibration_software_version", "9.9.0"))
+    from roman_datamodels.nodes import FpsCalibrationSoftwareVersion
+
+    if "calibration_software_version" in kwargs:
+        return FpsCalibrationSoftwareVersion(kwargs["calibration_software_version"])
+    return FpsCalibrationSoftwareVersion.default()
 
 
 def mk_fps_sdf_software_version(**kwargs):
@@ -24,8 +24,11 @@ def mk_fps_sdf_software_version(**kwargs):
     -------
     roman_datamodels.stnode.FpsSdfSoftwareVersion
     """
+    from roman_datamodels.nodes import FpsSdfSoftwareVersion
 
-    return stnode.FpsSdfSoftwareVersion(kwargs.get("sdf_software_version", "7.7.7"))
+    if "sdf_software_version" in kwargs:
+        return FpsSdfSoftwareVersion(kwargs["sdf_software_version"])
+    return FpsSdfSoftwareVersion.default()
 
 
 def mk_fps_filename(**kwargs):
@@ -36,7 +39,11 @@ def mk_fps_filename(**kwargs):
     -------
     roman_datamodels.stnode.FpsFilename
     """
-    return stnode.FpsFilename(kwargs.get("filename", NOSTR))
+    from roman_datamodels.nodes import FpsFilename
+
+    if "filename" in kwargs:
+        return FpsFilename(kwargs["filename"])
+    return FpsFilename.default()
 
 
 def mk_fps_file_date(**kwargs):
@@ -47,8 +54,11 @@ def mk_fps_file_date(**kwargs):
     -------
     roman_datamodels.stnode.FpsFileDate
     """
+    from roman_datamodels.nodes import FpsFileDate
 
-    return stnode.FpsFileDate(kwargs.get("file_date", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")))
+    if "file_date" in kwargs:
+        return FpsFileDate(kwargs["file_date"])
+    return FpsFileDate.default()
 
 
 def mk_fps_model_type(**kwargs):
@@ -59,7 +69,11 @@ def mk_fps_model_type(**kwargs):
     -------
     roman_datamodels.stnode.FpsModelType
     """
-    return stnode.FpsModelType(kwargs.get("model_type", NOSTR))
+    from roman_datamodels.nodes import FpsModelType
+
+    if "model_type" in kwargs:
+        return FpsModelType(kwargs["model_type"])
+    return FpsModelType.default()
 
 
 def mk_fps_origin(**kwargs):
@@ -70,8 +84,11 @@ def mk_fps_origin(**kwargs):
     -------
     roman_datamodels.stnode.FpsOrigin
     """
+    from roman_datamodels.nodes import FpsOrigin
 
-    return stnode.FpsOrigin(kwargs.get("origin", "STSCI"))
+    if "origin" in kwargs:
+        return FpsOrigin(kwargs["origin"])
+    return FpsOrigin.default()
 
 
 def mk_fps_prd_software_version(**kwargs):
@@ -82,7 +99,11 @@ def mk_fps_prd_software_version(**kwargs):
     -------
     roman_datamodels.stnode.FpsPrdSoftwareVersion
     """
-    return stnode.FpsPrdSoftwareVersion(kwargs.get("prd_software_version", "8.8.8"))
+    from roman_datamodels.nodes import FpsPrdSoftwareVersion
+
+    if "prd_software_version" in kwargs:
+        return FpsPrdSoftwareVersion(kwargs["prd_software_version"])
+    return FpsPrdSoftwareVersion.default()
 
 
 def mk_fps_telescope(**kwargs):
@@ -93,7 +114,11 @@ def mk_fps_telescope(**kwargs):
     -------
     roman_datamodels.stnode.fpsTelescope
     """
-    return stnode.FpsTelescope(kwargs.get("telescope", "ROMAN"))
+    from roman_datamodels.nodes import FpsTelescope
+
+    if "telescope" in kwargs:
+        return FpsTelescope(kwargs["telescope"])
+    return FpsTelescope.default()
 
 
 def mk_fps_basic_meta(**kwargs):
@@ -104,14 +129,9 @@ def mk_fps_basic_meta(**kwargs):
     -------
     dict (defined by the fps/basic-1.0.0 schema)
     """
-    meta = {}
-    meta["calibration_software_version"] = mk_fps_calibration_software_version(**kwargs)
-    meta["sdf_software_version"] = mk_fps_sdf_software_version(**kwargs)
-    meta["filename"] = mk_fps_filename(**kwargs)
-    meta["file_date"] = mk_fps_file_date(**kwargs)
-    meta["model_type"] = mk_fps_model_type(**kwargs)
-    meta["origin"] = mk_fps_origin(**kwargs)
-    meta["prd_software_version"] = mk_fps_prd_software_version(**kwargs)
-    meta["telescope"] = mk_fps_telescope(**kwargs)
+    from roman_datamodels.nodes import FpsBasic
+
+    meta = FpsBasic(kwargs)
+    meta.flush(FlushOptions.EXTRA, recurse=True)
 
     return meta

@@ -1,6 +1,4 @@
-from astropy import time
-
-from roman_datamodels import stnode
+from roman_datamodels.stnode import FlushOptions
 
 from ._base import NOSTR
 
@@ -13,7 +11,11 @@ def mk_tvac_calibration_software_version(**kwargs):
     -------
     roman_datamodels.stnode.TvacCalibrationSoftwareVersion
     """
-    return stnode.TvacCalibrationSoftwareVersion(kwargs.get("calibration_software_version", "9.9.0"))
+    from roman_datamodels.nodes import TvacCalibrationSoftwareVersion
+
+    if "calibration_software_version" in kwargs:
+        return TvacCalibrationSoftwareVersion(kwargs["calibration_software_version"])
+    return TvacCalibrationSoftwareVersion.default()
 
 
 def mk_tvac_sdf_software_version(**kwargs):
@@ -24,8 +26,11 @@ def mk_tvac_sdf_software_version(**kwargs):
     -------
     roman_datamodels.stnode.TvacSdfSoftwareVersion
     """
+    from roman_datamodels.nodes import TvacSdfSoftwareVersion
 
-    return stnode.TvacSdfSoftwareVersion(kwargs.get("sdf_software_version", "7.7.7"))
+    if "sdf_software_version" in kwargs:
+        return TvacSdfSoftwareVersion(kwargs["sdf_software_version"])
+    return TvacSdfSoftwareVersion.default()
 
 
 def mk_tvac_filename(**kwargs):
@@ -36,7 +41,11 @@ def mk_tvac_filename(**kwargs):
     -------
     roman_datamodels.stnode.TvacFilename
     """
-    return stnode.TvacFilename(kwargs.get("filename", NOSTR))
+    from roman_datamodels.nodes import TvacFilename
+
+    if "filename" in kwargs:
+        return TvacFilename(kwargs["filename"])
+    return TvacFilename.default()
 
 
 def mk_tvac_file_date(**kwargs):
@@ -47,8 +56,11 @@ def mk_tvac_file_date(**kwargs):
     -------
     roman_datamodels.stnode.TvacFileDate
     """
+    from roman_datamodels.nodes import TvacFileDate
 
-    return stnode.TvacFileDate(kwargs.get("file_date", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")))
+    if "file_date" in kwargs:
+        return TvacFileDate(kwargs["file_date"])
+    return TvacFileDate.default()
 
 
 def mk_tvac_model_type(**kwargs):
@@ -59,7 +71,11 @@ def mk_tvac_model_type(**kwargs):
     -------
     roman_datamodels.stnode.TvacModelType
     """
-    return stnode.TvacModelType(kwargs.get("model_type", NOSTR))
+    from roman_datamodels.nodes import TvacModelType
+
+    if "model_type" in kwargs:
+        return TvacModelType(kwargs["model_type"])
+    return TvacModelType(NOSTR)
 
 
 def mk_tvac_origin(**kwargs):
@@ -70,8 +86,11 @@ def mk_tvac_origin(**kwargs):
     -------
     roman_datamodels.stnode.TvacOrigin
     """
+    from roman_datamodels.nodes import TvacOrigin
 
-    return stnode.TvacOrigin(kwargs.get("origin", "STSCI"))
+    if "origin" in kwargs:
+        return TvacOrigin(kwargs["origin"])
+    return TvacOrigin.default()
 
 
 def mk_tvac_prd_software_version(**kwargs):
@@ -82,7 +101,11 @@ def mk_tvac_prd_software_version(**kwargs):
     -------
     roman_datamodels.stnode.TvacPrdSoftwareVersion
     """
-    return stnode.TvacPrdSoftwareVersion(kwargs.get("prd_software_version", "8.8.8"))
+    from roman_datamodels.nodes import TvacPrdSoftwareVersion
+
+    if "prd_software_version" in kwargs:
+        return TvacPrdSoftwareVersion(kwargs["prd_software_version"])
+    return TvacPrdSoftwareVersion.default()
 
 
 def mk_tvac_telescope(**kwargs):
@@ -93,7 +116,11 @@ def mk_tvac_telescope(**kwargs):
     -------
     roman_datamodels.stnode.TvacTelescope
     """
-    return stnode.TvacTelescope(kwargs.get("telescope", "ROMAN"))
+    from roman_datamodels.nodes import TvacTelescope
+
+    if "telescope" in kwargs:
+        return TvacTelescope(kwargs["telescope"])
+    return TvacTelescope.default()
 
 
 def mk_tvac_basic_meta(**kwargs):
@@ -104,14 +131,9 @@ def mk_tvac_basic_meta(**kwargs):
     -------
     dict (defined by the tvac/basic-1.0.0 schema)
     """
-    meta = {}
-    meta["calibration_software_version"] = mk_tvac_calibration_software_version(**kwargs)
-    meta["sdf_software_version"] = mk_tvac_sdf_software_version(**kwargs)
-    meta["filename"] = mk_tvac_filename(**kwargs)
-    meta["file_date"] = mk_tvac_file_date(**kwargs)
-    meta["model_type"] = mk_tvac_model_type(**kwargs)
-    meta["origin"] = mk_tvac_origin(**kwargs)
-    meta["prd_software_version"] = mk_tvac_prd_software_version(**kwargs)
-    meta["telescope"] = mk_tvac_telescope(**kwargs)
+    from roman_datamodels.nodes import TvacBasic
+
+    meta = TvacBasic(kwargs)
+    meta.flush(FlushOptions.EXTRA, recurse=True)
 
     return meta
