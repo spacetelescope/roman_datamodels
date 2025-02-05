@@ -52,8 +52,7 @@ issues = "https://github.com/spacetelescope/roman_datamodels/issues"
 repository = "https://github.com/spacetelescope/roman_datamodels"
 
 [project.entry-points."asdf.extensions"]
-roman_datamodels = "roman_datamodels.stnode._integration:get_extensions"
-# roman_datamodels = "roman_datamodels.io._integration:get_extensions"
+roman_datamodels = "roman_datamodels.io._integration:get_extensions"
 
 [build-system]
 requires = [
@@ -165,9 +164,7 @@ module = [
     "roman_datamodels.testing.*",
     # Temporary ignores
     "roman_datamodels.datamodels.*",
-    "roman_datamodels.io.*",
     "roman_datamodels.maker_utils.*",
-    "roman_datamodels.stnode.*",
 ]
 ignore_errors = true
 
