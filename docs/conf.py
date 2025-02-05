@@ -443,8 +443,10 @@ nitpick_ignore = [
     ("py:class", "mappingproxy"),
     ("py:class", "AsdfFile"),
     ("py:class", "gwcs.wcs.WCS"),
+    ("py:class", "gwcs.wcs._wcs.WCS"),
     ("py:class", "numpy.float64"),
     ("py:class", "numpy.uint32"),
+    ("py:class", "roman_datamodels.stnode.core._d_node.Annotated"),
 ]
 
 typehints_defaults = "comma"

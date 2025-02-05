@@ -14,7 +14,7 @@ sphinx:
 build:
   os: ubuntu-22.04
   tools:
-    python: "mambaforge-4.10"
+    python: "miniconda3-3.12-24.1"
   jobs:
     post_install:
       - towncrier build --keep
@@ -26,7 +26,7 @@ conda:
 build:
   os: ubuntu-22.04
   tools:
-    python: mambaforge-4.10
+    python: miniconda3-3.12-24.1
 
 conda:
   environment: docs/rtd_environment.yaml
