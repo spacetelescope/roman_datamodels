@@ -4,8 +4,10 @@ Functions that support validation of model changes
 
 import os
 import warnings
+from collections.abc import Generator
 from contextlib import contextmanager
 from textwrap import dedent
+from typing import ParamSpec
 
 from asdf import schema as asdf_schema
 
@@ -13,11 +15,13 @@ __all__ = [
     "ValidationWarning",
 ]
 
+_P = ParamSpec("_P")
+
 ROMAN_VALIDATE = "ROMAN_VALIDATE"
 ROMAN_STRICT_VALIDATION = "ROMAN_STRICT_VALIDATION"
 
 
-def validation_is_disabled():
+def validation_is_disabled() -> None:
     MESSAGE = dedent(
         """\
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -38,7 +42,7 @@ def validation_is_disabled():
     warnings.warn(MESSAGE, ValidationWarning, stacklevel=2)
 
 
-def will_validate():
+def will_validate() -> bool:
     """
     Determine if validation is enabled.
     """
@@ -55,7 +59,7 @@ class ValidationWarning(Warning):
 
 
 @contextmanager
-def nuke_validation():
+def nuke_validation() -> Generator[None, None, None]:
     """
     Context manager to temporarily turn all ASDF validation off.
     """
@@ -78,7 +82,7 @@ def nuke_validation():
     validate = asdf_schema.validate
 
     # Monkey patch validation with a function that does nothing
-    def _no_validation_for_you(*args, **kwargs):
+    def _no_validation_for_you(*args: _P.args, **kwargs: _P.kwargs) -> None:
         pass
 
     asdf_schema.validate = _no_validation_for_you

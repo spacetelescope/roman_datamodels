@@ -27,7 +27,7 @@ repos:
     - id: text-unicode-replacement-char
 
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.4.1
+  rev: v2.3.0
   hooks:
     - id: codespell
       args: ["--write-changes"]
@@ -35,13 +35,27 @@ repos:
         - tomli
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: 'v0.9.4'
+  rev: 'v0.9.2'
   hooks:
     - id: ruff
       args: ["--fix", "--show-fixes"]
     - id: ruff-format
 
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: "v1.14.1"
+  hooks:
+    - id: mypy
+      files: src
+      args: []
+      additional_dependencies:  # add dependencies for mypy to pull information from
+        - numpy>=2
+        - types-PyYAML>=6
+        - typeguard>=4.4
+        - astropy>=7
+        - asdf>=4
+        - gwcs>=0.19
+
 - repo: https://github.com/twisted/towncrier
-  rev: 24.8.0  # run 'pre-commit autoupdate' to update
+  rev: 24.8.0
   hooks:
     - id: towncrier-check
