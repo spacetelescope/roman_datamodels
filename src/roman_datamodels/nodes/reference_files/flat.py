@@ -8,7 +8,7 @@ from .ref import RefCommonRefOpticalElementRef, RefTypeEntry
 __all__ = ["FlatRef", "FlatRef_Meta"]
 
 
-class FlatRef_Meta(rad.ImpliedNodeMixin, RefCommonRefOpticalElementRef):  # type: ignore[misc]
+class FlatRef_Meta(rad.ImpliedNodeMixin, RefCommonRefOpticalElementRef):
     @classmethod
     def _asdf_implied_by(cls) -> type:
         return FlatRef

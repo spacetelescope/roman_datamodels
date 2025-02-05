@@ -192,7 +192,7 @@ class _RdmNodeRegistry:
             registry = {}
             for name, node in self.all_nodes.items():
                 if issubclass(node, Enum):
-                    registry[name] = node
+                    registry[name] = node  # type: ignore[assignment]
 
             self._enum_nodes = MappingProxyType(registry)
 

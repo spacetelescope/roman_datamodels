@@ -5,7 +5,7 @@ from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from os import PathLike
 from pathlib import Path
-from typing import Any, ParamSpec, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from asdf import AsdfFile
 from asdf.search import AsdfSearchResult
@@ -16,7 +16,6 @@ from roman_datamodels.validate import nuke_validation
 __all__ = ["AsdfFileMixin"]
 
 _T = TypeVar("_T")
-_P = ParamSpec("_P")
 
 
 @contextmanager
@@ -154,7 +153,7 @@ class AsdfFileMixin(DNode[DNode[_T] | _T]):
     ) -> Path:
         path = Path(path(cast(str, cast(DNode[_T], self.meta).filename)) if callable(path) else path)
         output_path = Path(dir_path) / path.name if dir_path else path
-        ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix  # type: ignore[attr-defined, unreachable, redundant-expr]
+        ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix  # type: ignore[unreachable, redundant-expr]
 
         # TODO: Support gzip-compressed fits
         if ext == ".asdf":
@@ -168,14 +167,14 @@ class AsdfFileMixin(DNode[DNode[_T] | _T]):
         """Validate the ASDF file"""
         self._asdf_file.validate()  # type: ignore[no-untyped-call]
 
-    def info(self, *args: _P.args, **kwargs: _P.kwargs) -> None:
+    def info(self, *args: Any, **kwargs: Any) -> None:
         """Pass through to the AsdfFile info method"""
         self._asdf_file.info(*args, **kwargs)  # type: ignore[no-untyped-call]
 
-    def search(self, *args: _P.args, **kwargs: _P.kwargs) -> AsdfSearchResult:
+    def search(self, *args: Any, **kwargs: Any) -> AsdfSearchResult:
         """Pass through to the AsdfFile search method"""
         return cast(AsdfSearchResult, self._asdf_file.search(*args, **kwargs))  # type: ignore[no-untyped-call]
 
-    def schema_info(self, *args: _P.args, **kwargs: _P.kwargs) -> Any:
+    def schema_info(self, *args: Any, **kwargs: Any) -> Any:
         """Pass through to the AsdfFile schema_info method"""
         return self._asdf_file.schema_info(*args, **kwargs)  # type: ignore[no-untyped-call]

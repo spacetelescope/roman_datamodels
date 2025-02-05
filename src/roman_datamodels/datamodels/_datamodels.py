@@ -220,7 +220,7 @@ class MosaicModel(DataModel[Any], nodes.WfiMosaic):
         # MyPy can't correctly inver that we may be passing super classes of DNode
         # So it complains about the expression below
         iterator = (
-            meta_dict.flat_items(flush=flush)  # type: ignore[attr-defined]
+            meta_dict.flat_items(flush=flush)
             if isinstance(meta_dict, stnode.ObjectNode)  # type: ignore[redundant-expr, unreachable]
             else meta_dict.items()
         )

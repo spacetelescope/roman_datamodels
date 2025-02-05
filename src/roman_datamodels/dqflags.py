@@ -31,7 +31,7 @@ __all__ = ["group", "pixel"]
 # fmt: off
 # MyPy: np.unint32 __copy__ and __deepcopy__ conflict with Emum __copy__ and __deepcopy__
 @unique
-class pixel(np.uint32, Enum):  # type: ignore[misc]
+class pixel(np.uint32, Enum):
     """Pixel-specific data quality flags"""
 
     GOOD             = 0      # No bits set, all is good
@@ -70,7 +70,7 @@ class pixel(np.uint32, Enum):  # type: ignore[misc]
 
 # MyPy: np.unint32 __copy__ and __deepcopy__ conflict with Emum __copy__ and __deepcopy__
 @unique
-class group(np.uint32, Enum):  # type: ignore[misc]
+class group(np.uint32, Enum):
     """Group-specific data quality flags
         Once groups are combined, these flags are equivalent to the pixel-specific flags.
     """

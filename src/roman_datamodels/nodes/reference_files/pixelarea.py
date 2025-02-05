@@ -22,7 +22,7 @@ class PixelareaRef_Meta_Photometry(rad.ImpliedNodeMixin, rad.ObjectNode):
         return rad.NONUM
 
 
-class PixelareaRef_Meta(rad.ImpliedNodeMixin, RefCommonRefOpticalElementRef):  # type: ignore[misc]
+class PixelareaRef_Meta(rad.ImpliedNodeMixin, RefCommonRefOpticalElementRef):
     @classmethod
     def _asdf_implied_by(cls) -> type:
         return PixelareaRef

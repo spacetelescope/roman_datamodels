@@ -43,7 +43,7 @@ class DarkRef_Meta_Exposure(RefExposureTypeRef_Exposure, rad.ImpliedNodeMixin):
         return rad.NOINT
 
 
-class DarkRef_Meta(rad.ImpliedNodeMixin, RefCommonRefOpticalElementRef, RefExposureTypeRef):  # type: ignore[misc]
+class DarkRef_Meta(rad.ImpliedNodeMixin, RefCommonRefOpticalElementRef, RefExposureTypeRef):
     @classmethod
     def _asdf_implied_by(cls) -> type:
         return DarkRef

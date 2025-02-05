@@ -1,3 +1,4 @@
+import sys
 from contextlib import nullcontext
 from enum import Enum
 from importlib import resources as importlib_resources
@@ -750,7 +751,12 @@ def test_enum_node(node_cls):
 
     # Check that all the enums listed are in the class
     for entry_name in schema_enum_list:
-        assert entry_name in node_cls, f"Enum entry: {entry_name} not listed in Enum: {node_cls}"
+        # Python 3.11 raises a warning about a change in Enum.__contains__
+        # This is a workaround for that warning which is irrelevant to our tests
+        if sys.version_info >= (3, 12):
+            assert entry_name in node_cls, f"Enum entry: {entry_name} not listed in Enum: {node_cls}"
+        else:
+            assert entry_name in node_cls._value2member_map_, f"Enum entry: {entry_name} not listed in Enum: {node_cls}"
 
     # Check that all the enums in the class are listed in the schema
     if node_cls is rad.RDM_NODE_REGISTRY.enum_nodes["RefTypeEntry"]:
@@ -790,7 +796,12 @@ def test_reftype_node():
             raise ValueError(f"Could not find reftype enum in {entry}")
 
         for enum_name in enum_schema:
-            assert enum_name in nodes.RefTypeEntry
+            # Python 3.11 raises a warning about a change in Enum.__contains__
+            # This is a workaround for that warning which is irrelevant to our tests
+            if sys.version_info >= (3, 12):
+                assert enum_name in nodes.RefTypeEntry
+            else:
+                assert enum_name in nodes.RefTypeEntry._value2member_map_
             enum_names.append(enum_name)
 
     for entry in nodes.RefTypeEntry:

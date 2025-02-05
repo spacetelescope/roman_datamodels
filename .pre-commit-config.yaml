@@ -42,7 +42,7 @@ repos:
     - id: ruff-format
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: "v1.14.1"
+  rev: "v1.15.0"
   hooks:
     - id: mypy
       files: src
@@ -53,9 +53,12 @@ repos:
         - typeguard>=4.4
         - astropy>=7
         - asdf>=4
-        - gwcs>=0.19
+        - gwcs>=0.24
 
 - repo: https://github.com/twisted/towncrier
   rev: 24.8.0
   hooks:
     - id: towncrier-check
+
+ci:
+  skip: [mypy]  # MyPy check uses too much memory for the bot, it is checked by a regular CI job

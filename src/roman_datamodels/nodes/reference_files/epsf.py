@@ -8,7 +8,7 @@ from .ref import RefCommonRefOpticalElementRef, RefTypeEntry
 __all__ = ["EpsfRef", "EpsfRef_Meta"]
 
 
-class EpsfRef_Meta(rad.ImpliedNodeMixin, RefCommonRefOpticalElementRef):  # type: ignore[misc]
+class EpsfRef_Meta(rad.ImpliedNodeMixin, RefCommonRefOpticalElementRef):
     @classmethod
     def _asdf_implied_by(cls) -> type:
         return EpsfRef

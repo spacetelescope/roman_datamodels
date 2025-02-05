@@ -53,7 +53,7 @@ def Wcs() -> WCS:
 
     # GWCS has not implemented type hints so MyPy will complain about this
     # until they do.
-    return WCS(  # type: ignore[no-untyped-call]
+    return WCS(
         [
             (detector_frame, det2sky),
             (sky_frame, None),

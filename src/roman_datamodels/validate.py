@@ -7,15 +7,13 @@ import warnings
 from collections.abc import Generator
 from contextlib import contextmanager
 from textwrap import dedent
-from typing import ParamSpec
+from typing import Any
 
 from asdf import schema as asdf_schema
 
 __all__ = [
     "ValidationWarning",
 ]
-
-_P = ParamSpec("_P")
 
 ROMAN_VALIDATE = "ROMAN_VALIDATE"
 ROMAN_STRICT_VALIDATION = "ROMAN_STRICT_VALIDATION"
@@ -82,7 +80,7 @@ def nuke_validation() -> Generator[None, None, None]:
     validate = asdf_schema.validate
 
     # Monkey patch validation with a function that does nothing
-    def _no_validation_for_you(*args: _P.args, **kwargs: _P.kwargs) -> None:
+    def _no_validation_for_you(*args: Any, **kwargs: Any) -> None:
         pass
 
     asdf_schema.validate = _no_validation_for_you
