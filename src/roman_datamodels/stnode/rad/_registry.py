@@ -19,8 +19,7 @@ from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, TagMixi
 from ._utils import get_all_fields, get_nodes
 
 if TYPE_CHECKING:
-    # from roman_datamodels.datamodels import DataModel
-    pass
+    from roman_datamodels.datamodels import DataModel
 
 __all__ = ["RDM_NODE_REGISTRY"]
 
@@ -147,17 +146,17 @@ class _RdmNodeRegistry:
             )
         return self._all_nodes
 
-    # @property
-    # def datamodels(self) -> MappingProxyType[str, type[DataModel[_T]]]:
-    #     """
-    #     Get all the datamodels
-    #     """
-    #     from roman_datamodels.datamodels import DataModel
+    @property
+    def datamodels(self) -> MappingProxyType[str, type[DataModel]]:
+        """
+        Get all the datamodels
+        """
+        from roman_datamodels.datamodels import DataModel
 
-    #     if self._datamodels is None:
-    #         self._datamodels = MappingProxyType({**get_nodes(DataModel, (DataModel,))})
+        if self._datamodels is None:
+            self._datamodels = MappingProxyType({**get_nodes(DataModel, (DataModel,))})
 
-    #     return self._datamodels
+        return self._datamodels
 
     @property
     def implied_nodes(self) -> MappingProxyType[str, type[ImpliedNodeMixin]]:
@@ -241,23 +240,23 @@ class _RdmNodeRegistry:
 
         return self._tagged_registry
 
-    # @property
-    # def node_datamodel_mapping(self) -> MappingProxyType[type, type[DataModel[_T]]]:
-    #     """
-    #     Get a mapping of all the nodes that are datamodels
+    @property
+    def node_datamodel_mapping(self) -> MappingProxyType[type, type[DataModel]]:
+        """
+        Get a mapping of all the nodes that are datamodels
 
-    #     Returns
-    #     -------
-    #     MappingProxyType[str, type]
-    #         schema_uri -> class
-    #     """
-    #     if self._node_datamodel_mapping is None:
-    #         registry = {}
-    #         for dm in self.datamodels.values():
-    #             registry[dm.node_type()] = dm
-    #         self._node_datamodel_mapping = MappingProxyType(registry)
+        Returns
+        -------
+        MappingProxyType[str, type]
+            schema_uri -> class
+        """
+        if self._node_datamodel_mapping is None:
+            registry = {}
+            for dm in self.datamodels.values():
+                registry[dm.node_type()] = dm  # type: ignore[attr-defined]
+            self._node_datamodel_mapping = MappingProxyType(registry)
 
-    #     return self._node_datamodel_mapping
+        return self._node_datamodel_mapping
 
     @property
     def reserved_fields(self) -> tuple[str, ...]:

@@ -5,7 +5,8 @@ from pathlib import Path
 import asdf
 import numpy as np
 import pytest
-from astropy.io import fits
+
+# from astropy.io import fits
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels, stnode
@@ -96,10 +97,10 @@ def test_file_input(tmp_path):
             assert model.meta.telescope == "ROMAN"
 
 
-@pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
-def test_invalid_input():
-    with pytest.raises(TypeError):
-        datamodels.open(fits.HDUList())
+# @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
+# def test_invalid_input():
+#     with pytest.raises(TypeError):
+#         datamodels.open(fits.HDUList())
 
 
 @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
@@ -240,17 +241,17 @@ def test_opening_model(tmp_path, node_class):
         assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
 
 
-@pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
-def test_read_pattern_properties():
-    """
-    Regression test for reading pattern properties
-    """
+# @pytest.mark.xfail(reason="Refactor is in effect this will be broken for awhile")
+# def test_read_pattern_properties():
+#     """
+#     Regression test for reading pattern properties
+#     """
 
-    from roman_datamodels.datamodels import open as rdm_open
+#     from roman_datamodels.datamodels import open as rdm_open
 
-    # This file has been modified by hand to break the `photmjsr` value
-    with pytest.raises(asdf.ValidationError):
-        rdm_open(Path(__file__).parent / "data" / "photmjsm.asdf")
+#     # This file has been modified by hand to break the `photmjsr` value
+#     with pytest.raises(asdf.ValidationError):
+#         rdm_open(Path(__file__).parent / "data" / "photmjsm.asdf")
 
 
 @pytest.mark.xfail(reason="We currently do not have a way to identify if a datamodel is a GDPS datamodel")

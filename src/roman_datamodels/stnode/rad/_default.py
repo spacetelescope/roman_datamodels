@@ -1,7 +1,16 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, TypeAlias, TypeVar
+
 from astropy.coordinates import ICRS
 from astropy.modeling.models import Pix2Sky_TAN, RotateNative2Celestial, Scale, Shift  # type: ignore[attr-defined]
 from astropy.units import deg, pix  # type: ignore[attr-defined]
 from gwcs import WCS, coordinate_frames
+
+if TYPE_CHECKING:
+    from roman_datamodels.nodes import FpsModelType, ModelType, TvacModelType
+
+    MdlType: TypeAlias = ModelType | FpsModelType | TvacModelType
 
 __all__ = [
     "NOFN",
@@ -9,7 +18,10 @@ __all__ = [
     "NONUM",
     "NOSTR",
     "Wcs",
+    "default_model_type",
 ]
+
+_S = TypeVar("_S")
 
 
 NOFN = "none"
@@ -47,3 +59,16 @@ def Wcs() -> WCS:
             (sky_frame, None),
         ]
     )
+
+
+def default_model_type(self: _S, node: type[MdlType]) -> MdlType:
+    """
+    Create a model_type
+    """
+
+    # from roman_datamodels.stnode import RDM_NODE_REGISTRY, ImpliedNodeMixin
+
+    # if isinstance(self, ImpliedNodeMixin):
+    #     return node(RDM_NODE_REGISTRY.node_datamodel_mapping[self.asdf_implied_by].__name__)
+
+    return node.default()
