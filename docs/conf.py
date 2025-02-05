@@ -64,6 +64,7 @@ intersphinx_mapping = {
 extensions = [
     "pytest_doctestplus.sphinx.doctestplus",
     "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx.ext.coverage",
@@ -76,6 +77,7 @@ extensions = [
     "sphinx_automodapi.autodoc_enhancements",
     "sphinx_automodapi.smart_resolver",
     "sphinxcontrib.jquery",
+    "sphinx_autodoc_typehints",
 ]
 
 if on_rtd:
@@ -438,4 +440,17 @@ epub_exclude_files = ["search.html"]
 nitpicky = True
 nitpick_ignore = [
     ("py:class", "_io.FileIO"),
+    ("py:class", "mappingproxy"),
+    ("py:class", "AsdfFile"),
+    ("py:class", "gwcs.wcs.WCS"),
+    ("py:class", "numpy.float64"),
+    ("py:class", "numpy.uint32"),
 ]
+
+typehints_defaults = "comma"
+always_document_param_types = True
+typehints_document_rtype = True
+typehints_use_rtype = False
+napoleon_us_rtype = False
+
+automodsumm_properties_are_attributes = False

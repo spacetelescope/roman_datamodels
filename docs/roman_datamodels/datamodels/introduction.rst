@@ -29,9 +29,9 @@ of data file. It can apply to raw data (i.e., data from the ground system
 that the calibration pipelines start with), intermediate data products, or
 the final data products sent to observers or the archive.
 
-While the roman_datamodels repository would seem like the location of the
-Roman datamodels, it is the combination of the schemas in the rad repository
-with the converter software in the roman_datamodels that form the totality
+While the ``roman_datamodels`` repository would seem like the location of the
+Roman datamodels, it is the combination of the schemas in the ``rad`` repository
+with the converter software in the ``roman_datamodels`` that form the totality
 of the datamodels. The schemas are intentionally kept separate to remove
 dependencies on Python as well as preventing extra notification noise to
 the ground system when changes are only made to the Python code and not

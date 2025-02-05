@@ -404,13 +404,21 @@ class PatternDNode(DNode[_T], ABC):
 
     @classmethod
     @abstractmethod
+    def _asdf_key_pattern(cls) -> str:
+        """j
+        Get the key pattern for the node.
+        """
+
+    @classproperty
     def asdf_key_pattern(cls) -> str:
         """
         Get the key pattern for the node.
         """
 
+        return cls._asdf_key_pattern()
+
     def _check_key(self, key: str) -> bool:
-        if re.match(self.asdf_key_pattern(), key):
+        if re.match(self.asdf_key_pattern, key):
             return True
 
         return super()._check_key(key)

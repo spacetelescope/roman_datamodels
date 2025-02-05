@@ -163,7 +163,7 @@ def test_implied_node(node_cls):
         assert "allOf" in pattern_schema or ("type" in pattern_schema and pattern_schema["type"] == "object")
 
         # check key pattern
-        assert base.asdf_key_pattern() == next(iter(schema["patternProperties"].keys()))
+        assert base.asdf_key_pattern == next(iter(schema["patternProperties"].keys()))
     else:
         raise ValueError(f"Annotation {annotation} not handled")
 

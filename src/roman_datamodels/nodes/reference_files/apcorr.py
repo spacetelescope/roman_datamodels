@@ -76,7 +76,7 @@ class ApcorrRef_Data_PatternNode(core.PatternDNode[_T], rad.ImpliedNodeMixin):
         return "data"
 
     @classmethod
-    def asdf_key_pattern(cls) -> str:
+    def _asdf_key_pattern(cls) -> str:
         return "^(F062|F087|F106|F129|F146|F158|F184|F213|GRISM|PRISM|DARK)$"
 
 
