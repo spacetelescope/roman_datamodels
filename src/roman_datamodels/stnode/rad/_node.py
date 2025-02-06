@@ -80,10 +80,17 @@ class ObjectNode(DNode[Any], RadNodeMixin, ABC):
             """
             if field not in visited_fields:
                 visited_fields.add(field)
-                if self._to_schema_key(field) in data_fields or field in flush_fields:
+                if self._to_schema_key(field) in data_fields:
                     data_fields.remove(self._to_schema_key(field))
-
                     yield field
+
+                # Elif is necessary to prevent yielding the field twice
+                # if it is in both
+                elif field in flush_fields:
+                    yield field
+
+                # Don't yield the field if it isn't already defined and isn't being
+                # flushed out
             else:
                 raise ValueError(f"Field {field} has already been visited!")
 
