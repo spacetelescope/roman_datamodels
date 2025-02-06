@@ -1,11 +1,16 @@
 import gwcs
 import numpy as np
 from asdf.tags.core import NDArrayType
+from astropy import units as u
 from astropy.modeling import Model
 from astropy.table import Table
+from astropy.time import Time
+from gwcs import WCS
 from numpy.testing import assert_array_equal
 
-from .stnode import DNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
+from .datamodels import DataModel
+from .stnode.core import DNode, LNode
+from .stnode.rad import SchemaScalarNode
 
 __all__ = ["assert_node_equal", "assert_node_is_copy", "wraps_hashable"]
 
@@ -27,7 +32,7 @@ def assert_node_equal(node1, node2):
     AssertionError
         If nodes are not equal.
     """
-    __tracebackhide__ = True
+    # __tracebackhide__ = True
 
     assert node1.__class__ is node2.__class__
     if isinstance(node1, DNode):
@@ -37,14 +42,18 @@ def assert_node_equal(node1, node2):
             value1 = getattr(node1, key)
             value2 = getattr(node2, key)
             _assert_value_equal(value1, value2)
-    elif isinstance(node1, TaggedListNode):
+    elif isinstance(node1, LNode):
         assert len(node1) == len(node2)
 
         for value1, value2 in zip(node1, node2, strict=True):
             _assert_value_equal(value1, value2)
-    elif isinstance(node1, TaggedScalarNode):
-        value1 = node1.__class__.__bases__[0](node1)
-        value2 = node2.__class__.__bases__[0](node2)
+    elif isinstance(node1, SchemaScalarNode):
+        if node1.__class__.__bases__[0] is SchemaScalarNode:
+            value1 = node1.__class__.__bases__[1](node1)
+            value2 = node2.__class__.__bases__[1](node2)
+        else:
+            value1 = node1.__class__.__bases__[0](node1)
+            value2 = node2.__class__.__bases__[0](node2)
 
         assert value1 == value2
     else:
@@ -52,7 +61,7 @@ def assert_node_equal(node1, node2):
 
 
 def _assert_value_equal(value1, value2):
-    if isinstance(value1, TaggedObjectNode | TaggedListNode | TaggedScalarNode | DNode):
+    if isinstance(value1, LNode | DNode):
         assert_node_equal(value1, value2)
     elif isinstance(value1, np.ndarray | NDArrayType):
         assert_array_equal(value1, value2)
@@ -83,19 +92,23 @@ def assert_node_is_copy(node1, node2, deepcopy=False):
     AssertionError
         If nodes are the same object.
     """
-    __tracebackhide__ = True
+    # __tracebackhide__ = True
     assert_node_equal(node1, node2)
 
-    if isinstance(node1, TaggedObjectNode):
-        for key, value1 in node1.items():
+    if isinstance(node1, DNode):
+        for key, value1 in node1._data.items() if isinstance(node1, DataModel) else node1.items():
             value2 = node2[key]
             _assert_value_is_copy(value1, value2, deepcopy=deepcopy)
-    elif isinstance(node1, TaggedListNode):
+    elif isinstance(node1, LNode):
         for value1, value2 in zip(node1, node2, strict=True):
             _assert_value_is_copy(value1, value2, deepcopy=deepcopy)
-    elif isinstance(node1, TaggedScalarNode):
-        value1 = node1.__class__.__bases__[0](node1)
-        value2 = node2.__class__.__bases__[0](node2)
+    elif isinstance(node1, SchemaScalarNode):
+        if node1.__class__.__bases__[0] is SchemaScalarNode:
+            value1 = node1.__class__.__bases__[1](node1)
+            value2 = node2.__class__.__bases__[1](node2)
+        else:
+            value1 = node1.__class__.__bases__[0](node1)
+            value2 = node2.__class__.__bases__[0](node2)
 
         assert value1 is not value2
     else:
@@ -104,9 +117,17 @@ def assert_node_is_copy(node1, node2, deepcopy=False):
 
 def _assert_value_is_copy(value1, value2, deepcopy=False):
     if deepcopy:
-        if isinstance(value1, TaggedObjectNode | TaggedListNode | TaggedScalarNode):
-            assert_node_is_copy(value1, value2)
+        if isinstance(value1, LNode | DNode | SchemaScalarNode):
+            assert_node_is_copy(value1, value2, deepcopy=deepcopy)
         elif isinstance(value1, Model):
+            assert value1 is not value2
+        elif isinstance(value1, Time):
+            assert value1 is not value2
+            assert value1 == value2
+        elif isinstance(value1, u.Quantity | Table):
+            assert value1 is not value2
+            assert (value1 == value2).all()
+        elif isinstance(value1, WCS):
             assert value1 is not value2
         else:
             # Hashable objects cannot be copied as they are immutable.
@@ -125,15 +146,15 @@ def wraps_hashable(node):
     """
     Determine if the node wraps only hashable objects.
     """
-    __tracebackhide__ = True
+    # __tracebackhide__ = True
 
-    if isinstance(node, TaggedObjectNode):
+    if isinstance(node, DNode):
         return all(_wraps_hashable(value) for value in node.values())
 
-    elif isinstance(node, TaggedListNode):
+    elif isinstance(node, LNode):
         return all(_wraps_hashable(value) for value in node)
 
-    elif isinstance(node, TaggedScalarNode):
+    elif isinstance(node, SchemaScalarNode):
         return _wraps_hashable(node.__class__.__bases__[0](node))
 
     else:
@@ -141,7 +162,7 @@ def wraps_hashable(node):
 
 
 def _wraps_hashable(value):
-    if isinstance(value, TaggedObjectNode | TaggedListNode | TaggedScalarNode):
+    if isinstance(value, DNode | LNode):
         return wraps_hashable(value)
 
     # Immutable types are usually hashable

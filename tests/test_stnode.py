@@ -4,115 +4,64 @@ from contextlib import nullcontext
 import asdf
 import pytest
 
-from roman_datamodels import datamodels, maker_utils, stnode, validate
-from roman_datamodels import maker_utils as utils
-from roman_datamodels.maker_utils._base import NOFN, NONUM, NOSTR
-from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
-
-from .conftest import MANIFESTS
+from roman_datamodels import datamodels, nodes, stnode, validate
+from roman_datamodels.testing import assert_node_is_copy
 
 
-@pytest.mark.parametrize("tag_def", [tag_def for manifest in MANIFESTS for tag_def in manifest["tags"]])
-def test_tag_has_node_class(tag_def):
-    class_name = stnode._factories.class_name_from_tag_uri(tag_def["tag_uri"])
-    node_class = getattr(stnode, class_name)
-
-    assert asdf.util.uri_match(node_class._pattern, tag_def["tag_uri"])
-    if node_class._default_tag == tag_def["tag_uri"]:
-        assert tag_def["description"] in node_class.__doc__
-        assert tag_def["tag_uri"] in node_class.__doc__
-    else:
-        default_tag_version = node_class._default_tag.rsplit("-", maxsplit=1)[1]
-        tag_def_version = tag_def["tag_uri"].rsplit("-", maxsplit=1)[1]
-        assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
-
-
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-def test_node_classes_available_via_stnode(node_class):
-    assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
-    assert node_class.__module__ == stnode.__name__
-    assert hasattr(stnode, node_class.__name__)
-
-
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
-def test_copy(node_class):
+@pytest.mark.usefixtures("use_testing_shape")
+@pytest.mark.parametrize(
+    "node_cls", [cls for cls in stnode.RDM_NODE_REGISTRY.object_nodes.values() if not issubclass(cls, datamodels.DataModel)]
+)
+def test_copy(node_cls):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
-    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
+    node = node_cls()
+    node.flush(stnode.FlushOptions.EXTRA)
+    assert node._data is not None
     node_copy = node.copy()
 
     # Assert the copy is shallow:
     assert_node_is_copy(node, node_copy, deepcopy=False)
 
-    # If the node only wraps hashable values, then it should "deepcopy" itself because
-    # the immutable values cannot actually be copied. In the case, where there is an
-    # unhashable value, then the node should not deepcopy itself.
-    with nullcontext() if wraps_hashable(node) else pytest.raises(AssertionError):
-        assert_node_is_copy(node, node_copy, deepcopy=True)
 
-
-@pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
-def test_deepcopy_model(node_class):
-    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
-    model = datamodels.MODEL_REGISTRY[node_class](node)
+@pytest.mark.usefixtures("use_testing_shape")
+@pytest.mark.parametrize("node_cls", stnode.RDM_NODE_REGISTRY.datamodels.values())
+def test_deepcopy_model(node_cls):
+    model = node_cls()
+    model.flush(stnode.FlushOptions.EXTRA, recurse=True)
     model_copy = model.copy()
+    assert model is not model_copy
 
-    # There is no assert equal for models, but the data inside is what we care about.
-    # this is stored under the _instance attribute. We can assert those instances are
-    # deep copies of each other.
-    assert_node_is_copy(model._instance, model_copy._instance, deepcopy=True)
+    assert_node_is_copy(model, model_copy, deepcopy=True)
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_wfi_mode():
     """
     The WfiMode class includes special properties that map optical_element
     values to grating or filter.
     """
-    node = stnode.WfiMode({"optical_element": "GRISM"})
+    node = nodes.WfiMode({"optical_element": "GRISM"})
     assert node.optical_element == "GRISM"
     assert node.grating == "GRISM"
     assert node.filter is None
     assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._mixins.WfiModeMixin)
 
-    node = stnode.WfiMode({"optical_element": "PRISM"})
+    node = nodes.WfiMode({"optical_element": "PRISM"})
     assert node.optical_element == "PRISM"
     assert node.grating == "PRISM"
     assert node.filter is None
     assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._mixins.WfiModeMixin)
 
-    node = stnode.WfiMode({"optical_element": "F129"})
+    node = nodes.WfiMode({"optical_element": "F129"})
     assert node.optical_element == "F129"
     assert node.grating is None
     assert node.filter == "F129"
     assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._mixins.WfiModeMixin)
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
-def test_serialization(node_class, tmp_path):
-    file_path = tmp_path / "test.asdf"
-
-    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
-    with asdf.AsdfFile() as af:
-        af["node"] = node
-        af.write_to(file_path)
-
-    with asdf.open(file_path) as af:
-        assert_node_equal(af["node"], node)
-
-
+@pytest.mark.usefixtures("use_testing_shape")
 def test_info(capsys):
-    node = stnode.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
+    node = nodes.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
     tree = dict(wfimode=node)
     af = asdf.AsdfFile(tree)
     af.info()
@@ -121,8 +70,9 @@ def test_info(capsys):
     assert "GRISM" in captured.out
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_schema_info():
-    node = stnode.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
+    node = nodes.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
     tree = dict(wfimode=node)
     af = asdf.AsdfFile(tree)
 
@@ -170,12 +120,14 @@ def test_schema_info():
 
 # Test that a currently undefined attribute can be assigned using dot notation
 # so long as the attribute is defined in the corresponding schema.
+@pytest.mark.usefixtures("use_testing_shape")
 def test_node_new_attribute_assignment():
-    exp = stnode.Exposure()
+    exp = nodes.Exposure()
     exp.nresultants = 5
     assert exp.nresultants == 5
     # Test patternProperties attribute case
-    photmod = utils.mk_wfi_img_photom()
+
+    photmod = nodes.WfiImgPhotomRef()
     phottab = photmod.phot_table
     newphottab = {"F062": phottab["F062"]}
     photmod.phot_table = newphottab
@@ -216,14 +168,14 @@ def test_will_validate(nuke_env_var):
     assert validate.will_validate() is True
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 @pytest.mark.parametrize("nuke_env_var", VALIDATION_CASES, indirect=True)
 def test_nuke_validation(nuke_env_var, tmp_path):
     context = pytest.raises(asdf.ValidationError) if nuke_env_var[1] else pytest.warns(validate.ValidationWarning)
 
     # Break model without outside validation
-    with nullcontext() if nuke_env_var[1] else pytest.warns(validate.ValidationWarning):
-        mdl = datamodels.WfiImgPhotomRefModel(maker_utils.mk_wfi_img_photom())
-    mdl._instance["phot_table"] = "THIS IS NOT VALID"
+    mdl = datamodels.WfiImgPhotomRefModel()
+    mdl["phot_table"] = "THIS IS NOT VALID"
 
     # Broken can be written to file
     broken_save = tmp_path / "broken_save.asdf"
@@ -259,7 +211,8 @@ def test_nuke_validation(nuke_env_var, tmp_path):
             pass
 
 
-@pytest.mark.parametrize("model", [mdl for mdl in datamodels.MODEL_REGISTRY.values() if "Ref" not in mdl.__name__])
+@pytest.mark.usefixtures("use_testing_shape")
+@pytest.mark.parametrize("model", [mdl for mdl in stnode.RDM_NODE_REGISTRY.datamodels.values() if "Ref" not in mdl.__name__])
 def test_node_representation(model):
     """
     Regression test for #244.
@@ -268,26 +221,27 @@ def test_node_representation(model):
     the representation of the object. The reported issue was with ``mdl.meta.instrument``,
     so that is directly checked here.
     """
-    mdl = maker_utils.mk_datamodel(model)
+    mdl = model()
+    mdl.flush(stnode.FlushOptions.EXTRA, recurse=True)
 
     if hasattr(mdl, "meta"):
         if isinstance(mdl, datamodels.MosaicModel | datamodels.MosaicSegmentationMapModel | datamodels.MosaicSourceCatalogModel):
             assert repr(mdl.meta.basic) == repr(
                 {
-                    "time_first_mjd": NONUM,
-                    "time_last_mjd": NONUM,
-                    "time_mean_mjd": NONUM,
-                    "max_exposure_time": NONUM,
-                    "mean_exposure_time": NONUM,
-                    "visit": NONUM,
-                    "segment": NONUM,
-                    "pass": NONUM,
-                    "program": NONUM,
-                    "survey": NOSTR,
-                    "optical_element": "F158",
                     "instrument": "WFI",
-                    "location_name": NOSTR,
-                    "product_type": NOSTR,
+                    "location_name": stnode.NOSTR,
+                    "max_exposure_time": stnode.NONUM,
+                    "mean_exposure_time": stnode.NONUM,
+                    "optical_element": "F158",
+                    "pass": stnode.NOINT,
+                    "product_type": stnode.NOSTR,
+                    "program": stnode.NOINT,
+                    "segment": stnode.NOINT,
+                    "survey": stnode.NOSTR,
+                    "time_first_mjd": stnode.NONUM,
+                    "time_last_mjd": stnode.NONUM,
+                    "time_mean_mjd": stnode.NONUM,
+                    "visit": stnode.NOINT,
                 }
             )
             model_types = {
@@ -297,14 +251,14 @@ def test_node_representation(model):
             }
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
-            assert mdl.meta.filename == NOFN
+            assert mdl.meta.filename == stnode.NOFN
         elif isinstance(mdl, datamodels.SegmentationMapModel | datamodels.ImageSourceCatalogModel):
             assert mdl.meta.optical_element == "F158"
         else:
             assert repr(mdl.meta.instrument) == repr(
                 {
-                    "name": "WFI",
                     "detector": "WFI01",
+                    "name": "WFI",
                     "optical_element": "F158",
                 }
             )

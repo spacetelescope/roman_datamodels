@@ -5,7 +5,6 @@ import pytest
 
 from roman_datamodels import datamodels as rdm
 from roman_datamodels import dqflags
-from roman_datamodels.maker_utils import mk_datamodel
 
 
 def _is_power_of_two(x):
@@ -44,11 +43,13 @@ def test_pixel_flags(flag):
         assert _is_power_of_two(flag.value)
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 @pytest.mark.parametrize("flag", dqflags.pixel)
 def test_write_pixel_flags(tmp_path, flag):
     filename = tmp_path / "test_dq.asdf"
 
-    ramp = mk_datamodel(rdm.RampModel, shape=(2, 8, 8))
+    # ramp = mk_datamodel(rdm.RampModel, shape=(2, 8, 8))
+    ramp = rdm.RampModel()
 
     # Set all pixels to the flag value
     ramp.pixeldq[...] = flag
@@ -88,11 +89,12 @@ def test_group_flags(flag):
     assert dqflags.pixel[flag.name] == flag
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 @pytest.mark.parametrize("flag", dqflags.group)
 def test_write_group_flags(tmp_path, flag):
     filename = tmp_path / "test_dq.asdf"
 
-    ramp = mk_datamodel(rdm.RampModel, shape=(2, 8, 8))
+    ramp = rdm.RampModel()
 
     # Set all pixels to the flag value
     ramp.groupdq[...] = flag

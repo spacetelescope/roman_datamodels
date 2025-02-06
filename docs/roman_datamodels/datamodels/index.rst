@@ -5,7 +5,7 @@ Data Models
 ===========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
    models.rst
    developer_api.rst

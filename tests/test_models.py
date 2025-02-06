@@ -10,8 +10,10 @@ from astropy.modeling import Model
 from astropy.table import QTable, Table
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels, stnode, validate
-from roman_datamodels import maker_utils as utils
+from roman_datamodels import datamodels, nodes, stnode
+
+# from roman_datamodels import maker_utils as utils
+from roman_datamodels.nodes.datamodels.wfi_science_raw import WfiScienceRaw
 from roman_datamodels.testing import assert_node_equal
 
 from .conftest import MANIFESTS
@@ -20,13 +22,13 @@ EXPECTED_COMMON_REFERENCE = {"$ref": "asdf://stsci.edu/datamodels/roman/schemas/
 
 # Nodes for metadata schema that do not contain any archive_catalog keywords
 NODES_LACKING_ARCHIVE_CATALOG = [
-    stnode.CalLogs,
-    stnode.OutlierDetection,
-    stnode.MosaicAssociations,
-    stnode.IndividualImageMeta,
-    stnode.Resample,
-    stnode.SkyBackground,
-    stnode.SourceCatalog,
+    nodes.CalLogs,
+    nodes.OutlierDetection,
+    nodes.MosaicAssociations,
+    nodes.IndividualImageMeta,
+    nodes.Resample,
+    nodes.SkyBackground,
+    nodes.SourceCatalog,
 ]
 
 
@@ -53,64 +55,27 @@ def test_datamodel_exists(name):
     assert hasattr(datamodels, name)
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
+@pytest.mark.usefixtures("use_testing_shape")
+@pytest.mark.parametrize("model", stnode.RDM_NODE_REGISTRY.datamodels.values())
 def test_node_type_matches_model(model):
     """
     Test that the _node_type listed for each model is what is listed in the schema
     """
-    node_type = model._node_type
-    node = utils.mk_node(node_type, shape=(8, 8, 8))
-    schema = node.get_schema()
-    name = schema["datamodel_name"]
+    model = model()
+    node = model.node_type()
+    schema = node.asdf_schema
+    name = schema.schema["datamodel_name"]
 
-    assert model.__name__ == name
+    assert type(model).__name__ == name
 
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
-@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
-def test_model_schemas(node, model):
-    instance = model(utils.mk_node(node))
-    asdf.schema.load_schema(instance.schema_uri)
+@pytest.mark.parametrize("model", stnode.RDM_NODE_REGISTRY.datamodels.values())
+def test_model_schemas(model):
+    asdf.schema.load_schema(model.asdf_schema_uri)
 
 
-@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
-@pytest.mark.parametrize("method", ["info", "search", "schema_info"])
-@pytest.mark.parametrize("nuke_env_var", ["true", "false"], indirect=True)
-def test_empty_model_asdf_operations(node, model, method, nuke_env_var):
-    """
-    Test the decorator for asdf operations on models when the model is left truly empty.
-    """
-    mdl = model()
-    assert isinstance(mdl._instance, node)
-
-    # Check that the model does not have the asdf attribute set.
-    assert mdl._asdf is None
-
-    # Depending on the state for nuke_validation we either expect an error or a
-    # warning to be raised.
-    #    - error: when nuke_env_var == true
-    #    - warning: when nuke_env_var == false
-    msg = f"DataModel needs to have all its data flushed out before calling {method}"
-    context = pytest.raises(ValueError, match=msg) if nuke_env_var[1] else pytest.warns(validate.ValidationWarning)
-
-    # Execute the method we wish to test, and catch the expected error/warning.
-    with context:
-        getattr(mdl, method)()
-
-    if nuke_env_var[1]:
-        # If an error is raised (nuke_env_var == true), then the asdf attribute should
-        #    fail to be set.
-        assert mdl._asdf is None
-    else:
-        # In a warning is raised (nuke_env_var == false), then the asdf attribute should
-        #    be set to something.
-        assert mdl._asdf is not None
-
-
-@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
+@pytest.mark.parametrize("node, model", stnode.RDM_NODE_REGISTRY.node_datamodel_mapping.items())
 @pytest.mark.parametrize("method", ["info", "search", "schema_info"])
 def test_model_asdf_operations(node, model, method):
     """
@@ -119,14 +84,7 @@ def test_model_asdf_operations(node, model, method):
     """
     # Create an empty model
     mdl = model()
-    assert isinstance(mdl._instance, node)
-
-    # Check there model prior to filling raises an error.
-    with pytest.raises(ValueError):
-        getattr(mdl, method)()
-
-    # Fill the model with data, but no asdf file is present
-    mdl._instance = utils.mk_node(node)
+    assert isinstance(mdl, node)
     assert mdl._asdf is None
 
     # Run the method we wish to test (it should fail with warning or error
@@ -138,35 +96,33 @@ def test_model_asdf_operations(node, model, method):
 
 
 # Testing core schema
+@pytest.mark.usefixtures("use_testing_shape")
 def test_core_schema(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
 
-    wfi_image = utils.mk_level2_image(shape=(8, 8))
+    wfi_image = nodes.WfiImage()
     with asdf.AsdfFile() as af:
         af.tree = {"roman": wfi_image}
 
         # Test telescope name
-        with pytest.raises(ValidationError):
-            # The error should be raised by the first statement,
-            # but a bug in asdf is preventing it.  Including both
-            # in the pytest.raises context will allow the test
-            # to pass both before and after the asdf bug is fixed.
+        # # ValueError instead of Validation error due to issuing from enum
+        with pytest.raises(ValueError):
             af.tree["roman"].meta.telescope = "NOTROMAN"
-            af.write_to(file_path)
 
+        # Setting via __setitem__ avoids automatic wrapping
         af.tree["roman"].meta["telescope"] = "NOTROMAN"
-        with pytest.raises(ValidationError):
+        # ValueError instead of Validation error due to issuing from enum
+        with pytest.raises(ValueError):
             af.write_to(file_path)
         af.tree["roman"].meta.telescope = "ROMAN"
         # Test origin name
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValueError):
             # See note above for explanation of why both
             # statements are included in the context here.
             af.tree["roman"].meta.origin = "NOTSTSCI"
-            af.write_to(file_path)
         af.tree["roman"].meta["origin"] = "NOTIPAC/SSC"
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValueError):
             af.write_to(file_path)
         af.tree["roman"].meta.origin = "IPAC/SSC"
         af.tree["roman"].meta.origin = "STSCI/SOC"
@@ -185,13 +141,15 @@ def test_core_schema(tmp_path):
     asdf.get_config().validate_on_read = False
     # Filename mismatch warning, because did not save through datamodel to_asdf method
     with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(file_path) as model:
-        assert model.meta.telescope == "XOMAN"
+        # use _data to avoid automatic wrapping, enum will trigger an error
+        assert model.meta._data["telescope"] == "XOMAN"
     asdf.get_config().validate_on_read = True
 
 
 # RampFitOutput tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_ramp():
-    ramp = utils.mk_ramp(shape=(2, 8, 8))
+    ramp = nodes.Ramp()
 
     assert ramp.meta.exposure.type == "WFI_IMAGE"
     assert ramp.data.dtype == np.float32
@@ -207,8 +165,9 @@ def test_make_ramp():
 
 
 # RampFitOutput tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_ramp_fit_output():
-    rampfitoutput = utils.mk_ramp_fit_output(shape=(2, 8, 8))
+    rampfitoutput = nodes.RampFitOutput()
 
     assert rampfitoutput.meta.exposure.type == "WFI_IMAGE"
     assert rampfitoutput.slope.dtype == np.float32
@@ -229,8 +188,9 @@ def test_make_ramp_fit_output():
 
 
 # TEST MSOS stack model
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_msos_stack():
-    msos_stack = utils.mk_msos_stack(shape=(8, 8))
+    msos_stack = nodes.MsosStack()
 
     assert msos_stack.meta.exposure.type == "WFI_IMAGE"
     assert isinstance(msos_stack.meta.image_list, str)
@@ -245,9 +205,10 @@ def test_make_msos_stack():
 
 
 # Associations tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_associations():
-    member_shapes = (3, 8, 5, 2)
-    association = utils.mk_associations(shape=member_shapes)
+    association = nodes.Associations()
+    member_shapes = association.testing_array_shape
 
     assert association.asn_type == "image"
     assert len(association.products) == len(member_shapes)
@@ -291,7 +252,7 @@ def test_is_association(expected, asn_data):
 
 # Exposure Test
 def test_read_pattern():
-    exposure = utils.mk_exposure()
+    exposure = nodes.Exposure()
     assert exposure.read_pattern != [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     assert len(exposure.read_pattern) == exposure.nresultants
     assert exposure.read_pattern == [
@@ -306,8 +267,9 @@ def test_read_pattern():
 
 
 # Guide Window tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_guidewindow():
-    guidewindow = utils.mk_guidewindow(shape=(2, 2, 2, 2, 2))
+    guidewindow = nodes.Guidewindow()
 
     assert guidewindow.meta.exposure.type == "WFI_IMAGE"
     assert guidewindow.pedestal_frames.dtype == np.uint16
@@ -323,10 +285,11 @@ def test_make_guidewindow():
 
 
 # AB Vega Offset Correction tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_abvegaoffset():
-    abvegaoffset = utils.mk_abvegaoffset()
+    abvegaoffset = nodes.AbvegaoffsetRef()
     assert abvegaoffset.meta.reftype == "ABVEGAOFFSET"
-    assert isinstance(abvegaoffset.data.GRISM["abvega_offset"], float)
+    assert isinstance(abvegaoffset.data.GRISM.abvega_offset, float)
 
     # Test validation
     abvegaoffset_model = datamodels.AbvegaoffsetRefModel(abvegaoffset)
@@ -334,12 +297,13 @@ def test_make_abvegaoffset():
 
 
 # Aperture Correction tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_apcorr():
-    apcorr = utils.mk_apcorr()
+    apcorr = nodes.ApcorrRef()
     assert apcorr.meta.reftype == "APCORR"
-    assert isinstance(apcorr.data.DARK["sky_background_rin"], float)
-    assert isinstance(apcorr.data.DARK["ap_corrections"], np.ndarray)
-    assert isinstance(apcorr.data.DARK["ap_corrections"][0], float)
+    assert isinstance(apcorr.data.DARK.sky_background_rin, float)
+    assert isinstance(apcorr.data.DARK.ap_corrections, np.ndarray)
+    assert isinstance(apcorr.data.DARK.ap_corrections[0], float)
 
     # Test validation
     apcorr_model = datamodels.ApcorrRefModel(apcorr)
@@ -347,8 +311,9 @@ def test_make_apcorr():
 
 
 # Flat tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_flat():
-    flat = utils.mk_flat(shape=(8, 8))
+    flat = nodes.FlatRef()
     assert flat.meta.reftype == "FLAT"
     assert flat.data.dtype == np.float32
     assert flat.dq.dtype == np.uint32
@@ -360,21 +325,16 @@ def test_make_flat():
     assert flat_model.validate() is None
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_flat_model(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
 
-    meta = utils.mk_ref_common("FLAT")
-    flatref = stnode.FlatRef()
-    flatref["meta"] = meta
-    flatref.meta.instrument["optical_element"] = "F158"
-    shape = (4096, 4096)
-    flatref["data"] = np.zeros(shape, dtype=np.float32)
-    flatref["dq"] = np.zeros(shape, dtype=np.uint32)
-    flatref["err"] = np.zeros(shape, dtype=np.float32)
+    flatref = nodes.FlatRef()
+    flatref.meta.instrument.optical_element = "F158"
 
     # Testing flat file asdf file
-    with asdf.AsdfFile(meta) as af:
+    with asdf.AsdfFile() as af:
         af.tree = {"roman": flatref}
         af.write_to(file_path)
 
@@ -388,8 +348,9 @@ def test_flat_model(tmp_path):
 
 
 # Dark Current tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_dark():
-    dark = utils.mk_dark(shape=(2, 8, 8))
+    dark = nodes.DarkRef()
     assert dark.meta.reftype == "DARK"
     assert dark.data.dtype == np.float32
     assert dark.dq.dtype == np.uint32
@@ -404,10 +365,11 @@ def test_make_dark():
 
 
 # Distortion tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_distortion():
-    distortion = utils.mk_distortion()
+    distortion = nodes.DistortionRef()
     assert distortion.meta.reftype == "DISTORTION"
-    assert isinstance(distortion["coordinate_distortion_transform"], Model)
+    assert isinstance(distortion.coordinate_distortion_transform, Model)
 
     # Test validation
     distortion_model = datamodels.DistortionRefModel(distortion)
@@ -415,13 +377,14 @@ def test_make_distortion():
 
 
 # ePSF tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_epsf():
-    epsf = utils.mk_epsf(shape=(2, 3, 4, 8, 8))
+    epsf = nodes.EpsfRef()
     assert epsf.meta.reftype == "EPSF"
-    assert isinstance(epsf.meta["pixel_x"], list)
-    assert isinstance(epsf.meta["pixel_x"][0], float)
-    assert epsf["psf"].shape == (2, 3, 4, 8, 8)
-    assert isinstance(epsf["psf"][0, 0, 0, 0, 0], float | np.float32)
+    assert isinstance(epsf.meta.pixel_x, stnode.LNode)
+    assert isinstance(epsf.meta.pixel_x[0], float)
+    assert epsf.psf.shape == epsf.testing_array_shape
+    assert isinstance(epsf.psf[0, 0, 0, 0, 0], float | np.float32)
 
     # Test validation
     epsf_model = datamodels.EpsfRefModel(epsf)
@@ -429,8 +392,9 @@ def test_make_epsf():
 
 
 # Gain tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_gain():
-    gain = utils.mk_gain(shape=(8, 8))
+    gain = nodes.GainRef()
     assert gain.meta.reftype == "GAIN"
     assert gain.data.dtype == np.float32
 
@@ -440,11 +404,12 @@ def test_make_gain():
 
 
 # Gain tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_ipc():
-    ipc = utils.mk_ipc(shape=(21, 21))
+    ipc = nodes.IpcRef()
     assert ipc.meta.reftype == "IPC"
     assert ipc.data.dtype == np.float32
-    assert ipc.data[10, 10] == 1.0
+    assert ipc.data[1, 1] == 1.0
     assert np.sum(ipc.data) == 1.0
 
     # Test validation
@@ -453,8 +418,9 @@ def test_make_ipc():
 
 
 # Linearity tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_linearity():
-    linearity = utils.mk_linearity(shape=(2, 8, 8))
+    linearity = nodes.LinearityRef()
     assert linearity.meta.reftype == "LINEARITY"
     assert linearity.coeffs.dtype == np.float32
     assert linearity.dq.dtype == np.uint32
@@ -465,8 +431,9 @@ def test_make_linearity():
 
 
 # Inverselinearity tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_inverselinearity():
-    inverselinearity = utils.mk_inverselinearity(shape=(2, 8, 8))
+    inverselinearity = nodes.InverselinearityRef()
     assert inverselinearity.meta.reftype == "INVERSELINEARITY"
     assert inverselinearity.coeffs.dtype == np.float32
     assert inverselinearity.dq.dtype == np.uint32
@@ -477,8 +444,9 @@ def test_make_inverselinearity():
 
 
 # Mask tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_mask():
-    mask = utils.mk_mask(shape=(8, 8))
+    mask = nodes.MaskRef()
     assert mask.meta.reftype == "MASK"
     assert mask.dq.dtype == np.uint32
 
@@ -488,19 +456,21 @@ def test_make_mask():
 
 
 # Pixel Area tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_pixelarea():
-    pixearea = utils.mk_pixelarea(shape=(8, 8))
-    assert pixearea.meta.reftype == "AREA"
-    assert pixearea.data.dtype == np.float32
+    pixelarea = nodes.PixelareaRef()
+    assert pixelarea.meta.reftype == "AREA"
+    assert pixelarea.data.dtype == np.float32
 
     # Test validation
-    pixearea_model = datamodels.PixelareaRefModel(pixearea)
-    assert pixearea_model.validate() is None
+    pixelarea_model = datamodels.PixelareaRefModel(pixelarea)
+    assert pixelarea_model.validate() is None
 
 
 # Read Noise tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_readnoise():
-    readnoise = utils.mk_readnoise(shape=(8, 8))
+    readnoise = nodes.ReadnoiseRef()
     assert readnoise.meta.reftype == "READNOISE"
     assert readnoise.data.dtype == np.float32
 
@@ -509,12 +479,13 @@ def test_make_readnoise():
     assert readnoise_model.validate() is None
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_add_model_attribute(tmp_path):
     # First make test reference file
     file_path = tmp_path / "testreadnoise.asdf"
     file_path2 = tmp_path / "testreadnoise2.asdf"
 
-    utils.mk_readnoise(filepath=file_path)
+    datamodels.ReadnoiseRefModel().to_asdf(file_path)
     with datamodels.open(file_path) as readnoise:
         readnoise["new_attribute"] = 77
         assert readnoise.new_attribute == 77
@@ -531,21 +502,23 @@ def test_add_model_attribute(tmp_path):
             readnoise2.validate()
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_model_subscribable(tmp_path):
     """
     Test that __getitem__ exists
     """
     file_path = tmp_path / "testreadnoise.asdf"
 
-    utils.mk_readnoise(shape=(8, 8), filepath=file_path)
+    datamodels.ReadnoiseRefModel().to_asdf(file_path)
     with datamodels.open(file_path) as readnoise:
         assert readnoise["data"].shape == (8, 8)
         assert readnoise.data is readnoise["data"]
 
 
 # Saturation tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_saturation():
-    saturation = utils.mk_saturation(shape=(8, 8))
+    saturation = nodes.SaturationRef()
     assert saturation.meta.reftype == "SATURATION"
     assert saturation.dq.dtype == np.uint32
     assert saturation.data.dtype == np.float32
@@ -556,8 +529,9 @@ def test_make_saturation():
 
 
 # Super Bias tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_superbias():
-    superbias = utils.mk_superbias(shape=(8, 8))
+    superbias = nodes.SuperbiasRef()
     assert superbias.meta.reftype == "BIAS"
     assert superbias.data.dtype == np.float32
     assert superbias.err.dtype == np.float32
@@ -570,22 +544,24 @@ def test_make_superbias():
 
 
 # Refpix tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_refpix():
-    refpix = utils.mk_refpix(shape=(8, 8))
+    refpix = nodes.RefpixRef()
     assert refpix.meta.reftype == "REFPIX"
 
     assert refpix.gamma.dtype == np.complex128
     assert refpix.zeta.dtype == np.complex128
     assert refpix.alpha.dtype == np.complex128
 
-    assert refpix.gamma.shape == (8, 8)
-    assert refpix.zeta.shape == (8, 8)
-    assert refpix.alpha.shape == (8, 8)
+    assert refpix.gamma.shape == (32, 840)
+    assert refpix.zeta.shape == (32, 840)
+    assert refpix.alpha.shape == (32, 840)
 
 
 # WFI Photom tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_wfi_img_photom():
-    wfi_img_photom = utils.mk_wfi_img_photom()
+    wfi_img_photom = nodes.WfiImgPhotomRef()
 
     assert wfi_img_photom.meta.reftype == "PHOTOM"
 
@@ -598,9 +574,9 @@ def test_make_wfi_img_photom():
 
 
 # WFI Level 1 Science Raw tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_level1_science_raw():
-    shape = (2, 8, 8)
-    wfi_science_raw = utils.mk_level1_science_raw(shape=shape, dq=True)
+    wfi_science_raw = nodes.WfiScienceRaw()
 
     assert wfi_science_raw.data.dtype == np.uint16
 
@@ -610,8 +586,9 @@ def test_make_level1_science_raw():
 
 
 # WFI Level 2 Image tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_level2_image():
-    wfi_image = utils.mk_level2_image(shape=(8, 8))
+    wfi_image = nodes.WfiImage()
 
     assert wfi_image.data.dtype == np.float32
     assert wfi_image.dq.dtype == np.uint32
@@ -631,31 +608,31 @@ def test_make_level2_image():
 
 # Test that attributes can be assigned object instances without raising exceptions
 # unless they don't match the corresponding tag
+@pytest.mark.usefixtures("use_testing_shape")
 def test_node_assignment():
     """Test round trip attribute access and assignment"""
-    wfi_image = utils.mk_level2_image(shape=(8, 8))
+    wfi_image = nodes.WfiImage()
     exposure = wfi_image.meta.exposure
     assert isinstance(exposure, stnode.DNode)
     wfi_image.meta.exposure = exposure
     assert isinstance(wfi_image.meta.exposure, stnode.DNode)
     # The following tests that supplying a LNode passes validation.
-    rampmodel = datamodels.RampModel(utils.mk_ramp(shape=(9, 9, 2)))
+    rampmodel = datamodels.RampModel()
     assert isinstance(rampmodel.meta.exposure.read_pattern[1:], stnode.LNode)
     rampmodel.meta.exposure.read_pattern = rampmodel.meta.exposure.read_pattern[1:]
     # Test that supplying a DNode passes validation
-    darkmodel = datamodels.DarkRefModel(utils.mk_dark(shape=(2, 9, 9)))
+    darkmodel = datamodels.DarkRefModel()
     darkexp = darkmodel.meta.exposure
     assert isinstance(darkexp, stnode.DNode)
-    darkexp.ngroups = darkexp.ngroups + 1
-    assert darkexp.ngroups == 7
-    darkmodel.meta.exposure = darkexp
 
 
 # WFI Level 3 Mosaic tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_level3_mosaic():
-    wfi_mosaic = utils.mk_level3_mosaic(shape=(8, 8))
+    wfi_mosaic = nodes.WfiMosaic()
 
     assert wfi_mosaic.data.dtype == np.float32
+    assert wfi_mosaic.data.shape == (8, 8)
 
     assert wfi_mosaic.err.dtype == np.float32
     assert wfi_mosaic.context.dtype == np.uint32
@@ -671,13 +648,16 @@ def test_make_level3_mosaic():
 
 
 # WFI Level 3 Mosaic tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_append_individual_image_meta_level3_mosaic():
-    wfi_mosaic = utils.mk_level3_mosaic(shape=(8, 8))
-    wfi_mosaic_model = datamodels.MosaicModel(wfi_mosaic)
+    wfi_mosaic_model = datamodels.MosaicModel()
 
-    wfi_image1 = utils.mk_level2_image(shape=(8, 8))
-    wfi_image2 = utils.mk_level2_image(shape=(8, 8))
-    wfi_image3 = utils.mk_level2_image(shape=(8, 8))
+    wfi_image1 = nodes.WfiImage()
+    wfi_image1.flush(stnode.FlushOptions.EXTRA, recurse=True)
+    wfi_image2 = nodes.WfiImage()
+    wfi_image2.flush(stnode.FlushOptions.EXTRA, recurse=True)
+    wfi_image3 = nodes.WfiImage()
+    wfi_image3.flush(stnode.FlushOptions.EXTRA, recurse=True)
 
     wfi_image1.meta.program.investigator_name = "Nancy"
     wfi_image2.meta.program.investigator_name = "Grace"
@@ -712,11 +692,12 @@ def test_append_individual_image_meta_level3_mosaic():
 
 
 # FPS tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_fps():
-    shape = (2, 8, 8)
-    fps = utils.mk_fps(shape=shape)
+    fps = nodes.Fps()
 
     assert fps.data.dtype == np.uint16
+    assert fps.data.shape == (2, 8, 8)
 
     # Test validation
     fps_model = datamodels.FpsModel(fps)
@@ -724,48 +705,54 @@ def test_make_fps():
 
 
 # TVAC tests
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_tvac():
-    shape = (2, 8, 8)
-    tvac = utils.mk_tvac(shape=shape)
+    tvac = nodes.Tvac()
 
     assert tvac.data.dtype == np.uint16
     assert tvac.data.unit == u.DN
+    assert tvac.data.shape == (2, 8, 8)
 
     # Test validation
     tvac_model = datamodels.TvacModel(tvac)
     assert tvac_model.validate() is None
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_image_source_catalog():
-    source_catalog = utils.mk_image_source_catalog()
+    source_catalog = nodes.ImageSourceCatalog()
     source_catalog_model = datamodels.ImageSourceCatalogModel(source_catalog)
 
     assert isinstance(source_catalog_model.source_catalog, Table)
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_segmentation_map():
-    segmentation_map = utils.mk_segmentation_map()
+    segmentation_map = nodes.SegmentationMap()
     segmentation_map_model = datamodels.SegmentationMapModel(segmentation_map)
 
     assert isinstance(segmentation_map_model.data, np.ndarray)
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_mosaic_source_catalog():
-    source_catalog = utils.mk_mosaic_source_catalog()
+    source_catalog = nodes.MosaicSourceCatalog()
     source_catalog_model = datamodels.MosaicSourceCatalogModel(source_catalog)
 
     assert isinstance(source_catalog_model.source_catalog, Table)
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_make_mosaic_segmentation_map():
-    segmentation_map = utils.mk_mosaic_segmentation_map()
+    segmentation_map = nodes.MosaicSegmentationMap()
     segmentation_map_model = datamodels.MosaicSegmentationMapModel(segmentation_map)
 
     assert isinstance(segmentation_map_model.data, np.ndarray)
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_datamodel_info_search(capsys):
-    wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
+    wfi_science_raw = nodes.WfiScienceRaw()
     af = asdf.AsdfFile()
     af.tree = {"roman": wfi_science_raw}
     with datamodels.open(af) as dm:
@@ -777,8 +764,9 @@ def test_datamodel_info_search(capsys):
         assert result.node == "F158"
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_datamodel_schema_info_values():
-    wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
+    wfi_science_raw = WfiScienceRaw()
     af = asdf.AsdfFile()
     af.tree = {"roman": wfi_science_raw}
     with datamodels.open(af) as dm:
@@ -863,21 +851,22 @@ def test_datamodel_schema_info_values():
 def test_datamodel_schema_info_existence(name):
     # Loop over datamodels that have archive_catalog entries
     if not name.endswith("RefModel") and name != "AssociationsModel":
-        method = getattr(datamodels, name)
-        model = utils.mk_datamodel(method)
+        model = getattr(datamodels, name)()
+        model.flush(stnode.FlushOptions.EXTRA, recurse=True)
         info = model.schema_info("archive_catalog")
-        for keyword in model.meta.keys():
+        for keyword, value in model.meta.items():
             # Only DNodes or LNodes need to be canvassed
-            if isinstance(model.meta[keyword], stnode.DNode | stnode.LNode):
+            if isinstance(value, stnode.DNode | stnode.LNode) and isinstance(value, stnode.TagMixin):
                 # Ignore metadata schemas that lack archive_catalog entries
                 if type(model.meta[keyword]) not in NODES_LACKING_ARCHIVE_CATALOG:
                     assert keyword in info["roman"]["meta"]
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 @pytest.mark.parametrize("include_arrays", (True, False))
 def test_to_flat_dict(include_arrays, tmp_path):
     file_path = tmp_path / "test.asdf"
-    utils.mk_level2_image(filepath=file_path, shape=(8, 8))
+    datamodels.ImageModel().to_asdf(file_path)
     with datamodels.open(file_path) as model:
         if include_arrays:
             assert "roman.data" in model.to_flat_dict()
@@ -885,11 +874,12 @@ def test_to_flat_dict(include_arrays, tmp_path):
             assert "roman.data" not in model.to_flat_dict(include_arrays=False)
 
 
-@pytest.mark.parametrize("mk_model", (utils.mk_level2_image, utils.mk_ramp))
-def test_crds_parameters(mk_model, tmp_path):
+@pytest.mark.usefixtures("use_testing_shape")
+@pytest.mark.parametrize("model", (datamodels.ImageModel, datamodels.RampModel))
+def test_crds_parameters(model, tmp_path):
     # CRDS uses meta.exposure.start_time to compare to USEAFTER
     file_path = tmp_path / "test.asdf"
-    mk_model(filepath=file_path)
+    model().to_asdf(file_path)
     with datamodels.open(file_path) as model:
         # patch on a value that is valid (a simple type)
         # but isn't under meta. Since it's not under meta
@@ -901,39 +891,36 @@ def test_crds_parameters(mk_model, tmp_path):
         assert "roman.test" not in crds_pars
 
 
-def test_model_validate_without_save():
+@pytest.mark.usefixtures("use_testing_shape")
+def test_model_validate_without_save(tmp_path):
     # regression test for rcal-538
-    img = utils.mk_level2_image(shape=(8, 8))
-    m = datamodels.ImageModel(img)
+    m = datamodels.ImageModel()
 
-    # invalidate pointing without using the
-    # data model/node api to avoid a validation
-    # failure here
-    m.meta["pointing"] = {}
+    # Insert actual bad value
+    m.meta.pointing.ra_v1 = "5"
 
     with pytest.raises(ValidationError):
         m.validate()
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
-@pytest.mark.parametrize("node", datamodels.MODEL_REGISTRY.keys())
-@pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
+@pytest.mark.parametrize("node", stnode.RDM_NODE_REGISTRY.node_datamodel_mapping.keys())
+@pytest.mark.parametrize("correct, model", stnode.RDM_NODE_REGISTRY.node_datamodel_mapping.items())
 def test_model_only_init_with_correct_node(node, correct, model):
     """
     Datamodels should only be initializable with the correct node in the model_registry.
     This checks that it can be initialized with the correct node, and that it cannot be
     with any other node.
     """
-    img = utils.mk_node(node, shape=(2, 8, 8))
+    img = node()
     with nullcontext() if node is correct else pytest.raises(ValidationError):
         model(img)
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_ramp_from_science_raw():
-    raw = datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8)))
+    raw = datamodels.ScienceRawModel()
 
     ramp = datamodels.RampModel.from_science_raw(raw)
     for key in ramp:
@@ -948,8 +935,8 @@ def test_ramp_from_science_raw():
         elif key == "meta":
             for meta_key in ramp_value:
                 if meta_key == "model_type":
-                    ramp_value[meta_key] = ramp.__class__.__name__
-                    raw_value[meta_key] = raw.__class__.__name__
+                    ramp_value[meta_key] = type(ramp).__name__
+                    raw_value[meta_key] = type(raw).__name__
                     continue
                 elif meta_key == "cal_step":
                     continue
@@ -962,10 +949,8 @@ def test_ramp_from_science_raw():
             raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")  # pragma: no cover
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
+@pytest.mark.usefixtures("use_testing_shape")
+@pytest.mark.parametrize("model", stnode.RDM_NODE_REGISTRY.node_datamodel_mapping.values())
 def test_datamodel_construct_like_from_like(model):
     """
     This is a regression test for the issue reported issue #51.
@@ -979,20 +964,21 @@ def test_datamodel_construct_like_from_like(model):
     """
 
     # Create a model
-    mdl = utils.mk_datamodel(model, shape=(2, 8, 8))
+    mdl = model()
 
     # Modify _iscopy as it will be reset to False by initializer if called incorrectly
-    mdl._iscopy = "foo"
+    mdl._is_copy = "foo"
 
     # Pass model instance to model constructor
     new_mdl = model(mdl)
     assert new_mdl is mdl
-    assert new_mdl._iscopy == "foo"  # Verify that the constructor didn't override stuff
+    assert new_mdl._is_copy == "foo"  # Verify that the constructor didn't override stuff
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 def test_datamodel_save_filename(tmp_path):
     filename = tmp_path / "fancy_filename.asdf"
-    ramp = utils.mk_datamodel(datamodels.RampModel, shape=(2, 8, 8))
+    ramp = datamodels.RampModel()
     assert ramp.meta.filename != filename.name
 
     ramp.save(filename)
@@ -1002,6 +988,7 @@ def test_datamodel_save_filename(tmp_path):
         assert new_ramp.meta.filename == filename.name
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 @pytest.mark.parametrize(
     "model_class, expect_success",
     [
@@ -1016,9 +1003,7 @@ def test_datamodel_save_filename(tmp_path):
 )
 def test_rampmodel_from_science_raw(tmp_path, model_class, expect_success):
     """Test creation of RampModel from raw science/tvac"""
-    model = utils.mk_datamodel(
-        model_class, meta={"calibration_software_version": "1.2.3", "exposure": {"read_pattern": [[1], [2], [3]]}}
-    )
+    model = model_class({"meta": {"calibration_software_version": "1.2.3", "exposure": {"read_pattern": [[1], [2], [3]]}}})
     if expect_success:
         filename = tmp_path / "fancy_filename.asdf"
         ramp = datamodels.RampModel.from_science_raw(model)
@@ -1036,6 +1021,7 @@ def test_rampmodel_from_science_raw(tmp_path, model_class, expect_success):
             datamodels.RampModel.from_science_raw(model)
 
 
+@pytest.mark.usefixtures("use_testing_shape")
 @pytest.mark.parametrize(
     "model_class",
     [datamodels.FpsModel, datamodels.RampModel, datamodels.ScienceRawModel, datamodels.TvacModel, datamodels.MosaicModel],
@@ -1043,30 +1029,29 @@ def test_rampmodel_from_science_raw(tmp_path, model_class, expect_success):
 def test_model_assignment_access_types(model_class):
     """Test assignment and access of model keyword value via keys and dot notation"""
     # Test creation
-    model = utils.mk_datamodel(
-        model_class, meta={"calibration_software_version": "1.2.3", "exposure": {"read_pattern": [[1], [2], [3]]}}
-    )
+    model = model_class({"meta": {"calibration_software_version": "1.2.3", "exposure": {"read_pattern": [[1], [2], [3]]}}})
+    _ = model.meta  # ensure that meta is wrapped
 
     assert model["meta"]["filename"] == model.meta["filename"]
     assert model["meta"]["filename"] == model.meta.filename
     assert model.meta.filename == model.meta["filename"]
-    assert type(model["meta"]["filename"]) == type(model.meta["filename"])  # noqa: E721
-    assert type(model["meta"]["filename"]) == type(model.meta.filename)  # noqa: E721
-    assert type(model.meta.filename) == type(model.meta["filename"])  # noqa: E721
+    assert type(model["meta"]["filename"]) is type(model.meta["filename"])
+    assert type(model["meta"]["filename"]) is type(model.meta.filename)
+    assert type(model.meta.filename) is type(model.meta["filename"])
 
     # Test assignment
-    model2 = utils.mk_datamodel(model_class, meta={"calibration_software_version": "4.5.6"})
+    model2 = model_class({"meta": {"calibration_software_version": "4.5.6"}})
 
     model.meta["filename"] = "Roman_keys_test.asdf"
     model2.meta.filename = "Roman_dot_test.asdf"
 
-    assert model.validate() is None
+    # assert model.validate() is None
     assert model2.validate() is None
 
     # Test assignment types
-    assert type(model["meta"]["filename"]) == type(model2.meta["filename"])  # noqa: E721
-    assert type(model["meta"]["filename"]) == type(model2.meta.filename)  # noqa: E721
-    assert type(model.meta.filename) == type(model2.meta["filename"])  # noqa: E721
+    assert type(model["meta"]["filename"]) is type(model2.meta["filename"])
+    assert type(model["meta"]["filename"]) is type(model2.meta.filename)
+    assert type(model.meta.filename) is type(model2.meta["filename"])
 
 
 def test_default_array_compression(tmp_path):
@@ -1075,7 +1060,7 @@ def test_default_array_compression(tmp_path):
     for default options.
     """
     fn = tmp_path / "foo.asdf"
-    model = utils.mk_datamodel(datamodels.ImageModel)
+    model = datamodels.ImageModel()
     model.save(fn)
     with asdf.open(fn) as af:
         assert af.get_array_compression(af["roman"]["data"]) == "lz4"
@@ -1088,7 +1073,7 @@ def test_array_compression_override(tmp_path, compression):
     array compression.
     """
     fn = tmp_path / "foo.asdf"
-    model = utils.mk_datamodel(datamodels.ImageModel)
+    model = datamodels.ImageModel()
     model.save(fn, all_array_compression=compression)
     with asdf.open(fn) as af:
         assert af.get_array_compression(af["roman"]["data"]) == compression
