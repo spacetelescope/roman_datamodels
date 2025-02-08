@@ -160,7 +160,11 @@ class ScienceRawModel(_RomanDataModel):
         # Define how to recursively copy all attributes.
         def node_update(raw, other):
             """Implement update to directly access each value"""
+            tvac = dict()
             for key in other.keys():
+                if key in ('statistics'):
+                    tvac[key] = other[key]
+                    continue
                 if key in raw:
                     if isinstance(raw[key], Mapping):
                         node_update(getattr(raw, key), getattr(other, key))
@@ -175,6 +179,10 @@ class ScienceRawModel(_RomanDataModel):
                         setattr(raw, key, value)
                 else:
                     raw[key] = other[key]
+            if tvac:
+                extras = raw.get('extras', dict())
+                extras['tvac'] = tvac
+                raw['extras'] = extras
 
         node_update(raw, model)
 
