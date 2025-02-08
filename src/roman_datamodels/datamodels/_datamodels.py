@@ -162,7 +162,7 @@ class ScienceRawModel(_RomanDataModel):
             """Implement update to directly access each value"""
             tvac = dict()
             for key in other.keys():
-                if key in ('statistics'):
+                if key in ("statistics"):
                     tvac[key] = other[key]
                     continue
                 if key in raw:
@@ -180,9 +180,9 @@ class ScienceRawModel(_RomanDataModel):
                 else:
                     raw[key] = other[key]
             if tvac:
-                extras = raw.get('extras', dict())
-                extras['tvac'] = tvac
-                raw['extras'] = extras
+                extras = raw.get("extras", dict())
+                extras["tvac"] = tvac
+                raw["extras"] = extras
 
         node_update(raw, model)
 
