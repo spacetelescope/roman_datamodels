@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import asdf
+import numpy as np
 
 from roman_datamodels import validate
 
@@ -21,6 +22,78 @@ class FilenameMismatchWarning(UserWarning):
     Warning when the filename in the meta attribute does not match the filename
     of the file being opened.
     """
+
+
+def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
+    """Copy node contents from an existing node to an existing node
+
+    How the copy occurs depends on existence of keys in `to_node`
+
+    If key exists in `to_node`, contents is converted from `from_node` stnode type to
+    the stnode type expected in order to preserve validation of the node.
+
+    If key only exists in `from_node`, the contents are copied as-is.
+
+    If key exists in the list `extras`, the contents are placed in the dict `["extras"]`.
+    if `extras_key` is given, then the sub-dictionary `["extras"][extras_key]`.
+    Extra keys are used to avoid collisions between node trees where the underlying structures are
+    completely different.
+
+    Keys in `ignore` are not considered.
+
+    Parameters
+    ----------
+    to_node : stnode
+        Node to receive the contents.
+
+    from_node : stnode
+        Node to copy from
+
+    extras : list-like
+        Keys that may create collisions between the two node trees. All such keys are placed
+        in the `extras` key. If `extras_key` is defined, the contents are placed in a subdict
+        of that name.
+
+    extras_key : str or None
+        See parameter `extras`.
+
+    ignore : list-like or None
+        Keys that should be completely ignored.
+    """
+    if extras is None:
+        extras = tuple()
+    new_extras = dict()
+    if ignore is None:
+        ignore = tuple()
+
+    for key in from_node.keys():
+        if key in ignore:
+            continue
+        if key in extras:
+            new_extras[key] = from_node[key]
+            continue
+        if key in to_node:
+            if isinstance(to_node[key], Mapping):
+                _node_update(getattr(to_node, key), getattr(from_node, key), extras=extras, extras_key=extras_key)
+            else:
+                if isinstance(to_node[key], list):
+                    value = getattr(from_node, key).data
+                elif isinstance(to_node[key], np.ndarray):
+                    value = getattr(from_node, key).astype(to_node[key].dtype)
+                    value = getattr(value, "value", value)
+                else:
+                    value = getattr(from_node, key)
+                setattr(to_node, key, value)
+        else:
+            to_node[key] = from_node[key]
+
+    if new_extras:
+        extras_node = to_node.get('extras', dict())
+        if extras_key:
+            extras_node[extras_key] = new_extras
+        else:
+            extras_node.update(new_extras)
+        to_node['extras'] = extras_node
 
 
 def _open_asdf(init, lazy_tree=True, **kwargs):
