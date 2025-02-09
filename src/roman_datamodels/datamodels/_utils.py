@@ -88,12 +88,12 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
             to_node[key] = from_node[key]
 
     if new_extras:
-        extras_node = to_node.get('extras', dict())
+        extras_node = to_node.get("extras", dict())
         if extras_key:
             extras_node[extras_key] = new_extras
         else:
             extras_node.update(new_extras)
-        to_node['extras'] = extras_node
+        to_node["extras"] = extras_node
 
 
 def _open_asdf(init, lazy_tree=True, **kwargs):

@@ -6,10 +6,7 @@ This module provides all the specific datamodels used by the Roman pipeline.
     from the schema manifest defined by RAD.
 """
 
-from collections.abc import Mapping
-
 import asdf
-import numpy as np
 from astropy.table import QTable
 
 from roman_datamodels import stnode
@@ -158,7 +155,7 @@ class ScienceRawModel(_RomanDataModel):
 
         raw = mk_level1_science_raw(shape=model.shape)
 
-        _node_update(raw, model, extras=('statistics,'), extras_key='tvac')
+        _node_update(raw, model, extras=("statistics,"), extras_key="tvac")
 
         # Create model from node
         raw_model = ScienceRawModel(raw)
@@ -207,7 +204,7 @@ class RampModel(_RomanDataModel):
         if hasattr(model, "resultantdq"):
             ramp.groupdq = model.resultantdq.copy()
 
-        _node_update(ramp, model, ignore='resultantdq')
+        _node_update(ramp, model, ignore="resultantdq")
 
         # Create model from node
         ramp_model = RampModel(ramp)
