@@ -207,28 +207,7 @@ class RampModel(_RomanDataModel):
         if hasattr(model, "resultantdq"):
             ramp.groupdq = model.resultantdq.copy()
 
-        # Define how to recursively copy all attributes.
-        def node_update(ramp, other):
-            """Implement update to directly access each value"""
-            for key in other.keys():
-                if key == "resultantdq":
-                    continue
-                if key in ramp:
-                    if isinstance(ramp[key], Mapping):
-                        node_update(getattr(ramp, key), getattr(other, key))
-                    else:
-                        if isinstance(ramp[key], list):
-                            value = getattr(other, key).data
-                        elif isinstance(ramp[key], np.ndarray):
-                            value = getattr(other, key).astype(ramp[key].dtype)
-                            value = getattr(value, "value", value)
-                        else:
-                            value = getattr(other, key)
-                        setattr(ramp, key, value)
-                else:
-                    ramp[key] = other[key]
-
-        node_update(ramp, model)
+        _node_update(ramp, model, ignore='resultantdq')
 
         # Create model from node
         ramp_model = RampModel(ramp)
