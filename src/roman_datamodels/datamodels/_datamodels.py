@@ -15,6 +15,7 @@ from astropy.table import QTable
 from roman_datamodels import stnode
 
 from ._core import DataModel
+from ._utils import _node_update
 
 __all__ = []
 
@@ -157,34 +158,7 @@ class ScienceRawModel(_RomanDataModel):
 
         raw = mk_level1_science_raw(shape=model.shape)
 
-        # Define how to recursively copy all attributes.
-        def node_update(raw, other):
-            """Implement update to directly access each value"""
-            tvac = dict()
-            for key in other.keys():
-                if key in ("statistics"):
-                    tvac[key] = other[key]
-                    continue
-                if key in raw:
-                    if isinstance(raw[key], Mapping):
-                        node_update(getattr(raw, key), getattr(other, key))
-                    else:
-                        if isinstance(raw[key], list):
-                            value = getattr(other, key).data
-                        elif isinstance(raw[key], np.ndarray):
-                            value = getattr(other, key).astype(raw[key].dtype)
-                            value = getattr(value, "value", value)
-                        else:
-                            value = getattr(other, key)
-                        setattr(raw, key, value)
-                else:
-                    raw[key] = other[key]
-            if tvac:
-                extras = raw.get("extras", dict())
-                extras["tvac"] = tvac
-                raw["extras"] = extras
-
-        node_update(raw, model)
+        _node_update(raw, model, extras=('statistics,'), extras_key='tvac')
 
         # Create model from node
         raw_model = ScienceRawModel(raw)
