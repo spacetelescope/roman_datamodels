@@ -132,16 +132,26 @@ class ScienceRawModel(_RomanDataModel):
     def from_tvac_raw(cls, model):
         """Convert TVAC/FPS into ScienceRawModel
 
+        romancal supports processing a selection of files which use an outdated
+        schema. It supports these with a bespoke method that converts the files
+        to the new format when they are read in dq_init. This conversion does
+        not do a detailed mapping between all of the new and old metadata, but
+        instead opportunistically looks for fields with common names and
+        assigns them. Other metadata with non-matching names is simply copied
+        in place. This allows processing to proceed and preserves the original
+        metadata, but the resulting files have duplicates of many entries.
+
         Parameters
         ----------
         model : ScienceRawModel, TvacModel, FpsModel
-            Model to convert from.
+          Model to convert from.
 
         Returns
         -------
         science_raw_model : ScienceRawModel
             The ScienceRawModel built from the input model.
             If the input was a ScienceRawModel, that model is simply returned.
+
         """
         ALLOWED_MODELS = (FpsModel, ScienceRawModel, TvacModel)
 
@@ -150,7 +160,7 @@ class ScienceRawModel(_RomanDataModel):
         if not isinstance(model, ALLOWED_MODELS):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
-        # Create base ramp node with dummy values (for validation)
+        # Create base raw node with dummy values (for validation)
         from roman_datamodels.maker_utils import mk_level1_science_raw
 
         raw = mk_level1_science_raw(shape=model.shape)
@@ -171,15 +181,21 @@ class RampModel(_RomanDataModel):
 
     @classmethod
     def from_science_raw(cls, model):
-        """
-        Attempt to construct a RampModel from a DataModel
+        """Attempt to construct a RampModel from a DataModel
 
         If the model has a resultantdq attribute, this is copied into
         the RampModel.groupdq attribute.
 
+        Otherwise, this conversion does not do a detailed mapping between all
+        of the new and old metadata, but instead opportunistically looks for
+        fields with common names and assigns them. Other metadata with
+        non-matching names is simply copied in place. This allows processing to
+        proceed and preserves the original metadata, but the resulting files
+        have duplicates of many entries.
+
         Parameters
         ----------
-        model : ScienceRawModel, TvacModel
+        model : FpsModel, RampModel, ScienceRawModel, TvacModel
             The input data model (a RampModel will also work).
 
         Returns
@@ -187,6 +203,7 @@ class RampModel(_RomanDataModel):
         ramp_model : RampModel
             The RampModel built from the input model. If the input is already
             a RampModel, it is simply returned.
+
         """
         ALLOWED_MODELS = (FpsModel, RampModel, ScienceRawModel, TvacModel)
 
