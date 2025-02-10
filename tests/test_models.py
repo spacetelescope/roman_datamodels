@@ -979,6 +979,13 @@ def test_ramp_from_science_raw(mk_raw):
             raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")  # pragma: no cover
 
 
+def test_science_raw_from_tvac_raw_invalid_input():
+    """Test for invalid input"""
+    model = datamodels.RampModel(utils.mk_ramp())
+    with pytest.raises(ValueError):
+        _ = datamodels.ScienceRawModel.from_tvac_raw(model)
+
+
 @pytest.mark.parametrize(
     "mk_tvac",
     [
@@ -988,6 +995,7 @@ def test_ramp_from_science_raw(mk_raw):
     ],
 )
 def test_science_raw_from_tvac_raw(mk_tvac):
+    """Test conversion from expected inputs"""
     tvac = mk_tvac()
 
     raw = datamodels.ScienceRawModel.from_tvac_raw(tvac)
