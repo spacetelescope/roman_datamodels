@@ -979,9 +979,9 @@ def test_ramp_from_science_raw(mk_raw):
             raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")  # pragma: no cover
 
     # Check that resultantdq gets copied to groupdq
-    if hasattr(raw, 'resultantdq'):
-        assert hasattr(ramp, 'groupdq')
-        assert not hasattr(ramp, 'resultantdq')
+    if hasattr(raw, "resultantdq"):
+        assert hasattr(ramp, "groupdq")
+        assert not hasattr(ramp, "resultantdq")
 
 
 def test_science_raw_from_tvac_raw_invalid_input():
@@ -1033,10 +1033,10 @@ def test_science_raw_from_tvac_raw(mk_tvac):
             raise ValueError(f"Unexpected type {type(raw_value)}, {key}")  # pragma: no cover
 
     # If tvac/fps, check that statistics are handled properly
-    if isinstance(tvac, datamodels.TvacModel| datamodels.FpsModel):
-        assert hasattr(raw.meta, 'extras')
-        assert hasattr(raw.meta.extras, 'tvac')
-        assert hasattr(raw.meta.extras.tvac, 'statistics')
+    if isinstance(tvac, datamodels.TvacModel | datamodels.FpsModel):
+        assert hasattr(raw.meta, "extras")
+        assert hasattr(raw.meta.extras, "tvac")
+        assert hasattr(raw.meta.extras.tvac, "statistics")
         assert raw.meta.extras.tvac.statistics == tvac.meta.statistics
 
 
