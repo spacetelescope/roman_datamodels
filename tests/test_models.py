@@ -1032,6 +1032,13 @@ def test_science_raw_from_tvac_raw(mk_tvac):
         else:
             raise ValueError(f"Unexpected type {type(raw_value)}, {key}")  # pragma: no cover
 
+    # If tvac/fps, check that statistics are handled properly
+    if isinstance(tvac, datamodels.TvacModel| datamodels.FpsModel):
+        assert hasattr(raw.meta, 'extras')
+        assert hasattr(raw.meta.extras, 'tvac')
+        assert hasattr(raw.meta.extras.tvac, 'statistics')
+        assert raw.meta.extras.tvac.statistics == tvac.meta.statistics
+
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
