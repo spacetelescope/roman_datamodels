@@ -46,7 +46,7 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
     to_node : stnode
         Node to receive the contents.
 
-    from_node : stnode
+    from_node : stnode, DataModel
         Node to copy from
 
     extras : list-like
