@@ -941,7 +941,7 @@ def test_model_only_init_with_correct_node(node, correct, model):
 @pytest.mark.parametrize(
     "mk_raw",
     [
-        lambda: datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8))),
+        lambda: datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8), dq=True)),
         lambda: datamodels.TvacModel(utils.mk_tvac(shape=(2, 8, 8))),
         lambda: datamodels.FpsModel(utils.mk_fps(shape=(2, 8, 8))),
         lambda: datamodels.RampModel(utils.mk_ramp(shape=(2, 8, 8))),
@@ -977,6 +977,11 @@ def test_ramp_from_science_raw(mk_raw):
 
         else:
             raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")  # pragma: no cover
+
+    # Check that resultantdq gets copied to groupdq
+    if hasattr(raw, 'resultantdq'):
+        assert hasattr(ramp, 'groupdq')
+        assert not hasattr(ramp, 'resultantdq')
 
 
 def test_science_raw_from_tvac_raw_invalid_input():
