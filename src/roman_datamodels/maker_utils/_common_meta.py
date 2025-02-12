@@ -756,8 +756,9 @@ def mk_ref_skycells_meta(**kwargs):
     dict (follows reference_file/ref_common-1.0.0 schema + skycell reference file meta data)
     """
     meta = mk_ref_common("SKYCELLS", **kwargs)
-    del meta["instrument"]["detector"]
-    del meta["instrument"]["optical_element"]
+    if "instrument" in meta:
+        meta["instrument"].pop("detector", None)
+        meta["instrument"].pop("optical_element", None)
     meta["nxy_skycell"] = kwargs.get("nxy_skycell", 5000)
     meta["skycell_border_pixels"] = kwargs.get("skycell_border_pixels", 100)
     meta["plate_scale"] = kwargs.get("plate_scale", 0.055)

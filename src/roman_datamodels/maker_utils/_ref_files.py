@@ -563,7 +563,7 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
 
 def mk_skycells(*, shape_pr=(100,), shape_sc=(1000,), filepath=None, **kwargs):
     skycellref = stnode.SkycellsRef()
-    skycellref["meta"] = mk_ref_skycells_meta(**kwargs)
+    skycellref["meta"] = mk_ref_skycells_meta(**kwargs.get("meta", {}))
     proj_dtype = np.dtype([('index', '<i4'),
                            ('ra_tangent', '<f8'),
                            ('dec_tangent', '<f8'),
