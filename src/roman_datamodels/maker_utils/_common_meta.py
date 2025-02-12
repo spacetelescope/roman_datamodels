@@ -758,9 +758,9 @@ def mk_ref_skycells_meta(**kwargs):
     meta = mk_ref_common("SKYCELLS", **kwargs)
     del meta["instrument"]["detector"]
     del meta["instrument"]["optical_element"]
-    meta["nxy_skycell"] = 5000
-    meta["skycell_border_pixels"] = 100
-    meta["plate_scale"] = 0.055
+    meta["nxy_skycell"] = kwargs.get("nxy_skycell", 5000)
+    meta["skycell_border_pixels"] = kwargs.get("skycell_border_pixels", 100)
+    meta["plate_scale"] = kwargs.get("plate_scale", 0.055)
 
     return meta
 
