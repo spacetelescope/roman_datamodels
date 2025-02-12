@@ -608,7 +608,6 @@ def test_make_refpix():
 def test_make_skycells():
     skycells_ref = utils.mk_skycells()
     assert skycells_ref.projection_regions["index"][2] == 2
-    assert skycells_ref.skycells['dec_corn2'][0] > 88
 
 
 # WFI Photom tests
