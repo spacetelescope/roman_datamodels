@@ -1092,3 +1092,14 @@ def test_array_compression_override(tmp_path, compression):
     model.save(fn, all_array_compression=compression)
     with asdf.open(fn) as af:
         assert af.get_array_compression(af["roman"]["data"]) == compression
+
+
+def test_apcorr_none_array():
+    """
+    Check that ApcorrRefModel data arrays can be None.
+    """
+    m = utils.mk_datamodel(datamodels.ApcorrRefModel)
+    # data uses a pattern property so no need to test all
+    for name in ("ap_corrections", "ee_fractions", "ee_radii", "sky_background_rin", "sky_background_rout"):
+        setattr(m.data.GRISM, name, None)
+    assert m.validate() is None
