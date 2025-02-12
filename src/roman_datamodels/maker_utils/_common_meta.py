@@ -747,6 +747,7 @@ def mk_ref_readnoise_meta(**kwargs):
 
     return meta
 
+
 def mk_ref_skycells_meta(**kwargs):
     """
     Create dummy metadata for skycells reference file instances.
@@ -764,6 +765,7 @@ def mk_ref_skycells_meta(**kwargs):
     meta["plate_scale"] = kwargs.get("plate_scale", 0.055)
 
     return meta
+
 
 def mk_mosaic_basic(**kwargs):
     """
