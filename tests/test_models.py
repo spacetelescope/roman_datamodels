@@ -1034,10 +1034,11 @@ def test_science_raw_from_tvac_raw(mk_tvac):
 
     # If tvac/fps, check that statistics are handled properly
     if isinstance(tvac, datamodels.TvacModel | datamodels.FpsModel):
-        assert hasattr(raw.meta, "extras")
-        assert hasattr(raw.meta.extras, "tvac")
-        assert hasattr(raw.meta.extras.tvac, "statistics")
-        assert raw.meta.extras.tvac.statistics == tvac.meta.statistics
+        assert hasattr(raw, "extras")
+        assert hasattr(raw.extras, "tvac")
+        assert hasattr(raw.extras.tvac, "meta")
+        assert hasattr(raw.extras.tvac.meta, "statistics")
+        assert raw.extras.tvac.meta.statistics == tvac.meta.statistics
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
