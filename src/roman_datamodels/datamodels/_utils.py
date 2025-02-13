@@ -67,11 +67,10 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
     def _descend(attributes, key):
         next_attributes = list()
         for item in attributes:
-            level, _, name = item.partition('.')
+            level, _, name = item.partition(".")
             if level == key and name:
                 next_attributes.append(name)
         return next_attributes
-
 
     def _traverse(to_node, from_node, extras=None, ignore=None):
         if extras is None:
@@ -90,8 +89,9 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
                 if isinstance(to_node[key], Mapping):
                     next_extras = _descend(extras, key)
                     next_ignores = _descend(ignore, key)
-                    returned_extras = _traverse(getattr(to_node, key), getattr(from_node, key),
-                                                extras=next_extras, ignore=next_ignores)
+                    returned_extras = _traverse(
+                        getattr(to_node, key), getattr(from_node, key), extras=next_extras, ignore=next_ignores
+                    )
                     if returned_extras:
                         new_extras[key] = returned_extras
                 else:
