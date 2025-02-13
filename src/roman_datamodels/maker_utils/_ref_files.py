@@ -598,7 +598,7 @@ def mk_refpix(*, shape=(32, 286721), filepath=None, **kwargs):
     Create a dummy Refpix instance (or file) with arrays and valid values for
     attributes required by the schema.
 
-    Note the default shape is intrinically connected to the FFT combined with
+    Note the default shape is intrinsically connected to the FFT combined with
     specifics of the detector:
         - 32: is the number of detector channels (amp33 is a non-observation
             channel).

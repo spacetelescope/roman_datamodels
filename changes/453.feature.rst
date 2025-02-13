@@ -1,0 +1,1 @@
+Allow ``rdm.open`` to open file-like objects (like those returned by s3fs)

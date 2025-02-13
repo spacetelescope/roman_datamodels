@@ -81,6 +81,17 @@ def test_model_input(tmp_path):
     reopened_model.close()
 
 
+def test_file_input(tmp_path):
+    file_path = tmp_path / "test.asdf"
+    tree = utils.mk_level2_image(shape=(8, 8))
+    with asdf.AsdfFile() as af:
+        af.tree = {"roman": tree}
+        af.write_to(file_path)
+    with open(file_path, "rb") as f:
+        with datamodels.open(f) as model:
+            assert model.meta.telescope == "ROMAN"
+
+
 def test_invalid_input():
     with pytest.raises(TypeError):
         datamodels.open(fits.HDUList())
