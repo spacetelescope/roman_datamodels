@@ -35,11 +35,13 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
     If key only exists in `from_node`, the contents are copied as-is.
 
     If key exists in the list `extras`, the contents are placed in the dict `["extras"]`.
-    if `extras_key` is given, then the sub-dictionary `["extras"][extras_key]`.
+    if `extras_key` is given, then the sub-dictionary `["extras"][extras_key]` is used.
     Extra keys are used to avoid collisions between node trees where the underlying structures are
     completely different.
 
     Keys in `ignore` are not considered.
+
+    Keys are also
 
     Parameters
     ----------
@@ -49,7 +51,7 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
     from_node : stnode, DataModel
         Node to copy from
 
-    extras : list-like
+    extras : [str[,...]]
         Keys that may create collisions between the two node trees. All such keys are placed
         in the `extras` key. If `extras_key` is defined, the contents are placed in a subdict
         of that name.
@@ -60,33 +62,53 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
     ignore : list-like or None
         Keys that should be completely ignored.
     """
-    if extras is None:
-        extras = tuple()
-    new_extras = dict()
-    if ignore is None:
-        ignore = tuple()
 
-    for key in from_node.keys():
-        if key in ignore:
-            continue
-        if key in extras:
-            new_extras[key] = from_node[key]
-            continue
-        if key in to_node:
-            if isinstance(to_node[key], Mapping):
-                _node_update(getattr(to_node, key), getattr(from_node, key), extras=extras, extras_key=extras_key)
-            else:
-                if isinstance(to_node[key], list):
-                    value = getattr(from_node, key).data
-                elif isinstance(to_node[key], np.ndarray):
-                    value = getattr(from_node, key).astype(to_node[key].dtype)
-                    value = getattr(value, "value", value)
+    # Define utilities functions
+    def _descend(attributes, key):
+        next_attributes = list()
+        for item in attributes:
+            level, _, name = item.partition('.')
+            if level == key and name:
+                next_attributes.append(name)
+        return next_attributes
+
+
+    def _traverse(to_node, from_node, extras=None, ignore=None):
+        if extras is None:
+            extras = tuple()
+        new_extras = dict()
+        if ignore is None:
+            ignore = tuple()
+
+        for key in from_node.keys():
+            if key in ignore:
+                continue
+            if key in extras:
+                new_extras[key] = from_node[key]
+                continue
+            if key in to_node:
+                if isinstance(to_node[key], Mapping):
+                    next_extras = _descend(extras, key)
+                    next_ignores = _descend(ignore, key)
+                    returned_extras = _traverse(getattr(to_node, key), getattr(from_node, key),
+                                                extras=next_extras, ignore=next_ignores)
+                    if returned_extras:
+                        new_extras[key] = returned_extras
                 else:
-                    value = getattr(from_node, key)
-                setattr(to_node, key, value)
-        else:
-            to_node[key] = from_node[key]
+                    if isinstance(to_node[key], list):
+                        value = getattr(from_node, key).data
+                    elif isinstance(to_node[key], np.ndarray):
+                        value = getattr(from_node, key).astype(to_node[key].dtype)
+                        value = getattr(value, "value", value)
+                    else:
+                        value = getattr(from_node, key)
+                    setattr(to_node, key, value)
+            else:
+                to_node[key] = from_node[key]
+        return new_extras
 
+    # Now do the copy.
+    new_extras = _traverse(to_node, from_node, extras=extras, ignore=ignore)
     if new_extras:
         extras_node = to_node.get("extras", dict())
         if extras_key:
