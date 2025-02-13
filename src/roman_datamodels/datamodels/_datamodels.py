@@ -6,15 +6,13 @@ This module provides all the specific datamodels used by the Roman pipeline.
     from the schema manifest defined by RAD.
 """
 
-from collections.abc import Mapping
-
 import asdf
-import numpy as np
 from astropy.table import QTable
 
 from roman_datamodels import stnode
 
 from ._core import DataModel
+from ._utils import _node_update
 
 __all__ = []
 
@@ -130,6 +128,49 @@ class ImageModel(_RomanDataModel):
 class ScienceRawModel(_RomanDataModel):
     _node_type = stnode.WfiScienceRaw
 
+    @classmethod
+    def from_tvac_raw(cls, model):
+        """Convert TVAC/FPS into ScienceRawModel
+
+        romancal supports processing a selection of files which use an outdated
+        schema. It supports these with a bespoke method that converts the files
+        to the new format when they are read in dq_init. This conversion does
+        not do a detailed mapping between all of the new and old metadata, but
+        instead opportunistically looks for fields with common names and
+        assigns them. Other metadata with non-matching names is simply copied
+        in place. This allows processing to proceed and preserves the original
+        metadata, but the resulting files have duplicates of many entries.
+
+        Parameters
+        ----------
+        model : ScienceRawModel, TvacModel, FpsModel
+          Model to convert from.
+
+        Returns
+        -------
+        science_raw_model : ScienceRawModel
+            The ScienceRawModel built from the input model.
+            If the input was a ScienceRawModel, that model is simply returned.
+
+        """
+        ALLOWED_MODELS = (FpsModel, ScienceRawModel, TvacModel)
+
+        if isinstance(model, cls):
+            return model
+        if not isinstance(model, ALLOWED_MODELS):
+            raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
+
+        # Create base raw node with dummy values (for validation)
+        from roman_datamodels.maker_utils import mk_level1_science_raw
+
+        raw = mk_level1_science_raw(shape=model.shape)
+
+        _node_update(raw, model, extras=("meta.statistics",), extras_key="tvac")
+
+        # Create model from node
+        raw_model = ScienceRawModel(raw)
+        return raw_model
+
 
 class MsosStackModel(_RomanDataModel):
     _node_type = stnode.MsosStack
@@ -140,15 +181,21 @@ class RampModel(_RomanDataModel):
 
     @classmethod
     def from_science_raw(cls, model):
-        """
-        Attempt to construct a RampModel from a DataModel
+        """Attempt to construct a RampModel from a DataModel
 
         If the model has a resultantdq attribute, this is copied into
         the RampModel.groupdq attribute.
 
+        Otherwise, this conversion does not do a detailed mapping between all
+        of the new and old metadata, but instead opportunistically looks for
+        fields with common names and assigns them. Other metadata with
+        non-matching names is simply copied in place. This allows processing to
+        proceed and preserves the original metadata, but the resulting files
+        have duplicates of many entries.
+
         Parameters
         ----------
-        model : ScienceRawModel, TvacModel
+        model : FpsModel, RampModel, ScienceRawModel, TvacModel
             The input data model (a RampModel will also work).
 
         Returns
@@ -156,6 +203,7 @@ class RampModel(_RomanDataModel):
         ramp_model : RampModel
             The RampModel built from the input model. If the input is already
             a RampModel, it is simply returned.
+
         """
         ALLOWED_MODELS = (FpsModel, RampModel, ScienceRawModel, TvacModel)
 
@@ -173,25 +221,7 @@ class RampModel(_RomanDataModel):
         if hasattr(model, "resultantdq"):
             ramp.groupdq = model.resultantdq.copy()
 
-        # Define how to recursively copy all attributes.
-        def node_update(ramp, other):
-            """Implement update to directly access each value"""
-            for key in other.keys():
-                if key == "resultantdq":
-                    continue
-                if key in ramp:
-                    if isinstance(ramp[key], Mapping):
-                        node_update(getattr(ramp, key), getattr(other, key))
-                    elif isinstance(ramp[key], list):
-                        setattr(ramp, key, getattr(other, key).data)
-                    elif isinstance(ramp[key], np.ndarray):
-                        setattr(ramp, key, getattr(other, key).astype(ramp[key].dtype))
-                    else:
-                        setattr(ramp, key, getattr(other, key))
-                else:
-                    ramp[key] = other[key]
-
-        node_update(ramp, model)
+        _node_update(ramp, model, ignore=("resultantdq",))
 
         # Create model from node
         ramp_model = RampModel(ramp)
