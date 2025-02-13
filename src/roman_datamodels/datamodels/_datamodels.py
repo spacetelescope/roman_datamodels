@@ -302,6 +302,10 @@ class ReadnoiseRefModel(_DataModel):
     _node_type = stnode.ReadnoiseRef
 
 
+class SkycellsRefModel(_DataModel):
+    _node_type = stnode.SkycellsRef
+
+
 class SuperbiasRefModel(_DataModel):
     _node_type = stnode.SuperbiasRef
 

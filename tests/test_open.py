@@ -227,7 +227,11 @@ def test_opening_model(tmp_path, node_class):
         elif node_class in (stnode.MosaicSegmentationMap, stnode.MosaicSourceCatalog):
             assert hasattr(model.meta, "basic")
         else:
-            assert model.meta.instrument.optical_element == "F158"
+            # roman_skycells reference file does not contain optical_element. Skip this case
+            if hasattr(model.meta, "reftype") and model.meta.reftype == "SKYCELLS":
+                pass
+            else:
+                assert model.meta.instrument.optical_element == "F158"
 
         # Check that the model is the correct type
         assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])

@@ -13,6 +13,7 @@ from ._common_meta import (
     mk_ref_epsf_meta,
     mk_ref_pixelarea_meta,
     mk_ref_readnoise_meta,
+    mk_ref_skycells_meta,
     mk_ref_units_dn_meta,
 )
 
@@ -32,6 +33,7 @@ __all__ = [
     "mk_readnoise",
     "mk_refpix",
     "mk_saturation",
+    "mk_skycells",
     "mk_superbias",
     "mk_wfi_img_photom",
 ]
@@ -558,6 +560,54 @@ def mk_saturation(*, shape=(4096, 4096), filepath=None, **kwargs):
     saturationref["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
 
     return save_node(saturationref, filepath=filepath)
+
+
+def mk_skycells(*, shape_pr=(100,), shape_sc=(1000,), filepath=None, **kwargs):
+    skycellref = stnode.SkycellsRef()
+    skycellref["meta"] = mk_ref_skycells_meta(**kwargs.get("meta", {}))
+    proj_dtype = np.dtype(
+        [
+            ("index", "<i4"),
+            ("ra_tangent", "<f8"),
+            ("dec_tangent", "<f8"),
+            ("ra_min", "<f8"),
+            ("ra_max", "<f8"),
+            ("dec_min", "<f8"),
+            ("dec_max", "<f8"),
+            ("orientat", "<f4"),
+            ("x_tangent", "<f8"),
+            ("y_tangent", "<f8"),
+            ("nx", "<i4"),
+            ("ny", "<i4"),
+            ("skycell_start", "<i4"),
+            ("skycell_end", "<i4"),
+        ]
+    )
+    skycell_dtype = np.dtype(
+        [
+            ("name", "<U16"),
+            ("ra_center", "<f8"),
+            ("dec_center", "<f8"),
+            ("orientat", "<f4"),
+            ("x_tangent", "<f8"),
+            ("y_tangent", "<f8"),
+            ("ra_corn1", "<f8"),
+            ("dec_corn1", "<f8"),
+            ("ra_corn2", "<f8"),
+            ("dec_corn2", "<f8"),
+            ("ra_corn3", "<f8"),
+            ("dec_corn3", "<f8"),
+            ("ra_corn4", "<f8"),
+            ("dec_corn4", "<f8"),
+        ]
+    )
+    proj_tab = kwargs.get("projection_regions", np.zeros(shape_pr, dtype=proj_dtype))
+    proj_tab[:]["index"] = np.arange(len(proj_tab))
+    skycell_tab = kwargs.get("skycells", np.zeros(shape_sc, dtype=skycell_dtype))
+    skycellref["projection_regions"] = proj_tab
+    skycellref["skycells"] = skycell_tab
+
+    return save_node(skycellref, filepath=filepath)
 
 
 def mk_superbias(*, shape=(4096, 4096), filepath=None, **kwargs):

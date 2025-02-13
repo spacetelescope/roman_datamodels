@@ -583,6 +583,12 @@ def test_make_refpix():
     assert refpix.alpha.shape == (8, 8)
 
 
+# Skycells tests
+def test_make_skycells():
+    skycells_ref = utils.mk_skycells()
+    assert skycells_ref.projection_regions["index"][2] == 2
+
+
 # WFI Photom tests
 def test_make_wfi_img_photom():
     wfi_img_photom = utils.mk_wfi_img_photom()
