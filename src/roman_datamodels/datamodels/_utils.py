@@ -25,11 +25,11 @@ class FilenameMismatchWarning(UserWarning):
 
 
 def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
-    """Copy node contents from an existing node to an existing node
+    """Copy node contents from an existing node to another existing node
 
     How the copy occurs depends on existence of keys in `to_node`
 
-    If key exists in `to_node`, contents is converted from `from_node` stnode type to
+    If key exists in `to_node`, contents are converted from `from_node` stnode type to
     the stnode type expected in order to preserve validation of the node.
 
     If key only exists in `from_node`, the contents are copied as-is.
