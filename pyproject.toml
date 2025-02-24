@@ -3,25 +3,23 @@ name = "roman_datamodels"
 description = "data models supporting calibration of the Nancy Grace Roman Space Telescope"
 readme = "README.md"
 requires-python = ">=3.11"
-authors = [
-    { name = "STScI", email = "help@stsci.edu" },
-]
+authors = [{ name = "STScI", email = "help@stsci.edu" }]
 classifiers = [
-    "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Astronomy",
-    "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python :: 3",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Astronomy",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "asdf >=3.3.0",
-    "lz4 >= 4.3.0",
-    "asdf-astropy >=0.5.0",
-    "gwcs >=0.19.0",
-    "numpy >=1.24",
-    "astropy >=5.3.0",
-    # "rad >=0.23.1",
-    "rad @ git+https://github.com/spacetelescope/rad.git",
-    "asdf-standard >=1.1.0",
+  "asdf >=3.3.0",
+  "lz4 >= 4.3.0",
+  "asdf-astropy >=0.5.0",
+  "gwcs >=0.19.0",
+  "numpy >=1.24",
+  "astropy >=5.3.0",
+  # "rad >=0.23.1",
+  "rad @ git+https://github.com/spacetelescope/rad.git",
+  "asdf-standard >=1.1.0",
 ]
 dynamic = ["version"]
 
@@ -30,17 +28,12 @@ file = "LICENSE"
 
 [project.optional-dependencies]
 test = [
-    "pytest >=6.0.0",
-    "pytest-doctestplus",
-    "pytest-doctestplus >=1.2.1",
-    "pytest-env >= 0.8",
+  "pytest >=6.0.0",
+  "pytest-doctestplus",
+  "pytest-doctestplus >=1.2.1",
+  "pytest-env >= 0.8",
 ]
-docs = [
-    "sphinx",
-    "sphinx-automodapi",
-    "sphinx-rtd-theme",
-    "sphinx-astropy",
-]
+docs = ["sphinx", "sphinx-automodapi", "sphinx-rtd-theme", "sphinx-astropy"]
 
 [project.urls]
 issues = "https://github.com/spacetelescope/roman_datamodels/issues"
@@ -50,10 +43,7 @@ repository = "https://github.com/spacetelescope/roman_datamodels"
 roman_datamodels = "roman_datamodels.stnode._integration:get_extensions"
 
 [build-system]
-requires = [
-    "setuptools >=61",
-    "setuptools_scm[toml] >=3.4",
-]
+requires = ["setuptools >=61", "setuptools_scm[toml] >=3.4"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
@@ -70,29 +60,29 @@ text_file_format = "rst"
 log_cli_level = "INFO"
 xfail_strict = true
 addopts = [
-    "--color=yes",      # color test output
-    "--doctest-rst",    # enable doctests
-    "--strict-config",  # fail on unknown config options
-    "--strict-markers", # fail on unknown markers
-    "-ra",              # Show summary of all failures/errors
+  "--color=yes",      # color test output
+  "--doctest-rst",    # enable doctests
+  "--strict-config",  # fail on unknown config options
+  "--strict-markers", # fail on unknown markers
+  "-ra",              # Show summary of all failures/errors
 ]
 testpaths = ["tests"]
 filterwarnings = [
-    "error",
-    "ignore:numpy.ndarray size changed:RuntimeWarning",
-    "ignore:The `hash` argument is deprecated in favor of `unsafe_hash` and will be removed in or after August 2025:DeprecationWarning",
+  "error",
+  "ignore:numpy.ndarray size changed:RuntimeWarning",
+  "ignore:The `hash` argument is deprecated in favor of `unsafe_hash` and will be removed in or after August 2025:DeprecationWarning",
 ]
 env = ["ROMAN_VALIDATE=true", "ROMAN_STRICT_VALIDATION=true"]
 
 [tool.coverage.report]
 exclude_lines = [
-    "pragma: no cover",
-    "except ImportError",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "def main\\(.*\\):",
-    "if __name__ == \\(.*\\):",
-    "pass\\n",
+  "pragma: no cover",
+  "except ImportError",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "def main\\(.*\\):",
+  "if __name__ == \\(.*\\):",
+  "pass\\n",
 ]
 
 [tool.ruff]
@@ -100,20 +90,20 @@ line-length = 130
 
 [tool.ruff.lint]
 extend-select = [
-    "UP",   # PyUpgrade
-    "I",    # isort
-    "B",    # BugBear
-    "S",    # Bandit
-    "RUF",  # ruff specific
-    "NPY",  # numpy specific
+  "UP",  # PyUpgrade
+  "I",   # isort
+  "B",   # BugBear
+  "S",   # Bandit
+  "RUF", # ruff specific
+  "NPY", # numpy specific
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**.py" = [
-    "S101" # Bandit: Use of assert detected (fine in test files)
+  "S101", # Bandit: Use of assert detected (fine in test files)
 ]
 "src/roman_datamodels/testing.py" = [
-    "S101" # Bandit: Use of assert detected (useful public API for testing only)
+  "S101", # Bandit: Use of assert detected (useful public API for testing only)
 ]
 
 [tool.codespell]
