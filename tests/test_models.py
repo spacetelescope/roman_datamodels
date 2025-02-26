@@ -583,6 +583,12 @@ def test_make_refpix():
     assert refpix.alpha.shape == (8, 8)
 
 
+# Skycells tests
+def test_make_skycells():
+    skycells_ref = utils.mk_skycells()
+    assert skycells_ref.projection_regions["index"][2] == 2
+
+
 # WFI Photom tests
 def test_make_wfi_img_photom():
     wfi_img_photom = utils.mk_wfi_img_photom()
@@ -932,9 +938,17 @@ def test_model_only_init_with_correct_node(node, correct, model):
         model(img)
 
 
-def test_ramp_from_science_raw():
-    raw = datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8)))
-
+@pytest.mark.parametrize(
+    "mk_raw",
+    [
+        lambda: datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8), dq=True)),
+        lambda: datamodels.TvacModel(utils.mk_tvac(shape=(2, 8, 8))),
+        lambda: datamodels.FpsModel(utils.mk_fps(shape=(2, 8, 8))),
+        lambda: datamodels.RampModel(utils.mk_ramp(shape=(2, 8, 8))),
+    ],
+)
+def test_ramp_from_science_raw(mk_raw):
+    raw = mk_raw()
     ramp = datamodels.RampModel.from_science_raw(raw)
     for key in ramp:
         if not hasattr(raw, key):
@@ -946,20 +960,85 @@ def test_ramp_from_science_raw():
             assert_array_equal(ramp_value, raw_value.astype(ramp_value.dtype))
 
         elif key == "meta":
-            for meta_key in ramp_value:
+            ramp_meta = ramp_value.to_flat_dict(include_arrays=False, recursive=True)
+            raw_meta = raw_value.to_flat_dict(include_arrays=False, recursive=True)
+            for meta_key in ramp_meta:
                 if meta_key == "model_type":
                     ramp_value[meta_key] = ramp.__class__.__name__
                     raw_value[meta_key] = raw.__class__.__name__
                     continue
                 elif meta_key == "cal_step":
                     continue
-                assert_node_equal(ramp_value[meta_key], raw_value[meta_key])
+                if meta_key in raw_meta:
+                    assert ramp_meta[meta_key] == raw_meta[meta_key]
 
         elif isinstance(ramp_value, stnode.DNode):
             assert_node_equal(ramp_value, raw_value)
 
         else:
             raise ValueError(f"Unexpected type {type(ramp_value)}, {key}")  # pragma: no cover
+
+    # Check that resultantdq gets copied to groupdq
+    if hasattr(raw, "resultantdq"):
+        assert hasattr(ramp, "groupdq")
+        assert not hasattr(ramp, "resultantdq")
+
+
+def test_science_raw_from_tvac_raw_invalid_input():
+    """Test for invalid input"""
+    model = datamodels.RampModel(utils.mk_ramp())
+    with pytest.raises(ValueError):
+        _ = datamodels.ScienceRawModel.from_tvac_raw(model)
+
+
+@pytest.mark.parametrize(
+    "mk_tvac",
+    [
+        lambda: datamodels.ScienceRawModel(utils.mk_level1_science_raw(shape=(2, 8, 8))),
+        lambda: datamodels.TvacModel(utils.mk_tvac(shape=(2, 8, 8))),
+        lambda: datamodels.FpsModel(utils.mk_fps(shape=(2, 8, 8))),
+    ],
+)
+def test_science_raw_from_tvac_raw(mk_tvac):
+    """Test conversion from expected inputs"""
+    tvac = mk_tvac()
+
+    raw = datamodels.ScienceRawModel.from_tvac_raw(tvac)
+    for key in raw:
+        if not hasattr(tvac, key):
+            continue
+
+        raw_value = getattr(raw, key)
+        tvac_value = getattr(tvac, key)
+        if isinstance(raw_value, np.ndarray):
+            assert_array_equal(raw_value, tvac_value.astype(raw_value.dtype))
+
+        elif key == "meta":
+            raw_meta = raw_value.to_flat_dict(include_arrays=False, recursive=True)
+            tvac_meta = tvac_value.to_flat_dict(include_arrays=False, recursive=True)
+            for meta_key in raw_meta:
+                if meta_key == "model_type":
+                    raw_value[meta_key] = raw.__class__.__name__
+                    tvac_value[meta_key] = tvac.__class__.__name__
+                    continue
+                elif meta_key == "cal_step":
+                    continue
+                if meta_key in tvac_meta:
+                    assert raw_meta[meta_key] == tvac_meta[meta_key]
+
+        elif isinstance(raw_value, stnode.DNode):
+            assert_node_equal(raw_value, tvac_value)
+
+        else:
+            raise ValueError(f"Unexpected type {type(raw_value)}, {key}")  # pragma: no cover
+
+    # If tvac/fps, check that statistics are handled properly
+    if isinstance(tvac, datamodels.TvacModel | datamodels.FpsModel):
+        assert hasattr(raw, "extras")
+        assert hasattr(raw.extras, "tvac")
+        assert hasattr(raw.extras.tvac, "meta")
+        assert hasattr(raw.extras.tvac.meta, "statistics")
+        assert raw.extras.tvac.meta.statistics == tvac.meta.statistics
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
@@ -1092,3 +1171,14 @@ def test_array_compression_override(tmp_path, compression):
     model.save(fn, all_array_compression=compression)
     with asdf.open(fn) as af:
         assert af.get_array_compression(af["roman"]["data"]) == compression
+
+
+def test_apcorr_none_array():
+    """
+    Check that ApcorrRefModel data arrays can be None.
+    """
+    m = utils.mk_datamodel(datamodels.ApcorrRefModel)
+    # data uses a pattern property so no need to test all
+    for name in ("ap_corrections", "ee_fractions", "ee_radii", "sky_background_rin", "sky_background_rout"):
+        setattr(m.data.GRISM, name, None)
+    assert m.validate() is None

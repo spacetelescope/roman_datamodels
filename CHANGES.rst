@@ -1,3 +1,20 @@
+0.23.1 (2025-02-14)
+===================
+
+New Features
+------------
+
+- Added support for skycell reference file (`#441
+  <https://github.com/spacetelescope/roman_datamodels/issues/441>`_)
+- Start versioning files by allows Node instances to use multiple versions of
+  tags. (`#445
+  <https://github.com/spacetelescope/roman_datamodels/issues/445>`_)
+- Allow ``rdm.open`` to open file-like objects (like those returned by s3fs)
+  (`#453 <https://github.com/spacetelescope/roman_datamodels/issues/453>`_)
+- Provide conversion from TVAC/FPS models to ScienceRawModel (`#455
+  <https://github.com/spacetelescope/roman_datamodels/issues/455>`_)
+
+
 0.23.0 (2025-01-16)
 ===================
 
