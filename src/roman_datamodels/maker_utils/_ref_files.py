@@ -425,10 +425,12 @@ def mk_ref_matable_guide_window_tables(table_ids=None, **kwargs):
 
     Parameters
     ----------
+    table_ids
+        list of integer IDs of the MA Tables
 
     Returns
     -------
-    list of dictaries
+    dictionary of dictionaries
     """
     if table_ids is None:
         table_ids = range(1, 11)
@@ -457,16 +459,19 @@ def mk_ref_matable_guide_window_tables(table_ids=None, **kwargs):
 
 def mk_ref_matable_science_tables(table_ids=None, length=10, **kwargs):
     """
-    Create dummy data for MA Table Guide Window table instances.
+    Create dummy data for MA Table Science table instances.
 
     Parameters
     ----------
-    len
+    table_ids
+        list of integer IDs of the MA Tables
+
+    length
         (optional, keyword-only) Length of lists in the model.
 
     Returns
     -------
-    list of dictaries
+    dictionary of dictionaries
     """
     if table_ids is None:
         table_ids = range(1, 11)
@@ -510,9 +515,11 @@ def mk_matable(*, table_ids=None, length=10, filepath=None, **kwargs):
 
     Parameters
     ----------
-    shape
-        (optional, keyword-only) Shape of arrays in the model.
-        If shape is greater than 2D, the first two dimensions are used.
+    table_ids
+        list of integer IDs of the MA Tables
+
+    length
+        (optional, keyword-only) Length of lists in the model.
 
     filepath
         (optional, keyword-only) File name and path to write model to.
