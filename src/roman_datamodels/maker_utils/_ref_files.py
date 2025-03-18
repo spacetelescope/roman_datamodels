@@ -419,6 +419,7 @@ def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
 
     return save_node(maskref, filepath=filepath)
 
+
 def mk_ref_matable_guide_window_tables(table_ids=None, **kwargs):
     """
     Create dummy data for MA Table Guide Window table instances.
@@ -483,13 +484,16 @@ def mk_ref_matable_science_tables(table_ids=None, length=10, **kwargs):
         else:
             kwarg_idx = {}
         science_tables[idx] = {}
-        science_tables[idx]["accumulated_exposure_time"] = \
-            kwarg_idx.get("accumulated_exposure_time", np.arange(1, length+1, dtype=np.float32).tolist())
-        science_tables[idx]["effective_exposure_time"] = \
-            kwarg_idx.get("effective_exposure_time", np.arange(1, length+1, dtype=np.float32).tolist())
+        science_tables[idx]["accumulated_exposure_time"] = kwarg_idx.get(
+            "accumulated_exposure_time", np.arange(1, length + 1, dtype=np.float32).tolist()
+        )
+        science_tables[idx]["effective_exposure_time"] = kwarg_idx.get(
+            "effective_exposure_time", np.arange(1, length + 1, dtype=np.float32).tolist()
+        )
         science_tables[idx]["frame_time"] = kwarg_idx.get("frame_time", NONUM)
-        science_tables[idx]["integration_duration"] = \
-            kwarg_idx.get("integration_duration", np.arange(1, length+1, dtype=np.float32).tolist())
+        science_tables[idx]["integration_duration"] = kwarg_idx.get(
+            "integration_duration", np.arange(1, length + 1, dtype=np.float32).tolist()
+        )
         science_tables[idx]["ma_table_name"] = kwarg_idx.get("ma_table_name", NOSTR)
         science_tables[idx]["min_science_resultants"] = kwarg_idx.get("min_science_resultants", NONUM)
         science_tables[idx]["num_pre_science_reads"] = kwarg_idx.get("num_pre_science_reads", NONUM)
@@ -498,14 +502,14 @@ def mk_ref_matable_science_tables(table_ids=None, length=10, **kwargs):
         science_tables[idx]["observing_mode"] = kwarg_idx.get("observing_mode", NOSTR)
         science_tables[idx]["pre_science_read_is_reference"] = kwarg_idx.get("pre_science_read_is_reference", ([True] * length))
         science_tables[idx]["pre_science_read_is_resultant"] = kwarg_idx.get("pre_science_read_is_resultant", ([True] * length))
-        science_tables[idx]["pre_science_read_types"] = kwarg_idx.get("pre_science_read_types",  ([NOSTR] * length))
+        science_tables[idx]["pre_science_read_types"] = kwarg_idx.get("pre_science_read_types", ([NOSTR] * length))
         science_tables[idx]["pre_science_time_after_reset"] = kwarg_idx.get("pre_science_time_after_reset", NONUM)
         science_tables[idx]["reset_frame_time"] = kwarg_idx.get("reset_frame_time", NONUM)
-        science_tables[idx]["science_read_pattern"] = \
-            kwarg_idx.get("science_read_pattern", np.arange(1, length+1, dtype=np.int32).reshape((-1, 1)).tolist())
+        science_tables[idx]["science_read_pattern"] = kwarg_idx.get(
+            "science_read_pattern", np.arange(1, length + 1, dtype=np.int32).reshape((-1, 1)).tolist()
+        )
 
     return science_tables
-
 
 
 def mk_matable(*, table_ids=None, length=10, filepath=None, **kwargs):
