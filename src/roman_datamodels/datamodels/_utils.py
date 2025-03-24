@@ -206,8 +206,7 @@ def rdm_open(init, memmap=False, **kwargs):
             return init.copy(deepcopy=False)
 
         # Temp fix to catch JWST args before being passed to asdf open
-        if "asn_n_members" in kwargs:
-            del kwargs["asn_n_members"]
+        kwargs.pop("asn_n_members", None)
 
         asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_asdf(init, memmap=memmap, **kwargs)
         if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
