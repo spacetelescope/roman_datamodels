@@ -530,7 +530,7 @@ def mk_ref_matable_science_tables(table_ids=None, length=10, **kwargs):
     return science_tables
 
 
-def mk_matable(*, table_ids=None, length=10, filepath=None, **kwargs):
+def mk_matable(*, gw_table_ids=None, sci_table_ids=None, length=10, filepath=None, **kwargs):
     """
     Create a dummy MA Table instance (or file) with arrays and valid values
     for attributes required by the schema.
@@ -550,19 +550,11 @@ def mk_matable(*, table_ids=None, length=10, filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.MatableRef
     """
-    gw_tab = None
-    sci_tab = None
-    if table_ids is not None:
-        gw_tab = []
-        sci_tab = []
-        for idx in table_ids:
-            gw_tab.append(f"GW{idx:04}")
-            sci_tab.append(f"SCI{idx:04}")
 
     matablerref = stnode.MatableRef()
     matablerref["meta"] = mk_ref_common("MATABLE", **kwargs.get("meta", {}))
-    matablerref["guide_window_tables"] = mk_ref_matable_guide_window_tables(gw_tab, **kwargs)
-    matablerref["science_tables"] = mk_ref_matable_science_tables(sci_tab, length, **kwargs)
+    matablerref["guide_window_tables"] = mk_ref_matable_guide_window_tables(gw_table_ids, **kwargs)
+    matablerref["science_tables"] = mk_ref_matable_science_tables(sci_table_ids, length, **kwargs)
 
     return save_node(matablerref, filepath=filepath)
 
