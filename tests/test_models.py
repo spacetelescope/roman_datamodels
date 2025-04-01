@@ -489,8 +489,7 @@ def test_make_mask():
 
 # Ma Table tests
 def test_make_matable():
-    matable = utils.mk_matable(gw_table_ids=['GW0002'],
-                               sci_table_ids=['SCI0004', 'SCI0005', 'SCI0007', 'SCI0008'], length=8)
+    matable = utils.mk_matable(gw_table_ids=["GW0002"], sci_table_ids=["SCI0004", "SCI0005", "SCI0007", "SCI0008"], length=8)
 
     assert matable.meta.reftype == "MATABLE"
     assert isinstance(matable.guide_window_tables["GW0002"]["ma_table_name"], str)
