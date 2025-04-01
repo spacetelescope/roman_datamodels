@@ -34,12 +34,8 @@ def assert_node_equal(node1, node2):
         assert set(node1.keys()) == set(node2.keys())
 
         for key in node1:
-            if isinstance(key, int):
-                value1 = node1[key]
-                value2 = node2[key]
-            else:
-                value1 = getattr(node1, key)
-                value2 = getattr(node2, key)
+            value1 = getattr(node1, key)
+            value2 = getattr(node2, key)
             _assert_value_equal(value1, value2)
     elif isinstance(node1, TaggedListNode):
         assert len(node1) == len(node2)

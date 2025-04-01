@@ -501,7 +501,6 @@ def test_make_matable():
     # Test validation
     matable_model = datamodels.MATableRefModel(matable)
     assert matable_model.validate() is None
-    assert True
 
 
 # Pixel Area tests
