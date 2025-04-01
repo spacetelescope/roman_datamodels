@@ -516,10 +516,12 @@ def mk_ref_matable_science_tables(table_ids=None, length=10, **kwargs):
         science_tables[sci_idx]["num_pre_science_resultants"] = kwarg_idx.get("num_pre_science_resultants", NONUM)
         science_tables[sci_idx]["num_science_resultants"] = kwarg_idx.get("num_science_resultants", NONUM)
         science_tables[sci_idx]["observing_mode"] = kwarg_idx.get("observing_mode", NOSTR)
-        science_tables[sci_idx]["pre_science_read_is_reference"] = \
-            kwarg_idx.get("pre_science_read_is_reference", ([True] * length))
-        science_tables[sci_idx]["pre_science_read_is_resultant"] = \
-            kwarg_idx.get("pre_science_read_is_resultant", ([True] * length))
+        science_tables[sci_idx]["pre_science_read_is_reference"] = kwarg_idx.get(
+            "pre_science_read_is_reference", ([True] * length)
+        )
+        science_tables[sci_idx]["pre_science_read_is_resultant"] = kwarg_idx.get(
+            "pre_science_read_is_resultant", ([True] * length)
+        )
         science_tables[sci_idx]["pre_science_read_types"] = kwarg_idx.get("pre_science_read_types", ([NOSTR] * length))
         science_tables[sci_idx]["pre_science_time_after_reset"] = kwarg_idx.get("pre_science_time_after_reset", NONUM)
         science_tables[sci_idx]["reset_frame_time"] = kwarg_idx.get("reset_frame_time", NONUM)
