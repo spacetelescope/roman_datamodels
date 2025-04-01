@@ -121,18 +121,10 @@ def test_datamodel_maker(model_class):
         assert model.meta.model_type == model_class.__name__
 
 
-@pytest.fixture
-def xfail_integer_keys(request):
-    node_class = request.getfixturevalue("node_class")
-    if node_class in [stnode.MatableRef]:
-        request.node.add_marker(pytest.mark.xfail(reason="Integer keys are unsupported."))
-
-
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
-@pytest.mark.usefixtures("xfail_integer_keys")
 def test_override_data(node_class):
     """
     Test that we can override data in any maker, all makers are part included in some datamodel,

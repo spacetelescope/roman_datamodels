@@ -324,7 +324,7 @@ class MaskRefModel(_DataModel):
         return "dq"
 
 
-class MatableRefModel(_DataModel):
+class MATableRefModel(_DataModel):
     _node_type = stnode.MatableRef
 
 

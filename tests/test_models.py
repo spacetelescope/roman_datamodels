@@ -490,14 +490,15 @@ def test_make_mask():
 # Ma Table tests
 def test_make_matable():
     matable = utils.mk_matable(table_ids=[2, 4, 5, 7, 8], length=8)
+
     assert matable.meta.reftype == "MATABLE"
-    assert isinstance(matable.guide_window_tables[2]["ma_table_name"], str)
-    assert len(matable.science_tables[5]["accumulated_exposure_time"]) == 8
-    assert (isinstance(rp, list) for rp in matable.science_tables[4]["science_read_pattern"])
-    assert isinstance(matable.science_tables[8]["science_read_pattern"][0][0], int)
+    assert isinstance(matable.guide_window_tables["GW0002"]["ma_table_name"], str)
+    assert len(matable.science_tables["SCI0005"]["accumulated_exposure_time"]) == 8
+    assert (isinstance(rp, list) for rp in matable.science_tables["SCI0004"]["science_read_pattern"])
+    assert isinstance(matable.science_tables["SCI0008"]["science_read_pattern"][0][0], int)
 
     # Test validation
-    matable_model = datamodels.MatableRefModel(matable)
+    matable_model = datamodels.MATableRefModel(matable)
     assert matable_model.validate() is None
     assert True
 
