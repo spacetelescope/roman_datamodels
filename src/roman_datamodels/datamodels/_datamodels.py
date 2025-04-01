@@ -324,6 +324,10 @@ class MaskRefModel(_DataModel):
         return "dq"
 
 
+class MATableRefModel(_DataModel):
+    _node_type = stnode.MatableRef
+
+
 class PixelareaRefModel(_DataModel):
     _node_type = stnode.PixelareaRef
 

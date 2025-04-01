@@ -487,6 +487,21 @@ def test_make_mask():
     assert mask_model.validate() is None
 
 
+# Ma Table tests
+def test_make_matable():
+    matable = utils.mk_matable(gw_table_ids=["GW0002"], sci_table_ids=["SCI0004", "SCI0005", "SCI0007", "SCI0008"], length=8)
+
+    assert matable.meta.reftype == "MATABLE"
+    assert isinstance(matable.guide_window_tables["GW0002"]["ma_table_name"], str)
+    assert len(matable.science_tables["SCI0005"]["accumulated_exposure_time"]) == 8
+    assert (isinstance(rp, list) for rp in matable.science_tables["SCI0004"]["science_read_pattern"])
+    assert isinstance(matable.science_tables["SCI0008"]["science_read_pattern"][0][0], int)
+
+    # Test validation
+    matable_model = datamodels.MATableRefModel(matable)
+    assert matable_model.validate() is None
+
+
 # Pixel Area tests
 def test_make_pixelarea():
     pixearea = utils.mk_pixelarea(shape=(8, 8))

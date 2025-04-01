@@ -295,7 +295,8 @@ def test_filename_matches_meta(tmp_path):
     # Show datamodels.open will update the filename in memory
     with (
         pytest.warns(
-            match="meta.filename: test_filename.asdf does not match filename: test_filename_read.asdf, updating the filename in memory!"
+            match="meta.filename: test_filename.asdf does not match filename: "
+            "test_filename_read.asdf, updating the filename in memory!"
         ),
         datamodels.open(open_path) as model,
     ):
