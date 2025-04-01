@@ -6,6 +6,8 @@ This module provides all the specific datamodels used by the Roman pipeline.
     from the schema manifest defined by RAD.
 """
 
+import numpy as np
+import pathlib
 import asdf
 from astropy.table import QTable
 
@@ -13,8 +15,84 @@ from roman_datamodels import stnode
 
 from ._core import DataModel
 from ._utils import _node_update
+from ..stnode import DNode
+
 
 __all__ = []
+
+DTYPE_MAP = {}
+
+class _ParquetMixin:
+    """Gives SourceCatalogModels the ability to save to parquet files."""
+
+    def to_parquet(self, file=None, fdir=None):
+        """
+        Save catalog in parquet format.
+
+        Defers import of parquet to minimize import overhead for all other models.
+        """
+        global DTYPE_MAP
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+        if not DTYPE_MAP:
+            DTYPE_MAP.update(
+                {
+                    "bool": pa.bool_(),
+                    "uint8": pa.uint8(),
+                    "uint16": pa.uint16(),
+                    "uint32": pa.uint32(),
+                    "uint64": pa.uint64(),
+                    "int8": pa.int8(),
+                    "int16": pa.int16(),
+                    "int32": pa.int32(),
+                    "int64": pa.int64(),
+                    "float16": pa.float16(),
+                    "float32": pa.float32(),
+                    "float64": pa.float64(),
+                }
+            )
+
+        if file is None or isinstance(file, str):
+            # Construct output filename
+            if file is not None:
+                if file.endswith('.asdf'):
+                    file = file[:-5]
+                filename_root = pathlib.Path(file)
+            else:
+                    filename_root = pathlib.Path(self.meta.filename[:-5])
+            filename_root = filename_root.with_suffix(".parquet")
+            if fdir is not None:
+                filepath = pathlib.Path(fdir) / filename_root
+            else:
+                filepath = pathlib.Path('.') / filename_root
+        # Otherwise assume it is a file-like object
+        else:
+            filepath = file
+
+        # Construct flat metadata dict
+        flat_meta = self.to_flat_dict()
+        # select only meta items
+        flat_meta = {k:str(v) for (k,v) in flat_meta.items() if k.startswith('roman.meta')}
+        # Extract table metadata
+        source_cat = self.source_catalog
+        scmeta = source_cat.meta
+        # Wrap it as a DNode so it can be flattened
+        dn_scmeta = DNode(scmeta)
+        flat_scmeta = dn_scmeta.to_flat_dict(recursive=True)
+        # Add prefix to flattened keys to indicate table metadata
+        flat_scmeta = {'source_catalog.'+k:str(v) for (k,v) in flat_scmeta.items()}
+        # merge the two meta dicts
+        flat_meta.update(flat_scmeta)
+        # Turn numpy structured array into list of arrays
+        keys = list(source_cat.columns.keys())
+        arrs = [np.array(source_cat[key]) for key in keys]
+        units = [str(source_cat[key].unit) for key in keys]
+        dtypes = [DTYPE_MAP[np.array(source_cat[key]).dtype.name] for key in keys]
+        fields = [pa.field(key, type=dtype, metadata={'unit': unit})
+                      for (key, dtype, unit) in zip(keys, dtypes, units)]
+        schema = pa.schema(fields, metadata=flat_meta)
+        table = pa.Table.from_arrays(arrs, schema=schema)
+        pq.write_table(table, filepath, compression=None)
 
 
 class _DataModel(DataModel):
@@ -363,8 +441,7 @@ class FpsModel(_DataModel):
 class TvacModel(_DataModel):
     _node_type = stnode.Tvac
 
-
-class MosaicSourceCatalogModel(_RomanDataModel):
+class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin):
     _node_type = stnode.MosaicSourceCatalog
 
 
@@ -372,7 +449,7 @@ class MosaicSegmentationMapModel(_RomanDataModel):
     _node_type = stnode.MosaicSegmentationMap
 
 
-class ImageSourceCatalogModel(_RomanDataModel):
+class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin):
     _node_type = stnode.ImageSourceCatalog
 
 

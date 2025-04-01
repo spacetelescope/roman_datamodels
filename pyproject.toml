@@ -20,6 +20,8 @@ dependencies = [
   # "rad >=0.23.1",
   "rad @ git+https://github.com/spacetelescope/rad.git",
   "asdf-standard >=1.1.0",
+  "pyarrow >=19.0.1",
+  "pyarrow.parquet"
 ]
 dynamic = ["version"]
 
