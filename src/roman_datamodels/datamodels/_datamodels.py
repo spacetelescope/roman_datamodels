@@ -440,3 +440,7 @@ class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin):
 
 class SegmentationMapModel(_RomanDataModel):
     _node_type = stnode.SegmentationMap
+
+
+class WfiWcsModel(_RomanDataModel):
+    _node_type = stnode.WfiWcs
