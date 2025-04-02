@@ -5,7 +5,7 @@ from astropy.modeling import models
 
 from roman_datamodels import stnode
 
-from ._base import MESSAGE, NONUM, save_node
+from ._base import MESSAGE, NONUM, NOSTR, save_node
 from ._common_meta import (
     mk_ref_common,
     mk_ref_dark_meta,
@@ -29,6 +29,7 @@ __all__ = [
     "mk_ipc",
     "mk_linearity",
     "mk_mask",
+    "mk_matable",
     "mk_pixelarea",
     "mk_readnoise",
     "mk_refpix",
@@ -417,6 +418,147 @@ def mk_mask(*, shape=(4096, 4096), filepath=None, **kwargs):
     maskref["dq"] = kwargs.get("dq", np.zeros(shape, dtype=np.uint32))
 
     return save_node(maskref, filepath=filepath)
+
+
+def mk_ref_matable_guide_window_tables(table_ids=None, **kwargs):
+    """
+    Create dummy data for MA Table Guide Window table instances.
+
+    Parameters
+    ----------
+    table_ids
+        list of integer IDs of the MA Tables
+
+    Returns
+    -------
+    dictionary of dictionaries
+    """
+    if table_ids is None:
+        if "guide_window_tables" in kwargs.keys():
+            table_ids = kwargs["guide_window_tables"].keys()
+        else:
+            table_ids = []
+            for idx in range(1, 11):
+                table_ids.append(f"GW{idx:04}")
+
+    guide_window_tables = {}
+    for gw_idx in table_ids:
+        if "guide_window_tables" in kwargs.keys():
+            kwarg_idx = kwargs["guide_window_tables"][gw_idx]
+        else:
+            kwarg_idx = {}
+        guide_window_tables[gw_idx] = {}
+        guide_window_tables[gw_idx]["effective_pedestal_exposure_time"] = kwarg_idx.get("effective_pedestal_exposure_time", NONUM)
+        guide_window_tables[gw_idx]["effective_signal_exposure_time"] = kwarg_idx.get("effective_signal_exposure_time", NONUM)
+        guide_window_tables[gw_idx]["gw_readout_time"] = kwarg_idx.get("gw_readout_time", NONUM)
+        guide_window_tables[gw_idx]["ma_table_description"] = kwarg_idx.get("ma_table_description", NOSTR)
+        guide_window_tables[gw_idx]["ma_table_name"] = kwarg_idx.get("ma_table_name", NOSTR)
+        guide_window_tables[gw_idx]["ma_table_number"] = kwarg_idx.get("ma_table_number", NONUM)
+        guide_window_tables[gw_idx]["fsw_slot_number"] = kwarg_idx.get("fsw_slot_number", NONUM)
+        guide_window_tables[gw_idx]["num_gw_columns"] = kwarg_idx.get("num_gw_columns", NONUM)
+        guide_window_tables[gw_idx]["num_gw_rows"] = kwarg_idx.get("num_gw_rows", NONUM)
+        guide_window_tables[gw_idx]["num_pedestal_reads"] = kwarg_idx.get("num_pedestal_reads", NONUM)
+        guide_window_tables[gw_idx]["num_pre_pedestal_reset_reads"] = kwarg_idx.get("num_pre_pedestal_reset_reads", NONUM)
+        guide_window_tables[gw_idx]["num_pre_signal_skips"] = kwarg_idx.get("num_pre_signal_skips", NONUM)
+        guide_window_tables[gw_idx]["num_signal_reads"] = kwarg_idx.get("num_signal_reads", NONUM)
+        guide_window_tables[gw_idx]["science_block_size"] = kwarg_idx.get("science_block_size", NONUM)
+
+    return guide_window_tables
+
+
+def mk_ref_matable_science_tables(table_ids=None, length=10, **kwargs):
+    """
+    Create dummy data for MA Table Science table instances.
+
+    Parameters
+    ----------
+    table_ids
+        list of integer IDs of the MA Tables
+
+    length
+        (optional, keyword-only) Length of lists in the model.
+
+    Returns
+    -------
+    dictionary of dictionaries
+    """
+    if table_ids is None:
+        if "science_tables" in kwargs.keys():
+            table_ids = kwargs["science_tables"].keys()
+        else:
+            table_ids = []
+            for idx in range(1, 11):
+                table_ids.append(f"SCI{idx:04}")
+
+    science_tables = {}
+    for sci_idx in table_ids:
+        if "science_tables" in kwargs.keys():
+            kwarg_idx = kwargs["science_tables"][sci_idx]
+        else:
+            kwarg_idx = {}
+        science_tables[sci_idx] = {}
+        science_tables[sci_idx]["accumulated_exposure_time"] = kwarg_idx.get(
+            "accumulated_exposure_time", np.arange(1, length + 1, dtype=np.float32).tolist()
+        )
+        science_tables[sci_idx]["effective_exposure_time"] = kwarg_idx.get(
+            "effective_exposure_time", np.arange(1, length + 1, dtype=np.float32).tolist()
+        )
+        science_tables[sci_idx]["frame_time"] = kwarg_idx.get("frame_time", NONUM)
+        science_tables[sci_idx]["integration_duration"] = kwarg_idx.get(
+            "integration_duration", np.arange(1, length + 1, dtype=np.float32).tolist()
+        )
+        science_tables[sci_idx]["ma_table_description"] = kwarg_idx.get("ma_table_description", NOSTR)
+        science_tables[sci_idx]["ma_table_name"] = kwarg_idx.get("ma_table_name", NOSTR)
+        science_tables[sci_idx]["ma_table_number"] = kwarg_idx.get("ma_table_number", NONUM)
+        science_tables[sci_idx]["fsw_slot_number"] = kwarg_idx.get("fsw_slot_number", NONUM)
+        science_tables[sci_idx]["min_science_resultants"] = kwarg_idx.get("min_science_resultants", NONUM)
+        science_tables[sci_idx]["num_pre_science_reads"] = kwarg_idx.get("num_pre_science_reads", NONUM)
+        science_tables[sci_idx]["num_pre_science_resultants"] = kwarg_idx.get("num_pre_science_resultants", NONUM)
+        science_tables[sci_idx]["num_science_resultants"] = kwarg_idx.get("num_science_resultants", NONUM)
+        science_tables[sci_idx]["observing_mode"] = kwarg_idx.get("observing_mode", NOSTR)
+        science_tables[sci_idx]["pre_science_read_is_reference"] = kwarg_idx.get(
+            "pre_science_read_is_reference", ([True] * length)
+        )
+        science_tables[sci_idx]["pre_science_read_is_resultant"] = kwarg_idx.get(
+            "pre_science_read_is_resultant", ([True] * length)
+        )
+        science_tables[sci_idx]["pre_science_read_types"] = kwarg_idx.get("pre_science_read_types", ([NOSTR] * length))
+        science_tables[sci_idx]["pre_science_time_after_reset"] = kwarg_idx.get("pre_science_time_after_reset", NONUM)
+        science_tables[sci_idx]["reset_frame_time"] = kwarg_idx.get("reset_frame_time", NONUM)
+        science_tables[sci_idx]["science_read_pattern"] = kwarg_idx.get(
+            "science_read_pattern", np.arange(1, length + 1, dtype=np.int32).reshape((-1, 1)).tolist()
+        )
+
+    return science_tables
+
+
+def mk_matable(*, gw_table_ids=None, sci_table_ids=None, length=10, filepath=None, **kwargs):
+    """
+    Create a dummy MA Table instance (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    table_ids
+        list of integer IDs of the MA Tables
+
+    length
+        (optional, keyword-only) Length of lists in the model.
+
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.MatableRef
+    """
+
+    matablerref = stnode.MatableRef()
+    matablerref["meta"] = mk_ref_common("MATABLE", **kwargs.get("meta", {}))
+    matablerref["guide_window_tables"] = mk_ref_matable_guide_window_tables(gw_table_ids, **kwargs)
+    matablerref["science_tables"] = mk_ref_matable_science_tables(sci_table_ids, length, **kwargs)
+
+    return save_node(matablerref, filepath=filepath)
 
 
 def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):

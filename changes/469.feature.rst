@@ -1,0 +1,1 @@
+Added datamodels for MA Tables reference files. Tests are added, and a couple adjusted for the integer keywords in the datamodel.
