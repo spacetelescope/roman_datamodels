@@ -398,7 +398,7 @@ def mk_ref_file(**kwargs):
     ref_file["refpix"] = kwargs.get("refpix", "N/A")
     ref_file["saturation"] = kwargs.get("saturation", "N/A")
     ref_file["skycells"] = kwargs.get("skycells", "N/A")
-    
+
     ref_file["crds"] = kwargs.get("crds", {"version": "12.3.1", "context": "roman_0815.pmap"})
 
     return ref_file
