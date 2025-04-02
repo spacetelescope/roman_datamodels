@@ -384,6 +384,7 @@ def mk_ref_file(**kwargs):
     ref_file = stnode.RefFile()
     ref_file["dark"] = kwargs.get("dark", "N/A")
     ref_file["distortion"] = kwargs.get("distortion", "N/A")
+    ref_file["epsf"] = kwargs.get("epsf", "N/A")
     ref_file["flat"] = kwargs.get("flat", "N/A")
     ref_file["gain"] = kwargs.get("gain", "N/A")
     ref_file["linearity"] = kwargs.get("linearity", "N/A")
