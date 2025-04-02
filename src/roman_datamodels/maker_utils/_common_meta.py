@@ -928,5 +928,6 @@ def mk_catalog_meta(**kwargs):
     meta["visit"] = mk_visit(**kwargs.get("visit", {}))
     meta["optical_element"] = kwargs.get("optical_element", "F158")
     meta["exposure"] = mk_exposure(**kwargs.get("exposure", {}))
+    meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
 
     return meta
