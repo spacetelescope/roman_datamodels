@@ -382,19 +382,23 @@ def mk_ref_file(**kwargs):
     roman_datamodels.stnode.RefFile
     """
     ref_file = stnode.RefFile()
+    ref_file["abvegaoffset"] = kwargs.get("abvegaoffset", "N/A")
+    ref_file["apcorr"] = kwargs.get("apcorr", "N/A")
+    ref_file["area"] = kwargs.get("area", "N/A")
     ref_file["dark"] = kwargs.get("dark", "N/A")
     ref_file["distortion"] = kwargs.get("distortion", "N/A")
     ref_file["epsf"] = kwargs.get("epsf", "N/A")
     ref_file["flat"] = kwargs.get("flat", "N/A")
     ref_file["gain"] = kwargs.get("gain", "N/A")
+    ref_file["inverse_linearity"] = kwargs.get("inverse_linearity", "N/A")
     ref_file["linearity"] = kwargs.get("linearity", "N/A")
     ref_file["mask"] = kwargs.get("mask", "N/A")
+    ref_file["photom"] = kwargs.get("photom", "N/A")
     ref_file["readnoise"] = kwargs.get("readnoise", "N/A")
     ref_file["refpix"] = kwargs.get("refpix", "N/A")
     ref_file["saturation"] = kwargs.get("saturation", "N/A")
-    ref_file["inverse_linearity"] = kwargs.get("inverse_linearity", "N/A")
-    ref_file["photom"] = kwargs.get("photom", "N/A")
-    ref_file["area"] = kwargs.get("area", "N/A")
+    ref_file["skycells"] = kwargs.get("skycells", "N/A")
+    
     ref_file["crds"] = kwargs.get("crds", {"version": "12.3.1", "context": "roman_0815.pmap"})
 
     return ref_file
