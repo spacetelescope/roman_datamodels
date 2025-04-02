@@ -27,6 +27,7 @@ NODES_LACKING_ARCHIVE_CATALOG = [
     stnode.Resample,
     stnode.SkyBackground,
     stnode.SourceCatalog,
+    stnode.WfiWcs,
 ]
 
 
@@ -1196,4 +1197,13 @@ def test_apcorr_none_array():
     # data uses a pattern property so no need to test all
     for name in ("ap_corrections", "ee_fractions", "ee_radii", "sky_background_rin", "sky_background_rout"):
         setattr(m.data.GRISM, name, None)
+    assert m.validate() is None
+
+
+def test_make_wfi_wcs():
+    """
+    Check create of WfiWcsModel.
+    """
+    m = utils.mk_datamodel(datamodels.WfiWcsModel)
+
     assert m.validate() is None
