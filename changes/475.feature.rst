@@ -1,0 +1,1 @@
+Update mk_mosaic_source_catalog for new schema.
