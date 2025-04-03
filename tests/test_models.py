@@ -1208,11 +1208,12 @@ def test_make_wfi_wcs():
 
     assert m.validate() is None
 
+
 @pytest.mark.parametrize(
     "mk_model",
     [
         lambda: datamodels.RampModel(utils.mk_ramp(shape=(2, 8, 8))),
-        lambda: datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
+        lambda: datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8))),
     ],
 )
 def test_wfi_wcs_from_wcsmodel(mk_model):
