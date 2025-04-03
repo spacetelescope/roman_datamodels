@@ -25,7 +25,7 @@ DTYPE_MAP = {}
 class _ParquetMixin:
     """Gives SourceCatalogModels the ability to save to parquet files."""
 
-    def to_parquet(self, file=None, fdir=None):
+    def to_parquet(self, filepath):
         """
         Save catalog in parquet format.
 
@@ -51,23 +51,6 @@ class _ParquetMixin:
                     "float64": pa.float64(),
                 }
             )
-
-        if file is None or isinstance(file, str):
-            # Construct output filename
-            if file is not None:
-                if file.endswith('.asdf'):
-                    file = file[:-5]
-                filename_root = pathlib.Path(file)
-            else:
-                    filename_root = pathlib.Path(self.meta.filename[:-5])
-            filename_root = filename_root.with_suffix(".parquet")
-            if fdir is not None:
-                filepath = pathlib.Path(fdir) / filename_root
-            else:
-                filepath = pathlib.Path('.') / filename_root
-        # Otherwise assume it is a file-like object
-        else:
-            filepath = file
 
         # Construct flat metadata dict
         flat_meta = self.to_flat_dict()
