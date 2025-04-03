@@ -1218,7 +1218,6 @@ def test_make_wfi_wcs():
 def test_wfi_wcs_from_wcsmodel(mk_model):
     model = mk_model()
     wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
-    breakpoint()
     for key in wfi_wcs:
         if not hasattr(model, key):
             continue

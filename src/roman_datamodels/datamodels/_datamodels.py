@@ -481,7 +481,7 @@ class WfiWcsModel(_RomanDataModel):
 
         wfi_wcs = mk_wfi_wcs()
 
-        _node_update(wfi_wcs, model)
+        _node_update(wfi_wcs, model, only_in_to_node=True)
 
         # Create model from node
         wfi_wcs_model = WfiWcsModel(wfi_wcs)
