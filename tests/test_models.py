@@ -1207,3 +1207,42 @@ def test_make_wfi_wcs():
     m = utils.mk_datamodel(datamodels.WfiWcsModel)
 
     assert m.validate() is None
+
+@pytest.mark.parametrize(
+    "mk_model",
+    [
+        lambda: datamodels.RampModel(utils.mk_ramp(shape=(2, 8, 8))),
+        lambda: datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
+    ],
+)
+def test_wfi_wcs_from_wcsmodel(mk_model):
+    model = mk_model()
+    wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
+    breakpoint()
+    for key in wfi_wcs:
+        if not hasattr(model, key):
+            continue
+
+        wfi_wcs_value = getattr(wfi_wcs, key)
+        model_value = getattr(model, key)
+        if isinstance(wfi_wcs_value, np.ndarray):
+            assert_array_equal(wfi_wcs_value, model_value.astype(wfi_wcs_value.dtype))
+
+        elif key == "meta":
+            wfi_wcs_meta = wfi_wcs_value.to_flat_dict(include_arrays=False, recursive=True)
+            model_meta = model_value.to_flat_dict(include_arrays=False, recursive=True)
+            for meta_key in wfi_wcs_meta:
+                if meta_key == "model_type":
+                    wfi_wcs_value[meta_key] = wfi_wcs.__class__.__name__
+                    model_value[meta_key] = model.__class__.__name__
+                    continue
+                elif meta_key == "cal_step":
+                    continue
+                if meta_key in model_meta:
+                    assert wfi_wcs_meta[meta_key] == model_meta[meta_key]
+
+        elif isinstance(wfi_wcs_value, stnode.DNode):
+            assert_node_equal(wfi_wcs_value, model_value)
+
+        else:
+            raise ValueError(f"Unexpected type {type(wfi_wcs_value)}, {key}")  # pragma: no cover

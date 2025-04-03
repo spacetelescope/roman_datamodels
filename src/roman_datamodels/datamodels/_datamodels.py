@@ -444,3 +444,45 @@ class SegmentationMapModel(_RomanDataModel):
 
 class WfiWcsModel(_RomanDataModel):
     _node_type = stnode.WfiWcs
+
+    @classmethod
+    def from_model_with_wcs(cls, model):
+        """Extract the WCS information from an exposure model post-assign_wcs
+
+        Construct a `WfiWcsModel` from any model that is used post-assign_wcs step
+        in the ELP pipeline. The WCS information is extracted out of the input model.
+        The wcs-related meta information is copied verbatim from the input model.
+
+        However, the WCS object itself is placed into the attribute `wcs_l2`. Furthermore, a
+        modified GWCS, applicable to the Level 1 version of the input model, is created
+        and stored in the attribute `wcs_l1`.
+
+        Parameters
+        ----------
+        model : RampModel, ImageModel
+            The input data model (a WfiWcsModel will also work).
+
+        Returns
+        -------
+        wfiwcs_model : WfiWcsModel
+            The WfiWcsModel built from the input model. If the input is already
+            a WfiWcsModel, it is simply returned.
+
+        """
+        ALLOWED_MODELS = (RampModel, ImageModel)
+
+        if isinstance(model, cls):
+            return model
+        if not isinstance(model, ALLOWED_MODELS):
+            raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
+
+        # Create base node with dummy values (for validation)
+        from roman_datamodels.maker_utils import mk_wfi_wcs
+
+        wfi_wcs = mk_wfi_wcs()
+
+        _node_update(wfi_wcs, model)
+
+        # Create model from node
+        wfi_wcs_model = WfiWcsModel(wfi_wcs)
+        return wfi_wcs_model
