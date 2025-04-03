@@ -21,7 +21,6 @@ dependencies = [
   "rad @ git+https://github.com/spacetelescope/rad.git",
   "asdf-standard >=1.1.0",
   "pyarrow >=19.0.1",
-  "pandas >=2.2.3",
 ]
 dynamic = ["version"]
 
@@ -34,6 +33,7 @@ test = [
   "pytest-doctestplus",
   "pytest-doctestplus >=1.2.1",
   "pytest-env >= 0.8",
+  "pandas >=2.2.3",
 ]
 docs = ["sphinx", "sphinx-automodapi", "sphinx-rtd-theme", "sphinx-astropy"]
 
