@@ -6,21 +6,20 @@ This module provides all the specific datamodels used by the Roman pipeline.
     from the schema manifest defined by RAD.
 """
 
-import numpy as np
-import pathlib
 import asdf
+import numpy as np
 from astropy.table import QTable
 
 from roman_datamodels import stnode
 
+from ..stnode import DNode
 from ._core import DataModel
 from ._utils import _node_update
-from ..stnode import DNode
-
 
 __all__ = []
 
 DTYPE_MAP = {}
+
 
 class _ParquetMixin:
     """Gives SourceCatalogModels the ability to save to parquet files."""
@@ -34,6 +33,7 @@ class _ParquetMixin:
         global DTYPE_MAP
         import pyarrow as pa
         import pyarrow.parquet as pq
+
         if not DTYPE_MAP:
             DTYPE_MAP.update(
                 {
@@ -55,7 +55,7 @@ class _ParquetMixin:
         # Construct flat metadata dict
         flat_meta = self.to_flat_dict()
         # select only meta items
-        flat_meta = {k:str(v) for (k,v) in flat_meta.items() if k.startswith('roman.meta')}
+        flat_meta = {k: str(v) for (k, v) in flat_meta.items() if k.startswith("roman.meta")}
         # Extract table metadata
         source_cat = self.source_catalog
         scmeta = source_cat.meta
@@ -63,7 +63,7 @@ class _ParquetMixin:
         dn_scmeta = DNode(scmeta)
         flat_scmeta = dn_scmeta.to_flat_dict(recursive=True)
         # Add prefix to flattened keys to indicate table metadata
-        flat_scmeta = {'source_catalog.'+k:str(v) for (k,v) in flat_scmeta.items()}
+        flat_scmeta = {"source_catalog." + k: str(v) for (k, v) in flat_scmeta.items()}
         # merge the two meta dicts
         flat_meta.update(flat_scmeta)
         # Turn numpy structured array into list of arrays
@@ -71,8 +71,9 @@ class _ParquetMixin:
         arrs = [np.array(source_cat[key]) for key in keys]
         units = [str(source_cat[key].unit) for key in keys]
         dtypes = [DTYPE_MAP[np.array(source_cat[key]).dtype.name] for key in keys]
-        fields = [pa.field(key, type=dtype, metadata={'unit': unit})
-                      for (key, dtype, unit) in zip(keys, dtypes, units)]
+        fields = [
+            pa.field(key, type=dtype, metadata={"unit": unit}) for (key, dtype, unit) in zip(keys, dtypes, units, strict=False)
+        ]
         schema = pa.schema(fields, metadata=flat_meta)
         table = pa.Table.from_arrays(arrs, schema=schema)
         pq.write_table(table, filepath, compression=None)
@@ -423,6 +424,7 @@ class FpsModel(_DataModel):
 
 class TvacModel(_DataModel):
     _node_type = stnode.Tvac
+
 
 class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin):
     _node_type = stnode.MosaicSourceCatalog
