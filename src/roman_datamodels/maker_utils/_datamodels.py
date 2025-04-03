@@ -536,8 +536,8 @@ def mk_wfi_wcs(*, filepath=None, **kwargs):
     roman_datamodels.stnode.WfiWcs
     """
     wfi_wcs = stnode.WfiWcs()
-    wfi_wcs['meta'] = mk_wcs_common_meta(**kwargs.get('meta', {}))
-    wfi_wcs['wcs_l2'] = mk_wcs()
-    wfi_wcs['wcs_l1'] = mk_wcs()
+    wfi_wcs["meta"] = mk_wcs_common_meta(**kwargs.get("meta", {}))
+    wfi_wcs["wcs_l2"] = mk_wcs()
+    wfi_wcs["wcs_l1"] = mk_wcs()
 
     return save_node(wfi_wcs, filepath=filepath)
