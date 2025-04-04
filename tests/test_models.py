@@ -1217,7 +1217,13 @@ def test_make_wfi_wcs():
 )
 def test_wfi_wcs_from_wcsmodel(mk_model):
     model = mk_model()
+
+    # Give the model's WCS a bounding box.
+    model.meta.wcs.bounding_box = ((-0.5, 4087.5), (-0.5, 4087.5))
+
     wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
+
+    # Test for equality of attributes
     for key in wfi_wcs:
         if not hasattr(model, key):
             continue
@@ -1245,3 +1251,15 @@ def test_wfi_wcs_from_wcsmodel(mk_model):
 
         else:
             raise ValueError(f"Unexpected type {type(wfi_wcs_value)}, {key}")  # pragma: no cover
+
+    # Test wcs fidelity
+    border = 4.  # Default extra border for L1
+    model_corner = model.meta.wcs.pixel_to_world(0., 0.)
+    wfi_wcs_corner = wfi_wcs.wcs_l1.pixel_to_world(border, border)  # Extra border due to being L1
+    assert model_corner.separation(wfi_wcs_corner).value <= 1e-5
+
+    model_bb = model.meta.wcs.bounding_box
+    wfi_wcs_bb = wfi_wcs.wcs_l1.bounding_box
+    assert model_bb[0][1] + 2 * border == wfi_wcs_bb[0][1]
+    assert model_bb[1][1] + 2 * border == wfi_wcs_bb[1][1]
+

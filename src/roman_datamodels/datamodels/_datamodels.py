@@ -5,14 +5,14 @@ This module provides all the specific datamodels used by the Roman pipeline.
     the top-level STNode type that the datamodel wraps. This STNode type is derived
     from the schema manifest defined by RAD.
 """
+import copy
 
 import asdf
 import numpy as np
+from astropy.modeling import models
 from astropy.table import QTable
 
-from roman_datamodels import stnode
-
-from ..stnode import DNode
+from .. import stnode
 from ._core import DataModel
 from ._utils import _node_update
 
@@ -60,7 +60,7 @@ class _ParquetMixin:
         source_cat = self.source_catalog
         scmeta = source_cat.meta
         # Wrap it as a DNode so it can be flattened
-        dn_scmeta = DNode(scmeta)
+        dn_scmeta = stnode.DNode(scmeta)
         flat_scmeta = dn_scmeta.to_flat_dict(recursive=True)
         # Add prefix to flattened keys to indicate table metadata
         flat_scmeta = {"source_catalog." + k: str(v) for (k, v) in flat_scmeta.items()}
@@ -446,7 +446,7 @@ class WfiWcsModel(_RomanDataModel):
     _node_type = stnode.WfiWcs
 
     @classmethod
-    def from_model_with_wcs(cls, model):
+    def from_model_with_wcs(cls, model, l1_border=4):
         """Extract the WCS information from an exposure model post-assign_wcs
 
         Construct a `WfiWcsModel` from any model that is used post-assign_wcs step
@@ -461,6 +461,9 @@ class WfiWcsModel(_RomanDataModel):
         ----------
         model : ImageModel
             The input data model (a WfiWcsModel will also work).
+
+        l1_border : int
+            The extra border to add for the L1 wcs.
 
         Returns
         -------
@@ -485,6 +488,15 @@ class WfiWcsModel(_RomanDataModel):
 
         # Assign the model WCS to the L2-specified wcs attribute
         wfi_wcs['wcs_l2'] = model.meta.wcs
+
+        # Create an L1 WCS that accounts for the extra border.
+        l1_wcs = copy.deepcopy(model.meta.wcs)
+        l1_shift = models.Shift(-l1_border) & models.Shift(-l1_border)
+        l1_wcs.insert_transform('detector', l1_shift, after=True)
+        bb = wfi_wcs['wcs_l2'].bounding_box
+        if bb is not None:
+            l1_wcs.bounding_box = ((bb[0][0], bb[0][1] + 2 * l1_border), (bb[1][0], bb[1][1] + 2 * l1_border))
+        wfi_wcs['wcs_l1'] = l1_wcs
 
         # Create model from node
         wfi_wcs_model = WfiWcsModel(wfi_wcs)
