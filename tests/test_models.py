@@ -27,6 +27,7 @@ NODES_LACKING_ARCHIVE_CATALOG = [
     stnode.Resample,
     stnode.SkyBackground,
     stnode.SourceCatalog,
+    stnode.WfiWcs,
 ]
 
 
@@ -1197,3 +1198,93 @@ def test_apcorr_none_array():
     for name in ("ap_corrections", "ee_fractions", "ee_radii", "sky_background_rin", "sky_background_rout"):
         setattr(m.data.GRISM, name, None)
     assert m.validate() is None
+
+
+def test_make_wfi_wcs():
+    """
+    Check create of WfiWcsModel.
+    """
+    m = utils.mk_datamodel(datamodels.WfiWcsModel)
+
+    assert m.validate() is None
+
+
+@pytest.mark.parametrize(
+    "mk_model",
+    [lambda: datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))],
+)
+def test_wfi_wcs_from_wcsmodel(mk_model):
+    model = mk_model()
+
+    # Give the model's WCS a bounding box.
+    model.meta.wcs.bounding_box = ((-0.5, 4087.5), (-0.5, 4087.5))
+
+    # Give the model some alignment results
+    model.meta["wcs_fit_results"] = {
+        "<rot>": 1.2078100852299566e-05,
+        "<scale>": 1.0,
+        "center": [-3.090428960153321, -18.122328864329525],
+        "fitgeom": "rshift",
+        "mae": 0.0017789920274088183,
+        "matrix": [[0.9999999999999778, 2.108026272605592e-07], [-2.108026272605592e-07, 0.9999999999999778]],
+        "nmatches": 109,
+        "proper": True,
+        "proper_rot": 1.2078100852299566e-05,
+        "rmse": 0.0022859902707182554,
+        "rot": [1.2078100852299566e-05, 1.2078100852299566e-05],
+        "scale": [1.0, 1.0],
+        "shift": [0.00017039070698617517, -0.00023752675967125825],
+        "skew": 0.0,
+        "status": "SUCCESS",
+    }
+
+    wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
+
+    # Test for equality of attributes
+    for key in wfi_wcs:
+        if not hasattr(model, key):
+            continue
+
+        wfi_wcs_value = getattr(wfi_wcs, key)
+        model_value = getattr(model, key)
+        if isinstance(wfi_wcs_value, np.ndarray):
+            assert_array_equal(wfi_wcs_value, model_value.astype(wfi_wcs_value.dtype))
+
+        elif key == "meta":
+            wfi_wcs_meta = wfi_wcs_value.to_flat_dict(include_arrays=False, recursive=True)
+            model_meta = model_value.to_flat_dict(include_arrays=False, recursive=True)
+            for meta_key in wfi_wcs_meta:
+                if meta_key == "model_type":
+                    wfi_wcs_value[meta_key] = wfi_wcs.__class__.__name__
+                    model_value[meta_key] = model.__class__.__name__
+                    continue
+                elif meta_key == "cal_step":
+                    continue
+                if meta_key in model_meta:
+                    assert wfi_wcs_meta[meta_key] == model_meta[meta_key]
+
+        elif isinstance(wfi_wcs_value, stnode.DNode):
+            assert_node_equal(wfi_wcs_value, model_value)
+
+        else:
+            raise ValueError(f"Unexpected type {type(wfi_wcs_value)}, {key}")  # pragma: no cover
+
+    # Test wcs fidelity
+    border = 4.0  # Default extra border for L1
+    model_corner = model.meta.wcs.pixel_to_world(0.0, 0.0)
+    wfi_wcs_corner = wfi_wcs.wcs_l1.pixel_to_world(border, border)  # Extra border due to being L1
+    assert model_corner.separation(wfi_wcs_corner).value <= 1e-5
+
+    model_bb = model.meta.wcs.bounding_box
+    wfi_wcs_bb = wfi_wcs.wcs_l1.bounding_box
+    assert model_bb[0][1] + 2 * border == wfi_wcs_bb[0][1]
+    assert model_bb[1][1] + 2 * border == wfi_wcs_bb[1][1]
+
+
+def test_wfi_wcs_no_wcs():
+    """Test that an appropriate error is generated when the input has no WCS"""
+    model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
+    model.meta.wcs = None
+
+    with pytest.raises(ValueError):
+        _ = datamodels.WfiWcsModel.from_model_with_wcs(model)
