@@ -1272,3 +1272,11 @@ def test_wfi_wcs_from_wcsmodel(mk_model):
     assert model_bb[0][1] + 2 * border == wfi_wcs_bb[0][1]
     assert model_bb[1][1] + 2 * border == wfi_wcs_bb[1][1]
 
+
+def test_wfi_wcs_no_wcs():
+    """Test that an appropriate error is generated when the input has no WCS"""
+    model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
+    model.meta.wcs = None
+
+    with pytest.raises(ValueError):
+        _ = datamodels.WfiWcsModel.from_model_with_wcs(model)
