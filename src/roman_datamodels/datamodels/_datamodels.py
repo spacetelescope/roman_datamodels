@@ -498,6 +498,12 @@ class WfiWcsModel(_RomanDataModel):
             l1_wcs.bounding_box = ((bb[0][0], bb[0][1] + 2 * l1_border), (bb[1][0], bb[1][1] + 2 * l1_border))
         wfi_wcs['wcs_l1'] = l1_wcs
 
+        # Get alignment results, if available
+        try:
+            wfi_wcs['meta']['wcs_fit_results'] = dict(model.meta.wcs_fit_results)
+        except AttributeError:
+            pass
+
         # Create model from node
         wfi_wcs_model = WfiWcsModel(wfi_wcs)
         return wfi_wcs_model
