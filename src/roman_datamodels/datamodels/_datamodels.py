@@ -479,6 +479,10 @@ class WfiWcsModel(_RomanDataModel):
         if not isinstance(model, ALLOWED_MODELS):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
+        # Ensure a WCS has been defined.
+        if model.meta.wcs is None:
+            raise ValueError(f'Model has no WCS defined, cannot create {cls}')
+
         # Create base node with dummy values (for validation)
         from roman_datamodels.maker_utils import mk_wfi_wcs
 
