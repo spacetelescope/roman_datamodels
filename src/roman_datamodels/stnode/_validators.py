@@ -7,12 +7,6 @@ class TableValidator(Validator):
     tags = ("**",)
 
     def validate(self, schema, node, parent_schema):
-        # node["columns"]  list of "columns"
-        # [{'data': {'shape': [3], 'source': 0, 'datatype': 'int64', 'byteorder': 'little'}, 'name': 'a'}, {'data': {'shape': [3], 'source': 1, 'datatype': 'int64', 'byteorder': 'little'}, 'name': 'b'}]
-        # colnamesk
-        # schema_property_value is the stuff under the property
-        # TODO fail if columns is not a list
-        # assume k = name v = subschema for column
         column_by_name = {name: column for name, column in zip(node["colnames"], node["columns"], strict=False)}
 
         for subschema in schema:
