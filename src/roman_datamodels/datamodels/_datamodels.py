@@ -459,7 +459,7 @@ class WfiWcsModel(_RomanDataModel):
 
         Parameters
         ----------
-        model : RampModel, ImageModel
+        model : ImageModel
             The input data model (a WfiWcsModel will also work).
 
         Returns
@@ -469,7 +469,7 @@ class WfiWcsModel(_RomanDataModel):
             a WfiWcsModel, it is simply returned.
 
         """
-        ALLOWED_MODELS = (RampModel, ImageModel)
+        ALLOWED_MODELS = (ImageModel)
 
         if isinstance(model, cls):
             return model
