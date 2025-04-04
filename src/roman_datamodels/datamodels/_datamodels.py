@@ -483,6 +483,9 @@ class WfiWcsModel(_RomanDataModel):
 
         _node_update(wfi_wcs, model, only_in_to_node=True)
 
+        # Assign the model WCS to the L2-specified wcs attribute
+        wfi_wcs['wcs_l2'] = model.meta.wcs
+
         # Create model from node
         wfi_wcs_model = WfiWcsModel(wfi_wcs)
         return wfi_wcs_model
