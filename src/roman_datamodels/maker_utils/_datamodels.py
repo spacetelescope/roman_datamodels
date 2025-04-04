@@ -429,9 +429,10 @@ def mk_mosaic_source_catalog(*, filepath=None, **kwargs):
     if "source_catalog" in kwargs:
         source_catalog["source_catalog"] = kwargs["source_catalog"]
     else:
-        column_defs = source_catalog._schema()["properties"]["source_catalog"]["allOf"][-1]["properties"]["columns"]["items"]
+        column_defs = source_catalog._schema()["properties"]["source_catalog"]["allOf"][-1]["properties"]["columns"]["allOf"]
         columns = {}
         for column_def in column_defs:
+            column_def = column_def["not"]["items"]["not"]
             name = column_def["properties"]["name"]["enum"][0]
             dtype = column_def["properties"]["data"]["properties"]["datatype"]["enum"][0]
             if "bool" in dtype:
