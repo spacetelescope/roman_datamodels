@@ -21,6 +21,8 @@ class TableValidator(Validator):
                 if name not in column_by_name:
                     yield ValidationError(f"Missing required column: {name}")
                     continue
+            elif name not in column_by_name:
+                continue
             column = column_by_name[name]
             if "datatype" in subschema:
                 datatype = column["data"].get("datatype", None)
