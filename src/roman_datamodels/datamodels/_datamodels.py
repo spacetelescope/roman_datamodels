@@ -5,6 +5,7 @@ This module provides all the specific datamodels used by the Roman pipeline.
     the top-level STNode type that the datamodel wraps. This STNode type is derived
     from the schema manifest defined by RAD.
 """
+
 import copy
 
 import asdf
@@ -472,7 +473,7 @@ class WfiWcsModel(_RomanDataModel):
             a WfiWcsModel, it is simply returned.
 
         """
-        ALLOWED_MODELS = (ImageModel)
+        ALLOWED_MODELS = ImageModel
 
         if isinstance(model, cls):
             return model
@@ -481,7 +482,7 @@ class WfiWcsModel(_RomanDataModel):
 
         # Ensure a WCS has been defined.
         if model.meta.wcs is None:
-            raise ValueError(f'Model has no WCS defined, cannot create {cls}')
+            raise ValueError(f"Model has no WCS defined, cannot create {cls}")
 
         # Create base node with dummy values (for validation)
         from roman_datamodels.maker_utils import mk_wfi_wcs
@@ -491,20 +492,20 @@ class WfiWcsModel(_RomanDataModel):
         _node_update(wfi_wcs, model, only_in_to_node=True)
 
         # Assign the model WCS to the L2-specified wcs attribute
-        wfi_wcs['wcs_l2'] = model.meta.wcs
+        wfi_wcs["wcs_l2"] = model.meta.wcs
 
         # Create an L1 WCS that accounts for the extra border.
         l1_wcs = copy.deepcopy(model.meta.wcs)
         l1_shift = models.Shift(-l1_border) & models.Shift(-l1_border)
-        l1_wcs.insert_transform('detector', l1_shift, after=True)
-        bb = wfi_wcs['wcs_l2'].bounding_box
+        l1_wcs.insert_transform("detector", l1_shift, after=True)
+        bb = wfi_wcs["wcs_l2"].bounding_box
         if bb is not None:
             l1_wcs.bounding_box = ((bb[0][0], bb[0][1] + 2 * l1_border), (bb[1][0], bb[1][1] + 2 * l1_border))
-        wfi_wcs['wcs_l1'] = l1_wcs
+        wfi_wcs["wcs_l1"] = l1_wcs
 
         # Get alignment results, if available
         try:
-            wfi_wcs['meta']['wcs_fit_results'] = dict(model.meta.wcs_fit_results)
+            wfi_wcs["meta"]["wcs_fit_results"] = dict(model.meta.wcs_fit_results)
         except AttributeError:
             pass
 

@@ -1211,9 +1211,7 @@ def test_make_wfi_wcs():
 
 @pytest.mark.parametrize(
     "mk_model",
-    [
-        lambda: datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
-    ],
+    [lambda: datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))],
 )
 def test_wfi_wcs_from_wcsmodel(mk_model):
     model = mk_model()
@@ -1222,13 +1220,23 @@ def test_wfi_wcs_from_wcsmodel(mk_model):
     model.meta.wcs.bounding_box = ((-0.5, 4087.5), (-0.5, 4087.5))
 
     # Give the model some alignment results
-    model.meta['wcs_fit_results'] = {
-        '<rot>': 1.2078100852299566e-05, '<scale>': 1.0, 'center': [-3.090428960153321, -18.122328864329525],
-        'fitgeom': 'rshift', 'mae': 0.0017789920274088183,
-        'matrix': [[0.9999999999999778, 2.108026272605592e-07], [-2.108026272605592e-07, 0.9999999999999778]],
-        'nmatches': 109, 'proper': True, 'proper_rot': 1.2078100852299566e-05, 'rmse': 0.0022859902707182554,
-        'rot': [1.2078100852299566e-05, 1.2078100852299566e-05], 'scale': [1.0, 1.0],
-        'shift': [0.00017039070698617517, -0.00023752675967125825], 'skew': 0.0, 'status': 'SUCCESS'}
+    model.meta["wcs_fit_results"] = {
+        "<rot>": 1.2078100852299566e-05,
+        "<scale>": 1.0,
+        "center": [-3.090428960153321, -18.122328864329525],
+        "fitgeom": "rshift",
+        "mae": 0.0017789920274088183,
+        "matrix": [[0.9999999999999778, 2.108026272605592e-07], [-2.108026272605592e-07, 0.9999999999999778]],
+        "nmatches": 109,
+        "proper": True,
+        "proper_rot": 1.2078100852299566e-05,
+        "rmse": 0.0022859902707182554,
+        "rot": [1.2078100852299566e-05, 1.2078100852299566e-05],
+        "scale": [1.0, 1.0],
+        "shift": [0.00017039070698617517, -0.00023752675967125825],
+        "skew": 0.0,
+        "status": "SUCCESS",
+    }
 
     wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
 
@@ -1262,8 +1270,8 @@ def test_wfi_wcs_from_wcsmodel(mk_model):
             raise ValueError(f"Unexpected type {type(wfi_wcs_value)}, {key}")  # pragma: no cover
 
     # Test wcs fidelity
-    border = 4.  # Default extra border for L1
-    model_corner = model.meta.wcs.pixel_to_world(0., 0.)
+    border = 4.0  # Default extra border for L1
+    model_corner = model.meta.wcs.pixel_to_world(0.0, 0.0)
     wfi_wcs_corner = wfi_wcs.wcs_l1.pixel_to_world(border, border)  # Extra border due to being L1
     assert model_corner.separation(wfi_wcs_corner).value <= 1e-5
 
