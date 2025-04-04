@@ -453,9 +453,9 @@ class WfiWcsModel(_RomanDataModel):
         in the ELP pipeline. The WCS information is extracted out of the input model.
         The wcs-related meta information is copied verbatim from the input model.
 
-        However, the WCS object itself is placed into the attribute `wcs_l2`. Furthermore, a
+        However, the WCS object itself is placed into the attribute 'wcs_l2'. Furthermore, a
         modified GWCS, applicable to the Level 1 version of the input model, is created
-        and stored in the attribute `wcs_l1`.
+        and stored in the attribute 'wcs_l1'.
 
         Parameters
         ----------
