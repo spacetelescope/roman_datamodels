@@ -1221,6 +1221,15 @@ def test_wfi_wcs_from_wcsmodel(mk_model):
     # Give the model's WCS a bounding box.
     model.meta.wcs.bounding_box = ((-0.5, 4087.5), (-0.5, 4087.5))
 
+    # Give the model some alignment results
+    model.meta['wcs_fit_results'] = {
+        '<rot>': 1.2078100852299566e-05, '<scale>': 1.0, 'center': [-3.090428960153321, -18.122328864329525],
+        'fitgeom': 'rshift', 'mae': 0.0017789920274088183,
+        'matrix': [[0.9999999999999778, 2.108026272605592e-07], [-2.108026272605592e-07, 0.9999999999999778]],
+        'nmatches': 109, 'proper': True, 'proper_rot': 1.2078100852299566e-05, 'rmse': 0.0022859902707182554,
+        'rot': [1.2078100852299566e-05, 1.2078100852299566e-05], 'scale': [1.0, 1.0],
+        'shift': [0.00017039070698617517, -0.00023752675967125825], 'skew': 0.0, 'status': 'SUCCESS'}
+
     wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
 
     # Test for equality of attributes
