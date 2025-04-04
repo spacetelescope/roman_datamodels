@@ -426,8 +426,21 @@ def mk_mosaic_source_catalog(*, filepath=None, **kwargs):
     roman_datamodels.stnode.MosaicSourceCatalog
     """
     source_catalog = stnode.MosaicSourceCatalog()
+    if "source_catalog" in kwargs:
+        source_catalog["source_catalog"] = kwargs["source_catalog"]
+    else:
+        column_defs = source_catalog._schema()["properties"]["source_catalog"]["columns"]
+        columns = {}
+        for column_def in column_defs:
+            if not column_def.get("required", False):
+                continue
+            name = column_def["name"]
+            dtype = column_def.get("datatype", "float64")
+            if "bool" in dtype:
+                dtype = "bool"
+            columns[name] = np.array([], dtype)
+        source_catalog["source_catalog"] = Table(columns)
 
-    source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
     source_catalog["meta"] = mk_mosaic_catalog_meta(**kwargs.get("meta", {}))
 
     return save_node(source_catalog, filepath=filepath)
