@@ -1273,7 +1273,7 @@ def test_wfi_wcs_from_wcsmodel(mk_model):
     border = 4.0  # Default extra border for L1
     model_corner = model.meta.wcs.pixel_to_world(0.0, 0.0)
     wfi_wcs_corner = wfi_wcs.wcs_l1.pixel_to_world(border, border)  # Extra border due to being L1
-    assert model_corner.separation(wfi_wcs_corner).value <= 1e-5
+    assert model_corner.separation(wfi_wcs_corner).value <= 1e-7
 
     model_bb = model.meta.wcs.bounding_box
     wfi_wcs_bb = wfi_wcs.wcs_l1.bounding_box
