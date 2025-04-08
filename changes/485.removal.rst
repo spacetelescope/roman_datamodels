@@ -1,0 +1,1 @@
+Remove MosaicModel.append_individual_meta
