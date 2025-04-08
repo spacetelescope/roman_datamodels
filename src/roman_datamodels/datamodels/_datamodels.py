@@ -487,7 +487,7 @@ class WfiWcsModel(_RomanDataModel):
         # Retrieve the needed meta components
         wfi_wcs = cls()
         wfi_wcs.meta = {}
-        skip_keys = {"calibration_software_version", "product_type", "filename", "file_date"}
+        skip_keys = {}
         for k in wfi_wcs.meta._schema_attributes.explicit_properties:
             if k not in skip_keys and k in model.meta:
                 wfi_wcs.meta[k] = copy.deepcopy(model.meta[k])
@@ -506,7 +506,7 @@ class WfiWcsModel(_RomanDataModel):
 
         # Get alignment results, if available
         try:
-            wfi_wcs.meta.wcs_fit_results = model.meta.wcs_fit_results
+            wfi_wcs.meta.wcs_fit_results = model.meta.wcs_fit_results.value
         except AttributeError:
             pass
 
