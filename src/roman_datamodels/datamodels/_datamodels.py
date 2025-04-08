@@ -484,15 +484,16 @@ class WfiWcsModel(_RomanDataModel):
         if model.meta.wcs is None:
             raise ValueError(f"Model has no WCS defined, cannot create {cls}")
 
-        # Create base node with dummy values (for validation)
-        from roman_datamodels.maker_utils import mk_wfi_wcs
-
-        wfi_wcs = mk_wfi_wcs()
-
-        _node_update(wfi_wcs, model, only_in_to_node=True)
+        # Retrieve the needed meta components
+        wfi_wcs = cls()
+        wfi_wcs.meta = {}
+        skip_keys = {"calibration_software_version", "product_type", "filename", "file_date"}
+        for k in wfi_wcs.meta._schema_attributes.explicit_properties:
+            if k not in skip_keys and k in model.meta:
+                wfi_wcs.meta[k] = copy.deepcopy(model.meta[k])
 
         # Assign the model WCS to the L2-specified wcs attribute
-        wfi_wcs["wcs_l2"] = model.meta.wcs
+        wfi_wcs.wcs_l2 = model.meta.wcs
 
         # Create an L1 WCS that accounts for the extra border.
         l1_wcs = copy.deepcopy(model.meta.wcs)
@@ -501,14 +502,13 @@ class WfiWcsModel(_RomanDataModel):
         bb = wfi_wcs["wcs_l2"].bounding_box
         if bb is not None:
             l1_wcs.bounding_box = ((bb[0][0], bb[0][1] + 2 * l1_border), (bb[1][0], bb[1][1] + 2 * l1_border))
-        wfi_wcs["wcs_l1"] = l1_wcs
+        wfi_wcs.wcs_l1 = l1_wcs
 
         # Get alignment results, if available
         try:
-            wfi_wcs["meta"]["wcs_fit_results"] = dict(model.meta.wcs_fit_results)
+            wfi_wcs.meta.wcs_fit_results = model.meta.wcs_fit_results
         except AttributeError:
             pass
 
-        # Create model from node
-        wfi_wcs_model = WfiWcsModel(wfi_wcs)
-        return wfi_wcs_model
+        # That's all folks.
+        return wfi_wcs
