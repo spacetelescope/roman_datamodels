@@ -215,6 +215,8 @@ class DataModel(abc.ABC):
         # TODO: Support gzip-compressed fits
         if ext == ".asdf":
             self.to_asdf(output_path, *args, **kwargs)
+        elif ext == ".parquet" and hasattr(self, "to_parquet"):
+            self.to_parquet(output_path)
         else:
             raise ValueError(f"unknown filetype {ext}")
 
