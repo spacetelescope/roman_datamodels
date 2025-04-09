@@ -343,6 +343,7 @@ class DataModel(abc.ABC):
             if isinstance(val, str | int | float | complex | bool)
         }
 
+    @_set_default_asdf
     def validate(self):
         """
         Re-validate the model instance against the tags
