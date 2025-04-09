@@ -478,28 +478,25 @@ class WfiWcsModel(_RomanDataModel):
             a WfiWcsModel, it is simply returned.
 
         """
-        ALLOWED_MODELS = ImageModel
-
         if isinstance(model, cls):
             return model
-        if not isinstance(model, ALLOWED_MODELS):
-            raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
+        if not isinstance(model, ImageModel):
+            raise ValueError("Input must be an ImageModel")
 
         # Retrieve the needed meta components
         wfi_wcs = cls()
         wfi_wcs.meta = {}
-        skip_keys = {}
         for k in wfi_wcs.meta._schema_attributes.explicit_properties:
-            if k not in skip_keys and k in model.meta:
+            if k in model.meta:
                 wfi_wcs.meta[k] = copy.deepcopy(model.meta[k])
 
-        # Ensure a WCS has been defined.
+        # Check that a WCS has been defined.
         if model.meta.wcs is None:
             log.info("Model has no WCS defined. Will not populate the WCS components.")
             return wfi_wcs
 
         # Assign the model WCS to the L2-specified wcs attribute
-        wfi_wcs.wcs_l2 = model.meta.wcs
+        wfi_wcs.wcs_l2 = copy.deepcopy(model.meta.wcs)
 
         # Create an L1 WCS that accounts for the extra border.
         l1_wcs = copy.deepcopy(model.meta.wcs)
@@ -511,10 +508,8 @@ class WfiWcsModel(_RomanDataModel):
         wfi_wcs.wcs_l1 = l1_wcs
 
         # Get alignment results, if available
-        try:
-            wfi_wcs.meta.wcs_fit_results = model.meta.wcs_fit_results.value
-        except AttributeError:
-            pass
+        if hasattr(model.meta, 'wcs_fit_results'):
+            wfi_wcs.meta.wcs_fit_results = copy.deepcopy(model.meta.wcs_fit_results)
 
         # That's all folks.
         return wfi_wcs
