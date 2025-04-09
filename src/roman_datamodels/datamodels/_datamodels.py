@@ -474,8 +474,7 @@ class WfiWcsModel(_RomanDataModel):
         Returns
         -------
         wfiwcs_model : WfiWcsModel
-            The WfiWcsModel built from the input model. If the input is already
-            a WfiWcsModel, it is simply returned.
+            The WfiWcsModel built from the input model.
 
         """
         if not isinstance(model, ImageModel):
