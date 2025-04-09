@@ -1267,7 +1267,7 @@ def test_wfi_wcs_no_wcs(caplog):
     assert wfi_wcs.validate() is None
 
     assert not hasattr(wfi_wcs, "wcs_l1")
-    
+
     assert not hasattr(wfi_wcs, "wcs_l2")
 
     assert "Model has no WCS defined" in caplog.text
