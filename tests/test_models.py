@@ -1266,10 +1266,8 @@ def test_wfi_wcs_no_wcs(caplog):
     wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
     assert wfi_wcs.validate() is None
 
-    with pytest.raises(AttributeError):
-        _ = wfi_wcs.wcs_l1
-
-    with pytest.raises(AttributeError):
-        _ = wfi_wcs.wcs_l2
+    assert not hasattr(wfi_wcs, "wcs_l1")
+    
+    assert not hasattr(wfi_wcs, "wcs_l2")
 
     assert "Model has no WCS defined" in caplog.text
