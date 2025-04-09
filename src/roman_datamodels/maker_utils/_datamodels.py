@@ -16,7 +16,7 @@ from ._common_meta import (
     mk_msos_stack_meta,
     mk_ramp_meta,
     mk_wcs,
-    mk_wcs_common_meta,
+    mk_wfi_wcs_common_meta,
 )
 from ._tagged_nodes import mk_cal_logs
 
@@ -536,7 +536,7 @@ def mk_wfi_wcs(*, filepath=None, **kwargs):
     roman_datamodels.stnode.WfiWcs
     """
     wfi_wcs = stnode.WfiWcs()
-    wfi_wcs["meta"] = mk_wcs_common_meta(**kwargs.get("meta", {}))
+    wfi_wcs["meta"] = mk_wfi_wcs_common_meta(**kwargs.get("meta", {}))
     wfi_wcs["wcs_l2"] = mk_wcs()
     wfi_wcs["wcs_l1"] = mk_wcs()
 

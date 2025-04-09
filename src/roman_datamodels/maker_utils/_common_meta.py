@@ -428,13 +428,13 @@ def mk_common_meta(**kwargs):
     return meta
 
 
-def mk_wcs_common_meta(**kwargs):
+def mk_wfi_wcs_common_meta(**kwargs):
     """
     Create a dummy common metadata dictionary for WfiWcs with valid values for attributes
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema)
+    dict
     """
     meta = mk_basic_meta(**kwargs)
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
