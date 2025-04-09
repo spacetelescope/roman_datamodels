@@ -24,7 +24,7 @@ class FilenameMismatchWarning(UserWarning):
     """
 
 
-def _node_update(to_node, from_node, only_in_to_node=False, extras=None, extras_key=None, ignore=None):
+def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
     """Copy node contents from an existing node to another existing node
 
     How the copy occurs depends on existence of keys in `to_node`
@@ -32,7 +32,7 @@ def _node_update(to_node, from_node, only_in_to_node=False, extras=None, extras_
     If key exists in `to_node`, contents are converted from `from_node` stnode type to
     the stnode type expected in order to preserve validation of the node.
 
-    If key only exists in `from_node`, the contents are copied as-is, modulo `only_in_to_node`
+    If key only exists in `from_node`, the contents are copied as-is.
 
     If key exists in the list `extras`, the contents are placed in the dict `["extras"]`.
     if `extras_key` is given, then the sub-dictionary `["extras"][extras_key]` is used.
@@ -41,6 +41,8 @@ def _node_update(to_node, from_node, only_in_to_node=False, extras=None, extras_
 
     Keys in `ignore` are not considered.
 
+    Keys are also
+
     Parameters
     ----------
     to_node : stnode
@@ -48,9 +50,6 @@ def _node_update(to_node, from_node, only_in_to_node=False, extras=None, extras_
 
     from_node : stnode, DataModel
         Node to copy from
-
-    only_in_to_node : bool
-        Only transfer keys that exist in `to_node`.
 
     extras : [str[,...]]
         Keys that may create collisions between the two node trees. All such keys are placed
@@ -105,8 +104,7 @@ def _node_update(to_node, from_node, only_in_to_node=False, extras=None, extras_
                         value = getattr(from_node, key)
                     setattr(to_node, key, value)
             else:
-                if not only_in_to_node:
-                    to_node[key] = from_node[key]
+                to_node[key] = from_node[key]
         return new_extras
 
     # Now do the copy.
