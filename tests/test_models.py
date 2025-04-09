@@ -1264,6 +1264,7 @@ def test_wfi_wcs_no_wcs(caplog):
     model.meta.wcs = None
 
     wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
+    assert wfi_wcs.validate() is None
 
     with pytest.raises(AttributeError):
         _ = wfi_wcs.wcs_l1
