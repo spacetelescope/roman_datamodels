@@ -1240,7 +1240,7 @@ def test_wfi_wcs_from_wcsmodel(mk_model):
 
     wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
 
-    # Test for equality of attributes
+    # Test meta copied from input model
     for key in wfi_wcs.meta:
         wfi_wcs_value = getattr(wfi_wcs.meta, key)
         model_value = getattr(model.meta, key)
