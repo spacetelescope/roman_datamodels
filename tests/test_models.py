@@ -1259,7 +1259,7 @@ def test_wfi_wcs_from_wcsmodel(mk_model):
 
 
 def test_wfi_wcs_no_wcs(caplog):
-    """Test that file is still generate with lack of wcs"""
+    """Test providing an ImageModel without a wcs produces a valid WfiWcsModel with no wcses."""
     model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
     model.meta.wcs = None
 
