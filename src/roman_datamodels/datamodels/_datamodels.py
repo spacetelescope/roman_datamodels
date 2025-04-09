@@ -466,7 +466,7 @@ class WfiWcsModel(_RomanDataModel):
         Parameters
         ----------
         model : ImageModel
-            The input data model (a WfiWcsModel will also work).
+            The input data model.
 
         l1_border : int
             The extra border to add for the L1 wcs.
