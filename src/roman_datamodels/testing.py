@@ -118,7 +118,7 @@ def _assert_value_is_copy(value1, value2, deepcopy=False):
                 # Normally hashable objects do not deepcopy.
                 # GWCS violates this.
                 if isinstance(value1, gwcs.WCS) and isinstance(value2, gwcs.WCS):
-                    assert True
+                    assert value1 is not value2
                 else:
                     assert value1 is value2
     else:
