@@ -506,7 +506,7 @@ class WfiWcsModel(_RomanDataModel):
         wfi_wcs.wcs_l1 = l1_wcs
 
         # Get alignment results, if available
-        if hasattr(model.meta, 'wcs_fit_results'):
+        if hasattr(model.meta, "wcs_fit_results"):
             wfi_wcs.meta.wcs_fit_results = copy.deepcopy(model.meta.wcs_fit_results)
 
         # That's all folks.
