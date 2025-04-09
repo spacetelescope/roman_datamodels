@@ -27,32 +27,18 @@ def mk_exposure(**kwargs):
     exp["type"] = kwargs.get("type", "WFI_IMAGE")
     exp["nresultants"] = kwargs.get("nresultants", 6)
     exp["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    exp["mid_time"] = kwargs.get("mid_time", time.Time("2020-01-01T01:00:00.0", format="isot", scale="utc"))
     exp["end_time"] = kwargs.get("end_time", time.Time("2020-01-01T02:00:00.0", format="isot", scale="utc"))
-    # exp["ngroups"] = kwargs.get("ngroups", 6)
-    # exp["nframes"] = kwargs.get("nframes", 8)
-    exp["data_problem"] = kwargs.get("data_problem", False)
-    # exp["frame_divisor"] = kwargs.get("frame_divisor", NONUM)
-    # exp["groupgap"] = kwargs.get("groupgap", 0)
+    exp["data_problem"] = kwargs.get("data_problem", NOSTR)
     exp["frame_time"] = kwargs.get("frame_time", NONUM)
     exp["exposure_time"] = kwargs.get("exposure_time", NONUM)
+    exp["ma_table_id"] = kwargs.get("ma_table_id", NOSTR)
+    exp["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
     exp["ma_table_name"] = kwargs.get("ma_table_name", NOSTR)
     exp["ma_table_number"] = kwargs.get("ma_table_number", NONUM)
     exp["read_pattern"] = kwargs.get("read_pattern", [[1], [2, 3], [4], [5, 6, 7, 8], [9, 10], [11]])
-    # exp["start_time_mjd"] = kwargs.get("start_time_mjd", NONUM)
-    # exp["mid_time_mjd"] = kwargs.get("mid_time_mjd", NONUM)
-    # exp["end_time_mjd"] = kwargs.get("end_time_mjd", NONUM)
-    # exp["start_time_tdb"] = kwargs.get("start_time_tdb", NONUM)
-    # exp["mid_time_tdb"] = kwargs.get("mid_time_tdb", NONUM)
-    # exp["end_time_tdb"] = kwargs.get("end_time_tdb", NONUM)
-    # exp["sca_number"] = kwargs.get("sca_number", NONUM)
-    # exp["gain_factor"] = kwargs.get("gain_factor", NONUM)
-    # exp["integration_time"] = kwargs.get("integration_time", NONUM)
-    # exp["elapsed_exposure_time"] = kwargs.get("elapsed_exposure_time", NONUM)
     exp["effective_exposure_time"] = kwargs.get("effective_exposure_time", NONUM)
-    # exp["duration"] = kwargs.get("duration", NONUM)
-    # exp["level0_compressed"] = kwargs.get("level0_compressed", True)
     exp["truncated"] = kwargs.get("truncated", False)
+    exp["engineering_quality"] = kwargs.get("engineering_quality", "OK")
 
     return exp
 
@@ -89,7 +75,6 @@ def mk_program(**kwargs):
     prog["category"] = kwargs.get("category", NOSTR)
     prog["subcategory"] = kwargs.get("subcategory", "None")
     prog["science_category"] = kwargs.get("science_category", NOSTR)
-    prog["continuation_id"] = kwargs.get("continuation_id", NONUM)
 
     return prog
 
@@ -165,10 +150,7 @@ def mk_ephemeris(**kwargs):
     roman_datamodels.stnode.Ephemeris
     """
     ephem = stnode.Ephemeris()
-    ephem["earth_angle"] = kwargs.get("earth_angle", NONUM)
-    ephem["moon_angle"] = kwargs.get("moon_angle", NONUM)
     ephem["ephemeris_reference_frame"] = kwargs.get("ephemeris_reference_frame", NOSTR)
-    ephem["sun_angle"] = kwargs.get("sun_angle", NONUM)
     ephem["type"] = kwargs.get("type", "DEFINITIVE")
     ephem["time"] = kwargs.get("time", NONUM)
     ephem["spatial_x"] = kwargs.get("spatial_x", NONUM)
@@ -194,15 +176,10 @@ def mk_visit(**kwargs):
     visit["dither"] = kwargs.get(
         "dither", {"primary_name": None, "subpixel_name": None, "executed_pattern": np.arange(1, 10).tolist()}
     )
-    visit["engineering_quality"] = kwargs.get("engineering_quality", "OK")
-    visit["pointing_engineering_source"] = kwargs.get("pointing_engineering_source", "CALCULATED")
     visit["type"] = kwargs.get("type", "PRIME_TARGETED_FIXED")
     visit["start_time"] = kwargs.get("start_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    visit["end_time"] = kwargs.get("end_time", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    visit["status"] = kwargs.get("status", "UNSUCCESSFUL")
     visit["nexposures"] = kwargs.get("nexposures", NONUM)
     visit["internal_target"] = kwargs.get("internal_target", False)
-    # visit["target_of_opportunity"] = kwargs.get("target_of_opportunity", False)
 
     return visit
 
@@ -238,6 +215,8 @@ def mk_pointing(**kwargs):
     point["target_aperture"] = kwargs.get("target_aperture", NOSTR)
     point["target_ra"] = kwargs.get("target_ra", NONUM)
     point["target_dec"] = kwargs.get("target_dec", NONUM)
+    point["pointing_engineering_source"] = kwargs.get("pointing_engineering_source", "CALCULATED")
+    point["pa_aperture"] = kwargs.get("pa_aperture", NONUM)
 
     return point
 
@@ -270,7 +249,6 @@ def mk_wcsinfo(**kwargs):
     """
     wcsi = stnode.Wcsinfo()
     wcsi["aperture_name"] = kwargs.get("aperture_name", "WFI01_FULL")
-    wcsi["pa_aperture"] = kwargs.get("pa_aperture", NONUM)
     wcsi["v2_ref"] = kwargs.get("v2_ref", NONUM)
     wcsi["v3_ref"] = kwargs.get("v3_ref", NONUM)
     wcsi["vparity"] = kwargs.get("vparity", -1)
@@ -342,32 +320,12 @@ def mk_guidestar(**kwargs):
 
     guide["guide_window_id"] = kwargs.get("guide_window_id", NOSTR)
     guide["guide_mode"] = kwargs.get("guide_mode", "WSM-ACQ-2")
-    guide["data_start"] = kwargs.get("data_start", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
-    guide["data_end"] = kwargs.get("data_end", time.Time("2020-01-01T01:00:00.0", format="isot", scale="utc"))
     guide["window_xstart"] = kwargs.get("window_xstart", NONUM)
     guide["window_ystart"] = kwargs.get("window_ystart", NONUM)
     guide["window_xstop"] = kwargs.get("window_xstop", guide["window_xstart"] + 170)
     guide["window_ystop"] = kwargs.get("window_ystop", guide["window_ystart"] + 24)
-    guide["window_xsize"] = kwargs.get("window_xsize", 170)
-    guide["window_ysize"] = kwargs.get("window_ysize", 24)
-
-    guide["ra"] = kwargs.get("ra", NONUM)
-    guide["dec"] = kwargs.get("dec", NONUM)
-    guide["ra_uncertainty"] = kwargs.get("ra_uncertainty", NONUM)
-    guide["dec_uncertainty"] = kwargs.get("dec_uncertainty", NONUM)
-    guide["fgs_magnitude"] = kwargs.get("fgs_magnitude", NONUM)
-    guide["fgs_magnitude_uncertainty"] = kwargs.get("fgs_magnitude_uncertainty", NONUM)
     guide["guide_star_id"] = kwargs.get("guide_star_id", NOSTR)
-    guide["gsc_version"] = kwargs.get("gsc_version", NOSTR)
-    guide["centroid_x"] = kwargs.get("centroid_x", NONUM)
-    guide["centroid_y"] = kwargs.get("centroid_y", NONUM)
-    guide["centroid_x_uncertainty"] = kwargs.get("centroid_x_uncertainty", NONUM)
-    guide["centroid_y_uncertainty"] = kwargs.get("centroid_y_uncertainty", NONUM)
     guide["epoch"] = kwargs.get("epoch", NOSTR)
-    guide["proper_motion_ra"] = kwargs.get("proper_motion_ra", NONUM)
-    guide["proper_motion_dec"] = kwargs.get("proper_motion_dec", NONUM)
-    guide["parallax"] = kwargs.get("parallax", NONUM)
-    guide["centroid_rms"] = kwargs.get("centroid_rms", NONUM)
 
     return guide
 
