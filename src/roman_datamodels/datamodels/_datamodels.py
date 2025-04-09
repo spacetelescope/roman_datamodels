@@ -478,8 +478,6 @@ class WfiWcsModel(_RomanDataModel):
             a WfiWcsModel, it is simply returned.
 
         """
-        if isinstance(model, cls):
-            return model
         if not isinstance(model, ImageModel):
             raise ValueError("Input must be an ImageModel")
 
