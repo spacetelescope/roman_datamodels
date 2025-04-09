@@ -7,6 +7,7 @@ This module provides all the specific datamodels used by the Roman pipeline.
 """
 
 import copy
+import logging
 
 import asdf
 import numpy as np
@@ -20,6 +21,10 @@ from ._utils import _node_update
 __all__ = []
 
 DTYPE_MAP = {}
+
+# Define logging
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
 
 
 class _ParquetMixin:
@@ -480,10 +485,6 @@ class WfiWcsModel(_RomanDataModel):
         if not isinstance(model, ALLOWED_MODELS):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
-        # Ensure a WCS has been defined.
-        if model.meta.wcs is None:
-            raise ValueError(f"Model has no WCS defined, cannot create {cls}")
-
         # Retrieve the needed meta components
         wfi_wcs = cls()
         wfi_wcs.meta = {}
@@ -491,6 +492,11 @@ class WfiWcsModel(_RomanDataModel):
         for k in wfi_wcs.meta._schema_attributes.explicit_properties:
             if k not in skip_keys and k in model.meta:
                 wfi_wcs.meta[k] = copy.deepcopy(model.meta[k])
+
+        # Ensure a WCS has been defined.
+        if model.meta.wcs is None:
+            log.info("Model has no WCS defined. Will not populate the WCS components.")
+            return wfi_wcs
 
         # Assign the model WCS to the L2-specified wcs attribute
         wfi_wcs.wcs_l2 = model.meta.wcs

@@ -1281,10 +1281,17 @@ def test_wfi_wcs_from_wcsmodel(mk_model):
     assert model_bb[1][1] + 2 * border == wfi_wcs_bb[1][1]
 
 
-def test_wfi_wcs_no_wcs():
-    """Test that an appropriate error is generated when the input has no WCS"""
+def test_wfi_wcs_no_wcs(caplog):
+    """Test that file is still generate with lack of wcs"""
     model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
     model.meta.wcs = None
 
-    with pytest.raises(ValueError):
-        _ = datamodels.WfiWcsModel.from_model_with_wcs(model)
+    wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
+
+    with pytest.raises(AttributeError):
+        _ = wfi_wcs.wcs_l1
+
+    with pytest.raises(AttributeError):
+        _ = wfi_wcs.wcs_l2
+
+    assert "Model has no WCS defined" in caplog.text
