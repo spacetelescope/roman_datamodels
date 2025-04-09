@@ -30,3 +30,9 @@ def test_source_catalog(catalog_class, mk_catalog, tmp_path):
     assert tabmeta[b"roman.meta.telescope"] == sc_dm.meta.telescope.encode("ascii")
     # Spot check column metadata.
     assert par_schema.field("a").metadata[b"unit"] == str(sc_dm.source_catalog["a"].unit).encode("ascii")
+
+    # Check that save() works
+    test_path2 = tmp_path / "test2.parquet"
+    sc_dm.save(test_path2)
+    with open(test_path2, "rb") as f:
+        assert f.read(4) == b"PAR1"
