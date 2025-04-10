@@ -7,8 +7,8 @@ This module provides all the specific datamodels used by the Roman pipeline.
 """
 
 import asdf
-import numpy as np
 import astropy.table.meta
+import numpy as np
 from astropy.table import QTable
 
 from roman_datamodels import stnode
@@ -76,7 +76,7 @@ class _ParquetMixin:
             pa.field(key, type=dtype, metadata={"unit": unit}) for (key, dtype, unit) in zip(keys, dtypes, units, strict=False)
         ]
         extra_astropy_metadata = astropy.table.meta.get_yaml_from_table(source_cat)
-        flat_meta['table_meta_yaml'] = '\n'.join(extra_astropy_metadata)
+        flat_meta["table_meta_yaml"] = "\n".join(extra_astropy_metadata)
         schema = pa.schema(fields, metadata=flat_meta)
         table = pa.Table.from_arrays(arrs, schema=schema)
         pq.write_table(table, filepath, compression=None)
