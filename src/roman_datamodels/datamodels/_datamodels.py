@@ -10,6 +10,7 @@ import copy
 import logging
 
 import asdf
+import astropy.table.meta
 import numpy as np
 from astropy.modeling import models
 from astropy.table import QTable
@@ -80,6 +81,8 @@ class _ParquetMixin:
         fields = [
             pa.field(key, type=dtype, metadata={"unit": unit}) for (key, dtype, unit) in zip(keys, dtypes, units, strict=False)
         ]
+        extra_astropy_metadata = astropy.table.meta.get_yaml_from_table(source_cat)
+        flat_meta["table_meta_yaml"] = "\n".join(extra_astropy_metadata)
         schema = pa.schema(fields, metadata=flat_meta)
         table = pa.Table.from_arrays(arrs, schema=schema)
         pq.write_table(table, filepath, compression=None)

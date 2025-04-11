@@ -1,0 +1,1 @@
+Added astropy table metadata to parquet catalog files.

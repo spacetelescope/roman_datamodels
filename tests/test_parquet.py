@@ -16,13 +16,20 @@ source_catalogs = [
 def test_source_catalog(catalog_class, mk_catalog, tmp_path):
     sc_node = mk_catalog(save=False)
     sc_dm = catalog_class(sc_node)
+
+    sc_dm.source_catalog["a"].description = "a description"
+    sc_dm.source_catalog["b"].description = "b description"
+
     test_path = tmp_path / "test.parquet"
     sc_dm.to_parquet(test_path)
 
     ptab = astrotab.Table.read(test_path, format="parquet")
-    # Compare columns
-    assert np.all(ptab["a"] == sc_dm.source_catalog["a"])
-    assert np.all(ptab["b"] == sc_dm.source_catalog["b"])
+
+    # check that tables round trip
+    for cname in ["a", "b"]:
+        assert ptab[cname].description == sc_dm.source_catalog[cname].description
+        assert ptab[cname].unit == sc_dm.source_catalog[cname].unit
+        assert np.all(ptab[cname] == sc_dm.source_catalog[cname])
 
     # Spot check metadata.
     par_schema = pq.read_schema(test_path)
