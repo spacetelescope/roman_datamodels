@@ -1209,12 +1209,9 @@ def test_make_wfi_wcs():
     assert m.validate() is None
 
 
-@pytest.mark.parametrize(
-    "mk_model",
-    [lambda: datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))],
-)
-def test_wfi_wcs_from_wcsmodel(mk_model):
-    model = mk_model()
+def test_wfi_wcs_from_wcsmodel():
+    """Test basic WfiWcsModel creation"""
+    model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
 
     # Give the model's WCS a bounding box.
     model.meta.wcs.bounding_box = ((-0.5, 4087.5), (-0.5, 4087.5))
@@ -1239,6 +1236,9 @@ def test_wfi_wcs_from_wcsmodel(mk_model):
     }
 
     wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
+
+    # Perform overall validation. No assert needed; `validate` will raise ValidationError
+    wfi_wcs.validate()
 
     # Test meta copied from input model
     for key in wfi_wcs.meta:
