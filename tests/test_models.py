@@ -27,6 +27,7 @@ NODES_LACKING_ARCHIVE_CATALOG = [
     stnode.Resample,
     stnode.SkyBackground,
     stnode.SourceCatalog,
+    stnode.WfiWcs,
 ]
 
 
@@ -1221,3 +1222,76 @@ def test_apcorr_none_array():
     for name in ("ap_corrections", "ee_fractions", "ee_radii", "sky_background_rin", "sky_background_rout"):
         setattr(m.data.GRISM, name, None)
     assert m.validate() is None
+
+
+def test_make_wfi_wcs():
+    """
+    Check create of WfiWcsModel.
+    """
+    m = utils.mk_datamodel(datamodels.WfiWcsModel)
+
+    assert m.validate() is None
+
+
+def test_wfi_wcs_from_wcsmodel():
+    """Test basic WfiWcsModel creation"""
+    model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
+
+    # Give the model's WCS a bounding box.
+    model.meta.wcs.bounding_box = ((-0.5, 4087.5), (-0.5, 4087.5))
+
+    # Give the model some alignment results
+    model.meta["wcs_fit_results"] = {
+        "<rot>": 1.2078100852299566e-05,
+        "<scale>": 1.0,
+        "center": [-3.090428960153321, -18.122328864329525],
+        "fitgeom": "rshift",
+        "mae": 0.0017789920274088183,
+        "matrix": [[0.9999999999999778, 2.108026272605592e-07], [-2.108026272605592e-07, 0.9999999999999778]],
+        "nmatches": 109,
+        "proper": True,
+        "proper_rot": 1.2078100852299566e-05,
+        "rmse": 0.0022859902707182554,
+        "rot": [1.2078100852299566e-05, 1.2078100852299566e-05],
+        "scale": [1.0, 1.0],
+        "shift": [0.00017039070698617517, -0.00023752675967125825],
+        "skew": 0.0,
+        "status": "SUCCESS",
+    }
+
+    wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
+
+    # Perform overall validation. No assert needed; `validate` will raise ValidationError
+    wfi_wcs.validate()
+
+    # Test meta copied from input model
+    for key in wfi_wcs.meta:
+        wfi_wcs_value = getattr(wfi_wcs.meta, key)
+        model_value = getattr(model.meta, key)
+        assert_node_equal(wfi_wcs_value, model_value)
+
+    # Test wcs fidelity
+    border = 4.0  # Default extra border for L1
+    model_corner = model.meta.wcs.pixel_to_world(0.0, 0.0)
+    wfi_wcs_corner = wfi_wcs.wcs_l1.pixel_to_world(border, border)  # Extra border due to being L1
+    assert model_corner.separation(wfi_wcs_corner).value <= 1e-7
+
+    model_bb = model.meta.wcs.bounding_box
+    wfi_wcs_bb = wfi_wcs.wcs_l1.bounding_box
+    assert model_bb[0][1] + 2 * border == wfi_wcs_bb[0][1]
+    assert model_bb[1][1] + 2 * border == wfi_wcs_bb[1][1]
+
+
+def test_wfi_wcs_no_wcs(caplog):
+    """Test providing an ImageModel without a wcs produces a valid WfiWcsModel with no wcses."""
+    model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
+    model.meta.wcs = None
+
+    wfi_wcs = datamodels.WfiWcsModel.from_model_with_wcs(model)
+    assert wfi_wcs.validate() is None
+
+    assert not hasattr(wfi_wcs, "wcs_l1")
+
+    assert not hasattr(wfi_wcs, "wcs_l2")
+
+    assert "Model has no WCS defined" in caplog.text

@@ -386,6 +386,29 @@ def mk_common_meta(**kwargs):
     return meta
 
 
+def mk_wfi_wcs_common_meta(**kwargs):
+    """
+    Create a dummy common metadata dictionary for WfiWcs with valid values for attributes
+
+    Returns
+    -------
+    dict
+    """
+    meta = mk_basic_meta(**kwargs)
+    meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
+    meta["ephemeris"] = mk_ephemeris(**kwargs.get("ephemeris", {}))
+    meta["exposure"] = mk_exposure(**kwargs.get("exposure", {}))
+    meta["instrument"] = mk_wfi_mode(**kwargs.get("instrument", {}))
+    meta["observation"] = mk_observation(**kwargs.get("observation", {}))
+    meta["pointing"] = mk_pointing(**kwargs.get("pointing", {}))
+    meta["program"] = mk_program(**kwargs.get("program", {}))
+    meta["velocity_aberration"] = mk_velocity_aberration(**kwargs.get("velocity_aberration", {}))
+    meta["visit"] = mk_visit(**kwargs.get("visit", {}))
+    meta["wcsinfo"] = mk_wcsinfo(**kwargs.get("wcsinfo", {}))
+
+    return meta
+
+
 def mk_l2_meta(**kwargs):
     """
     Create a dummy common metadata dictionary with valid values for attributes and add
