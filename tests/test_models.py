@@ -878,6 +878,30 @@ def test_datamodel_schema_info_values():
                     dm.meta.pointing.target_dec,
                 )
             },
+            "pointing_engineering_source": {
+                "archive_catalog": (
+                    {
+                        "datatype": "nvarchar(10)",
+                        "destination": [
+                            "WFIExposure.pointing_engineering_source",
+                            "GuideWindow.pointing_engineering_source",
+                        ],
+                    },
+                    dm.meta.pointing.pointing_engineering_source,
+                )
+            },
+            "pa_aperture": {
+                "archive_catalog": (
+                    {
+                        "datatype": "float",
+                        "destination": [
+                            "WFIExposure.pa_aperture",
+                            "GuideWindow.pa_aperture",
+                        ],
+                    },
+                    dm.meta.pointing.pa_aperture,
+                ),
+            },
         }
 
 

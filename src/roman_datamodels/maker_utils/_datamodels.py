@@ -253,9 +253,6 @@ def mk_ramp(*, shape=(8, 4096, 4096), filepath=None, **kwargs):
         warnings.warn("Input shape must be 3D. Defaulting to (8, 4096, 4096)", UserWarning, stacklevel=2)
 
     ramp = stnode.Ramp()
-    # ramp["meta"] = mk_common_meta(**kwargs.get("meta", {}))
-    # ramp.meta["cal_logs"] = mk_cal_logs(**kwargs)
-    # ramp["meta"] = mk_ramp_meta(**kwargs.get("meta", {}))
     ramp["meta"] = mk_ramp_meta(**kwargs.get("meta", {}))
 
     # add border reference pixel arrays

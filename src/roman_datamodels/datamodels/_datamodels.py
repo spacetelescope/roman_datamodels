@@ -238,6 +238,13 @@ class ScienceRawModel(_RomanDataModel):
 
         _node_update(raw, model, extras=("meta.statistics",), extras_key="tvac")
 
+        # check for exposure data_problem
+        if isinstance(raw.meta.exposure.data_problem, bool):
+            if raw.meta.exposure.data_problem:
+                raw.meta.exposure.data_problem = "True"
+            else:
+                raw.meta.exposure.data_problem = None
+
         # Create model from node
         raw_model = ScienceRawModel(raw)
         return raw_model
@@ -293,6 +300,13 @@ class RampModel(_RomanDataModel):
             ramp.groupdq = model.resultantdq.copy()
 
         _node_update(ramp, model, ignore=("resultantdq",))
+
+        # check for exposure data_problem
+        if isinstance(ramp.meta.exposure.data_problem, bool):
+            if ramp.meta.exposure.data_problem:
+                ramp.meta.exposure.data_problem = "True"
+            else:
+                ramp.meta.exposure.data_problem = None
 
         # Create model from node
         ramp_model = RampModel(ramp)
