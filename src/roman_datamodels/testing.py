@@ -109,13 +109,18 @@ def _assert_value_is_copy(value1, value2, deepcopy=False):
         elif isinstance(value1, Model):
             assert value1 is not value2
         else:
-            # Hashable objects cannot be copied as they are immutable.
+            # If not hashable, then can be copied.
             try:
                 hash(value1)
             except TypeError:
                 assert value1 is not value2
             else:
-                assert value1 is value2
+                # Normally hashable objects do not deepcopy.
+                # GWCS violates this.
+                if isinstance(value1, gwcs.WCS) and isinstance(value2, gwcs.WCS):
+                    assert value1 is not value2
+                else:
+                    assert value1 is value2
     else:
         # No copy was made in the shallow case.
         assert value1 is value2
