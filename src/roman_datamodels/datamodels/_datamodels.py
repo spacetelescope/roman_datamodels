@@ -6,19 +6,25 @@ This module provides all the specific datamodels used by the Roman pipeline.
     from the schema manifest defined by RAD.
 """
 
+import copy
+import logging
+
 import asdf
 import numpy as np
+from astropy.modeling import models
 from astropy.table import QTable
 
-from roman_datamodels import stnode
-
-from ..stnode import DNode
+from .. import stnode
 from ._core import DataModel
 from ._utils import _node_update
 
 __all__ = []
 
 DTYPE_MAP = {}
+
+# Define logging
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
 
 
 class _ParquetMixin:
@@ -60,7 +66,7 @@ class _ParquetMixin:
         source_cat = self.source_catalog
         scmeta = source_cat.meta
         # Wrap it as a DNode so it can be flattened
-        dn_scmeta = DNode(scmeta)
+        dn_scmeta = stnode.DNode(scmeta)
         flat_scmeta = dn_scmeta.to_flat_dict(recursive=True)
         # Add prefix to flattened keys to indicate table metadata
         flat_scmeta = {"source_catalog." + k: str(v) for (k, v) in flat_scmeta.items()}
@@ -440,3 +446,67 @@ class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin):
 
 class SegmentationMapModel(_RomanDataModel):
     _node_type = stnode.SegmentationMap
+
+
+class WfiWcsModel(_RomanDataModel):
+    _node_type = stnode.WfiWcs
+
+    @classmethod
+    def from_model_with_wcs(cls, model, l1_border=4):
+        """Extract the WCS information from an exposure model post-assign_wcs
+
+        Construct a `WfiWcsModel` from any model that is used post-assign_wcs step
+        in the ELP pipeline. The WCS information is extracted out of the input model.
+        The wcs-related meta information is copied verbatim from the input model.
+
+        However, the WCS object itself is placed into the attribute 'wcs_l2'. Furthermore, a
+        modified GWCS, applicable to the Level 1 version of the input model, is created
+        and stored in the attribute 'wcs_l1'.
+
+        Parameters
+        ----------
+        model : ImageModel
+            The input data model.
+
+        l1_border : int
+            The extra border to add for the L1 wcs.
+
+        Returns
+        -------
+        wfiwcs_model : WfiWcsModel
+            The WfiWcsModel built from the input model.
+
+        """
+        if not isinstance(model, ImageModel):
+            raise ValueError("Input must be an ImageModel")
+
+        # Retrieve the needed meta components
+        wfi_wcs = cls()
+        wfi_wcs.meta = {}
+        for k in wfi_wcs.meta._schema_attributes.explicit_properties:
+            if k in model.meta:
+                wfi_wcs.meta[k] = copy.deepcopy(model.meta[k])
+
+        # Check that a WCS has been defined.
+        if model.meta.wcs is None:
+            log.info("Model has no WCS defined. Will not populate the WCS components.")
+            return wfi_wcs
+
+        # Assign the model WCS to the L2-specified wcs attribute
+        wfi_wcs.wcs_l2 = copy.deepcopy(model.meta.wcs)
+
+        # Create an L1 WCS that accounts for the extra border.
+        l1_wcs = copy.deepcopy(model.meta.wcs)
+        l1_shift = models.Shift(-l1_border) & models.Shift(-l1_border)
+        l1_wcs.insert_transform("detector", l1_shift, after=True)
+        bb = wfi_wcs["wcs_l2"].bounding_box
+        if bb is not None:
+            l1_wcs.bounding_box = ((bb[0][0], bb[0][1] + 2 * l1_border), (bb[1][0], bb[1][1] + 2 * l1_border))
+        wfi_wcs.wcs_l1 = l1_wcs
+
+        # Get alignment results, if available
+        if hasattr(model.meta, "wcs_fit_results"):
+            wfi_wcs.meta.wcs_fit_results = copy.deepcopy(model.meta["wcs_fit_results"])
+
+        # That's all folks.
+        return wfi_wcs
