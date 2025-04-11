@@ -27,8 +27,7 @@ def test_source_catalog(catalog_class, mk_catalog, tmp_path):
 
     # check that tables round trip
     for cname in ["a", "b"]:
-        assert (ptab[cname].description ==
-                sc_dm.source_catalog[cname].description)
+        assert ptab[cname].description == sc_dm.source_catalog[cname].description
         assert ptab[cname].unit == sc_dm.source_catalog[cname].unit
         assert np.all(ptab[cname] == sc_dm.source_catalog[cname])
 
