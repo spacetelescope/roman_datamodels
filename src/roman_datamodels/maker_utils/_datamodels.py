@@ -547,7 +547,7 @@ def mk_l1_detector_guidewindow_array(*, name=None, shape=(16, 32, 32), **kwargs)
     l1detectorgwarr["min_bind_flag"] = kwargs.get("min_bind_flag", np.zeros(shape[1:], dtype=np.uint8))
     l1detectorgwarr["max_bind_flag"] = kwargs.get("max_bind_flag", np.zeros(shape[1:], dtype=np.uint8))
 
-    if name == "edge_acq_data":
+    if name == "track_data":
         l1detectorgwarr["exposure_mapping"] = kwargs.get("exposure_mapping", np.zeros(shape[0], dtype=np.uint16))
 
     return l1detectorgwarr
