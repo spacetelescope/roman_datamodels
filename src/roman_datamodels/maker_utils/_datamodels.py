@@ -1,16 +1,17 @@
 import warnings
 
 import numpy as np
-from astropy.table import Table
 from astropy import time
+from astropy.table import Table
 
 from roman_datamodels import stnode
 
-from ._base import MESSAGE, save_node,NOSTR
+from ._base import MESSAGE, save_node
 from ._common_meta import (
     mk_catalog_meta,
     mk_common_meta,
     mk_guidewindow_meta,
+    mk_l1_detector_guidewindow_meta,
     mk_l2_meta,
     mk_mosaic_catalog_meta,
     mk_mosaic_meta,
@@ -18,7 +19,6 @@ from ._common_meta import (
     mk_ramp_meta,
     mk_wcs,
     mk_wfi_wcs_common_meta,
-    mk_l1_detector_guidewindow_meta,
 )
 from ._tagged_nodes import mk_cal_logs
 
@@ -443,13 +443,11 @@ def mk_l1_detector_guidewindow_amp33(*, mode="WSM", shape=(16, 32, 32), **kwargs
     l1detectorgwamp33["amp33_acq_pedestals"] = kwargs.get("amp33_acq_pedestals", np.zeros(shape, dtype=np.uint16))
     l1detectorgwamp33["amp33_acq_signals"] = kwargs.get("amp33_acq_signals", np.zeros(shape, dtype=np.uint16))
 
-
     if mode == "WSM":
         l1detectorgwamp33["amp33_edge_acq_pedestals"] = kwargs.get("amp33_edge_acq_pedestals", np.zeros(shape, dtype=np.uint16))
         l1detectorgwamp33["amp33_edge_acq_signals"] = kwargs.get("amp33_edge_acq_signals", np.zeros(shape, dtype=np.uint16))
 
     return l1detectorgwamp33
-
 
 
 def mk_l1_detector_guidewindow_centroid(*, mode="WSM", shape=(16, 32, 32), **kwargs):
@@ -479,22 +477,32 @@ def mk_l1_detector_guidewindow_centroid(*, mode="WSM", shape=(16, 32, 32), **kwa
     l1detectorgwcentroid = {}
     l1detectorgwcentroid["acq_centroids"] = kwargs.get("acq_centroids", np.zeros(shape, dtype=np.float32))
     l1detectorgwcentroid["acq_centroid_errs"] = kwargs.get("acq_centroid_errs", np.zeros(shape, dtype=np.float32))
-    l1detectorgwcentroid["acq_centroid_quality"] = kwargs.get("acq_centroid_quality", np.array([['?'] * shape[2]] * shape[1], dtype='<U1'))
-    l1detectorgwcentroid["acq_centroid_times"] = kwargs.get("acq_centroid_times", [time.Time('2024-01-01T12:00:00', format="isot", scale="utc")] * shape[0])
+    l1detectorgwcentroid["acq_centroid_quality"] = kwargs.get(
+        "acq_centroid_quality", np.array([["?"] * shape[2]] * shape[1], dtype="<U1")
+    )
+    l1detectorgwcentroid["acq_centroid_times"] = kwargs.get(
+        "acq_centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+    )
     l1detectorgwcentroid["track_centroids"] = kwargs.get("track_centroids", np.zeros(shape[1:], dtype=np.float32))
     l1detectorgwcentroid["track_centroid_errs"] = kwargs.get("track_centroid_errs", np.zeros(shape[1:], dtype=np.float32))
-    l1detectorgwcentroid["track_centroid_quality"] = kwargs.get("track_centroid_quality", np.array(['?'] * shape[0], dtype='<U7'))
-    l1detectorgwcentroid["track_centroid_times"] = kwargs.get("track_centroid_times", [time.Time('2024-01-01T12:00:00', format="isot", scale="utc")] * shape[0])
+    l1detectorgwcentroid["track_centroid_quality"] = kwargs.get("track_centroid_quality", np.array(["?"] * shape[0], dtype="<U7"))
+    l1detectorgwcentroid["track_centroid_times"] = kwargs.get(
+        "track_centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+    )
 
     if mode == "WSM":
         l1detectorgwcentroid["edge_acq_centroids"] = kwargs.get("edge_acq_centroids", np.zeros(shape[1:], dtype=np.float32))
-        l1detectorgwcentroid["edge_acq_centroid_errs"] = kwargs.get("edge_acq_centroid_errs", np.zeros(shape[1:], dtype=np.float32))
-        l1detectorgwcentroid["edge_acq_centroid_quality"] = kwargs.get("edge_acq_centroid_quality", np.array(['?'] * shape[0], dtype='<U7'))
-        l1detectorgwcentroid["edge_acq_centroid_times"] = kwargs.get("edge_acq_centroid_times", [time.Time('2024-01-01T12:00:00', format="isot", scale="utc")] * shape[0])
-
+        l1detectorgwcentroid["edge_acq_centroid_errs"] = kwargs.get(
+            "edge_acq_centroid_errs", np.zeros(shape[1:], dtype=np.float32)
+        )
+        l1detectorgwcentroid["edge_acq_centroid_quality"] = kwargs.get(
+            "edge_acq_centroid_quality", np.array(["?"] * shape[0], dtype="<U7")
+        )
+        l1detectorgwcentroid["edge_acq_centroid_times"] = kwargs.get(
+            "edge_acq_centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+        )
 
     return l1detectorgwcentroid
-
 
 
 def mk_l1_detector_guidewindow_array(*, name=None, shape=(16, 32, 32), **kwargs):
@@ -527,8 +535,12 @@ def mk_l1_detector_guidewindow_array(*, name=None, shape=(16, 32, 32), **kwargs)
     l1detectorgwarr["pixel_offsets"] = kwargs.get("pixel_offsets", np.zeros(shape[0], dtype=np.uint16))
     l1detectorgwarr["reset_impacted_pairs"] = kwargs.get("reset_impacted_pairs", np.zeros(shape[0], dtype=np.bool))
     l1detectorgwarr["reset_read_flag"] = kwargs.get("reset_read_flag", np.zeros(shape[0], dtype=np.bool))
-    l1detectorgwarr["pedestal_times"] = kwargs.get("pedestal_times", [time.Time('2024-01-01T12:00:00', format="isot", scale="utc")] * shape[0])
-    l1detectorgwarr["signal_times"] = kwargs.get("signal_times", [time.Time('2024-01-01T12:00:00', format="isot", scale="utc")] * shape[0])
+    l1detectorgwarr["pedestal_times"] = kwargs.get(
+        "pedestal_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+    )
+    l1detectorgwarr["signal_times"] = kwargs.get(
+        "signal_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+    )
     l1detectorgwarr["sci_data_packet_counts"] = kwargs.get("sci_data_packet_counts", np.zeros(shape[1:], dtype=np.uint16))
     l1detectorgwarr["sce_status_flag"] = kwargs.get("sce_status_flag", np.zeros(shape[1:], dtype=np.uint8))
     l1detectorgwarr["gw_resultant_err_flag"] = kwargs.get("gw_resultant_err_flag", np.zeros(shape[1:], dtype=np.uint8))
@@ -575,7 +587,9 @@ def mk_l1_detector_guidewindow(*, shape=(16, 32, 32), mode="WSM", filepath=None,
     l1detectorgw["acq_data"] = mk_l1_detector_guidewindow_array(name="acq_data", shape=shape, **kwargs.get("acq_data", {}))
     l1detectorgw["track_data"] = mk_l1_detector_guidewindow_array(name="track_data", shape=shape, **kwargs.get("track_data", {}))
     if mode == "WSM":
-        l1detectorgw["edge_acq_data"] = mk_l1_detector_guidewindow_array(name="edge_acq_data", shape=shape, **kwargs.get("edge_acq_data", {}))
+        l1detectorgw["edge_acq_data"] = mk_l1_detector_guidewindow_array(
+            name="edge_acq_data", shape=shape, **kwargs.get("edge_acq_data", {})
+        )
 
     return save_node(l1detectorgw, filepath=filepath)
 

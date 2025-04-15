@@ -536,7 +536,6 @@ def mk_guidewindow_meta(**kwargs):
     return meta
 
 
-
 def mk_l1_gs_submeta(**kwargs):
     """
     Create a dummy common metadata dictionary with valid values for attributes and add
@@ -566,7 +565,6 @@ def mk_l1_gs_submeta(**kwargs):
     return l1_gs_submeta
 
 
-
 def mk_l1_gw_submeta(mode="WSM", **kwargs):
     """
     Create a dummy common metadata dictionary with valid values for attributes and add
@@ -593,7 +591,7 @@ def mk_l1_gw_submeta(mode="WSM", **kwargs):
     l1_gw_submeta["track_xsize"] = kwargs.get("track_xsize", NONUM)
     l1_gw_submeta["track_ysize"] = kwargs.get("track_ysize", NONUM)
 
-    if mode=="WSM":
+    if mode == "WSM":
         l1_gw_submeta["min_edge_acq_xstart"] = kwargs.get("min_edge_acq_xstart", NONUM)
         l1_gw_submeta["min_edge_acq_ystart"] = kwargs.get("min_edge_acq_ystart", NONUM)
         l1_gw_submeta["max_edge_acq_xstop"] = kwargs.get("max_edge_acq_xstop", NONUM)
@@ -602,8 +600,6 @@ def mk_l1_gw_submeta(mode="WSM", **kwargs):
         l1_gw_submeta["edge_acq_ysize"] = kwargs.get("edge_acq_ysize", NONUM)
 
     return l1_gw_submeta
-
-
 
 
 def mk_l1_detector_guidewindow_meta(mode="WSM", **kwargs):
@@ -646,7 +642,6 @@ def mk_l1_detector_guidewindow_meta(mode="WSM", **kwargs):
     meta["guide_window"] = mk_l1_gw_submeta(mode, **kwargs.get("guide_window", {}))
 
     return meta
-
 
 
 def mk_msos_stack_meta(**kwargs):
