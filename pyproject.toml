@@ -20,7 +20,6 @@ dependencies = [
   # "rad >=0.23.1",
   "rad @ git+https://github.com/spacetelescope/rad.git",
   "asdf-standard >=1.1.0",
-  "pyarrow >=19.0.1",
 ]
 dynamic = ["version"]
 
@@ -36,6 +35,7 @@ test = [
   "pandas >=2.2.3",
 ]
 docs = ["sphinx", "sphinx-automodapi", "sphinx-rtd-theme", "sphinx-astropy"]
+parquet = ["pyarrow >=19.0.1"]
 
 [project.urls]
 issues = "https://github.com/spacetelescope/roman_datamodels/issues"

@@ -1,10 +1,18 @@
+from warnings import warn
+
 import astropy.table as astrotab
 import numpy as np
-import pyarrow.parquet as pq
 import pytest
 
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
+
+try:
+    import pyarrow.parquet as pq
+
+    PYARROW_INSTALLED = True
+except (ImportError, ModuleNotFoundError):
+    PYARROW_INSTALLED = False
 
 source_catalogs = [
     (datamodels.ImageSourceCatalogModel, utils.mk_image_source_catalog),
@@ -13,6 +21,7 @@ source_catalogs = [
 
 
 @pytest.mark.parametrize(("catalog_class", "mk_catalog"), source_catalogs)
+@pytest.mark.skipif(not PYARROW_INSTALLED, reason="parquet dependencies not installed")
 def test_source_catalog(catalog_class, mk_catalog, tmp_path):
     sc_node = mk_catalog(save=False)
     sc_dm = catalog_class(sc_node)

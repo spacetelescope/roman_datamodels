@@ -38,8 +38,12 @@ class _ParquetMixin:
         Defers import of parquet to minimize import overhead for all other models.
         """
         global DTYPE_MAP
-        import pyarrow as pa
-        import pyarrow.parquet as pq
+
+        try:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+        except (ImportError, ModuleNotFoundError) as error:
+            raise ImportError("parquet dependencies not installed (`pip install roman_datamodels[parquet]`)") from error
 
         if not DTYPE_MAP:
             DTYPE_MAP.update(
