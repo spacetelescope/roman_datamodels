@@ -1,5 +1,3 @@
-from warnings import warn
-
 import astropy.table as astrotab
 import numpy as np
 import pytest
