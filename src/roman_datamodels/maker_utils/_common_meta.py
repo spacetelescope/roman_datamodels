@@ -536,8 +536,6 @@ def mk_guidewindow_meta(**kwargs):
     return meta
 
 
-
-
 def mk_l1_face_guidewindow_meta(mode="WSM", **kwargs):
     """
     Create a dummy level 1 face guidewindow metadata dictionary with valid values
