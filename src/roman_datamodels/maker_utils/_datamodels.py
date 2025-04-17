@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 from astropy.table import Table
+from astropy import time
 
 from roman_datamodels import stnode
 
@@ -17,6 +18,7 @@ from ._common_meta import (
     mk_ramp_meta,
     mk_wcs,
     mk_wfi_wcs_common_meta,
+    mk_l1_face_guidewindow_meta,
 )
 from ._tagged_nodes import mk_cal_logs
 
@@ -376,6 +378,89 @@ def mk_associations(*, shape=(2, 3, 1), filepath=None, **kwargs):
             associations["products"].append({"name": f"product{product_idx}", "members": members_lst})
 
     return save_node(associations, filepath=filepath)
+
+
+
+def mk_l1_face_gw_face_data(*, shape=(16,), filepath=None, **kwargs):
+    """
+    Create a dummy L1FaceGuidewindow instance (or file) with arrays and valid values
+    for attributes required by the schema.
+    Parameters
+    ----------
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+    Returns
+    -------
+    roman_datamodels.stnode.L1FaceGuidewindow
+    """
+    # if len(shape) != 1:
+    #     shape = tuple(shape[0])
+
+    if len(shape) != 1:
+        shape = (16,)
+        warnings.warn("Input shape must be 1D. Defaulting to (16,)", UserWarning, stacklevel=2)
+
+    l1facegw_fd = {}
+    l1facegw_fd["delta"] = kwargs.get("delta", np.zeros(shape, dtype=np.float32))
+    l1facegw_fd["delta2"] = kwargs.get("delta2", np.zeros(shape, dtype=np.float32))
+    l1facegw_fd["epsilon"] = kwargs.get("epsilon", np.zeros(shape, dtype=np.float32))
+    l1facegw_fd["epsilon2"] = kwargs.get("epsilon2", np.zeros(shape, dtype=np.float32))
+    l1facegw_fd["zeta"] = kwargs.get("zeta", np.zeros(shape, dtype=np.float32))
+    l1facegw_fd["delta_var"] = kwargs.get("delta_var", np.zeros(shape, dtype=np.float32))
+    l1facegw_fd["epsilon_var"] = kwargs.get("epsilon_var", np.zeros(shape, dtype=np.float32))
+    l1facegw_fd["zeta_var"] = kwargs.get("zeta_var", np.zeros(shape, dtype=np.float32))
+    l1facegw_fd["horizontal_variance"] = kwargs.get("horizontal_variance", np.zeros(shape, dtype=np.float32))
+    l1facegw_fd["vertical_variance"] = kwargs.get("vertical_variance", np.zeros(shape, dtype=np.float32))
+    l1facegw_fd["num_stars_used"] = kwargs.get("num_stars_used", np.zeros(shape, dtype=np.uint8))
+    l1facegw_fd["num_centroid_cycles"] = kwargs.get("num_centroid_cycles", np.zeros(shape, dtype=np.uint8))
+    # l1facegw_fd["attitude_estimate_quality"] = kwargs.get("attitude_estimate_quality", ["AQ_FAILED_IN_PHASE_TRANSITION"] * shape[0])
+    l1facegw_fd["attitude_estimate_quality"] = kwargs.get(
+        "attitude_estimate_quality", np.array(["AQ_FAILED_IN_PHASE_TRANSITION"] * shape[0], dtype="<U1")
+    )
+
+    l1facegw_fd["centroid_times"] = kwargs.get("centroid_times",
+        [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0])
+    l1facegw_fd["fgs_op_phase"] = kwargs.get("fgs_op_phase", ["NOT_CONFIGURED"] * shape[0])
+
+    return l1facegw_fd
+
+
+
+
+
+def mk_l1_face_guidewindow(*, shape=(16,), mode="WSM", filepath=None, **kwargs):
+    """
+    Create a dummy L1FaceGuidewindow instance (or file) with arrays and valid values
+    for attributes required by the schema.
+    Parameters
+    ----------
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+    Returns
+    -------
+    roman_datamodels.stnode.L1FaceGuidewindow
+    """
+    # if len(shape) != 1:
+    #     shape = tuple(shape[0])
+
+    if len(shape) != 1:
+        shape = (16,)
+        warnings.warn("Input shape must be 1D. Defaulting to (16,)", UserWarning, stacklevel=2)
+
+    if mode not in ["WIM", "WSM"]:
+        mode = "WSM"
+        warnings.warn("Mode must be in [WIM, WSM]", UserWarning, stacklevel=2)
+
+    l1facegw = stnode.L1FaceGuidewindow()
+    l1facegw["meta"] = mk_l1_face_guidewindow_meta(mode, **kwargs.get("meta", {}))
+    l1facegw["face_data"] = mk_l1_face_gw_face_data(**kwargs.get("face_data", {}))
+
+    return save_node(l1facegw, filepath=filepath)
+
 
 
 def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):

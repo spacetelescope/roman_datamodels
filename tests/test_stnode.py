@@ -35,6 +35,7 @@ def test_node_classes_available_via_stnode(node_class):
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
@@ -54,6 +55,7 @@ def test_copy(node_class):
 
 
 @pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
+@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
@@ -96,6 +98,7 @@ def test_wfi_mode():
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
