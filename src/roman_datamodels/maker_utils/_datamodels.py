@@ -484,14 +484,14 @@ def mk_l1_detector_guidewindow_centroid(*, mode="WSM", shape=(16, 32, 32), **kwa
     l1detectorgwcentroid["acq_centroids"] = kwargs.get("acq_centroids", np.zeros(shape, dtype=np.float32))
     l1detectorgwcentroid["acq_centroid_errs"] = kwargs.get("acq_centroid_errs", np.zeros(shape, dtype=np.float32))
     l1detectorgwcentroid["acq_centroid_quality"] = kwargs.get(
-        "acq_centroid_quality", np.array([["?"] * shape[2]] * shape[1], dtype="<U1")
+        "acq_centroid_quality", np.array([["?"] * shape[2]] * shape[1], dtype="<U40")
     )
     l1detectorgwcentroid["acq_centroid_times"] = kwargs.get(
         "acq_centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
     )
     l1detectorgwcentroid["track_centroids"] = kwargs.get("track_centroids", np.zeros(shape[1:], dtype=np.float32))
     l1detectorgwcentroid["track_centroid_errs"] = kwargs.get("track_centroid_errs", np.zeros(shape[1:], dtype=np.float32))
-    l1detectorgwcentroid["track_centroid_quality"] = kwargs.get("track_centroid_quality", np.array(["?"] * shape[0], dtype="<U7"))
+    l1detectorgwcentroid["track_centroid_quality"] = kwargs.get("track_centroid_quality", np.array(["?"] * shape[0], dtype="<U40"))
     l1detectorgwcentroid["track_centroid_times"] = kwargs.get(
         "track_centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
     )
@@ -502,7 +502,7 @@ def mk_l1_detector_guidewindow_centroid(*, mode="WSM", shape=(16, 32, 32), **kwa
             "edge_acq_centroid_errs", np.zeros(shape[1:], dtype=np.float32)
         )
         l1detectorgwcentroid["edge_acq_centroid_quality"] = kwargs.get(
-            "edge_acq_centroid_quality", np.array(["?"] * shape[0], dtype="<U7")
+            "edge_acq_centroid_quality", np.array(["?"] * shape[0], dtype="<U40")
         )
         l1detectorgwcentroid["edge_acq_centroid_times"] = kwargs.get(
             "edge_acq_centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
@@ -557,7 +557,7 @@ def mk_l1_detector_guidewindow_array(*, name, shape=(16, 32, 32), **kwargs):
     l1detectorgwarr["max_bind_flag"] = kwargs.get("max_bind_flag", np.zeros(shape[1:], dtype=np.uint8))
 
     if name == "track_data":
-        l1detectorgwarr["exposure_mapping"] = kwargs.get("exposure_mapping", np.zeros(shape[0], dtype=np.uint16))
+        l1detectorgwarr["exposure_mapping"] = kwargs.get("exposure_mapping", np.zeros(shape[0], dtype=np.int16))
 
     return l1detectorgwarr
 
