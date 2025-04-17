@@ -542,7 +542,7 @@ def mk_l1_detector_guidewindow_array(*, name, shape=(16, 32, 32), **kwargs):
     l1detectorgwarr["lower_left_corners"] = kwargs.get("lower_left_corners", np.zeros(shape[1:], dtype=np.uint16))
     l1detectorgwarr["upper_right_corners"] = kwargs.get("upper_right_corners", np.zeros(shape[1:], dtype=np.uint16))
     l1detectorgwarr["pixel_offsets"] = kwargs.get("pixel_offsets", np.zeros(shape[0], dtype=np.uint16))
-    l1detectorgwarr["reset_impacted_pairs"] = kwargs.get("reset_impacted_pairs", np.zeros(shape[0], dtype=np.bool))
+    l1detectorgwarr["reset_impacted_pairs"] = kwargs.get("reset_impacted_pairs", np.zeros(shape[0], dtype=bool))
     l1detectorgwarr["reset_read_flag"] = kwargs.get("reset_read_flag", np.zeros(shape[0], dtype=np.bool))
     l1detectorgwarr["pedestal_times"] = kwargs.get(
         "pedestal_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
