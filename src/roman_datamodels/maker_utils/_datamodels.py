@@ -413,11 +413,14 @@ def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
 
 def mk_l1_detector_guidewindow_amp33(*, mode="WSM", shape=(16, 32, 32), **kwargs):
     """
-    Create a dummy L1DetectorGuidewindow instance (or file) with arrays and valid values
-    for attributes required by the schema.
+    Create a dummy Level 1 detector guidewindow amp33 instance (or file) with
+    arrays and valid values for attributes required by the schema.
 
     Parameters
     ----------
+    mode : string
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
+
     shape
         (optional, keyword-only) Shape of arrays in the model.
 
@@ -426,7 +429,7 @@ def mk_l1_detector_guidewindow_amp33(*, mode="WSM", shape=(16, 32, 32), **kwargs
 
     Returns
     -------
-    roman_datamodels.stnode.L1DetectorGuidewindow
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
     """
     if len(shape) != 3:
         shape = (16, 32, 32)
@@ -452,11 +455,14 @@ def mk_l1_detector_guidewindow_amp33(*, mode="WSM", shape=(16, 32, 32), **kwargs
 
 def mk_l1_detector_guidewindow_centroid(*, mode="WSM", shape=(16, 32, 32), **kwargs):
     """
-    Create a dummy L1DetectorGuidewindow instance (or file) with arrays and valid values
-    for attributes required by the schema.
+    Create a dummy Level 1 detector guidewindow centroid instance (or file) with
+    arrays and valid values for attributes required by the schema.
 
     Parameters
     ----------
+    mode : string
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
+
     shape
         (optional, keyword-only) Shape of arrays in the model.
 
@@ -465,7 +471,7 @@ def mk_l1_detector_guidewindow_centroid(*, mode="WSM", shape=(16, 32, 32), **kwa
 
     Returns
     -------
-    roman_datamodels.stnode.L1DetectorGuidewindow
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
     """
     if len(shape) != 3:
         shape = (16, 32, 32)
@@ -505,13 +511,16 @@ def mk_l1_detector_guidewindow_centroid(*, mode="WSM", shape=(16, 32, 32), **kwa
     return l1detectorgwcentroid
 
 
-def mk_l1_detector_guidewindow_array(*, name=None, shape=(16, 32, 32), **kwargs):
+def mk_l1_detector_guidewindow_array(*, name, shape=(16, 32, 32), **kwargs):
     """
-    Create a dummy L1DetectorGuidewindow instance (or file) with arrays and valid values
-    for attributes required by the schema.
+    Create a dummy Level 1 detector guidewindow data arrays instance (or file) with
+    arrays and valid values for attributes required by the schema.
 
     Parameters
     ----------
+    name
+        Name of array block to create.
+
     shape
         (optional, keyword-only) Shape of arrays in the model.
 
@@ -520,7 +529,7 @@ def mk_l1_detector_guidewindow_array(*, name=None, shape=(16, 32, 32), **kwargs)
 
     Returns
     -------
-    roman_datamodels.stnode.L1DetectorGuidewindow
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
     """
     if len(shape) != 3:
         shape = (16, 32, 32)
@@ -562,6 +571,9 @@ def mk_l1_detector_guidewindow(*, shape=(16, 32, 32), mode="WSM", filepath=None,
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+
+    mode : string
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
 
     filepath
         (optional, keyword-only) File name and path to write model to.

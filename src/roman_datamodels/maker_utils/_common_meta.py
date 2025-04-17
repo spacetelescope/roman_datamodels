@@ -538,12 +538,12 @@ def mk_guidewindow_meta(**kwargs):
 
 def mk_l1_gs_submeta(**kwargs):
     """
-    Create a dummy common metadata dictionary with valid values for attributes and add
-    the additional guidewindow metadata
+    Create a dummy level 1 detector guide star metadata dictionary with valid values
+    for attributes
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema with additional guidewindow metadata)
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
     """
 
     l1_gs_submeta = {}
@@ -567,12 +567,17 @@ def mk_l1_gs_submeta(**kwargs):
 
 def mk_l1_gw_submeta(mode="WSM", **kwargs):
     """
-    Create a dummy common metadata dictionary with valid values for attributes and add
-    the additional guidewindow metadata
+    Create a dummy level 1 detector guide window metadata dictionary with valid values
+    for attributes
+
+    Parameters
+    ----------
+    mode : string
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema with additional guidewindow metadata)
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
     """
 
     l1_gw_submeta = {}
@@ -604,12 +609,17 @@ def mk_l1_gw_submeta(mode="WSM", **kwargs):
 
 def mk_l1_detector_guidewindow_meta(mode="WSM", **kwargs):
     """
-    Create a dummy common metadata dictionary with valid values for attributes and add
-    the additional guidewindow metadata
+    Create a dummy level 1 detector guide window metadata dictionary with valid values
+    for attributes
+
+    Parameters
+    ----------
+    mode : string
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema with additional guidewindow metadata)
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
     """
 
     meta = {}
@@ -625,8 +635,6 @@ def mk_l1_detector_guidewindow_meta(mode="WSM", **kwargs):
     meta["track_signal_resultant_exp_time"] = kwargs.get("track_signal_resultant_exp_time", NONUM)
     meta["guide_star_acq_num"] = kwargs.get("guide_star_acq_num", NONUM)
     meta["guide_window_id"] = kwargs.get("guide_window_id", NOSTR)
-    # meta["optical_element"] = kwargs.get("optical_element", "F158")
-    # meta["detector"] = kwargs.get("detector", "WFI01")
     meta["instrument"] = mk_wfi_mode(**kwargs.get("instrument", {}))
     meta["avg_face_filename"] = kwargs.get("avg_face_filename", NOSTR)
 
