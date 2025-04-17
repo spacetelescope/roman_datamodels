@@ -540,12 +540,13 @@ def mk_guidewindow_meta(**kwargs):
 
 def mk_l1_face_guidewindow_meta(mode="WSM", **kwargs):
     """
-    Create a dummy common metadata dictionary with valid values for attributes and add
-    the additional guidewindow metadata
+    Create a dummy level 1 face guidewindow metadata dictionary with valid values
+    for attributes
 
     Returns
     -------
-    dict (defined by the common-1.0.0 schema with additional guidewindow metadata)
+    dict (defined by the l1_face_guidewindow-1.0.0 schema with additional guidewindow
+    metadata)
     """
 
     meta = {}

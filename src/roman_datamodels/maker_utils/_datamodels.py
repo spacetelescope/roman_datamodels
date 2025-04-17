@@ -385,19 +385,20 @@ def mk_l1_face_gw_face_data(*, shape=(16,), filepath=None, **kwargs):
     """
     Create a dummy L1FaceGuidewindow instance (or file) with arrays and valid values
     for attributes required by the schema.
+
     Parameters
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+    mode
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
     filepath
         (optional, keyword-only) File name and path to write model to.
+
     Returns
     -------
-    roman_datamodels.stnode.L1FaceGuidewindow
+    dict
     """
-    # if len(shape) != 1:
-    #     shape = tuple(shape[0])
-
     if len(shape) != 1:
         shape = (16,)
         warnings.warn("Input shape must be 1D. Defaulting to (16,)", UserWarning, stacklevel=2)
@@ -415,7 +416,6 @@ def mk_l1_face_gw_face_data(*, shape=(16,), filepath=None, **kwargs):
     l1facegw_fd["vertical_variance"] = kwargs.get("vertical_variance", np.zeros(shape, dtype=np.float32))
     l1facegw_fd["num_stars_used"] = kwargs.get("num_stars_used", np.zeros(shape, dtype=np.uint8))
     l1facegw_fd["num_centroid_cycles"] = kwargs.get("num_centroid_cycles", np.zeros(shape, dtype=np.uint8))
-    # l1facegw_fd["attitude_estimate_quality"] = kwargs.get("attitude_estimate_quality", ["AQ_FAILED_IN_PHASE_TRANSITION"] * shape[0])
     l1facegw_fd["attitude_estimate_quality"] = kwargs.get(
         "attitude_estimate_quality", np.array(["AQ_FAILED_IN_PHASE_TRANSITION"] * shape[0], dtype="<U1")
     )
@@ -434,26 +434,27 @@ def mk_l1_face_guidewindow(*, shape=(16,), mode="WSM", filepath=None, **kwargs):
     """
     Create a dummy L1FaceGuidewindow instance (or file) with arrays and valid values
     for attributes required by the schema.
+
     Parameters
     ----------
     shape
         (optional, keyword-only) Shape of arrays in the model.
+    mode
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
     filepath
         (optional, keyword-only) File name and path to write model to.
+
     Returns
     -------
     roman_datamodels.stnode.L1FaceGuidewindow
     """
-    # if len(shape) != 1:
-    #     shape = tuple(shape[0])
-
     if len(shape) != 1:
         shape = (16,)
-        warnings.warn("Input shape must be 1D. Defaulting to (16,)", UserWarning, stacklevel=2)
+        warnings.warn("Input shape must be 1D. Defaulting to (16,).", UserWarning, stacklevel=2)
 
     if mode not in ["WIM", "WSM"]:
         mode = "WSM"
-        warnings.warn("Mode must be in [WIM, WSM]", UserWarning, stacklevel=2)
+        warnings.warn("Mode must be in [WIM, WSM]. Defaulting to WSM.", UserWarning, stacklevel=2)
 
     l1facegw = stnode.L1FaceGuidewindow()
     l1facegw["meta"] = mk_l1_face_guidewindow_meta(mode, **kwargs.get("meta", {}))
