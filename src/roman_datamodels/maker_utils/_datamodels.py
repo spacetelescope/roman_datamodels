@@ -1,8 +1,8 @@
 import warnings
 
 import numpy as np
-from astropy.table import Table
 from astropy import time
+from astropy.table import Table
 
 from roman_datamodels import stnode
 
@@ -11,6 +11,7 @@ from ._common_meta import (
     mk_catalog_meta,
     mk_common_meta,
     mk_guidewindow_meta,
+    mk_l1_face_guidewindow_meta,
     mk_l2_meta,
     mk_mosaic_catalog_meta,
     mk_mosaic_meta,
@@ -18,7 +19,6 @@ from ._common_meta import (
     mk_ramp_meta,
     mk_wcs,
     mk_wfi_wcs_common_meta,
-    mk_l1_face_guidewindow_meta,
 )
 from ._tagged_nodes import mk_cal_logs
 
@@ -380,7 +380,6 @@ def mk_associations(*, shape=(2, 3, 1), filepath=None, **kwargs):
     return save_node(associations, filepath=filepath)
 
 
-
 def mk_l1_face_gw_face_data(*, shape=(16,), filepath=None, **kwargs):
     """
     Create a dummy L1FaceGuidewindow instance (or file) with arrays and valid values
@@ -420,14 +419,12 @@ def mk_l1_face_gw_face_data(*, shape=(16,), filepath=None, **kwargs):
         "attitude_estimate_quality", np.array(["AQ_FAILED_IN_PHASE_TRANSITION"] * shape[0], dtype="<U1")
     )
 
-    l1facegw_fd["centroid_times"] = kwargs.get("centroid_times",
-        [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0])
+    l1facegw_fd["centroid_times"] = kwargs.get(
+        "centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+    )
     l1facegw_fd["fgs_op_phase"] = kwargs.get("fgs_op_phase", ["NOT_CONFIGURED"] * shape[0])
 
     return l1facegw_fd
-
-
-
 
 
 def mk_l1_face_guidewindow(*, shape=(16,), mode="WSM", filepath=None, **kwargs):
@@ -460,7 +457,6 @@ def mk_l1_face_guidewindow(*, shape=(16,), mode="WSM", filepath=None, **kwargs):
     l1facegw["face_data"] = mk_l1_face_gw_face_data(**kwargs.get("face_data", {}))
 
     return save_node(l1facegw, filepath=filepath)
-
 
 
 def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
