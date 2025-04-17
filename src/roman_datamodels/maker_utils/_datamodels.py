@@ -416,7 +416,7 @@ def mk_l1_face_gw_face_data(*, shape=(16,), filepath=None, **kwargs):
     l1facegw_fd["num_stars_used"] = kwargs.get("num_stars_used", np.zeros(shape, dtype=np.uint8))
     l1facegw_fd["num_centroid_cycles"] = kwargs.get("num_centroid_cycles", np.zeros(shape, dtype=np.uint8))
     l1facegw_fd["attitude_estimate_quality"] = kwargs.get(
-        "attitude_estimate_quality", np.array(["AQ_FAILED_IN_PHASE_TRANSITION"] * shape[0], dtype="<U1")
+        "attitude_estimate_quality", np.array(["AQ_FAILED_IN_PHASE_TRANSITION"] * shape[0], dtype="<U30")
     )
 
     l1facegw_fd["centroid_times"] = kwargs.get(
