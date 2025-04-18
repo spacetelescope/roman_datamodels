@@ -193,7 +193,6 @@ def test_no_memmap(tmp_path, kwargs):
 
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
@@ -207,7 +206,6 @@ def test_node_round_trip(tmp_path, node_class):
 
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
@@ -224,7 +222,7 @@ def test_opening_model(tmp_path, node_class):
             assert model.asn_type == "image"
         elif node_class == stnode.WfiMosaic:
             assert model.meta.basic.optical_element == "F158"
-        elif node_class in (stnode.SegmentationMap, stnode.ImageSourceCatalog, stnode.L1FaceGuidewindow):
+        elif node_class in (stnode.SegmentationMap, stnode.ImageSourceCatalog):
             assert model.meta.optical_element == "F158"
         elif node_class in (stnode.MosaicSegmentationMap, stnode.MosaicSourceCatalog):
             assert hasattr(model.meta, "basic")
