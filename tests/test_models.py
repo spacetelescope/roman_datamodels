@@ -312,7 +312,7 @@ def test_make_l1_face_guidewindow():
     shape = (12,)
     l1facegw = utils.mk_l1_face_guidewindow(shape=shape, mode="WSM")
 
-    assert l1facegw.meta.instrument.name == "WFI"
+    assert l1facegw.meta.optical_element == "F158"
     assert l1facegw.meta.guide_star_acq_num == -999999
     assert l1facegw.meta.fgs_modes_used == ["NOT_CONFIGURED"]
     assert l1facegw.face_data.delta.dtype == np.float32

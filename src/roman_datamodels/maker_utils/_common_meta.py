@@ -550,7 +550,7 @@ def mk_l1_face_guidewindow_meta(mode="WSM", **kwargs):
     meta = {}
 
     meta["model_type"] = kwargs.get("model_type", NOSTR)
-    meta["instrument"] = mk_wfi_mode(**kwargs.get("instrument", {}))
+    meta["optical_element"] = kwargs.get("optical_element", "F158")
     meta["fgs_modes_used"] = kwargs.get("fgs_modes_used", ["NOT_CONFIGURED"])
     meta["ma_table_ids_used"] = kwargs.get("ma_table_ids_used", [NOSTR])
     meta["gw_cycles_per_sci_read_used"] = kwargs.get("gw_cycles_per_sci_read_used", [NONUM])
