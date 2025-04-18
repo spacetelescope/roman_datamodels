@@ -334,6 +334,10 @@ class AssociationsModel(_DataModel):
         return isinstance(asn_data, dict) and "asn_id" in asn_data and "asn_pool" in asn_data
 
 
+class L1FaceGuidewindowModel(_RomanDataModel):
+    _node_type = stnode.L1FaceGuidewindow
+
+
 class GuidewindowModel(_RomanDataModel):
     _node_type = stnode.Guidewindow
 

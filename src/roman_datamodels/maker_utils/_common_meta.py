@@ -536,6 +536,37 @@ def mk_guidewindow_meta(**kwargs):
     return meta
 
 
+def mk_l1_face_guidewindow_meta(mode="WSM", **kwargs):
+    """
+    Create a dummy level 1 face guidewindow metadata dictionary with valid values
+    for attributes
+
+    Returns
+    -------
+    dict (defined by the l1_face_guidewindow-1.0.0 schema with additional guidewindow
+    metadata)
+    """
+
+    meta = {}
+
+    meta["model_type"] = kwargs.get("model_type", NOSTR)
+    meta["optical_element"] = kwargs.get("optical_element", "F158")
+    meta["fgs_modes_used"] = kwargs.get("fgs_modes_used", ["NOT_CONFIGURED"])
+    meta["ma_table_ids_used"] = kwargs.get("ma_table_ids_used", [NOSTR])
+    meta["gw_cycles_per_sci_read_used"] = kwargs.get("gw_cycles_per_sci_read_used", [NONUM])
+    meta["guide_star_acq_num"] = kwargs.get("guide_star_acq_num", NONUM)
+    meta["guide_window_id"] = kwargs.get("guide_window_id", NOSTR)
+    meta["detector_gw_files"] = kwargs.get("detector_gw_files", {})
+    meta["expected_gw_acquisitions"] = kwargs.get("expected_gw_acquisitions", {})
+    meta["expected_gw_tracking"] = kwargs.get("expected_gw_tracking", {})
+
+    # WSM Only Keywords
+    if mode == "WSM":
+        meta["wsm_edge_used"] = kwargs.get("wsm_edge_used", "blue")
+
+    return meta
+
+
 def mk_l1_gs_submeta(**kwargs):
     """
     Create a dummy level 1 detector guide star metadata dictionary with valid values

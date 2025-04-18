@@ -55,6 +55,7 @@ def test_datamodel_exists(name):
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
@@ -304,6 +305,26 @@ def test_read_pattern():
         [11],
     ]
     assert (isinstance(rp, list) for rp in exposure.read_pattern)
+
+
+# L1 Face Guide Window tests
+def test_make_l1_face_guidewindow():
+    shape = (12,)
+    l1facegw = utils.mk_l1_face_guidewindow(shape=shape, mode="WSM")
+
+    assert l1facegw.meta.optical_element == "F158"
+    assert l1facegw.meta.guide_star_acq_num == -999999
+    assert l1facegw.meta.fgs_modes_used == ["NOT_CONFIGURED"]
+    assert l1facegw.face_data.delta.dtype == np.float32
+
+    # Ensure WIM model lacks the WSM array set
+    l1facegw_wim = utils.mk_l1_face_guidewindow(shape=(12,), mode="WIM")
+    assert "wsm_edge_used" in l1facegw.meta
+    assert "wsm_edge_used" not in l1facegw_wim.meta
+
+    # Test validation
+    l1facegw_model = datamodels.L1FaceGuidewindowModel(l1facegw)
+    assert l1facegw_model.validate() is None
 
 
 # Guide Window tests
@@ -988,6 +1009,7 @@ def test_model_validate_without_save():
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
 @pytest.mark.parametrize("node", datamodels.MODEL_REGISTRY.keys())
 @pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
+@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
@@ -1106,6 +1128,7 @@ def test_science_raw_from_tvac_raw(mk_tvac):
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
