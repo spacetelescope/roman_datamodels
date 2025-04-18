@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 from astropy import time
+from astropy import time
 from astropy.table import Table
 
 from roman_datamodels import stnode
@@ -12,6 +13,7 @@ from ._common_meta import (
     mk_common_meta,
     mk_guidewindow_meta,
     mk_l1_face_guidewindow_meta,
+    mk_l1_detector_guidewindow_meta,
     mk_l2_meta,
     mk_mosaic_catalog_meta,
     mk_mosaic_meta,
@@ -489,6 +491,203 @@ def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
     guidewindow["amp33"] = kwargs.get("amp33", np.zeros(shape, dtype=np.uint16))
 
     return save_node(guidewindow, filepath=filepath)
+
+
+def mk_l1_detector_guidewindow_amp33(*, mode="WSM", shape=(16, 32, 32), **kwargs):
+    """
+    Create a dummy Level 1 detector guidewindow amp33 instance (or file) with
+    arrays and valid values for attributes required by the schema.
+
+    Parameters
+    ----------
+    mode : string
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
+
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
+    """
+    if len(shape) != 3:
+        shape = (16, 32, 32)
+        warnings.warn("Input shape must be 3D. Defaulting to (16, 32, 32)", UserWarning, stacklevel=2)
+
+    if mode is None:
+        mode = "WSM"
+
+    l1detectorgwamp33 = {}
+
+    l1detectorgwamp33["amp33_track_pedestals"] = kwargs.get("amp33_track_pedestals", np.zeros(shape, dtype=np.uint16))
+    l1detectorgwamp33["amp33_track_signals"] = kwargs.get("amp33_track_signals", np.zeros(shape, dtype=np.uint16))
+
+    l1detectorgwamp33["amp33_acq_pedestals"] = kwargs.get("amp33_acq_pedestals", np.zeros(shape, dtype=np.uint16))
+    l1detectorgwamp33["amp33_acq_signals"] = kwargs.get("amp33_acq_signals", np.zeros(shape, dtype=np.uint16))
+
+    if mode == "WSM":
+        l1detectorgwamp33["amp33_edge_acq_pedestals"] = kwargs.get("amp33_edge_acq_pedestals", np.zeros(shape, dtype=np.uint16))
+        l1detectorgwamp33["amp33_edge_acq_signals"] = kwargs.get("amp33_edge_acq_signals", np.zeros(shape, dtype=np.uint16))
+
+    return l1detectorgwamp33
+
+
+def mk_l1_detector_guidewindow_centroid(*, mode="WSM", shape=(16, 32, 32), **kwargs):
+    """
+    Create a dummy Level 1 detector guidewindow centroid instance (or file) with
+    arrays and valid values for attributes required by the schema.
+
+    Parameters
+    ----------
+    mode : string
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
+
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
+    """
+    if len(shape) != 3:
+        shape = (16, 32, 32)
+        warnings.warn("Input shape must be 3D. Defaulting to (16, 32, 32)", UserWarning, stacklevel=2)
+
+    if mode is None:
+        mode = "WSM"
+
+    l1detectorgwcentroid = {}
+    l1detectorgwcentroid["acq_centroids"] = kwargs.get("acq_centroids", np.zeros(shape, dtype=np.float32))
+    l1detectorgwcentroid["acq_centroid_errs"] = kwargs.get("acq_centroid_errs", np.zeros(shape, dtype=np.float32))
+    l1detectorgwcentroid["acq_centroid_quality"] = kwargs.get(
+        "acq_centroid_quality", np.array([["?"] * shape[2]] * shape[1], dtype="<U40")
+    )
+    l1detectorgwcentroid["acq_centroid_times"] = kwargs.get(
+        "acq_centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+    )
+    l1detectorgwcentroid["track_centroids"] = kwargs.get("track_centroids", np.zeros(shape[1:], dtype=np.float32))
+    l1detectorgwcentroid["track_centroid_errs"] = kwargs.get("track_centroid_errs", np.zeros(shape[1:], dtype=np.float32))
+    l1detectorgwcentroid["track_centroid_quality"] = kwargs.get(
+        "track_centroid_quality", np.array(["?"] * shape[0], dtype="<U40")
+    )
+    l1detectorgwcentroid["track_centroid_times"] = kwargs.get(
+        "track_centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+    )
+
+    if mode == "WSM":
+        l1detectorgwcentroid["edge_acq_centroids"] = kwargs.get("edge_acq_centroids", np.zeros(shape[1:], dtype=np.float32))
+        l1detectorgwcentroid["edge_acq_centroid_errs"] = kwargs.get(
+            "edge_acq_centroid_errs", np.zeros(shape[1:], dtype=np.float32)
+        )
+        l1detectorgwcentroid["edge_acq_centroid_quality"] = kwargs.get(
+            "edge_acq_centroid_quality", np.array(["?"] * shape[0], dtype="<U40")
+        )
+        l1detectorgwcentroid["edge_acq_centroid_times"] = kwargs.get(
+            "edge_acq_centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+        )
+
+    return l1detectorgwcentroid
+
+
+def mk_l1_detector_guidewindow_array(*, name, shape=(16, 32, 32), **kwargs):
+    """
+    Create a dummy Level 1 detector guidewindow data arrays instance (or file) with
+    arrays and valid values for attributes required by the schema.
+
+    Parameters
+    ----------
+    name
+        Name of array block to create.
+
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
+    """
+    if len(shape) != 3:
+        shape = (16, 32, 32)
+        warnings.warn("Input shape must be 3D. Defaulting to (16, 32, 32)", UserWarning, stacklevel=2)
+
+    l1detectorgwarr = {}
+
+    l1detectorgwarr["pedestal_resultants"] = kwargs.get("pedestal_resultants", np.zeros(shape, dtype=np.uint16))
+    l1detectorgwarr["signal_resultants"] = kwargs.get("signal_resultants", np.zeros(shape, dtype=np.uint16))
+    l1detectorgwarr["lower_left_corners"] = kwargs.get("lower_left_corners", np.zeros(shape[1:], dtype=np.uint16))
+    l1detectorgwarr["upper_right_corners"] = kwargs.get("upper_right_corners", np.zeros(shape[1:], dtype=np.uint16))
+    l1detectorgwarr["pixel_offsets"] = kwargs.get("pixel_offsets", np.zeros(shape[0], dtype=np.uint16))
+    l1detectorgwarr["reset_impacted_pairs"] = kwargs.get("reset_impacted_pairs", np.zeros(shape[0], dtype=bool))
+    l1detectorgwarr["reset_read_flag"] = kwargs.get("reset_read_flag", np.zeros(shape[0], dtype=bool))
+    l1detectorgwarr["pedestal_times"] = kwargs.get(
+        "pedestal_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+    )
+    l1detectorgwarr["signal_times"] = kwargs.get(
+        "signal_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
+    )
+    l1detectorgwarr["sci_data_packet_counts"] = kwargs.get("sci_data_packet_counts", np.zeros(shape[1:], dtype=np.uint16))
+    l1detectorgwarr["sce_status_flag"] = kwargs.get("sce_status_flag", np.zeros(shape[1:], dtype=np.uint8))
+    l1detectorgwarr["gw_resultant_err_flag"] = kwargs.get("gw_resultant_err_flag", np.zeros(shape[1:], dtype=np.uint8))
+    l1detectorgwarr["min_bind_flag"] = kwargs.get("min_bind_flag", np.zeros(shape[1:], dtype=np.uint8))
+    l1detectorgwarr["max_bind_flag"] = kwargs.get("max_bind_flag", np.zeros(shape[1:], dtype=np.uint8))
+
+    if name == "track_data":
+        l1detectorgwarr["exposure_mapping"] = kwargs.get("exposure_mapping", np.zeros(shape[0], dtype=np.int16))
+
+    return l1detectorgwarr
+
+
+def mk_l1_detector_guidewindow(*, shape=(16, 32, 32), mode="WSM", filepath=None, **kwargs):
+    """
+    Create a dummy L1DetectorGuidewindow instance (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+
+    mode : string
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
+
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.L1DetectorGuidewindow
+    """
+    if len(shape) != 3:
+        shape = (16, 32, 32)
+        warnings.warn("Input shape must be 3D. Defaulting to (16, 32, 32)", UserWarning, stacklevel=2)
+
+    if mode not in ["WIM", "WSM"]:
+        mode = "WSM"
+        warnings.warn("Mode must be in [WIM, WSM]", UserWarning, stacklevel=2)
+
+    l1detectorgw = stnode.L1DetectorGuidewindow()
+    l1detectorgw["meta"] = mk_l1_detector_guidewindow_meta(mode, **kwargs.get("meta", {}))
+
+    l1detectorgw["amp33"] = mk_l1_detector_guidewindow_amp33(mode=mode, shape=shape, **kwargs.get("amp33", {}))
+    l1detectorgw["centroid"] = mk_l1_detector_guidewindow_centroid(mode=mode, shape=shape, **kwargs.get("centroid", {}))
+
+    l1detectorgw["acq_data"] = mk_l1_detector_guidewindow_array(name="acq_data", shape=shape, **kwargs.get("acq_data", {}))
+    l1detectorgw["track_data"] = mk_l1_detector_guidewindow_array(name="track_data", shape=shape, **kwargs.get("track_data", {}))
+    if mode == "WSM":
+        l1detectorgw["edge_acq_data"] = mk_l1_detector_guidewindow_array(
+            name="edge_acq_data", shape=shape, **kwargs.get("edge_acq_data", {})
+        )
+
+    return save_node(l1detectorgw, filepath=filepath)
 
 
 def mk_mosaic_source_catalog(*, filepath=None, **kwargs):

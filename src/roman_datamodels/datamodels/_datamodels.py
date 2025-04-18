@@ -342,6 +342,10 @@ class GuidewindowModel(_RomanDataModel):
     _node_type = stnode.Guidewindow
 
 
+class L1DetectorGuidewindowModel(_RomanDataModel):
+    _node_type = stnode.L1DetectorGuidewindow
+
+
 class FlatRefModel(_DataModel):
     _node_type = stnode.FlatRef
 
