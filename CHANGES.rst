@@ -1,3 +1,40 @@
+0.24.0 (2025-04-18)
+===================
+
+New Features
+------------
+
+- Added datamodels for MA Tables reference files. Tests are added, and a couple
+  adjusted for the integer keywords in the datamodel. (`#469
+  <https://github.com/spacetelescope/roman_datamodels/issues/469>`_)
+- MosaicSourceCatalogModel and ImageSourceCatalogModel now can be serialized to
+  parquet format using the `to_parquet` method. (`#473
+  <https://github.com/spacetelescope/roman_datamodels/issues/473>`_)
+- Added epsf and apcorr to ref_files and ref_files to image_source_catalog.
+  (`#474 <https://github.com/spacetelescope/roman_datamodels/issues/474>`_)
+- Create the WfiWcsModel (`#477
+  <https://github.com/spacetelescope/roman_datamodels/issues/477>`_)
+- Allow source catalog models to be saved with parquet extension. (`#484
+  <https://github.com/spacetelescope/roman_datamodels/issues/484>`_)
+- Added astropy table metadata to parquet catalog files. (`#488
+  <https://github.com/spacetelescope/roman_datamodels/issues/488>`_)
+- Added L1 Detector-Level Guide Window File Datamodels, maker utilities, and
+  tests. (`#489
+  <https://github.com/spacetelescope/roman_datamodels/issues/489>`_)
+- Added L1 Average FACE Guide Window File Datamodels, maker utils, & test.
+  (`#492 <https://github.com/spacetelescope/roman_datamodels/issues/492>`_)
+
+
+Misc
+----
+
+- test with latest supported Python version (`#463
+  <https://github.com/spacetelescope/roman_datamodels/issues/463>`_)
+- This PR adjusts several RTB directed L1 & L2 metadata datamodel changes,
+  tests, and TVAC/FPS conversions. (`#487
+  <https://github.com/spacetelescope/roman_datamodels/issues/487>`_)
+
+
 0.23.1 (2025-02-14)
 ===================
 

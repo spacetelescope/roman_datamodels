@@ -1,1 +1,0 @@
-Allow source catalog models to be saved with parquet extension.
