@@ -323,6 +323,30 @@ def test_make_guidewindow():
     assert guidewindow_model.validate() is None
 
 
+# L1 Guide Window tests
+def test_make_l1_detector_guidewindow():
+    l1detectorgw = utils.mk_l1_detector_guidewindow(shape=(2, 3, 4), mode="WSM")
+
+    assert l1detectorgw.meta.instrument.name == "WFI"
+    assert l1detectorgw.meta.guide_window.min_acq_xstart == -999999
+    assert l1detectorgw.meta.guide_star.predicted_ra == -999999
+    assert l1detectorgw.amp33.amp33_track_pedestals.dtype == np.uint16
+    assert l1detectorgw.acq_data.pedestal_resultants.dtype == np.uint16
+    assert l1detectorgw.track_data.pixel_offsets.dtype == np.uint16
+    assert l1detectorgw.centroid.acq_centroid_quality.shape == (3, 4)
+    assert l1detectorgw.edge_acq_data.pedestal_resultants.shape == (2, 3, 4)
+    assert l1detectorgw.acq_data.reset_impacted_pairs.shape == (2,)
+
+    # Ensure WIM model lacks the WSM array set
+    l1detectorgw_wim = utils.mk_l1_detector_guidewindow(shape=(2, 3, 4), mode="WIM")
+    assert "edge_acq_data" in l1detectorgw
+    assert "edge_acq_data" not in l1detectorgw_wim
+
+    # Test validation
+    l1detectorgw_model = datamodels.L1DetectorGuidewindowModel(l1detectorgw)
+    assert l1detectorgw_model.validate() is None
+
+
 # AB Vega Offset Correction tests
 def test_make_abvegaoffset():
     abvegaoffset = utils.mk_abvegaoffset()

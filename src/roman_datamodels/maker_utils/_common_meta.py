@@ -536,6 +536,122 @@ def mk_guidewindow_meta(**kwargs):
     return meta
 
 
+def mk_l1_gs_submeta(**kwargs):
+    """
+    Create a dummy level 1 detector guide star metadata dictionary with valid values
+    for attributes
+
+    Returns
+    -------
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
+    """
+
+    l1_gs_submeta = {}
+
+    l1_gs_submeta["gsc_id"] = kwargs.get("gsc_id", NOSTR)
+    l1_gs_submeta["predicted_ra"] = kwargs.get("predicted_ra", NONUM)
+    l1_gs_submeta["predicted_dec"] = kwargs.get("predicted_dec", NONUM)
+    l1_gs_submeta["gaia_parallax"] = kwargs.get("gaia_parallax", NONUM)
+    l1_gs_submeta["ra_pm"] = kwargs.get("ra_pm", NONUM)
+    l1_gs_submeta["dec_pm"] = kwargs.get("dec_pm", NONUM)
+    l1_gs_submeta["predicted_fgs_mag"] = kwargs.get("predicted_fgs_mag", NONUM)
+    l1_gs_submeta["predicted_fgs_bright_mag"] = kwargs.get("predicted_fgs_bright_mag", NONUM)
+    l1_gs_submeta["predicted_fgs_faint_mag"] = kwargs.get("predicted_fgs_faint_mag", NONUM)
+    l1_gs_submeta["predicted_count_rate"] = kwargs.get("predicted_count_rate", NONUM)
+    l1_gs_submeta["predicted_x"] = kwargs.get("predicted_x", NONUM)
+    l1_gs_submeta["predicted_y"] = kwargs.get("predicted_y", NONUM)
+    l1_gs_submeta["pseudo_star_flag"] = kwargs.get("pseudo_star_flag", "N")
+
+    return l1_gs_submeta
+
+
+def mk_l1_gw_submeta(mode="WSM", **kwargs):
+    """
+    Create a dummy level 1 detector guide window metadata dictionary with valid values
+    for attributes
+
+    Parameters
+    ----------
+    mode : string
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
+
+    Returns
+    -------
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
+    """
+
+    l1_gw_submeta = {}
+
+    l1_gw_submeta["min_acq_xstart"] = kwargs.get("min_acq_xstart", NONUM)
+    l1_gw_submeta["min_acq_ystart"] = kwargs.get("min_acq_ystart", NONUM)
+    l1_gw_submeta["max_acq_xstop"] = kwargs.get("max_acq_xstop", NONUM)
+    l1_gw_submeta["max_acq_ystop"] = kwargs.get("max_acq_ystop", NONUM)
+    l1_gw_submeta["acq_xsize"] = kwargs.get("acq_xsize", NONUM)
+    l1_gw_submeta["acq_ysize"] = kwargs.get("acq_ysize", NONUM)
+
+    l1_gw_submeta["min_track_xstart"] = kwargs.get("min_track_xstart", NONUM)
+    l1_gw_submeta["min_track_ystart"] = kwargs.get("min_track_ystart", NONUM)
+    l1_gw_submeta["max_track_xstop"] = kwargs.get("max_track_xstop", NONUM)
+    l1_gw_submeta["max_track_ystop"] = kwargs.get("max_track_ystop", NONUM)
+    l1_gw_submeta["track_xsize"] = kwargs.get("track_xsize", NONUM)
+    l1_gw_submeta["track_ysize"] = kwargs.get("track_ysize", NONUM)
+
+    if mode == "WSM":
+        l1_gw_submeta["min_edge_acq_xstart"] = kwargs.get("min_edge_acq_xstart", NONUM)
+        l1_gw_submeta["min_edge_acq_ystart"] = kwargs.get("min_edge_acq_ystart", NONUM)
+        l1_gw_submeta["max_edge_acq_xstop"] = kwargs.get("max_edge_acq_xstop", NONUM)
+        l1_gw_submeta["max_edge_acq_ystop"] = kwargs.get("max_edge_acq_ystop", NONUM)
+        l1_gw_submeta["edge_acq_xsize"] = kwargs.get("edge_acq_xsize", NONUM)
+        l1_gw_submeta["edge_acq_ysize"] = kwargs.get("edge_acq_ysize", NONUM)
+
+    return l1_gw_submeta
+
+
+def mk_l1_detector_guidewindow_meta(mode="WSM", **kwargs):
+    """
+    Create a dummy level 1 detector guide window metadata dictionary with valid values
+    for attributes
+
+    Parameters
+    ----------
+    mode : string
+        (optional, keyword-only) Mode of the instrument, image (WIM) or spectrograph (WSM).
+
+    Returns
+    -------
+    dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
+    """
+
+    meta = {}
+    meta["model_type"] = kwargs.get("model_type", NOSTR)
+    meta["fgs_modes_used"] = kwargs.get("fgs_modes_used", ["NOT_CONFIGURED"])
+    meta["acq_ma_table_id"] = kwargs.get("acq_ma_table_id", NOSTR)
+    meta["acq_gw_cycles_per_sci_read"] = kwargs.get("acq_gw_cycles_per_sci_read", NONUM)
+    meta["acq_pedestal_resultant_exp_time"] = kwargs.get("acq_pedestal_resultant_exp_time", NONUM)
+    meta["acq_signal_resultant_exp_time"] = kwargs.get("acq_signal_resultant_exp_time", NONUM)
+    meta["track_ma_table_id"] = kwargs.get("track_ma_table_id", NOSTR)
+    meta["track_gw_cycles_per_sci_read"] = kwargs.get("track_gw_cycles_per_sci_read", NONUM)
+    meta["track_pedestal_resultant_exp_time"] = kwargs.get("track_pedestal_resultant_exp_time", NONUM)
+    meta["track_signal_resultant_exp_time"] = kwargs.get("track_signal_resultant_exp_time", NONUM)
+    meta["guide_star_acq_num"] = kwargs.get("guide_star_acq_num", NONUM)
+    meta["guide_window_id"] = kwargs.get("guide_window_id", NOSTR)
+    meta["instrument"] = mk_wfi_mode(**kwargs.get("instrument", {}))
+    meta["avg_face_filename"] = kwargs.get("avg_face_filename", NOSTR)
+
+    # WSM Only Keywords
+    if mode == "WSM":
+        meta["edge_acq_ma_table_id"] = kwargs.get("edge_acq_ma_table_id", NOSTR)
+        meta["edge_acq_gw_cycles_per_sci_read"] = kwargs.get("edge_acq_gw_cycles_per_sci_read", NONUM)
+        meta["edge_acq_pedestal_resultant_exp_time"] = kwargs.get("edge_acq_pedestal_resultant_exp_time", NONUM)
+        meta["edge_acq_signal_resultant_exp_time"] = kwargs.get("edge_acq_signal_resultant_exp_time", NONUM)
+        meta["wsm_edge_used"] = kwargs.get("wsm_edge_used", "blue")
+
+    meta["guide_star"] = mk_l1_gs_submeta(**kwargs.get("guide_star", {}))
+    meta["guide_window"] = mk_l1_gw_submeta(mode, **kwargs.get("guide_window", {}))
+
+    return meta
+
+
 def mk_msos_stack_meta(**kwargs):
     """
     Create a dummy common metadata dictionary with valid values for attributes and add
