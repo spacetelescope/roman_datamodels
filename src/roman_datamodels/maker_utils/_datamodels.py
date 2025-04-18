@@ -491,7 +491,9 @@ def mk_l1_detector_guidewindow_centroid(*, mode="WSM", shape=(16, 32, 32), **kwa
     )
     l1detectorgwcentroid["track_centroids"] = kwargs.get("track_centroids", np.zeros(shape[1:], dtype=np.float32))
     l1detectorgwcentroid["track_centroid_errs"] = kwargs.get("track_centroid_errs", np.zeros(shape[1:], dtype=np.float32))
-    l1detectorgwcentroid["track_centroid_quality"] = kwargs.get("track_centroid_quality", np.array(["?"] * shape[0], dtype="<U40"))
+    l1detectorgwcentroid["track_centroid_quality"] = kwargs.get(
+        "track_centroid_quality", np.array(["?"] * shape[0], dtype="<U40")
+    )
     l1detectorgwcentroid["track_centroid_times"] = kwargs.get(
         "track_centroid_times", [time.Time("2024-01-01T12:00:00", format="isot", scale="utc")] * shape[0]
     )
