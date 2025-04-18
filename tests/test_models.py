@@ -55,6 +55,7 @@ def test_datamodel_exists(name):
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
@@ -306,6 +307,26 @@ def test_read_pattern():
     assert (isinstance(rp, list) for rp in exposure.read_pattern)
 
 
+# L1 Face Guide Window tests
+def test_make_l1_face_guidewindow():
+    shape = (12,)
+    l1facegw = utils.mk_l1_face_guidewindow(shape=shape, mode="WSM")
+
+    assert l1facegw.meta.optical_element == "F158"
+    assert l1facegw.meta.guide_star_acq_num == -999999
+    assert l1facegw.meta.fgs_modes_used == ["NOT_CONFIGURED"]
+    assert l1facegw.face_data.delta.dtype == np.float32
+
+    # Ensure WIM model lacks the WSM array set
+    l1facegw_wim = utils.mk_l1_face_guidewindow(shape=(12,), mode="WIM")
+    assert "wsm_edge_used" in l1facegw.meta
+    assert "wsm_edge_used" not in l1facegw_wim.meta
+
+    # Test validation
+    l1facegw_model = datamodels.L1FaceGuidewindowModel(l1facegw)
+    assert l1facegw_model.validate() is None
+
+
 # Guide Window tests
 def test_make_guidewindow():
     guidewindow = utils.mk_guidewindow(shape=(2, 2, 2, 2, 2))
@@ -321,6 +342,30 @@ def test_make_guidewindow():
     # Test validation
     guidewindow_model = datamodels.GuidewindowModel(guidewindow)
     assert guidewindow_model.validate() is None
+
+
+# L1 Guide Window tests
+def test_make_l1_detector_guidewindow():
+    l1detectorgw = utils.mk_l1_detector_guidewindow(shape=(2, 3, 4), mode="WSM")
+
+    assert l1detectorgw.meta.instrument.name == "WFI"
+    assert l1detectorgw.meta.guide_window.min_acq_xstart == -999999
+    assert l1detectorgw.meta.guide_star.predicted_ra == -999999
+    assert l1detectorgw.amp33.amp33_track_pedestals.dtype == np.uint16
+    assert l1detectorgw.acq_data.pedestal_resultants.dtype == np.uint16
+    assert l1detectorgw.track_data.pixel_offsets.dtype == np.uint16
+    assert l1detectorgw.centroid.acq_centroid_quality.shape == (3, 4)
+    assert l1detectorgw.edge_acq_data.pedestal_resultants.shape == (2, 3, 4)
+    assert l1detectorgw.acq_data.reset_impacted_pairs.shape == (2,)
+
+    # Ensure WIM model lacks the WSM array set
+    l1detectorgw_wim = utils.mk_l1_detector_guidewindow(shape=(2, 3, 4), mode="WIM")
+    assert "edge_acq_data" in l1detectorgw
+    assert "edge_acq_data" not in l1detectorgw_wim
+
+    # Test validation
+    l1detectorgw_model = datamodels.L1DetectorGuidewindowModel(l1detectorgw)
+    assert l1detectorgw_model.validate() is None
 
 
 # AB Vega Offset Correction tests
@@ -964,6 +1009,7 @@ def test_model_validate_without_save():
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
 @pytest.mark.parametrize("node", datamodels.MODEL_REGISTRY.keys())
 @pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
+@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
@@ -1082,6 +1128,7 @@ def test_science_raw_from_tvac_raw(mk_tvac):
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
