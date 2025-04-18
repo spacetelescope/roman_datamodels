@@ -2,7 +2,6 @@ import warnings
 
 import numpy as np
 from astropy import time
-from astropy import time
 from astropy.table import Table
 
 from roman_datamodels import stnode
@@ -12,8 +11,8 @@ from ._common_meta import (
     mk_catalog_meta,
     mk_common_meta,
     mk_guidewindow_meta,
-    mk_l1_face_guidewindow_meta,
     mk_l1_detector_guidewindow_meta,
+    mk_l1_face_guidewindow_meta,
     mk_l2_meta,
     mk_mosaic_catalog_meta,
     mk_mosaic_meta,
