@@ -7,7 +7,7 @@ import pytest
 from asdf.exceptions import ValidationError
 from astropy import units as u
 from astropy.modeling import Model
-from astropy.table import QTable, Table
+from astropy.table import Table
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels, stnode, validate
@@ -734,47 +734,6 @@ def test_make_level3_mosaic():
 
     # Test validation
     wfi_mosaic_model = datamodels.MosaicModel(wfi_mosaic)
-    assert wfi_mosaic_model.validate() is None
-
-
-# WFI Level 3 Mosaic tests
-def test_append_individual_image_meta_level3_mosaic():
-    wfi_mosaic = utils.mk_level3_mosaic(shape=(8, 8))
-    wfi_mosaic_model = datamodels.MosaicModel(wfi_mosaic)
-
-    wfi_image1 = utils.mk_level2_image(shape=(8, 8))
-    wfi_image2 = utils.mk_level2_image(shape=(8, 8))
-    wfi_image3 = utils.mk_level2_image(shape=(8, 8))
-
-    wfi_image1.meta.program.investigator_name = "Nancy"
-    wfi_image2.meta.program.investigator_name = "Grace"
-    wfi_image3.meta.program.investigator_name = "Roman"
-    wfi_image3_model = datamodels.ImageModel(wfi_image3)
-
-    wfi_mosaic_model.append_individual_image_meta(wfi_image1.meta)
-    wfi_mosaic_model.append_individual_image_meta(wfi_image2.meta.to_flat_dict())
-    wfi_mosaic_model.append_individual_image_meta(wfi_image3_model.meta)
-
-    # Test that basic is a QTable
-    assert isinstance(wfi_mosaic_model.meta.individual_image_meta.basic, QTable)
-
-    # Test that each image entry in the instrument table contains the same instrument name
-    assert wfi_mosaic_model.meta.individual_image_meta.instrument["name"][0] == "WFI"
-    assert (
-        wfi_mosaic_model.meta.individual_image_meta.instrument["name"][0]
-        == wfi_mosaic_model.meta.individual_image_meta.instrument["name"][1]
-    )
-    assert (
-        wfi_mosaic_model.meta.individual_image_meta.instrument["name"][1]
-        == wfi_mosaic_model.meta.individual_image_meta.instrument["name"][2]
-    )
-
-    # Test that each image entry in the program table contains the correct (different) PI name
-    assert wfi_mosaic_model.meta.individual_image_meta.program["investigator_name"][0] == "Nancy"
-    assert wfi_mosaic_model.meta.individual_image_meta.program["investigator_name"][1] == "Grace"
-    assert wfi_mosaic_model.meta.individual_image_meta.program["investigator_name"][2] == "Roman"
-
-    # Test that the mosaic validates with IIM filled
     assert wfi_mosaic_model.validate() is None
 
 
