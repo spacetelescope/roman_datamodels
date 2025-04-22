@@ -8,7 +8,7 @@ New Features
   adjusted for the integer keywords in the datamodel. (`#469
   <https://github.com/spacetelescope/roman_datamodels/issues/469>`_)
 - MosaicSourceCatalogModel and ImageSourceCatalogModel now can be serialized to
-  parquet format using the `to_parquet` method. (`#473
+  parquet format using the ``to_parquet`` method. (`#473
   <https://github.com/spacetelescope/roman_datamodels/issues/473>`_)
 - Added epsf and apcorr to ref_files and ref_files to image_source_catalog.
   (`#474 <https://github.com/spacetelescope/roman_datamodels/issues/474>`_)
