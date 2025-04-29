@@ -2,20 +2,24 @@ import astropy.table as astrotab
 import numpy as np
 import pyarrow.parquet as pq
 import pytest
+from asdf.exceptions import ValidationError
 
 from roman_datamodels import datamodels
 from roman_datamodels import maker_utils as utils
 
+CATALOG_CLASSES = (
+    datamodels.ImageSourceCatalogModel,
+    datamodels.MosaicSourceCatalogModel,
+)
 source_catalogs = [
     (datamodels.ImageSourceCatalogModel, utils.mk_image_source_catalog),
     (datamodels.MosaicSourceCatalogModel, utils.mk_mosaic_source_catalog),
 ]
 
 
-@pytest.mark.parametrize(("catalog_class", "mk_catalog"), source_catalogs)
-def test_source_catalog(catalog_class, mk_catalog, tmp_path):
-    sc_node = mk_catalog(save=False)
-    sc_dm = catalog_class(sc_node)
+@pytest.mark.parametrize("catalog_class", CATALOG_CLASSES)
+def test_source_catalog(catalog_class, tmp_path):
+    sc_dm = utils.mk_datamodel(catalog_class)
 
     sc_dm.source_catalog["a"].description = "a description"
     sc_dm.source_catalog["b"].description = "b description"
@@ -43,3 +47,12 @@ def test_source_catalog(catalog_class, mk_catalog, tmp_path):
     sc_dm.save(test_path2)
     with open(test_path2, "rb") as f:
         assert f.read(4) == b"PAR1"
+
+
+@pytest.mark.parametrize("catalog_class", CATALOG_CLASSES)
+def test_to_parquet_validates(catalog_class, tmp_path):
+    sc_dm = utils.mk_datamodel(catalog_class)
+    fn = tmp_path / "foo.parquet"
+    sc_dm.meta = {}
+    with pytest.raises(ValidationError):
+        sc_dm.to_parquet(fn)

@@ -35,6 +35,9 @@ class _ParquetMixin:
 
         Defers import of parquet to minimize import overhead for all other models.
         """
+        # parquet does not provide validation so validate first with asdf
+        self.validate()
+
         global DTYPE_MAP
         import pyarrow as pa
         import pyarrow.parquet as pq
