@@ -1,3 +1,13 @@
+0.24.2 (2025-04-30)
+===================
+
+Bug Fixes
+---------
+
+- Use a non-root logger. (`#506
+  <https://github.com/spacetelescope/roman_datamodels/issues/506>`_)
+
+
 0.24.0 (2025-04-18)
 ===================
 
