@@ -547,9 +547,8 @@ def mk_l1_face_guidewindow_meta(mode="WSM", **kwargs):
     metadata)
     """
 
-    meta = {}
+    meta = mk_basic_meta(**kwargs)
 
-    meta["model_type"] = kwargs.get("model_type", NOSTR)
     meta["optical_element"] = kwargs.get("optical_element", "F158")
     meta["fgs_modes_used"] = kwargs.get("fgs_modes_used", ["NOT_CONFIGURED"])
     meta["ma_table_ids_used"] = kwargs.get("ma_table_ids_used", [NOSTR])
@@ -653,8 +652,8 @@ def mk_l1_detector_guidewindow_meta(mode="WSM", **kwargs):
     dict (defined by the l1_detector_guidewindow-1.0.0 schema with additional guidewindow metadata)
     """
 
-    meta = {}
-    meta["model_type"] = kwargs.get("model_type", NOSTR)
+    meta = mk_basic_meta(**kwargs)
+
     meta["fgs_modes_used"] = kwargs.get("fgs_modes_used", ["NOT_CONFIGURED"])
     meta["acq_ma_table_id"] = kwargs.get("acq_ma_table_id", NOSTR)
     meta["acq_gw_cycles_per_sci_read"] = kwargs.get("acq_gw_cycles_per_sci_read", NONUM)
