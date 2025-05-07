@@ -1,5 +1,6 @@
 import warnings
 from contextlib import nullcontext
+from copy import deepcopy
 
 import asdf
 import numpy as np
@@ -1301,3 +1302,14 @@ def test_wfi_wcs_no_wcs(caplog):
     assert not hasattr(wfi_wcs, "wcs_l2")
 
     assert "Model has no WCS defined" in caplog.text
+
+
+def test_deepcopy_after_use():
+    """
+    Test that nodes constructed from using models can be copied
+
+    See: https://github.com/spacetelescope/roman_datamodels/issues/486
+    """
+    m = datamodels.ImageModel()
+    m.meta = {}
+    deepcopy(m.meta)
