@@ -394,6 +394,14 @@ class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin):
     _node_type = stnode.MosaicSourceCatalog
 
 
+class ForcedSourceCatalogModel(_RomanDataModel, _ParquetMixin):
+    _node_type = stnode.ForcedSourceCatalog
+
+
+class MultibandCatalogModel(_RomanDataModel, _ParquetMixin):
+    _node_type = stnode.MultibandCatalog
+
+
 class MosaicSegmentationMapModel(_RomanDataModel):
     _node_type = stnode.MosaicSegmentationMap
 

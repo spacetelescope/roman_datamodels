@@ -785,6 +785,20 @@ def test_make_mosaic_source_catalog():
     assert isinstance(source_catalog_model.source_catalog, Table)
 
 
+def test_make_forced_source_catalog():
+    source_catalog = utils.mk_forced_source_catalog()
+    source_catalog_model = datamodels.ForcedSourceCatalogModel(source_catalog)
+
+    assert isinstance(source_catalog_model.source_catalog, Table)
+
+
+def test_make_multiband_catalog():
+    source_catalog = utils.mk_multiband_catalog()
+    source_catalog_model = datamodels.MultibandCatalogModel(source_catalog)
+
+    assert isinstance(source_catalog_model.source_catalog, Table)
+
+
 def test_make_mosaic_segmentation_map():
     segmentation_map = utils.mk_mosaic_segmentation_map()
     segmentation_map_model = datamodels.MosaicSegmentationMapModel(segmentation_map)
