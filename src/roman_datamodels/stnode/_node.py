@@ -174,22 +174,10 @@ class DNode(MutableMapping):
             # Wrap things in the tagged scalar classes if necessary
             value = self._convert_to_scalar(key, value, self._data.get(key))
 
-            if key in self._data or key in self._schema_attributes:
-                # Finally set the value
-                self._data[key] = value
-            else:
-                raise AttributeError(f"No such attribute ({key}) found in node")
+            # Finally set the value
+            self._data[key] = value
         else:
             self.__dict__[key] = value
-
-    @property
-    def _schema_attributes(self):
-        """
-        Get the schema attributes for this node.
-        """
-        if self._x_schema_attributes is None:
-            self._x_schema_attributes = SchemaProperties.from_schema(self._schema())
-        return self._x_schema_attributes
 
     def _recursive_items(self):
         def recurse(tree, path=None):
