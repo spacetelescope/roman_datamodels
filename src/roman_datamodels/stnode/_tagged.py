@@ -84,12 +84,6 @@ class TaggedObjectNode(DNode):
     def tag(self):
         return self._tag
 
-    def _schema(self):
-        # FIXME required for tagged _schema_attributes to work
-        if self._x_schema is None:
-            self._x_schema = self.get_schema()
-        return self._x_schema
-
     def get_schema(self):
         """Retrieve the schema associated with this tag"""
         return _get_schema_from_tag(self.tag)
