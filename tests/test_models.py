@@ -1240,7 +1240,6 @@ def test_make_wfi_wcs():
     assert m.validate() is None
 
 
-@pytest.mark.xfail(reason="need _schema_attributes replacement")
 def test_wfi_wcs_from_wcsmodel():
     """Test basic WfiWcsModel creation"""
     model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
@@ -1290,7 +1289,6 @@ def test_wfi_wcs_from_wcsmodel():
     assert model_bb[1][1] + 2 * border == wfi_wcs_bb[1][1]
 
 
-@pytest.mark.xfail(reason="need _schema_attributes replacement")
 def test_wfi_wcs_no_wcs(caplog):
     """Test providing an ImageModel without a wcs produces a valid WfiWcsModel with no wcses."""
     model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
