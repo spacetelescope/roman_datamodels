@@ -4,7 +4,6 @@ Base node classes for all STNode classes.
 """
 
 import datetime
-import re
 from collections import UserList
 from collections.abc import MutableMapping
 
@@ -16,36 +15,6 @@ from astropy.time import Time
 from ._registry import SCALAR_NODE_CLASSES_BY_KEY
 
 __all__ = ["DNode", "LNode"]
-
-
-def _get_schema_for_property(schema, attr):
-    """
-    Pull out the schema for a particular property.
-    """
-    # Check if attr is a property
-    subschema = schema.get("properties", {}).get(attr, None)
-
-    # Check if attr is a pattern property
-    props = schema.get("patternProperties", {})
-    for key, value in props.items():
-        if re.match(key, attr):
-            subschema = value
-            break
-
-    # Have found a schema for the attribute return it
-    if subschema is not None:
-        return subschema
-
-    # Still have not found a schema for the attribute, so check for combiners
-    # and search for the attribute through the entries in the combiners
-    for combiner in ["allOf", "anyOf"]:
-        for subschema in schema.get(combiner, []):
-            subsubschema = _get_schema_for_property(subschema, attr)
-            if subsubschema != {}:
-                return subsubschema
-
-    # Still have not found a schema for the attribute, so return an empty one
-    return {}
 
 
 class DNode(MutableMapping):
@@ -65,8 +34,6 @@ class DNode(MutableMapping):
             raise ValueError("Initializer only accepts dicts")
 
         # Set the metadata tracked by the node
-        self._x_schema = None
-        self._schema_uri = None
         self._parent = parent
         self._name = name
 
@@ -176,18 +143,6 @@ class DNode(MutableMapping):
             return {
                 key: convert_val(val) for (key, val) in item_getter() if not isinstance(val, np.ndarray | ndarray.NDArrayType)
             }
-
-    def _schema(self):
-        """
-        If not overridden by a subclass, it will search for a schema from
-        the parent class, recursing if necessary until one is found.
-        """
-        if self._x_schema is None:
-            parent_schema = self._parent._schema()
-            # Extract the subschema corresponding to this node.
-            subschema = _get_schema_for_property(parent_schema, self._name)
-            self._x_schema = subschema
-        return self._x_schema
 
     def __asdf_traverse__(self):
         """Asdf traverse method for things like info/search"""
