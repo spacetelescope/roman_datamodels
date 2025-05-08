@@ -8,7 +8,6 @@ import re
 from collections import UserList
 from collections.abc import MutableMapping
 
-import asdf
 import numpy as np
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
@@ -101,7 +100,6 @@ class DNode(MutableMapping):
     """
 
     _pattern = None
-    _ctx = None
 
     def __init__(self, node=None, parent=None, name=None):
         # Handle if we are passed different data types
@@ -118,13 +116,6 @@ class DNode(MutableMapping):
         self._parent = parent
         self._name = name
         self._x_schema_attributes = None
-
-    @property
-    def ctx(self):
-        """Asdf context for this node. This should be an empty file"""
-        if self._ctx is None:
-            DNode._ctx = asdf.AsdfFile()
-        return self._ctx
 
     @staticmethod
     def _convert_to_scalar(key, value, ref=None):
