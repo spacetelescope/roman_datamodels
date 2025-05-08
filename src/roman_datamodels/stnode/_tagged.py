@@ -5,6 +5,7 @@ Base classes for all the tagged objects defined by RAD.
 """
 
 import copy
+import functools
 
 import asdf
 
@@ -24,6 +25,7 @@ __all__ = [
 ]
 
 
+@functools.cache
 def _get_schema_from_tag(tag):
     """
     Look up and load ASDF's schema corresponding to the tag_uri.
