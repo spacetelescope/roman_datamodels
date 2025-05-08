@@ -57,7 +57,7 @@ class SchemaProperties:
     """
 
     def __init__(self, explicit_properties, patterns):
-        self.explicit_properties = explicit_properties
+        self.explicit_properties = set(explicit_properties)
         self.patterns = patterns
 
     def __contains__(self, attr):
