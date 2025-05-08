@@ -205,7 +205,6 @@ class DataModel(abc.ABC):
         target._iscopy = True
         target._files_to_close = []
         target._shape = source._shape
-        target._ctx = target
 
     def save(self, path, dir_path=None, *args, **kwargs):
         path = Path(path(self.meta.filename) if callable(path) else path)
