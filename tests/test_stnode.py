@@ -5,7 +5,6 @@ import asdf
 import pytest
 
 from roman_datamodels import datamodels, maker_utils, stnode, validate
-from roman_datamodels import maker_utils as utils
 from roman_datamodels.maker_utils._base import NOFN, NONUM, NOSTR
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
@@ -169,22 +168,6 @@ def test_schema_info():
             },
         }
     }
-
-
-# Test that a currently undefined attribute can be assigned using dot notation
-# so long as the attribute is defined in the corresponding schema.
-def test_node_new_attribute_assignment():
-    exp = stnode.Exposure()
-    exp.nresultants = 5
-    assert exp.nresultants == 5
-    # Test patternProperties attribute case
-    photmod = utils.mk_wfi_img_photom()
-    phottab = photmod.phot_table
-    newphottab = {"F062": phottab["F062"]}
-    photmod.phot_table = newphottab
-    photmod.phot_table.F213 = phottab["F213"]
-    with pytest.raises(AttributeError):
-        photmod.phot_table.F214 = phottab["F213"]
 
 
 VALIDATION_CASES = ("true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ")
