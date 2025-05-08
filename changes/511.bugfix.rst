@@ -1,0 +1,1 @@
+Fix bug where nodes couldn't be deepcopied after use.
