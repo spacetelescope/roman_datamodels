@@ -156,10 +156,6 @@ class TaggedScalarNode:
     def tag(self):
         return self._tag
 
-    @property
-    def key(self):
-        return name_from_tag_uri(self.tag)
-
     def get_schema(self):
         return _get_schema_from_tag(self.tag)
 
