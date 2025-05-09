@@ -116,6 +116,10 @@ class DataModel(abc.ABC):
     def from_schema(cls):
         return cls(cls._node_type.from_schema())
 
+    @classmethod
+    def _fake_data(cls):
+        return cls(cls._node_type._fake_data())
+
     def __init__(self, init=None, **kwargs):
         if isinstance(init, self.__class__):
             # Due to __new__ above, this is already initialized.
