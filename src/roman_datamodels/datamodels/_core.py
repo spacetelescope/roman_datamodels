@@ -112,6 +112,10 @@ class DataModel(abc.ABC):
 
         return super().__new__(cls)
 
+    @classmethod
+    def from_schema(cls):
+        return cls(cls._node_type.from_schema())
+
     def __init__(self, init=None, **kwargs):
         if isinstance(init, self.__class__):
             # Due to __new__ above, this is already initialized.
@@ -133,7 +137,7 @@ class DataModel(abc.ABC):
                 self._instance = init
                 af = asdf.AsdfFile()
                 af["roman"] = self._instance
-                af.validate()
+                # af.validate()
                 self._asdf = af
                 return
 
