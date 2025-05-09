@@ -125,7 +125,7 @@ def node_factory(pattern, tag_def):
     #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
     #   Here we mixin the mixin class if it exists.
     if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-        class_type = (class_type, getattr(_mixins, mixin))
+        class_type = (getattr(_mixins, mixin), class_type)
     else:
         class_type = (class_type,)
 
