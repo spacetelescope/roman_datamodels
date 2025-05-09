@@ -393,6 +393,22 @@ class TvacModel(_DataModel):
 class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin):
     _node_type = stnode.MosaicSourceCatalog
 
+    @classmethod
+    def from_model(cls, model):
+        self = cls()
+        self.meta = {}
+        for key in stnode._schema._get_required(self._instance.get_schema()["properties"]["meta"]):
+            value = model.meta.instrument[key] if key == "optical_element" else model.meta[key]
+            if isinstance(value, (stnode.TaggedScalarNode | stnode.TaggedListNode | stnode.TaggedObjectNode)):
+                # rebuild to get new tag
+                self.meta[key] = type(value)(value)
+            elif isinstance(value, (stnode.DNode | stnode.LNode)):
+                # rebuildsto get new tag
+                self.meta[key] = value._data
+            else:
+                self.meta[key] = value
+        return self
+
 
 class MosaicSegmentationMapModel(_RomanDataModel):
     _node_type = stnode.MosaicSegmentationMap
@@ -400,6 +416,22 @@ class MosaicSegmentationMapModel(_RomanDataModel):
 
 class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin):
     _node_type = stnode.ImageSourceCatalog
+
+    @classmethod
+    def from_model(cls, model):
+        self = cls()
+        self.meta = {}
+        for key in stnode._schema._get_required(self._instance.get_schema()["properties"]["meta"]):
+            value = model.meta.instrument[key] if key == "optical_element" else model.meta[key]
+            if isinstance(value, (stnode.TaggedScalarNode | stnode.TaggedListNode | stnode.TaggedObjectNode)):
+                # rebuild to get new tag
+                self.meta[key] = type(value)(value)
+            elif isinstance(value, (stnode.DNode | stnode.LNode)):
+                # rebuildsto get new tag
+                self.meta[key] = value._data
+            else:
+                self.meta[key] = value
+        return self
 
 
 class SegmentationMapModel(_RomanDataModel):
