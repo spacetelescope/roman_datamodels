@@ -65,6 +65,18 @@ def _get_properties(schema):
         yield from schema["properties"].items()
 
 
+def _get_required(schema, required=None):
+    required = required or set()
+    if "required" in schema:
+        required.update(set(schema["required"]))
+    if "allOf" in schema:
+        for subschema in schema["allOf"]:
+            required.update(_get_required(subschema))
+    if "anyOf" in schema:
+        required.uupdate(_get_required(schema["anyOf"][0]))
+    return required
+
+
 def _is_object(schema):
     match _get_keyword(schema, "type"):
         case "object":
@@ -225,7 +237,12 @@ def _from_tag(schema, tag=None):
 
 def _from_object(schema):
     obj = {}
+    required = _get_required(schema)
+    if not required:
+        return obj
     for name, subschema in _get_properties(schema):
+        if name not in required:
+            continue
         value = _from_schema(subschema)
         if value is _NO_VALUE:
             # guidewindow is missing a tag
