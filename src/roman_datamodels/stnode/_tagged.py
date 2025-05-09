@@ -13,7 +13,7 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_KEY,
     SCALAR_NODE_CLASSES_BY_PATTERN,
 )
-from ._schema import _get_schema_from_tag, _node_from_schema
+from ._schema import _from_schema, _get_schema_from_tag, _node_from_schema
 
 __all__ = [
     "TaggedListNode",
@@ -61,6 +61,10 @@ class TaggedObjectNode(DNode):
     def from_schema(cls):
         return _node_from_schema(cls)
 
+    @classmethod
+    def _fake_data(cls):
+        return cls(_from_schema(_get_schema_from_tag(cls._default_tag)))
+
     @property
     def _tag(self):
         # _tag is required by asdf to allow __asdf_traverse__
@@ -96,6 +100,10 @@ class TaggedListNode(LNode):
     @classmethod
     def from_schema(cls):
         return _node_from_schema(cls)
+
+    @classmethod
+    def _fake_data(cls):
+        return cls(_from_schema(_get_schema_from_tag(cls._default_tag)))
 
     @property
     def _tag(self):

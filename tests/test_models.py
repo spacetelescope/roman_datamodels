@@ -1313,3 +1313,15 @@ def test_deepcopy_after_use():
     m = datamodels.ImageModel()
     m.meta = {}
     deepcopy(m.meta)
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+def test_from_schema(model):
+    m = model.from_schema()
+    assert isinstance(m, model)
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+def test_fake_data(model):
+    m = model._fake_data()
+    assert m.validate() is None
