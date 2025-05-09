@@ -51,6 +51,18 @@ class FileDateMixin:
     def from_schema(cls):
         return cls.now()
 
+    @classmethod
+    def _fake_data(cls):
+        return cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
+
+
+class FpsFileDateMixin(FileDateMixin):
+    pass
+
+
+class TvacFileDateMixin(FileDateMixin):
+    pass
+
 
 class CalibrationSoftwareNameMixin:
     @classmethod
