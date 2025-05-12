@@ -1,3 +1,36 @@
+0.25.0 (2025-05-12)
+===================
+
+Bug Fixes
+---------
+
+- Use asdf to validate before saving catalog to parquet. (`#503
+  <https://github.com/spacetelescope/roman_datamodels/issues/503>`_)
+- Fix bug where nodes couldn't be deepcopied after use. (`#511
+  <https://github.com/spacetelescope/roman_datamodels/issues/511>`_)
+
+
+Documentation
+-------------
+
+- Remove duplicate build section from readthedocs config. (`#501
+  <https://github.com/spacetelescope/roman_datamodels/issues/501>`_)
+
+
+New Features
+------------
+
+- Adds basic keyword group to both L1 Guidewindow datamodels (`#509
+  <https://github.com/spacetelescope/roman_datamodels/issues/509>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- Remove MosaicModel.append_individual_meta (`#485
+  <https://github.com/spacetelescope/roman_datamodels/issues/485>`_)
+
+
 0.24.2 (2025-04-30)
 ===================
 

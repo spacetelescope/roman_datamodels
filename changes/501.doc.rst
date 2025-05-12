@@ -1,1 +1,0 @@
-Remove duplicate build section from readthedocs config.

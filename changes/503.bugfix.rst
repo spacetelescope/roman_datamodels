@@ -1,1 +1,0 @@
-Use asdf to validate before saving catalog to parquet.
