@@ -1323,5 +1323,5 @@ def test_from_schema(model):
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_fake_data(model):
-    m = model._fake_data()
+    m = model.fake_data()
     assert m.validate() is None

@@ -113,12 +113,12 @@ class DataModel(abc.ABC):
         return super().__new__(cls)
 
     @classmethod
-    def from_schema(cls):
-        return cls(cls._node_type.from_schema())
+    def from_schema(cls, defaults=None):
+        return cls(cls._node_type.from_schema(defaults))
 
     @classmethod
-    def _fake_data(cls):
-        return cls(cls._node_type._fake_data())
+    def fake_data(cls, defaults=None):
+        return cls(cls._node_type.fake_data(defaults))
 
     def __init__(self, init=None, **kwargs):
         if isinstance(init, self.__class__):
