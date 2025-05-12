@@ -13,7 +13,7 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_KEY,
     SCALAR_NODE_CLASSES_BY_PATTERN,
 )
-from ._schema import Builder, _get_schema_from_tag, _node_from_schema
+from ._schema import Builder, FakeDataBuilder, _get_schema_from_tag
 
 __all__ = [
     "TaggedListNode",
@@ -59,11 +59,11 @@ class TaggedObjectNode(DNode):
 
     @classmethod
     def from_schema(cls):
-        return _node_from_schema(cls)
+        return cls(Builder(_get_schema_from_tag(cls._default_tag)).build())
 
     @classmethod
     def _fake_data(cls):
-        return cls(Builder(_get_schema_from_tag(cls._default_tag)).build())
+        return cls(FakeDataBuilder(_get_schema_from_tag(cls._default_tag)).build())
 
     @property
     def _tag(self):
@@ -99,11 +99,11 @@ class TaggedListNode(LNode):
 
     @classmethod
     def from_schema(cls):
-        return _node_from_schema(cls)
+        return cls(Builder(_get_schema_from_tag(cls._default_tag)).build())
 
     @classmethod
     def _fake_data(cls):
-        return cls(Builder(_get_schema_from_tag(cls._default_tag)).build())
+        return cls(FakeDataBuilder(_get_schema_from_tag(cls._default_tag)).build())
 
     @property
     def _tag(self):

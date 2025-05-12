@@ -7,7 +7,6 @@ import functools
 
 import asdf
 
-from ._node import DNode, LNode
 from ._registry import (
     NODE_CLASSES_BY_TAG,
     SCHEMA_URIS_BY_TAG,
@@ -86,33 +85,6 @@ class _NoValueType:
 _NO_VALUE = _NoValueType()
 
 
-def _node_from_schema(node_class, schema=None):
-    if schema is None:
-        schema = _get_schema_from_tag(node_class._default_tag)
-    node = node_class()
-    if isinstance(node, DNode):
-        for name, subschema in _get_properties(schema):
-            # TODO handle recursion for tag
-            if tag := subschema.get("tag"):
-                if property_class := NODE_CLASSES_BY_TAG.get(tag):
-                    if hasattr(property_class, "from_schema"):
-                        node[name] = property_class.from_schema()
-                else:
-                    if "roman" in tag:
-                        # TODO for "fake" make these
-                        pass
-            else:
-                node_type = _get_keyword(subschema, "type")
-                if node_type == "object":
-                    # TODO maybe DNode and LNode should have a from_schema?
-                    node[name] = _node_from_schema(DNode, subschema)
-                if node_type == "array":
-                    node[name] = _node_from_schema(LNode, subschema)
-    elif isinstance(node, LNode):
-        pass  # TODO list?
-    return node
-
-
 class SchemaType(enum.Enum):
     UNKNOWN = 0
     OBJECT = 1
@@ -124,29 +96,19 @@ class SchemaType(enum.Enum):
     NULL = 7
     TAGGED = 8
 
-_OBJECT_KEYWORDS = {"properties", "patternProperties", "required", "additionalProperties", "maxProperties", "minProperties", "dependencies"}
+
+_OBJECT_KEYWORDS = {
+    "properties",
+    "patternProperties",
+    "required",
+    "additionalProperties",
+    "maxProperties",
+    "minProperties",
+    "dependencies",
+}
 _ARRAY_KEYWORDS = {"items", "additionalItems", "maxItems", "minItems", "uniqueItems"}
 _STRING_KEYWORDS = {"pattern", "minLength", "maxLength"}
-_NUMERIC_KEYWORDS = {"multipleOf", "maximum", "exclusiveMaximum", "minimum", "exclusiveMaximum"}
-
-
-def _get_type(schema):
-    if _has_keyword(schema, "tag"):
-        return SchemaType.TAGGED
-    if defined_type := _get_keyword(schema, "type"):
-        defined_type = defined_type.upper()
-        if hasattr(SchemaType, defined_type):
-            return getattr(SchemaType, defined_type)
-    if any(_has_keyword(schema, k) for k in _OBJECT_KEYWORDS):
-        return SchemaType.OBJECT
-    if any(_has_keyword(schema, k) for k in _ARRAY_KEYWORDS):
-        return SchemaType.ARRAY
-    if any(_has_keyword(schema, k) for k in _STRING_KEYWORDS):
-        return SchemaType.STRING
-    # assume anything numeric is a number not an integer
-    if any(_has_keyword(schema, k) for k in _NUMERIC_KEYWORDS):
-        return SchemaType.NUMBER
-    return SchemaType.UNKNOWN
+_NUMERIC_KEYWORDS = {"multipleOf", "maximum", "exclusiveMaximum", "minimum"}
 
 
 class Builder:
@@ -155,31 +117,49 @@ class Builder:
         self._defaults = defaults
 
     def get_type(self, schema):
-        return _get_type(schema)
+        if _has_keyword(schema, "tag"):
+            return SchemaType.TAGGED
+        if defined_type := _get_keyword(schema, "type"):
+            defined_type = defined_type.upper()
+            if hasattr(SchemaType, defined_type):
+                return getattr(SchemaType, defined_type)
+        if any(_has_keyword(schema, k) for k in _OBJECT_KEYWORDS):
+            return SchemaType.OBJECT
+        if any(_has_keyword(schema, k) for k in _ARRAY_KEYWORDS):
+            return SchemaType.ARRAY
+        if any(_has_keyword(schema, k) for k in _STRING_KEYWORDS):
+            return SchemaType.STRING
+        # assume anything numeric is a number not an integer
+        if any(_has_keyword(schema, k) for k in _NUMERIC_KEYWORDS):
+            return SchemaType.NUMBER
+        return SchemaType.UNKNOWN
 
     def from_enum(self, schema):
         if enum := _get_keyword(schema, "enum"):
             return enum[0]
         return _NO_VALUE
 
-    def from_unknown(self, schema):
+    def from_unknown(self, schema, defaults):
         # even an unknown type can have an enum
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         if "ndim" in schema:
             # TODO guidewindow is missing a tag for an array
-            return self.from_tagged(schema)
-        return self.from_enum(schema)
+            return self.from_tagged(schema, defaults)
+        return _NO_VALUE
 
-    def from_object(self, schema):
+    def from_object(self, schema, defaults):
+        if defaults is None:
+            defaults = {}
         obj = {}
         required = _get_required(schema)
         if not required:
             return obj
         for name, subschema in _get_properties(schema):
+            # TODO is this limitation specific to fake data?
             if name not in required:
                 continue
-            if (value := self.build_node(subschema)) is _NO_VALUE:
+            if (value := self.build_node(subschema, defaults.get(name))) is _NO_VALUE:
                 continue
             if name in obj:
                 if type(obj[name]) is not type(value):
@@ -197,11 +177,76 @@ class Builder:
                 obj[name] = value
         return obj
 
-    def from_array(self, schema):
+    def from_array(self, schema, defaults):
         # TODO minItems maxItems is unused so all arrays can be empty
         return []
 
-    def from_string(self, schema):
+    def from_string(self, schema, defaults):
+        if (enum := self.from_enum(schema)) is not _NO_VALUE:
+            return enum
+        return _NO_VALUE
+
+    def from_integer(self, schema, defaults):
+        if (enum := self.from_enum(schema)) is not _NO_VALUE:
+            return enum
+        return _NO_VALUE
+
+    def from_number(self, schema, defaults):
+        if (enum := self.from_enum(schema)) is not _NO_VALUE:
+            return enum
+        return _NO_VALUE
+
+    def from_boolean(self, schema, defaults):
+        if (enum := self.from_enum(schema)) is not _NO_VALUE:
+            return enum
+        return _NO_VALUE
+
+    def from_null(self, schema, defaults):
+        return None
+
+    def from_tagged(self, schema, defaults):
+        tag = _get_keyword(schema, "tag")
+        if tag is _MISSING_KEYWORD:
+            return _NO_VALUE
+        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+            if hasattr(property_class, "from_schema"):
+                return property_class.from_schema()
+            # TODO this is calling build_node with a different schema
+            return property_class(self.build_node(_get_schema_from_tag(tag), defaults))
+        return _NO_VALUE
+
+    def build_node(self, schema, defaults):
+        match self.get_type(schema):
+            case SchemaType.UNKNOWN:
+                return self.from_unknown(schema, defaults)
+            case SchemaType.OBJECT:
+                return self.from_object(schema, defaults)
+            case SchemaType.ARRAY:
+                return self.from_array(schema, defaults)
+            case SchemaType.STRING:
+                return self.from_string(schema, defaults)
+            case SchemaType.INTEGER:
+                return self.from_integer(schema, defaults)
+            case SchemaType.NUMBER:
+                return self.from_number(schema, defaults)
+            case SchemaType.BOOLEAN:
+                return self.from_boolean(schema, defaults)
+            case SchemaType.NULL:
+                return self.from_null(schema, defaults)
+            case SchemaType.TAGGED:
+                return self.from_tagged(schema, defaults)
+        return _NO_VALUE
+
+    def build(self):
+        return self.build_node(self._schema, self._defaults)
+
+
+class FromMetaBuilder(Builder):
+    pass
+
+
+class FakeDataBuilder(Builder):
+    def from_string(self, schema, defaults):
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         if _has_keyword(schema, "pattern"):
@@ -209,26 +254,22 @@ class Builder:
             return "WFI_IMAGE|"
         return "?"
 
-
-    def from_integer(self, schema):
+    def from_integer(self, schema, defaults):
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         return -999999
 
-    def from_number(self, schema):
+    def from_number(self, schema, defaults):
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         return -999999.0
 
-    def from_boolean(self, schema):
+    def from_boolean(self, schema, defaults):
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         return False
 
-    def from_null(self, schema):
-        pass
-
-    def from_tagged(self, schema):
+    def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
         if tag is _MISSING_KEYWORD:
             # TODO a guidewindow array is missing a tag
@@ -237,10 +278,12 @@ class Builder:
             else:
                 return _NO_VALUE
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
+            # TODO we need to pass control to the class here in case
+            # it overrides the default _fake_data behavior
             if hasattr(property_class, "_fake_data"):
                 return property_class._fake_data()
             # TODO this is calling build_node with a different schema
-            return property_class(self.build_node(_get_schema_from_tag(tag)))
+            return property_class(self.build_node(_get_schema_from_tag(tag), defaults))
         if tag == "tag:stsci.edu:asdf/time/time-1.*":
             from astropy.time import Time
 
@@ -293,28 +336,3 @@ class Builder:
             return u.Quantity(arr, unit=unit, dtype=dtype)
 
         return _NO_VALUE
-
-    def build_node(self, schema):
-        match self.get_type(schema):
-            case SchemaType.UNKNOWN:
-                return self.from_unknown(schema)
-            case SchemaType.OBJECT:
-                return self.from_object(schema)
-            case SchemaType.ARRAY:
-                return self.from_array(schema)
-            case SchemaType.STRING:
-                return self.from_string(schema)
-            case SchemaType.INTEGER:
-                return self.from_integer(schema)
-            case SchemaType.NUMBER:
-                return self.from_number(schema)
-            case SchemaType.BOOLEAN:
-                return self.from_boolean(schema)
-            case SchemaType.NULL:
-                return self.from_null(schema)
-            case SchemaType.TAGGED:
-                return self.from_tagged(schema)
-        return _NO_VALUE
-
-    def build(self):
-        return self.build_node(self._schema)
