@@ -112,10 +112,6 @@ _NUMERIC_KEYWORDS = {"multipleOf", "maximum", "exclusiveMaximum", "minimum"}
 
 
 class Builder:
-    def __init__(self, schema, defaults=None):
-        self._schema = schema
-        self._defaults = defaults
-
     def get_type(self, schema):
         if _has_keyword(schema, "tag"):
             return SchemaType.TAGGED
@@ -136,30 +132,27 @@ class Builder:
 
     def from_enum(self, schema):
         if enum := _get_keyword(schema, "enum"):
-            return enum[0]
+            if len(enum) == 1:
+                return enum[0]
         return _NO_VALUE
 
     def from_unknown(self, schema, defaults):
         # even an unknown type can have an enum
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
-        if "ndim" in schema:
-            # TODO guidewindow is missing a tag for an array
-            return self.from_tagged(schema, defaults)
         return _NO_VALUE
 
     def from_object(self, schema, defaults):
-        if defaults is None:
+        if defaults is _NO_VALUE:
             defaults = {}
         obj = {}
         required = _get_required(schema)
         if not required:
             return obj
         for name, subschema in _get_properties(schema):
-            # TODO is this limitation specific to fake data?
             if name not in required:
                 continue
-            if (value := self.build_node(subschema, defaults.get(name))) is _NO_VALUE:
+            if (value := self.build_node(subschema, defaults.get(name, _NO_VALUE))) is _NO_VALUE:
                 continue
             if name in obj:
                 if type(obj[name]) is not type(value):
@@ -210,9 +203,10 @@ class Builder:
             return _NO_VALUE
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
             if hasattr(property_class, "from_schema"):
-                return property_class.from_schema()
+                return property_class.from_schema(defaults)
             # TODO this is calling build_node with a different schema
-            return property_class(self.build_node(_get_schema_from_tag(tag), defaults))
+            if (value := self.build_node(_get_schema_from_tag(tag), defaults)) is not _NO_VALUE:
+                return property_class(value)
         return _NO_VALUE
 
     def build_node(self, schema, defaults):
@@ -237,12 +231,10 @@ class Builder:
                 return self.from_tagged(schema, defaults)
         return _NO_VALUE
 
-    def build(self):
-        return self.build_node(self._schema, self._defaults)
-
-
-class FromMetaBuilder(Builder):
-    pass
+    def build(self, schema, defaults=_NO_VALUE):
+        if defaults is None:
+            defaults = _NO_VALUE
+        return self.build_node(schema, defaults)
 
 
 class FakeDataBuilder(Builder):
@@ -253,6 +245,20 @@ class FakeDataBuilder(Builder):
             # TODO this is brittle
             return "WFI_IMAGE|"
         return "?"
+
+    def from_enum(self, schema):
+        if enum := _get_keyword(schema, "enum"):
+            return enum[0]
+        return _NO_VALUE
+
+    def from_unknown(self, schema, defaults):
+        # even an unknown type can have an enum
+        if (enum := self.from_enum(schema)) is not _NO_VALUE:
+            return enum
+        if "ndim" in schema:
+            # TODO guidewindow is missing a tag for an array
+            return self.from_tagged(schema, defaults)
+        return _NO_VALUE
 
     def from_integer(self, schema, defaults):
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
@@ -278,12 +284,14 @@ class FakeDataBuilder(Builder):
             else:
                 return _NO_VALUE
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
-            # TODO we need to pass control to the class here in case
-            # it overrides the default _fake_data behavior
-            if hasattr(property_class, "_fake_data"):
-                return property_class._fake_data()
+            # Pass control to the class for fake_data overrides
+            if hasattr(property_class, "fake_data"):
+                return property_class.fake_data(defaults)
             # TODO this is calling build_node with a different schema
-            return property_class(self.build_node(_get_schema_from_tag(tag), defaults))
+            if (value := self.build_node(_get_schema_from_tag(tag), defaults)) is _NO_VALUE:
+                return property_class()
+            else:
+                return property_class(value)
         if tag == "tag:stsci.edu:asdf/time/time-1.*":
             from astropy.time import Time
 

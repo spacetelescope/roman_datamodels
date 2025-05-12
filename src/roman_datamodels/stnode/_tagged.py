@@ -58,12 +58,12 @@ class TaggedObjectNode(DNode):
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
     @classmethod
-    def from_schema(cls):
-        return cls(Builder(_get_schema_from_tag(cls._default_tag)).build())
+    def from_schema(cls, defaults=None):
+        return cls(Builder().build(_get_schema_from_tag(cls._default_tag), defaults))
 
     @classmethod
-    def _fake_data(cls):
-        return cls(FakeDataBuilder(_get_schema_from_tag(cls._default_tag)).build())
+    def fake_data(cls, defaults=None):
+        return cls(FakeDataBuilder().build(_get_schema_from_tag(cls._default_tag), defaults))
 
     @property
     def _tag(self):
@@ -98,12 +98,12 @@ class TaggedListNode(LNode):
             LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
     @classmethod
-    def from_schema(cls):
-        return cls(Builder(_get_schema_from_tag(cls._default_tag)).build())
+    def from_schema(cls, defaults=None):
+        return cls(Builder().build(_get_schema_from_tag(cls._default_tag), defaults))
 
     @classmethod
-    def _fake_data(cls):
-        return cls(FakeDataBuilder(_get_schema_from_tag(cls._default_tag)).build())
+    def fake_data(cls, defaults=None):
+        return cls(FakeDataBuilder().build(_get_schema_from_tag(cls._default_tag), defaults))
 
     @property
     def _tag(self):
