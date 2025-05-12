@@ -401,9 +401,9 @@ class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin):
             value = model.meta.instrument[key] if key == "optical_element" else model.meta[key]
             if isinstance(value, (stnode.TaggedScalarNode | stnode.TaggedListNode | stnode.TaggedObjectNode)):
                 # rebuild to get new tag
-                self.meta[key] = type(value)(value)
+                self.meta[key] = type(value)(getattr(value, "_data", value))
             elif isinstance(value, (stnode.DNode | stnode.LNode)):
-                # rebuildsto get new tag
+                # rebuild to get new tag
                 self.meta[key] = value._data
             else:
                 self.meta[key] = value
@@ -412,6 +412,22 @@ class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin):
 
 class MosaicSegmentationMapModel(_RomanDataModel):
     _node_type = stnode.MosaicSegmentationMap
+
+    @classmethod
+    def from_catalog_model(cls, model):
+        self = cls()
+        self.meta = {}
+        for key in stnode._schema._get_required(self._instance.get_schema()["properties"]["meta"]):
+            value = model.meta[key]
+            if isinstance(value, (stnode.TaggedScalarNode | stnode.TaggedListNode | stnode.TaggedObjectNode)):
+                # rebuild to get new tag
+                self.meta[key] = type(value)(getattr(value, "_data", value))
+            elif isinstance(value, (stnode.DNode | stnode.LNode)):
+                # rebuild to get new tag
+                self.meta[key] = value._data
+            else:
+                self.meta[key] = value
+        return self
 
 
 class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin):
@@ -425,9 +441,9 @@ class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin):
             value = model.meta.instrument[key] if key == "optical_element" else model.meta[key]
             if isinstance(value, (stnode.TaggedScalarNode | stnode.TaggedListNode | stnode.TaggedObjectNode)):
                 # rebuild to get new tag
-                self.meta[key] = type(value)(value)
+                self.meta[key] = type(value)(getattr(value, "_data", value))
             elif isinstance(value, (stnode.DNode | stnode.LNode)):
-                # rebuildsto get new tag
+                # rebuild to get new tag
                 self.meta[key] = value._data
             else:
                 self.meta[key] = value
@@ -436,6 +452,22 @@ class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin):
 
 class SegmentationMapModel(_RomanDataModel):
     _node_type = stnode.SegmentationMap
+
+    @classmethod
+    def from_catalog_model(cls, model):
+        self = cls()
+        self.meta = {}
+        for key in stnode._schema._get_required(self._instance.get_schema()["properties"]["meta"]):
+            value = model.meta[key]
+            if isinstance(value, (stnode.TaggedScalarNode | stnode.TaggedListNode | stnode.TaggedObjectNode)):
+                # rebuild to get new tag
+                self.meta[key] = type(value)(getattr(value, "_data", value))
+            elif isinstance(value, (stnode.DNode | stnode.LNode)):
+                # rebuild to get new tag
+                self.meta[key] = value._data
+            else:
+                self.meta[key] = value
+        return self
 
 
 class WfiWcsModel(_RomanDataModel):
