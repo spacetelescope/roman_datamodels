@@ -2,6 +2,7 @@
 Code for relating nodes and schema.
 """
 
+import copy
 import enum
 import functools
 
@@ -140,9 +141,10 @@ class Builder:
         # even an unknown type can have an enum
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
-        return _NO_VALUE
+        return defaults
 
     def from_object(self, schema, defaults):
+        # TODO handle defaults
         if defaults is _NO_VALUE:
             defaults = {}
         obj = {}
@@ -152,7 +154,10 @@ class Builder:
         for name, subschema in _get_properties(schema):
             if name not in required:
                 continue
-            if (value := self.build_node(subschema, defaults.get(name, _NO_VALUE))) is _NO_VALUE:
+            if (subdefaults := defaults.get(name, _NO_VALUE)) is not _NO_VALUE:
+                # TODO remove any DNode/LNode
+                pass
+            if (value := self.build_node(subschema, subdefaults)) is _NO_VALUE:
                 continue
             if name in obj:
                 if type(obj[name]) is not type(value):
@@ -172,27 +177,28 @@ class Builder:
 
     def from_array(self, schema, defaults):
         # TODO minItems maxItems is unused so all arrays can be empty
+        # TODO handle defaults
         return []
 
     def from_string(self, schema, defaults):
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
-        return _NO_VALUE
+        return defaults
 
     def from_integer(self, schema, defaults):
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
-        return _NO_VALUE
+        return defaults
 
     def from_number(self, schema, defaults):
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
-        return _NO_VALUE
+        return defaults
 
     def from_boolean(self, schema, defaults):
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
-        return _NO_VALUE
+        return defaults
 
     def from_null(self, schema, defaults):
         return None
@@ -204,9 +210,10 @@ class Builder:
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
             if hasattr(property_class, "from_schema"):
                 return property_class.from_schema(defaults)
-            # TODO this is calling build_node with a different schema
             if (value := self.build_node(_get_schema_from_tag(tag), defaults)) is not _NO_VALUE:
                 return property_class(value)
+        if defaults is not _NO_VALUE:
+            return copy.deepcopy(defaults)
         return _NO_VALUE
 
     def build_node(self, schema, defaults):
@@ -287,7 +294,6 @@ class FakeDataBuilder(Builder):
             # Pass control to the class for fake_data overrides
             if hasattr(property_class, "fake_data"):
                 return property_class.fake_data(defaults)
-            # TODO this is calling build_node with a different schema
             if (value := self.build_node(_get_schema_from_tag(tag), defaults)) is _NO_VALUE:
                 return property_class()
             else:
