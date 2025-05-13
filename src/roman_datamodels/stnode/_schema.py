@@ -208,10 +208,7 @@ class Builder:
         if tag is _MISSING_KEYWORD:
             return _NO_VALUE
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
-            if hasattr(property_class, "from_schema"):
-                return property_class.from_schema(defaults)
-            if (value := self.build_node(_get_schema_from_tag(tag), defaults)) is not _NO_VALUE:
-                return property_class(value)
+            return property_class.from_schema(defaults)
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         return _NO_VALUE
@@ -292,12 +289,7 @@ class FakeDataBuilder(Builder):
                 return _NO_VALUE
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
             # Pass control to the class for fake_data overrides
-            if hasattr(property_class, "fake_data"):
-                return property_class.fake_data(defaults)
-            if (value := self.build_node(_get_schema_from_tag(tag), defaults)) is _NO_VALUE:
-                return property_class()
-            else:
-                return property_class(value)
+            return property_class.fake_data(defaults)
         if tag == "tag:stsci.edu:asdf/time/time-1.*":
             from astropy.time import Time
 
