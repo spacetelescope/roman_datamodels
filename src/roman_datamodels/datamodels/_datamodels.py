@@ -14,7 +14,7 @@ import numpy as np
 from astropy.modeling import models
 
 from .. import stnode
-from ._core import DataModel
+from ._core import DataModel, _temporary_update_filename
 from ._utils import _node_update
 
 __all__ = []
@@ -60,8 +60,9 @@ class _ParquetMixin:
                 }
             )
 
-        # Construct flat metadata dict
-        flat_meta = self.to_flat_dict()
+        with _temporary_update_filename(self, filepath):
+            # Construct flat metadata dict
+            flat_meta = self.to_flat_dict()
         # select only meta items
         flat_meta = {k: str(v) for (k, v) in flat_meta.items() if k.startswith("roman.meta")}
         # Extract table metadata
