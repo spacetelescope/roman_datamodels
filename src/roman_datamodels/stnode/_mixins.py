@@ -142,3 +142,24 @@ class L2CalStepMixin:
 
 class L3CalStepMixin(L2CalStepMixin):  # same as L2CalStepMixin
     pass
+
+
+class WfiImgPhotomRefMixin:
+    @classmethod
+    def fake_data(cls, defaults=None, shape=None, builder=None):
+        defaults = defaults or {}
+        if "phot_table" not in defaults:
+            defaults["phot_table"] = {
+                "F062": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
+                "F087": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
+                "F106": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
+                "F129": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
+                "F146": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
+                "F158": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
+                "F184": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
+                "F213": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
+                "GRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
+                "PRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
+                "DARK": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
+            }
+        return super().fake_data(defaults, shape, builder)
