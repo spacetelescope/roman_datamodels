@@ -108,7 +108,7 @@ class RefFileMixin:
                 continue
             if k in defaults:
                 continue
-            defaults[k] = "NA"
+            defaults[k] = "N/A"
         if not builder:
             builder = Builder()
         data = builder.from_object(schema, defaults)
