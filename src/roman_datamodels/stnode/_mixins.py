@@ -4,6 +4,7 @@ Mixin classes for additional functionality for STNode classes
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import TYPE_CHECKING
 
 from ._tagged import _get_schema_from_tag
@@ -48,13 +49,13 @@ class WfiModeMixin:
 
 class FileDateMixin:
     @classmethod
-    def from_schema(cls, defaults=None):
+    def from_schema(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls.now()
 
     @classmethod
-    def fake_data(cls, defaults=None):
+    def fake_data(cls, defaults=None, shape=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
@@ -70,7 +71,7 @@ class TvacFileDateMixin(FileDateMixin):
 
 class CalibrationSoftwareNameMixin:
     @classmethod
-    def from_schema(cls, defaults=None):
+    def from_schema(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls("RomanCAL")
@@ -78,7 +79,7 @@ class CalibrationSoftwareNameMixin:
 
 class OriginMixin:
     @classmethod
-    def from_schema(cls, defaults=None):
+    def from_schema(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls("STSCI")
@@ -86,7 +87,7 @@ class OriginMixin:
 
 class TelescopeMixin:
     @classmethod
-    def from_schema(cls, defaults=None):
+    def from_schema(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls("ROMAN")
@@ -94,17 +95,28 @@ class TelescopeMixin:
 
 class RefFileMixin:
     @classmethod
-    def from_schema(cls, defaults=None):
-        defaults = defaults or {}
-        # TODO the nested "crds" dict won't be copied here
+    def from_schema(cls, defaults=None, builder=None):
+        # copy defaults as we may modify them below
+        if defaults:
+            defaults = deepcopy(defaults)
+        else:
+            defaults = {}
         schema = _get_schema_from_tag(cls._default_tag)
-        keys = defaults.keys() | {k for k, v in schema["properties"].items() if v["type"] == "string"}
-        return cls({k: defaults.get(k, "NA") for k in keys})
+        for k, v in schema["properties"].items():
+            if v["type"] != "string":
+                continue
+            if k in defaults:
+                continue
+            defaults[k] = "NA"
+        # TODO need to make builder
+        data = builder.from_object(schema, defaults)
+        obj = cls(data)
+        return obj
 
 
 class L2CalStepMixin:
     @classmethod
-    def from_schema(cls, defaults=None):
+    def from_schema(cls, defaults=None, builder=None):
         defaults = defaults or {}
         schema = _get_schema_from_tag(cls._default_tag)
         return cls({k: defaults.get(k, "INCOMPLETE") for k in schema["properties"]})

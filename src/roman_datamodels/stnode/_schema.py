@@ -138,17 +138,18 @@ class Builder:
         return _NO_VALUE
 
     def from_unknown(self, schema, defaults):
+        if defaults is not _NO_VALUE:
+            return copy.deepcopy(defaults)
         # even an unknown type can have an enum
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         return defaults
 
     def from_object(self, schema, defaults):
-        # TODO handle defaults
         if defaults is _NO_VALUE:
             defaults = {}
         obj = {}
-        required = _get_required(schema)
+        required = _get_required(schema) | defaults.keys()
         if not required:
             return obj
         for name, subschema in _get_properties(schema):
@@ -176,26 +177,35 @@ class Builder:
         return obj
 
     def from_array(self, schema, defaults):
+        if defaults is not _NO_VALUE:
+            return copy.deepcopy(defaults)
         # TODO minItems maxItems is unused so all arrays can be empty
-        # TODO handle defaults
         return []
 
     def from_string(self, schema, defaults):
+        if defaults is not _NO_VALUE:
+            return defaults
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         return defaults
 
     def from_integer(self, schema, defaults):
+        if defaults is not _NO_VALUE:
+            return defaults
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         return defaults
 
     def from_number(self, schema, defaults):
+        if defaults is not _NO_VALUE:
+            return defaults
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         return defaults
 
     def from_boolean(self, schema, defaults):
+        if defaults is not _NO_VALUE:
+            return defaults
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         return defaults
@@ -208,7 +218,7 @@ class Builder:
         if tag is _MISSING_KEYWORD:
             return _NO_VALUE
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
-            return property_class.from_schema(defaults)
+            return property_class.from_schema(defaults, builder=self)
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         return _NO_VALUE
@@ -242,41 +252,44 @@ class Builder:
 
 
 class FakeDataBuilder(Builder):
-    def from_string(self, schema, defaults):
-        if (enum := self.from_enum(schema)) is not _NO_VALUE:
-            return enum
-        if _has_keyword(schema, "pattern"):
-            # TODO this is brittle
-            return "WFI_IMAGE|"
-        return "?"
+    def __init__(self, shape=None):
+        super().__init__()
+        self._shape = shape
 
     def from_enum(self, schema):
         if enum := _get_keyword(schema, "enum"):
             return enum[0]
         return _NO_VALUE
 
+    def from_string(self, schema, defaults):
+        if (value := super().from_string(schema, defaults)) is not _NO_VALUE:
+            return value
+        if _has_keyword(schema, "pattern"):
+            # TODO this is brittle
+            return "WFI_IMAGE|"
+        return "?"
+
     def from_unknown(self, schema, defaults):
-        # even an unknown type can have an enum
-        if (enum := self.from_enum(schema)) is not _NO_VALUE:
-            return enum
+        if (value := super().from_unknown(schema, defaults)) is not _NO_VALUE:
+            return value
         if "ndim" in schema:
             # TODO guidewindow is missing a tag for an array
             return self.from_tagged(schema, defaults)
         return _NO_VALUE
 
     def from_integer(self, schema, defaults):
-        if (enum := self.from_enum(schema)) is not _NO_VALUE:
-            return enum
+        if (value := super().from_integer(schema, defaults)) is not _NO_VALUE:
+            return value
         return -999999
 
     def from_number(self, schema, defaults):
-        if (enum := self.from_enum(schema)) is not _NO_VALUE:
-            return enum
+        if (value := super().from_number(schema, defaults)) is not _NO_VALUE:
+            return value
         return -999999.0
 
     def from_boolean(self, schema, defaults):
-        if (enum := self.from_enum(schema)) is not _NO_VALUE:
-            return enum
+        if (value := super().from_boolean(schema, defaults)) is not _NO_VALUE:
+            return value
         return False
 
     def from_tagged(self, schema, defaults):
@@ -289,56 +302,78 @@ class FakeDataBuilder(Builder):
                 return _NO_VALUE
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
             # Pass control to the class for fake_data overrides
-            return property_class.fake_data(defaults)
+            return property_class.fake_data(defaults, builder=self)
+        if defaults is not _NO_VALUE:
+            return copy.deepcopy(defaults)
         if tag == "tag:stsci.edu:asdf/time/time-1.*":
-            from astropy.time import Time
-
-            return Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+            return self.make_time(schema, defaults)
         if tag == "tag:stsci.edu:asdf/core/ndarray-1.*":
-            import numpy as np
-
-            ndim = _get_keyword(schema, "ndim") or 0
-            dtype = _get_keyword(schema, "datatype") or "float32"
-            return np.zeros([0] * ndim, dtype=asdf.tags.core.ndarray.asdf_datatype_to_numpy_dtype(dtype))
+            return self.make_array(schema, defaults)
         if tag == "tag:stsci.edu:gwcs/wcs-*":
-            from astropy import coordinates
-            from astropy import units as u
-            from astropy.modeling import models
-            from gwcs import coordinate_frames
-            from gwcs.wcs import WCS
-
-            pixelshift = models.Shift(-500) & models.Shift(-500)
-            pixelscale = models.Scale(0.1 / 3600.0) & models.Scale(0.1 / 3600.0)  # 0.1 arcsec/pixel
-            tangent_projection = models.Pix2Sky_TAN()
-            celestial_rotation = models.RotateNative2Celestial(30.0, 45.0, 180.0)
-
-            det2sky = pixelshift | pixelscale | tangent_projection | celestial_rotation
-
-            detector_frame = coordinate_frames.Frame2D(name="detector", axes_names=("x", "y"), unit=(u.pix, u.pix))
-            sky_frame = coordinate_frames.CelestialFrame(reference_frame=coordinates.ICRS(), name="icrs", unit=(u.deg, u.deg))
-            return WCS(
-                [
-                    (detector_frame, det2sky),
-                    (sky_frame, None),
-                ]
-            )
+            return self.make_wcs(schema, defaults)
         if tag == "tag:astropy.org:astropy/table/table-1.*":
-            from astropy.table import Table
-
-            return Table()
+            return self.make_table(schema, defaults)
         if tag == "tag:stsci.edu:asdf/unit/quantity-1.*":
-            import astropy.units as u
-            import numpy as np
-
-            props = schema.get("properties", {})
-            value = props.get("value", {})
-            dtype = value.get("datatype", "float32")
-            dtype = asdf.tags.core.ndarray.asdf_datatype_to_numpy_dtype(dtype)
-            unit = props.get("unit", {}).get("enum", ["dn"])[0]
-            ndim = value.get("ndim", 1)
-            arr = np.zeros([2] * ndim, dtype=dtype)
-            # astropy forces 1 item arrays to scalars and dtypes to float64 so define
-            # extra stuff here to prevent Quantity from failing validation
-            return u.Quantity(arr, unit=unit, dtype=dtype)
-
+            return self.make_quantity(schema, defaults)
         return _NO_VALUE
+
+    def make_time(self, schema, defaults):
+        from astropy.time import Time
+
+        return Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+
+    def make_array(self, schema, defaults):
+        import numpy as np
+
+        ndim = _get_keyword(schema, "ndim") or 0
+        dtype = _get_keyword(schema, "datatype") or "float32"
+        shape = [0] * ndim
+        if self._shape is not None:
+            for i, v in enumerate(self._shape):
+                if i == len(shape):
+                    break
+                shape[i] = v
+        return np.zeros(shape, dtype=asdf.tags.core.ndarray.asdf_datatype_to_numpy_dtype(dtype))
+
+    def make_wcs(self, schema, defaults):
+        from astropy import coordinates
+        from astropy import units as u
+        from astropy.modeling import models
+        from gwcs import coordinate_frames
+        from gwcs.wcs import WCS
+
+        pixelshift = models.Shift(-500) & models.Shift(-500)
+        pixelscale = models.Scale(0.1 / 3600.0) & models.Scale(0.1 / 3600.0)  # 0.1 arcsec/pixel
+        tangent_projection = models.Pix2Sky_TAN()
+        celestial_rotation = models.RotateNative2Celestial(30.0, 45.0, 180.0)
+
+        det2sky = pixelshift | pixelscale | tangent_projection | celestial_rotation
+
+        detector_frame = coordinate_frames.Frame2D(name="detector", axes_names=("x", "y"), unit=(u.pix, u.pix))
+        sky_frame = coordinate_frames.CelestialFrame(reference_frame=coordinates.ICRS(), name="icrs", unit=(u.deg, u.deg))
+        return WCS(
+            [
+                (detector_frame, det2sky),
+                (sky_frame, None),
+            ]
+        )
+
+    def make_table(self, schema, defaults):
+        from astropy.table import Table
+
+        return Table()
+
+    def make_quantity(self, schema, defaults):
+        import astropy.units as u
+        import numpy as np
+
+        props = schema.get("properties", {})
+        unit = props.get("unit", {}).get("enum", ["dn"])[0]
+        arr = self.make_array(props.get("value", {}), defaults)
+        if arr.size < 2:
+            # astropy will convert 1 and 0 item quantities to scalars
+            # which will fail asdf validation (since these aren't arrays)
+            ndim = arr.ndim or 1
+            shape = [2] * ndim
+            arr = np.zeros(shape, dtype=arr.dtype)
+        return u.Quantity(arr, unit=unit, dtype=arr.dtype, copy=False)
