@@ -7,6 +7,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
+from ._schema import Builder
 from ._tagged import _get_schema_from_tag
 
 if TYPE_CHECKING:
@@ -82,7 +83,7 @@ class OriginMixin:
     def from_schema(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
-        return cls("STSCI")
+        return cls("STSCI/SOC")
 
 
 class TelescopeMixin:
@@ -108,7 +109,8 @@ class RefFileMixin:
             if k in defaults:
                 continue
             defaults[k] = "NA"
-        # TODO need to make builder
+        if not builder:
+            builder = Builder()
         data = builder.from_object(schema, defaults)
         obj = cls(data)
         return obj
