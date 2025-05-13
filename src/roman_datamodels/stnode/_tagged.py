@@ -140,6 +140,14 @@ class TaggedScalarNode:
     def __asdf_traverse__(self):
         return self
 
+    @classmethod
+    def from_schema(cls, defaults=None):
+        return cls(Builder().build(_get_schema_from_tag(cls._default_tag), defaults))
+
+    @classmethod
+    def fake_data(cls, defaults=None):
+        return cls(FakeDataBuilder().build(_get_schema_from_tag(cls._default_tag), defaults))
+
     @property
     def _tag(self):
         # _tag is required by asdf to allow __asdf_traverse__
