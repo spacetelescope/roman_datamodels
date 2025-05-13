@@ -149,7 +149,8 @@ class Builder:
         if defaults is _NO_VALUE:
             defaults = {}
         obj = {}
-        required = _get_required(schema) | defaults.keys()
+        # TODO include required here?
+        required = _get_required(schema)
         if not required:
             return obj
         for name, subschema in _get_properties(schema):
