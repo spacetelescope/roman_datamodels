@@ -13,7 +13,7 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_KEY,
     SCALAR_NODE_CLASSES_BY_PATTERN,
 )
-from ._schema import Builder, FakeDataBuilder, _get_schema_from_tag
+from ._schema import _NO_VALUE, Builder, FakeDataBuilder, _get_schema_from_tag
 
 __all__ = [
     "TaggedListNode",
@@ -145,7 +145,10 @@ class TaggedScalarNode:
     @classmethod
     def from_schema(cls, defaults=None, builder=None):
         builder = builder or Builder()
-        return cls(builder.build(_get_schema_from_tag(cls._default_tag), defaults))
+        value = builder.build(_get_schema_from_tag(cls._default_tag), defaults)
+        if value is _NO_VALUE:
+            return value
+        return cls(value)
 
     @classmethod
     def fake_data(cls, defaults=None, shape=None, builder=None):
