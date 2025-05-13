@@ -78,6 +78,22 @@ class CalibrationSoftwareNameMixin:
         return cls("RomanCAL")
 
 
+class PrdVersionMixin:
+    @classmethod
+    def fake_data(cls, defaults=None, builder=None):
+        if defaults:
+            return cls(defaults)
+        return cls("8.8.8")
+
+
+class SdfSoftwareVersionMixin:
+    @classmethod
+    def fake_data(cls, defaults=None, builder=None):
+        if defaults:
+            return cls(defaults)
+        return cls("7.7.7")
+
+
 class OriginMixin:
     @classmethod
     def from_schema(cls, defaults=None, builder=None):
