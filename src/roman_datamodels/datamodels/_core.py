@@ -117,8 +117,8 @@ class DataModel(abc.ABC):
         return cls(cls._node_type.from_schema(defaults))
 
     @classmethod
-    def fake_data(cls, defaults=None):
-        return cls(cls._node_type.fake_data(defaults))
+    def fake_data(cls, defaults=None, shape=None):
+        return cls(cls._node_type.fake_data(defaults, shape))
 
     def __init__(self, init=None, **kwargs):
         if isinstance(init, self.__class__):

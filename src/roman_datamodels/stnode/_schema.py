@@ -293,6 +293,14 @@ class FakeDataBuilder(Builder):
             return value
         return False
 
+    def from_object(self, schema, defaults):
+        obj = super().from_object(schema, defaults)
+        if defaults:
+            for k, v in defaults.items():
+                if k not in obj:
+                    obj[k] = copy.deepcopy(v)
+        return obj
+
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
         if tag is _MISSING_KEYWORD:
