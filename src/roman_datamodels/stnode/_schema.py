@@ -246,16 +246,9 @@ class Builder:
                 pass
             if (value := self.build_node(subschema, subdefaults)) is _NO_VALUE:
                 continue
-            if name in obj:
-                if type(obj[name]) is not type(value):
-                    raise Exception("Failed to parse value")
-                elif isinstance(value, dict):
-                    # blend the 2 dictionaries
-                    obj[name] |= value
-                elif isinstance(value, str):
-                    obj[name] = value
-                else:
-                    raise Exception("Failed to parse value")
+            if name in obj and isinstance(value, dict):
+                # blend the 2 dictionaries
+                obj[name] |= value
             else:
                 obj[name] = value
         return obj
@@ -299,8 +292,6 @@ class Builder:
 
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
-        if tag is _MISSING_KEYWORD:
-            return _NO_VALUE
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
             return property_class.from_schema(defaults, builder=self)
         if defaults is not _NO_VALUE:
@@ -327,7 +318,6 @@ class Builder:
                 return self.from_null(schema, defaults)
             case SchemaType.TAGGED:
                 return self.from_tagged(schema, defaults)
-        return _NO_VALUE
 
     def build(self, schema, defaults=_NO_VALUE):
         if defaults is None:
