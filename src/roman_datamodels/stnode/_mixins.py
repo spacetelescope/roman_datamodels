@@ -13,7 +13,21 @@ from ._tagged import _get_schema_from_tag
 if TYPE_CHECKING:
     from typing import ClassVar
 
-__all__ = ["WfiModeMixin"]
+__all__ = [
+    "CalibrationSoftwareNameMixin",
+    "FileDateMixin",
+    "FpsFileDateMixin",
+    "L2CalStepMixin",
+    "L3CalStepMixin",
+    "OriginMixin",
+    "PrdVersionMixin",
+    "RefFileMixin",
+    "SdfSoftwareVersionMixin",
+    "TelescopeMixin",
+    "TvacFileDateMixin",
+    "WfiImgPhotomRefMixin",
+    "WfiModeMixin",
+]
 
 
 class WfiModeMixin:
