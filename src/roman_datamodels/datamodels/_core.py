@@ -137,13 +137,11 @@ class DataModel(abc.ABC):
                     f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
                 )
 
-            with validate.nuke_validation():
-                self._instance = init
-                af = asdf.AsdfFile()
-                af["roman"] = self._instance
-                # af.validate()
-                self._asdf = af
-                return
+            self._instance = init
+            af = asdf.AsdfFile()
+            af["roman"] = self._instance
+            self._asdf = af
+            return
 
         if init is None:
             self._instance = self._node_type()
