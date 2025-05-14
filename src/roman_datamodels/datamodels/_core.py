@@ -119,10 +119,11 @@ class DataModel(abc.ABC):
 
         The "empty" model will contain schema-required attributes
         where a default value can be determined:
-            - node class defining a default value
-            - defined in the schema (for example single item enums)
-            - empty container classes (for example a "meta" dict)
-            - required items with a corresponding provided default
+
+            * node class defining a default value
+            * defined in the schema (for example single item enums)
+            * empty container classes (for example a "meta" dict)
+            * required items with a corresponding provided default
 
         Parameters
         ----------
