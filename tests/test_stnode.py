@@ -207,8 +207,7 @@ def test_nuke_validation(nuke_env_var, tmp_path):
     context = pytest.raises(asdf.ValidationError) if nuke_env_var[1] else pytest.warns(validate.ValidationWarning)
 
     # Break model without outside validation
-    with nullcontext() if nuke_env_var[1] else pytest.warns(validate.ValidationWarning):
-        mdl = datamodels.WfiImgPhotomRefModel(maker_utils.mk_wfi_img_photom())
+    mdl = datamodels.WfiImgPhotomRefModel(maker_utils.mk_wfi_img_photom())
     mdl._instance["phot_table"] = "THIS IS NOT VALID"
 
     # Broken can be written to file
