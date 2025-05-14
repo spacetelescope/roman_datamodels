@@ -114,10 +114,61 @@ class DataModel(abc.ABC):
 
     @classmethod
     def from_schema(cls, defaults=None):
+        """
+        Class method that constructs an "empty" model.
+
+        The "empty" model will contain schema-required attributes
+        where a default value can be determined:
+            - node class defining a default value
+            - defined in the schema (for example single item enums)
+            - empty container classes (for example a "meta" dict)
+            - required items with a corresponding provided default
+
+        Parameters
+        ----------
+        defaults : None or dict
+            If provided, defaults will be used in place of schema
+            defined values for required attributes.
+
+        Returns
+        -------
+        DataModel
+            "Empty" model with optional defaults. This will often
+            be incomplete (invalid) as not all required attributes
+            can be guessed.
+        """
         return cls(cls._node_type.from_schema(defaults))
 
     @classmethod
     def fake_data(cls, defaults=None, shape=None):
+        """
+        Class method that constructs a model filled with fake data.
+
+        Similar to `DataModel.from_schema` this only creates
+        required attributes.
+
+        Fake arrays will have a number of dimensions matching
+        the schema requirements. If shape is provided only the
+        dimensions matching the schema requirements will be used.
+        For example if a 3 dimensional shape is provided but a fake
+        array only requires 2 dimensions only the first 2 values
+        from shape will be used.
+
+        Parameters
+        ----------
+        defaults : None or dict
+            If provided, defaults will be used in place of schema
+            defined or fake values for required attributes.
+
+        shape : None or tuple of int
+            When provided use this shape to determine the
+            shape used to construct fake arrays.
+
+        Returns
+        -------
+        DataModel
+            A valid model with fake data.
+        """
         return cls(cls._node_type.fake_data(defaults, shape))
 
     def __init__(self, init=None, **kwargs):
