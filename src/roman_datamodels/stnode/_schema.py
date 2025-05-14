@@ -16,6 +16,11 @@ from ._registry import (
 __all__ = []
 
 
+NOSTR = "?"
+NONUM = -999999
+NOBOOL = False
+
+
 @functools.cache
 def _get_schema_from_tag(tag):
     """
@@ -32,6 +37,8 @@ def _get_schema_from_tag(tag):
 
 
 class _MissingKeywordType:
+    """Special value to indicate a keyword was not found in a schema"""
+
     def __bool__(self):
         return False
 
@@ -40,6 +47,22 @@ _MISSING_KEYWORD = _MissingKeywordType()
 
 
 def _get_keyword(schema, key):
+    """
+    Search a schema for value for a given a keyword.
+
+    Parameters
+    ----------
+    schema : dict
+        The schema (with all references resolved) to search.
+
+    key : str
+        The keyword to use for the search.
+
+    Returns
+    -------
+    value : Any or _MISSING_KEYWORD
+        The value for the keyword or _MISSING_KEYWORD if not found.
+    """
     if key in schema:
         return schema[key]
     for combiner in ("allOf", "anyOf"):
@@ -53,10 +76,39 @@ def _get_keyword(schema, key):
 
 
 def _has_keyword(schema, key):
+    """
+    Check if a schema has a given keyword.
+
+    Parameters
+    ----------
+    schema : dict
+        Schema to check.
+
+    key : str
+        Keyword to check for.
+
+    Returns
+    -------
+    bool
+        If the keyword was found
+    """
     return _get_keyword(schema, key) != _MISSING_KEYWORD
 
 
 def _get_properties(schema):
+    """
+    Generator that produces property definitions.
+
+    Parameters
+    ----------
+    schema : dict
+        Schema to parse.
+
+    Yields
+    ------
+    (str, any)
+        Property name and subschema.
+    """
     if "allOf" in schema:
         for subschema in schema["allOf"]:
             yield from _get_properties(subschema)
@@ -66,19 +118,34 @@ def _get_properties(schema):
         yield from schema["properties"].items()
 
 
-def _get_required(schema, required=None):
-    required = required or set()
+def _get_required(schema):
+    """
+    Search a schema for required property names.
+
+    Parameters
+    ----------
+    schema : dict
+        Schema to parse.
+
+    Returns
+    -------
+    set of str
+        Set of required property names.
+    """
+    required = set()
     if "required" in schema:
         required.update(set(schema["required"]))
     if "allOf" in schema:
         for subschema in schema["allOf"]:
             required.update(_get_required(subschema))
     if "anyOf" in schema:
-        required.uupdate(_get_required(schema["anyOf"][0]))
+        required.update(_get_required(schema["anyOf"][0]))
     return required
 
 
 class _NoValueType:
+    """Special value to indicate a builder built nothing"""
+
     def __bool__(self):
         return False
 
@@ -87,6 +154,12 @@ _NO_VALUE = _NoValueType()
 
 
 class SchemaType(enum.Enum):
+    """
+    Enumeration of possible types defined by a schema
+
+    This includes jsonschema inherited types and TAGGED and UNKNOWN
+    """
+
     UNKNOWN = 0
     OBJECT = 1
     ARRAY = 2
@@ -98,6 +171,7 @@ class SchemaType(enum.Enum):
     TAGGED = 8
 
 
+# sets of keyword names that are specific to certain types
 _OBJECT_KEYWORDS = {
     "properties",
     "patternProperties",
@@ -113,6 +187,19 @@ _NUMERIC_KEYWORDS = {"multipleOf", "maximum", "exclusiveMaximum", "minimum"}
 
 
 class Builder:
+    """
+    Class to build objects based on a schema (and optional defaults).
+
+    This base class only builds:
+        - constant values (for example a single item enum)
+        - container objects
+        - required properties
+
+    When a default is available it will be used instead of any
+    schema defined value but only if the item is required by the
+    schema. Default values for non-required items are ignored.
+    """
+
     def get_type(self, schema):
         if _has_keyword(schema, "tag"):
             return SchemaType.TAGGED
@@ -149,7 +236,6 @@ class Builder:
         if defaults is _NO_VALUE:
             defaults = {}
         obj = {}
-        # TODO include required here?
         required = _get_required(schema)
         if not required:
             return obj
@@ -157,7 +243,6 @@ class Builder:
             if name not in required:
                 continue
             if (subdefaults := defaults.get(name, _NO_VALUE)) is not _NO_VALUE:
-                # TODO remove any DNode/LNode
                 pass
             if (value := self.build_node(subschema, subdefaults)) is _NO_VALUE:
                 continue
@@ -168,8 +253,6 @@ class Builder:
                     # blend the 2 dictionaries
                     obj[name] |= value
                 elif isinstance(value, str):
-                    if value == "?":
-                        continue
                     obj[name] = value
                 else:
                     raise Exception("Failed to parse value")
@@ -180,7 +263,7 @@ class Builder:
     def from_array(self, schema, defaults):
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
-        # TODO minItems maxItems is unused so all arrays can be empty
+        # minItems maxItems is unused so all arrays can be empty
         return []
 
     def from_string(self, schema, defaults):
@@ -253,6 +336,20 @@ class Builder:
 
 
 class FakeDataBuilder(Builder):
+    """
+    Builder subclass that includes fake values.
+
+    When constructing objects, values will be determined by (in this order):
+        - the provided default
+        - the schema value
+        - a fake value
+
+    For fake array values the optionally provided shape will be used.
+    If shape is not provided a 0-sized array with the required dimensions
+    will be created. If shape is provided only the dimensions that match
+    the required dimensions are used.
+    """
+
     def __init__(self, shape=None):
         super().__init__()
         self._shape = shape
@@ -265,33 +362,34 @@ class FakeDataBuilder(Builder):
     def from_string(self, schema, defaults):
         if (value := super().from_string(schema, defaults)) is not _NO_VALUE:
             return value
-        if _has_keyword(schema, "pattern"):
-            # TODO this is brittle
-            return "WFI_IMAGE|"
-        return "?"
+        if pattern := _get_keyword(schema, "pattern"):
+            if "WFI_IMAGE|" in pattern:
+                # this is special cased for p_exptype
+                return "WFI_IMAGE|"
+        return NOSTR
 
     def from_unknown(self, schema, defaults):
         if (value := super().from_unknown(schema, defaults)) is not _NO_VALUE:
             return value
         if "ndim" in schema:
-            # TODO guidewindow is missing a tag for an array
+            # FIXME guidewindow is missing a tag for an array
             return self.from_tagged(schema, defaults)
         return _NO_VALUE
 
     def from_integer(self, schema, defaults):
         if (value := super().from_integer(schema, defaults)) is not _NO_VALUE:
             return value
-        return -999999
+        return int(NONUM)
 
     def from_number(self, schema, defaults):
         if (value := super().from_number(schema, defaults)) is not _NO_VALUE:
             return value
-        return -999999.0
+        return float(NONUM)
 
     def from_boolean(self, schema, defaults):
         if (value := super().from_boolean(schema, defaults)) is not _NO_VALUE:
             return value
-        return False
+        return NOBOOL
 
     def from_object(self, schema, defaults):
         obj = super().from_object(schema, defaults)
@@ -304,7 +402,7 @@ class FakeDataBuilder(Builder):
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
         if tag is _MISSING_KEYWORD:
-            # TODO a guidewindow array is missing a tag
+            # FIXME a guidewindow array is missing a tag
             if _get_keyword(schema, "ndim"):
                 tag = "tag:stsci.edu:asdf/core/ndarray-1.*"
             else:
