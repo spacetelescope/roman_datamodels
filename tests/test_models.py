@@ -1,3 +1,4 @@
+import gc
 import warnings
 from contextlib import nullcontext
 from copy import deepcopy
@@ -1328,3 +1329,16 @@ def test_fake_data(model):
     m = model.fake_data()
     assert isinstance(m, model)
     assert m.validate() is None
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+def test_from_schema_copies(model, tmp_path):
+    """Test that from_schema does not retain references to input"""
+    fn = tmp_path / "test.asdf"
+    fake = model.fake_data()
+    fake.save(fn)
+    with datamodels.open(fn) as opened_model:
+        new_model = model.from_schema(opened_model)
+    del opened_model
+    gc.collect(2)
+    assert new_model.validate() is None
