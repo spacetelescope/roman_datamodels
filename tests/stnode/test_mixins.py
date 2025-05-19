@@ -20,10 +20,10 @@ DEFAULT_STR_TYPES = [
 @pytest.mark.parametrize(
     "method, defaults, expected",
     (
-        ("from_schema", None, NOW_MJD),
-        ("fake_data", None, 58849),  # the mjd of the fake value
-        ("from_schema", TEST_TIME, TEST_MJD),
-        ("fake_data", TEST_TIME, TEST_MJD),
+        ("create_minimal", None, NOW_MJD),
+        ("create_fake_data", None, 58849),  # the mjd of the fake value
+        ("create_minimal", TEST_TIME, TEST_MJD),
+        ("create_fake_data", TEST_TIME, TEST_MJD),
     ),
 )
 def test_file_date(type_, method, defaults, expected):
@@ -33,7 +33,7 @@ def test_file_date(type_, method, defaults, expected):
 
 
 @pytest.mark.parametrize("type_, expected", DEFAULT_STR_TYPES)
-@pytest.mark.parametrize("method", ("from_schema", "fake_data"))
+@pytest.mark.parametrize("method", ("create_minimal", "create_fake_data"))
 @pytest.mark.parametrize("defaults", (None, "test"))
 def test_default_str_mixin(type_, expected, method, defaults):
     obj = getattr(type_, method)(defaults)
@@ -47,8 +47,8 @@ def test_default_str_mixin(type_, expected, method, defaults):
 @pytest.mark.parametrize(
     "type_, method, expected",
     (
-        (stnode.PrdVersion, "fake_data", "8.8.8"),
-        (stnode.SdfSoftwareVersion, "fake_data", "7.7.7"),
+        (stnode.PrdVersion, "create_fake_data", "8.8.8"),
+        (stnode.SdfSoftwareVersion, "create_fake_data", "7.7.7"),
     ),
 )
 @pytest.mark.parametrize("defaults", (None, "test"))
@@ -63,7 +63,7 @@ def test_special_fake_str_mixin(type_, expected, method, defaults):
 
 def test_ref_file_mixin():
     defaults = {"flat": "foo.asdf"}
-    obj = stnode.RefFile.from_schema(defaults)
+    obj = stnode.RefFile.create_minimal(defaults)
     assert obj["dark"] == "N/A"
     assert obj["flat"] == defaults["flat"]
 
@@ -71,11 +71,11 @@ def test_ref_file_mixin():
 @pytest.mark.parametrize("type_", (stnode.L2CalStep, stnode.L3CalStep))
 def test_cal_step_mixin(type_):
     defaults = {"outlier_detection": "COMPLETE"}
-    obj = type_.from_schema(defaults)
+    obj = type_.create_minimal(defaults)
     assert obj["skymatch"] == "INCOMPLETE"
     assert obj["outlier_detection"] == defaults["outlier_detection"]
 
 
 def test_wfi_img_photom_ref_mixin():
-    obj = stnode.WfiImgPhotomRef.from_schema()
+    obj = stnode.WfiImgPhotomRef.create_minimal()
     assert "phot_table" in obj

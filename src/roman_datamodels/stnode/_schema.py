@@ -293,7 +293,7 @@ class Builder:
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
-            return property_class.from_schema(defaults, builder=self)
+            return property_class.create_minimal(defaults, builder=self)
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         return _NO_VALUE
@@ -398,8 +398,8 @@ class FakeDataBuilder(Builder):
             else:
                 return _NO_VALUE
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
-            # Pass control to the class for fake_data overrides
-            return property_class.fake_data(defaults, builder=self)
+            # Pass control to the class for create_fake_data overrides
+            return property_class.create_fake_data(defaults, builder=self)
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         if tag == "tag:stsci.edu:asdf/time/time-1.*":

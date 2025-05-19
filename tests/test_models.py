@@ -1317,28 +1317,28 @@ def test_deepcopy_after_use():
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_from_schema(model):
-    """Test that from_schema produces a model instance"""
-    m = model.from_schema()
+def test_create_minimal(model):
+    """Test that create_minimal produces a model instance"""
+    m = model.create_minimal()
     assert isinstance(m, model)
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_fake_data(model):
-    """Test that fake_data produces a valid model instance"""
-    m = model.fake_data()
+def test_create_fake_data(model):
+    """Test that create_fake_data produces a valid model instance"""
+    m = model.create_fake_data()
     assert isinstance(m, model)
     assert m.validate() is None
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_from_schema_copies(model, tmp_path):
-    """Test that from_schema does not retain references to input"""
+def test_create_minimal_copies(model, tmp_path):
+    """Test that create_minimal does not retain references to input"""
     fn = tmp_path / "test.asdf"
-    fake = model.fake_data()
+    fake = model.create_fake_data()
     fake.save(fn)
     with datamodels.open(fn) as opened_model:
-        new_model = model.from_schema(opened_model)
+        new_model = model.create_minimal(opened_model)
     del opened_model
     gc.collect(2)
     assert new_model.validate() is None
