@@ -64,13 +64,13 @@ class WfiModeMixin:
 
 class FileDateMixin:
     @classmethod
-    def from_schema(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls.now()
 
     @classmethod
-    def fake_data(cls, defaults=None, shape=None, builder=None):
+    def create_fake_data(cls, defaults=None, shape=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
@@ -86,7 +86,7 @@ class TvacFileDateMixin(FileDateMixin):
 
 class CalibrationSoftwareNameMixin:
     @classmethod
-    def from_schema(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls("RomanCAL")
@@ -94,7 +94,7 @@ class CalibrationSoftwareNameMixin:
 
 class PrdVersionMixin:
     @classmethod
-    def fake_data(cls, defaults=None, builder=None):
+    def create_fake_data(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls("8.8.8")
@@ -102,7 +102,7 @@ class PrdVersionMixin:
 
 class SdfSoftwareVersionMixin:
     @classmethod
-    def fake_data(cls, defaults=None, builder=None):
+    def create_fake_data(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls("7.7.7")
@@ -110,7 +110,7 @@ class SdfSoftwareVersionMixin:
 
 class OriginMixin:
     @classmethod
-    def from_schema(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls("STSCI/SOC")
@@ -118,7 +118,7 @@ class OriginMixin:
 
 class TelescopeMixin:
     @classmethod
-    def from_schema(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None):
         if defaults:
             return cls(defaults)
         return cls("ROMAN")
@@ -126,7 +126,7 @@ class TelescopeMixin:
 
 class RefFileMixin:
     @classmethod
-    def from_schema(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None):
         # copy defaults as we may modify them below
         if defaults:
             defaults = deepcopy(defaults)
@@ -148,7 +148,7 @@ class RefFileMixin:
 
 class L2CalStepMixin:
     @classmethod
-    def from_schema(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None):
         defaults = defaults or {}
         schema = _get_schema_from_tag(cls._default_tag)
         return cls({k: defaults.get(k, "INCOMPLETE") for k in schema["properties"]})
@@ -160,7 +160,7 @@ class L3CalStepMixin(L2CalStepMixin):  # same as L2CalStepMixin
 
 class WfiImgPhotomRefMixin:
     @classmethod
-    def fake_data(cls, defaults=None, shape=None, builder=None):
+    def create_fake_data(cls, defaults=None, shape=None, builder=None):
         defaults = defaults or {}
         if "phot_table" not in defaults:
             defaults["phot_table"] = {
@@ -176,4 +176,4 @@ class WfiImgPhotomRefMixin:
                 "PRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
                 "DARK": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
             }
-        return super().fake_data(defaults, shape, builder)
+        return super().create_fake_data(defaults, shape, builder)
