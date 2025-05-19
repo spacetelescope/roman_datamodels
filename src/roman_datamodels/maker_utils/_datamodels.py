@@ -711,7 +711,7 @@ def mk_mosaic_source_catalog(*, filepath=None, **kwargs):
     return save_node(source_catalog, filepath=filepath)
 
 
-def mk_forced_source_catalog(*, filepath=None, **kwargs):
+def mk_forced_mosaic_source_catalog(*, filepath=None, **kwargs):
     """
     Create a dummy Source Catalog instance (or file) with arrays and valid values
     for attributes required by the schema.
@@ -723,9 +723,9 @@ def mk_forced_source_catalog(*, filepath=None, **kwargs):
 
     Returns
     -------
-    roman_datamodels.stnode.ForcedSourceCatalog
+    roman_datamodels.stnode.ForcedMosaicSourceCatalog
     """
-    source_catalog = stnode.ForcedSourceCatalog()
+    source_catalog = stnode.ForcedMosaicSourceCatalog()
 
     source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
     source_catalog["meta"] = mk_mosaic_catalog_meta(**kwargs.get("meta", {}))
@@ -733,9 +733,9 @@ def mk_forced_source_catalog(*, filepath=None, **kwargs):
     return save_node(source_catalog, filepath=filepath)
 
 
-def mk_multiband_catalog(*, filepath=None, **kwargs):
+def mk_multiband_source_catalog(*, filepath=None, **kwargs):
     """
-    Create a dummy Multiband Catalog instance (or file) with arrays and valid values
+    Create a dummy Multiband Source Catalog instance (or file) with arrays and valid values
     for attributes required by the schema.
 
     Parameters
@@ -745,9 +745,9 @@ def mk_multiband_catalog(*, filepath=None, **kwargs):
 
     Returns
     -------
-    roman_datamodels.stnode.MultibandCatalog
+    roman_datamodels.stnode.MultibandSourceCatalog
     """
-    source_catalog = stnode.MultibandCatalog()
+    source_catalog = stnode.MultibandSourceCatalog()
 
     source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
     source_catalog["meta"] = mk_mosaic_catalog_meta(**kwargs.get("meta", {}))
@@ -803,6 +803,28 @@ def mk_image_source_catalog(*, filepath=None, **kwargs):
     roman_datamodels.stnode.ImageSourceCatalog
     """
     source_catalog = stnode.ImageSourceCatalog()
+
+    source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
+    source_catalog["meta"] = mk_catalog_meta(**kwargs.get("meta", {}))
+
+    return save_node(source_catalog, filepath=filepath)
+
+
+def mk_forced_image_source_catalog(*, filepath=None, **kwargs):
+    """
+    Create a dummy Source Catalog instance (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    Returns
+    -------
+    roman_datamodels.stnode.ForcedImageSourceCatalog
+    """
+    source_catalog = stnode.ForcedImageSourceCatalog()
 
     source_catalog["source_catalog"] = kwargs.get("source_catalog", Table([range(3), range(3)], names=["a", "b"]))
     source_catalog["meta"] = mk_catalog_meta(**kwargs.get("meta", {}))

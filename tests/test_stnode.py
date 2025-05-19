@@ -261,8 +261,8 @@ def test_node_representation(model):
             datamodels.MosaicModel
             | datamodels.MosaicSegmentationMapModel
             | datamodels.MosaicSourceCatalogModel
-            | datamodels.ForcedSourceCatalogModel
-            | datamodels.MultibandCatalogModel,
+            | datamodels.ForcedMosaicSourceCatalogModel
+            | datamodels.MultibandSourceCatalogModel,
         ):
             assert repr(mdl.meta.basic) == repr(
                 {
@@ -286,14 +286,18 @@ def test_node_representation(model):
                 datamodels.MosaicModel: "MosaicModel",
                 datamodels.MosaicSegmentationMapModel: "MosaicSegmentationMapModel",
                 datamodels.MosaicSourceCatalogModel: "MosaicSourceCatalogModel",
-                datamodels.ForcedSourceCatalogModel: "ForcedSourceCatalogModel",
-                datamodels.MultibandCatalogModel: "MultibandCatalogModel",
+                datamodels.ForcedMosaicSourceCatalogModel: "ForcedMosaicSourceCatalogModel",
+                datamodels.MultibandSourceCatalogModel: "MultibandSourceCatalogModel",
             }
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
             assert mdl.meta.filename == NOFN
         elif isinstance(
-            mdl, datamodels.SegmentationMapModel | datamodels.ImageSourceCatalogModel | datamodels.L1FaceGuidewindowModel
+            mdl,
+            datamodels.SegmentationMapModel
+            | datamodels.ImageSourceCatalogModel
+            | datamodels.L1FaceGuidewindowModel
+            | datamodels.ForcedImageSourceCatalogModel,
         ):
             assert mdl.meta.optical_element == "F158"
         else:

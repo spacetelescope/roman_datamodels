@@ -771,6 +771,13 @@ def test_make_image_source_catalog():
     assert isinstance(source_catalog_model.source_catalog, Table)
 
 
+def test_make_forced_image_source_catalog():
+    source_catalog = utils.mk_forced_image_source_catalog()
+    source_catalog_model = datamodels.ForcedImageSourceCatalogModel(source_catalog)
+
+    assert isinstance(source_catalog_model.source_catalog, Table)
+
+
 def test_make_segmentation_map():
     segmentation_map = utils.mk_segmentation_map()
     segmentation_map_model = datamodels.SegmentationMapModel(segmentation_map)
@@ -785,16 +792,16 @@ def test_make_mosaic_source_catalog():
     assert isinstance(source_catalog_model.source_catalog, Table)
 
 
-def test_make_forced_source_catalog():
-    source_catalog = utils.mk_forced_source_catalog()
-    source_catalog_model = datamodels.ForcedSourceCatalogModel(source_catalog)
+def test_make_forced_mosaic_source_catalog():
+    source_catalog = utils.mk_forced_mosaic_source_catalog()
+    source_catalog_model = datamodels.ForcedMosaicSourceCatalogModel(source_catalog)
 
     assert isinstance(source_catalog_model.source_catalog, Table)
 
 
-def test_make_multiband_catalog():
-    source_catalog = utils.mk_multiband_catalog()
-    source_catalog_model = datamodels.MultibandCatalogModel(source_catalog)
+def test_make_multiband_source_catalog():
+    source_catalog = utils.mk_multiband_source_catalog()
+    source_catalog_model = datamodels.MultibandSourceCatalogModel(source_catalog)
 
     assert isinstance(source_catalog_model.source_catalog, Table)
 
