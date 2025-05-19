@@ -58,13 +58,13 @@ class TaggedObjectNode(DNode):
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
     @classmethod
-    def from_schema(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None):
         builder = builder or Builder()
         return cls(builder.build(_get_schema_from_tag(cls._default_tag), defaults))
 
     @classmethod
-    def fake_data(cls, defaults=None, shape=None, builder=None):
-        return cls.from_schema(defaults, builder or FakeDataBuilder(shape))
+    def create_fake_data(cls, defaults=None, shape=None, builder=None):
+        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape))
 
     @property
     def _tag(self):
@@ -99,13 +99,13 @@ class TaggedListNode(LNode):
             LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
     @classmethod
-    def from_schema(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None):
         builder = builder or Builder()
         return cls(builder.build(_get_schema_from_tag(cls._default_tag), defaults))
 
     @classmethod
-    def fake_data(cls, defaults=None, shape=None, builder=None):
-        return cls.from_schema(defaults, builder or FakeDataBuilder(shape))
+    def create_fake_data(cls, defaults=None, shape=None, builder=None):
+        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape))
 
     @property
     def _tag(self):
@@ -143,7 +143,7 @@ class TaggedScalarNode:
         return self
 
     @classmethod
-    def from_schema(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None):
         builder = builder or Builder()
         value = builder.build(_get_schema_from_tag(cls._default_tag), defaults)
         if value is _NO_VALUE:
@@ -151,8 +151,8 @@ class TaggedScalarNode:
         return cls(value)
 
     @classmethod
-    def fake_data(cls, defaults=None, shape=None, builder=None):
-        return cls.from_schema(defaults, builder or FakeDataBuilder(shape))
+    def create_fake_data(cls, defaults=None, shape=None, builder=None):
+        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape))
 
     @property
     def _tag(self):

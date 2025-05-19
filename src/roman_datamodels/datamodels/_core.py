@@ -113,11 +113,11 @@ class DataModel(abc.ABC):
         return super().__new__(cls)
 
     @classmethod
-    def from_schema(cls, defaults=None):
+    def create_minimal(cls, defaults=None):
         """
-        Class method that constructs an "empty" model.
+        Class method that constructs an "minimal" model.
 
-        The "empty" model will contain schema-required attributes
+        The "minimal" model will contain schema-required attributes
         where a default value can be determined:
 
             * node class defining a default value
@@ -138,14 +138,14 @@ class DataModel(abc.ABC):
             be incomplete (invalid) as not all required attributes
             can be guessed.
         """
-        return cls(cls._node_type.from_schema(defaults))
+        return cls(cls._node_type.create_minimal(defaults))
 
     @classmethod
-    def fake_data(cls, defaults=None, shape=None):
+    def create_fake_data(cls, defaults=None, shape=None):
         """
         Class method that constructs a model filled with fake data.
 
-        Similar to `DataModel.from_schema` this only creates
+        Similar to `DataModel.create_minimal` this only creates
         required attributes.
 
         Fake arrays will have a number of dimensions matching
@@ -170,7 +170,7 @@ class DataModel(abc.ABC):
         DataModel
             A valid model with fake data.
         """
-        return cls(cls._node_type.fake_data(defaults, shape))
+        return cls(cls._node_type.create_fake_data(defaults, shape))
 
     def __init__(self, init=None, **kwargs):
         if isinstance(init, self.__class__):
