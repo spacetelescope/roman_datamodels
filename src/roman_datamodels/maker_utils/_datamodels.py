@@ -20,7 +20,6 @@ from ._common_meta import (
     mk_wcs,
     mk_wfi_wcs_common_meta,
 )
-from ._tagged_nodes import mk_cal_logs
 
 
 def mk_level1_science_raw(*, shape=(8, 4096, 4096), dq=False, filepath=None, **kwargs):
@@ -188,7 +187,6 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
     wfi_mosaic["var_poisson"] = kwargs.get("var_poisson", np.zeros(shape, dtype=np.float32))
     wfi_mosaic["var_rnoise"] = kwargs.get("var_rnoise", np.zeros(shape, dtype=np.float32))
     wfi_mosaic["var_flat"] = kwargs.get("var_flat", np.zeros(shape, dtype=np.float32))
-    wfi_mosaic["cal_logs"] = mk_cal_logs(**kwargs)
 
     wfi_mosaic["meta"]["wcs"] = mk_wcs()
 
