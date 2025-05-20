@@ -1,0 +1,2 @@
+Fixes for the FPS/TVAC ``maker_utils`` to include fields now actively required by
+the schemas.
