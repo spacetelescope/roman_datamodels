@@ -139,6 +139,7 @@ def mk_tvac_ref_file(**kwargs):
     ref_file["linearity"] = kwargs.get("linearity", "N/A")
     ref_file["mask"] = kwargs.get("mask", "N/A")
     ref_file["readnoise"] = kwargs.get("readnoise", "N/A")
+    ref_file["area"] = kwargs.get("area", "N/A")
     ref_file["saturation"] = kwargs.get("saturation", "N/A")
     ref_file["photom"] = kwargs.get("photom", "N/A")
     ref_file["crds"] = kwargs.get("crds", {"sw_version": "12.3.1", "context_used": "roman_0815.pmap"})
