@@ -114,4 +114,6 @@ class TaggedScalarNodeConverter(_RomanConverter):
 
 
 # Create the ASDF extension for the STNode classes.
-NODE_EXTENSIONS = [ManifestExtension.from_uri(manifest["id"], converters=NODE_CONVERTERS.values()) for manifest in _MANIFESTS]
+NODE_EXTENSIONS = {
+    manifest["id"]: ManifestExtension.from_uri(manifest["id"], converters=NODE_CONVERTERS.values()) for manifest in _MANIFESTS
+}
