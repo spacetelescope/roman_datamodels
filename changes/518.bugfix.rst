@@ -1,0 +1,1 @@
+Fix bug in RDM caused by RAD's new "static" manifest.
