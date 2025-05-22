@@ -126,6 +126,7 @@ class TaggedScalarNode:
     """
 
     _pattern = None
+    _latest_manifest = None
 
     def __init_subclass__(cls, **kwargs) -> None:
         """

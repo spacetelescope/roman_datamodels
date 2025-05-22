@@ -3,6 +3,8 @@ Factories for creating Tagged STNode classes from tag_uris.
     These are used to dynamically create classes from the RAD manifest.
 """
 
+from typing import Any
+
 from astropy.time import Time
 
 from . import _mixins
@@ -22,7 +24,7 @@ _NODE_TYPE_BY_PATTERN = {
 }
 
 
-def class_name_from_tag_uri(tag_uri):
+def class_name_from_tag_uri(tag_uri: str) -> str:
     """
     Construct the class name for the STNode class from the tag_uri
 
@@ -43,7 +45,7 @@ def class_name_from_tag_uri(tag_uri):
     return class_name
 
 
-def docstring_from_tag(tag_def):
+def docstring_from_tag(tag_def: dict[str, Any]) -> str:
     """
     Read the docstring (if it exists) from the RAD manifest and generate a docstring
         for the dynamically generated class.
@@ -62,7 +64,7 @@ def docstring_from_tag(tag_def):
     return docstring + f"Class generated from tag '{tag_def['tag_uri']}'"
 
 
-def scalar_factory(pattern, tag_def):
+def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) -> type[TaggedScalarNode]:
     """
     Factory to create a TaggedScalarNode class from a tag
 
@@ -70,6 +72,9 @@ def scalar_factory(pattern, tag_def):
     ----------
     pattern: str
         A tag pattern/wildcard
+
+    latest_manifest: str
+        URI for the latest manifest
 
     tag_def: dict
         A tag entry from the RAD manifest
@@ -102,6 +107,7 @@ def scalar_factory(pattern, tag_def):
         class_type,
         {
             "_pattern": pattern,
+            "_latest_manifest": latest_manifest,
             "_default_tag": tag_def["tag_uri"],
             "__module__": "roman_datamodels.stnode",
             "__doc__": docstring_from_tag(tag_def),
@@ -109,7 +115,7 @@ def scalar_factory(pattern, tag_def):
     )
 
 
-def node_factory(pattern, tag_def):
+def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) -> type[TaggedObjectNode | TaggedListNode]:
     """
     Factory to create a TaggedObjectNode or TaggedListNode class from a tag
 
@@ -117,6 +123,9 @@ def node_factory(pattern, tag_def):
     ----------
     pattern: str
         A tag pattern/wildcard
+
+    latest_manifest: str
+        URI for the latest manifest
 
     tag_def: dict
         A tag entry from the RAD manifest
@@ -142,6 +151,7 @@ def node_factory(pattern, tag_def):
         class_type,
         {
             "_pattern": pattern,
+            "_latest_manifest": latest_manifest,
             "_default_tag": tag_def["tag_uri"],
             "__module__": "roman_datamodels.stnode",
             "__doc__": docstring_from_tag(tag_def),
@@ -149,7 +159,9 @@ def node_factory(pattern, tag_def):
     )
 
 
-def stnode_factory(pattern, tag_def):
+def stnode_factory(
+    pattern: str, latest_manifest: str, tag_def: dict[str, Any]
+) -> type[TaggedObjectNode | TaggedListNode | TaggedScalarNode]:
     """
     Construct a tagged STNode class from a tag
 
@@ -157,6 +169,9 @@ def stnode_factory(pattern, tag_def):
     ----------
     pattern: str
         A tag pattern/wildcard
+
+    latest_manifest: str
+        URI for the latest manifest
 
     tag_def: dict
         A tag entry from the RAD manifest
@@ -168,6 +183,6 @@ def stnode_factory(pattern, tag_def):
     # TaggedScalarNodes are a special case because they are not a subclass of a
     #   _node class, but rather a subclass of the type of the scalar.
     if "tagged_scalar" in tag_def["schema_uri"]:
-        return scalar_factory(pattern, tag_def)
+        return scalar_factory(pattern, latest_manifest, tag_def)
     else:
-        return node_factory(pattern, tag_def)
+        return node_factory(pattern, latest_manifest, tag_def)

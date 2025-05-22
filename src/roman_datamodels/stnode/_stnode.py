@@ -34,12 +34,12 @@ _MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*.yaml")], revers
 _MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _MANIFEST_PATHS]
 
 
-def _factory(pattern, tag_def):
+def _factory(pattern, latest_manifest, tag_def):
     """
     Wrap the __all__ append and class creation in a function to avoid the linter
         getting upset
     """
-    cls = stnode_factory(pattern, tag_def)
+    cls = stnode_factory(pattern, latest_manifest, tag_def)
 
     class_name = cls.__name__
     globals()[class_name] = cls  # Add to namespace of module
@@ -51,13 +51,14 @@ def _factory(pattern, tag_def):
 #   Reads each tag entry from the manifest and creates a class for it
 _generated = {}
 for manifest in _MANIFESTS:
+    manifest_uri = manifest["id"]
     for tag_def in manifest["tags"]:
         SCHEMA_URIS_BY_TAG[tag_def["tag_uri"]] = tag_def["schema_uri"]
         # make pattern from tag
         base, _ = tag_def["tag_uri"].rsplit("-", maxsplit=1)
         pattern = f"{base}-*"
         if pattern not in _generated:
-            _generated[pattern] = _factory(pattern, tag_def)
+            _generated[pattern] = _factory(pattern, manifest_uri, tag_def)
         NODE_CLASSES_BY_TAG[tag_def["tag_uri"]] = _generated[pattern]
 
 
