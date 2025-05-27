@@ -42,6 +42,9 @@ def test_source_catalog(catalog_class, tmp_path):
     # Spot check column metadata.
     assert par_schema.field("a").metadata[b"unit"] == str(sc_dm.source_catalog["a"].unit).encode("ascii")
 
+    # check that the filename was recorded
+    assert tabmeta[b"roman.meta.filename"] == bytes(test_path)
+
     # Check that save() works
     test_path2 = tmp_path / "test2.parquet"
     sc_dm.save(test_path2)
