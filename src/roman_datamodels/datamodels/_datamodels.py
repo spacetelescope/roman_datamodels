@@ -8,10 +8,10 @@ This module provides all the specific datamodels used by the Roman pipeline.
 
 import copy
 import logging
+from pathlib import Path
 
 import astropy.table.meta
 import numpy as np
-from pathlib import Path
 from astropy.modeling import models
 
 from .. import stnode
