@@ -43,7 +43,7 @@ def test_source_catalog(catalog_class, tmp_path):
     assert par_schema.field("a").metadata[b"unit"] == str(sc_dm.source_catalog["a"].unit).encode("ascii")
 
     # check that the filename was recorded
-    assert tabmeta[b"roman.meta.filename"] == bytes(test_path)
+    assert tabmeta[b"roman.meta.filename"] == test_path.name.encode("ascii")
 
     # Check that save() works
     test_path2 = tmp_path / "test2.parquet"

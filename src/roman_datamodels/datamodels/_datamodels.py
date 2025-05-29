@@ -8,6 +8,7 @@ This module provides all the specific datamodels used by the Roman pipeline.
 
 import copy
 import logging
+from pathlib import Path
 
 import astropy.table.meta
 import numpy as np
@@ -60,7 +61,7 @@ class _ParquetMixin:
                 }
             )
 
-        with _temporary_update_filename(self, filepath):
+        with _temporary_update_filename(self, Path(filepath).name):
             # Construct flat metadata dict
             flat_meta = self.to_flat_dict()
         # select only meta items
