@@ -101,6 +101,7 @@ class DNode(MutableMapping):
     """
 
     _pattern = None
+    _latest_manifest = None
     _ctx = None
 
     def __init__(self, node=None, parent=None, name=None):
@@ -312,6 +313,7 @@ class LNode(UserList):
     """
 
     _pattern = None
+    _latest_manifest = None
 
     def __init__(self, node=None):
         if node is None:

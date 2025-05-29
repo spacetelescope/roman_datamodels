@@ -10,4 +10,4 @@ def get_extensions():
     """
     from ._converters import NODE_EXTENSIONS
 
-    return NODE_EXTENSIONS
+    return list(NODE_EXTENSIONS.values())
