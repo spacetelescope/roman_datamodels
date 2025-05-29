@@ -112,6 +112,66 @@ class DataModel(abc.ABC):
 
         return super().__new__(cls)
 
+    @classmethod
+    def create_minimal(cls, defaults=None):
+        """
+        Class method that constructs an "minimal" model.
+
+        The "minimal" model will contain schema-required attributes
+        where a default value can be determined:
+
+            * node class defining a default value
+            * defined in the schema (for example single item enums)
+            * empty container classes (for example a "meta" dict)
+            * required items with a corresponding provided default
+
+        Parameters
+        ----------
+        defaults : None or dict
+            If provided, defaults will be used in place of schema
+            defined values for required attributes.
+
+        Returns
+        -------
+        DataModel
+            "Empty" model with optional defaults. This will often
+            be incomplete (invalid) as not all required attributes
+            can be guessed.
+        """
+        return cls(cls._node_type.create_minimal(defaults))
+
+    @classmethod
+    def create_fake_data(cls, defaults=None, shape=None):
+        """
+        Class method that constructs a model filled with fake data.
+
+        Similar to `DataModel.create_minimal` this only creates
+        required attributes.
+
+        Fake arrays will have a number of dimensions matching
+        the schema requirements. If shape is provided only the
+        dimensions matching the schema requirements will be used.
+        For example if a 3 dimensional shape is provided but a fake
+        array only requires 2 dimensions only the first 2 values
+        from shape will be used.
+
+        Parameters
+        ----------
+        defaults : None or dict
+            If provided, defaults will be used in place of schema
+            defined or fake values for required attributes.
+
+        shape : None or tuple of int
+            When provided use this shape to determine the
+            shape used to construct fake arrays.
+
+        Returns
+        -------
+        DataModel
+            A valid model with fake data.
+        """
+        return cls(cls._node_type.create_fake_data(defaults, shape))
+
     def __init__(self, init=None, **kwargs):
         if isinstance(init, self.__class__):
             # Due to __new__ above, this is already initialized.
@@ -129,13 +189,11 @@ class DataModel(abc.ABC):
                     f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
                 )
 
-            with validate.nuke_validation():
-                self._instance = init
-                af = asdf.AsdfFile()
-                af["roman"] = self._instance
-                af.validate()
-                self._asdf = af
-                return
+            self._instance = init
+            af = asdf.AsdfFile()
+            af["roman"] = self._instance
+            self._asdf = af
+            return
 
         if init is None:
             self._instance = self._node_type()
@@ -205,7 +263,6 @@ class DataModel(abc.ABC):
         target._iscopy = True
         target._files_to_close = []
         target._shape = source._shape
-        target._ctx = target
 
     def save(self, path, dir_path=None, *args, **kwargs):
         path = Path(path(self.meta.filename) if callable(path) else path)
