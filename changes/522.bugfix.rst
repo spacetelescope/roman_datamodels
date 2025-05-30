@@ -1,0 +1,1 @@
+Fix bug where DataModel.__deepcopy__ returned a shallow copy.
