@@ -14,7 +14,7 @@ from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels, stnode, validate
 from roman_datamodels import maker_utils as utils
-from roman_datamodels.testing import assert_node_equal
+from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 from .conftest import MANIFESTS
 
@@ -1342,3 +1342,14 @@ def test_create_minimal_copies(model, tmp_path):
     del opened_model
     gc.collect(2)
     assert new_model.validate() is None
+
+
+def test_deepcopy_is_deep():
+    """
+    Test that a deepcopy of a datamodel results in a deep copy.
+    """
+    model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
+    model_copy = deepcopy(model)
+    assert model_copy is not model
+    assert model_copy.data is not model.data
+    assert_node_is_copy(model_copy._instance, model._instance, True)

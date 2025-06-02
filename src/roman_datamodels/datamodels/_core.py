@@ -249,7 +249,10 @@ class DataModel(abc.ABC):
         self.clone(result, self, deepcopy=deepcopy, memo=memo)
         return result
 
-    __copy__ = __deepcopy__ = copy
+    __copy__ = copy
+
+    def __deepcopy__(self, memo=None):
+        return self.copy(deepcopy=True, memo=memo)
 
     @staticmethod
     def clone(target, source, deepcopy=False, memo=None):
