@@ -17,6 +17,7 @@ from ._registry import (
     NODE_CLASSES_BY_TAG,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
+    SCHEMA_URIS_BY_TAG,
 )
 
 __all__ = [
@@ -51,6 +52,7 @@ def _factory(pattern, tag_def):
 _generated = {}
 for manifest in _MANIFESTS:
     for tag_def in manifest["tags"]:
+        SCHEMA_URIS_BY_TAG[tag_def["tag_uri"]] = tag_def["schema_uri"]
         # make pattern from tag
         base, _ = tag_def["tag_uri"].rsplit("-", maxsplit=1)
         pattern = f"{base}-*"

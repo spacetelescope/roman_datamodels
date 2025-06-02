@@ -6,8 +6,6 @@ Base classes for all the tagged objects defined by RAD.
 
 import copy
 
-import asdf
-
 from ._node import DNode, LNode
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
@@ -15,28 +13,13 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_KEY,
     SCALAR_NODE_CLASSES_BY_PATTERN,
 )
+from ._schema import _NO_VALUE, Builder, FakeDataBuilder, _get_schema_from_tag
 
 __all__ = [
     "TaggedListNode",
     "TaggedObjectNode",
     "TaggedScalarNode",
 ]
-
-
-def get_schema_from_tag(ctx, tag):
-    """
-    Look up and load ASDF's schema corresponding to the tag_uri.
-
-    Parameters
-    ----------
-    ctx :
-        An ASDF file context.
-    tag : str
-        The tag_uri of the schema to load.
-    """
-    schema_uri = ctx.extension_manager.get_tag_definition(tag).schema_uris[0]
-
-    return asdf.schema.load_schema(schema_uri, resolve_references=True)
 
 
 def name_from_tag_uri(tag_uri):
@@ -74,6 +57,15 @@ class TaggedObjectNode(DNode):
                 raise RuntimeError(f"TaggedObjectNode class for tag '{cls._pattern}' has been defined twice")
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
+    @classmethod
+    def create_minimal(cls, defaults=None, builder=None):
+        builder = builder or Builder()
+        return cls(builder.build(_get_schema_from_tag(cls._default_tag), defaults))
+
+    @classmethod
+    def create_fake_data(cls, defaults=None, shape=None, builder=None):
+        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape))
+
     @property
     def _tag(self):
         # _tag is required by asdf to allow __asdf_traverse__
@@ -83,14 +75,9 @@ class TaggedObjectNode(DNode):
     def tag(self):
         return self._tag
 
-    def _schema(self):
-        if self._x_schema is None:
-            self._x_schema = self.get_schema()
-        return self._x_schema
-
     def get_schema(self):
         """Retrieve the schema associated with this tag"""
-        return get_schema_from_tag(self.ctx, self.tag)
+        return _get_schema_from_tag(self.tag)
 
 
 class TaggedListNode(LNode):
@@ -111,6 +98,15 @@ class TaggedListNode(LNode):
                 raise RuntimeError(f"TaggedListNode class for tag '{cls._pattern}' has been defined twice")
             LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
+    @classmethod
+    def create_minimal(cls, defaults=None, builder=None):
+        builder = builder or Builder()
+        return cls(builder.build(_get_schema_from_tag(cls._default_tag), defaults))
+
+    @classmethod
+    def create_fake_data(cls, defaults=None, shape=None, builder=None):
+        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape))
+
     @property
     def _tag(self):
         # _tag is required by asdf to allow __asdf_traverse__
@@ -130,7 +126,6 @@ class TaggedScalarNode:
     """
 
     _pattern = None
-    _ctx = None
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -144,14 +139,20 @@ class TaggedScalarNode:
             SCALAR_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
             SCALAR_NODE_CLASSES_BY_KEY[name_from_tag_uri(cls._pattern)] = cls
 
-    @property
-    def ctx(self):
-        if self._ctx is None:
-            TaggedScalarNode._ctx = asdf.AsdfFile()
-        return self._ctx
-
     def __asdf_traverse__(self):
         return self
+
+    @classmethod
+    def create_minimal(cls, defaults=None, builder=None):
+        builder = builder or Builder()
+        value = builder.build(_get_schema_from_tag(cls._default_tag), defaults)
+        if value is _NO_VALUE:
+            return value
+        return cls(value)
+
+    @classmethod
+    def create_fake_data(cls, defaults=None, shape=None, builder=None):
+        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape))
 
     @property
     def _tag(self):
@@ -162,12 +163,8 @@ class TaggedScalarNode:
     def tag(self):
         return self._tag
 
-    @property
-    def key(self):
-        return name_from_tag_uri(self.tag)
-
     def get_schema(self):
-        return get_schema_from_tag(self.ctx, self.tag)
+        return _get_schema_from_tag(self.tag)
 
     def copy(self):
         return copy.copy(self)

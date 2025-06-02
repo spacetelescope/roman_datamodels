@@ -87,11 +87,19 @@ def scalar_factory(pattern, tag_def):
     # _SCALAR_TYPE_BY_PATTERN will need to be updated as new wrappers of scalar types are added
     #   to the RAD manifest.
     # assume everything is a string if not otherwise defined
-    type_ = _SCALAR_TYPE_BY_PATTERN.get(pattern, str)
+    class_type = _SCALAR_TYPE_BY_PATTERN.get(pattern, str)
+
+    # In special cases one may need to add additional features to a tagged node class.
+    #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
+    #   Here we mixin the mixin class if it exists.
+    if hasattr(_mixins, mixin := f"{class_name}Mixin"):
+        class_type = (class_type, getattr(_mixins, mixin), TaggedScalarNode)
+    else:
+        class_type = (class_type, TaggedScalarNode)
 
     return type(
         class_name,
-        (type_, TaggedScalarNode),
+        class_type,
         {
             "_pattern": pattern,
             "_default_tag": tag_def["tag_uri"],
@@ -125,7 +133,7 @@ def node_factory(pattern, tag_def):
     #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
     #   Here we mixin the mixin class if it exists.
     if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-        class_type = (class_type, getattr(_mixins, mixin))
+        class_type = (getattr(_mixins, mixin), class_type)
     else:
         class_type = (class_type,)
 
