@@ -176,6 +176,9 @@ class DNode(MutableMapping):
         """Dictionary style access delete data"""
         del self._data[key]
 
+    def __dir__(self):
+        return set(super().__dir__()) | set(self._data.keys())
+
     def __iter__(self):
         """Define iteration"""
         return iter(self._data)

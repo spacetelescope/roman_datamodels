@@ -1397,3 +1397,16 @@ def test_deepcopy_is_deep():
     assert model_copy is not model
     assert model_copy.data is not model.data
     assert_node_is_copy(model_copy._instance, model._instance, True)
+
+
+def test_model_dir():
+    """
+    Test that dir(model) returns attributes (to allow tab completion)
+    """
+    model = datamodels.ImageModel(utils.mk_level2_image(shape=(8, 8)))
+    items = dir(model)
+    assert "meta" in items
+    # also make sure methods are present
+    assert "to_flat_dict" in items
+    # and nested items
+    assert "exposure" in dir(model.meta)
