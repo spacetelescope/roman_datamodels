@@ -279,8 +279,10 @@ def test_open_asn(tmp_path):
     assert isinstance(lib, romancal.datamodels.ModelLibrary)
 
 
-@pytest.mark.parametrize("model", [mdl for mdl in datamodels.MODEL_REGISTRY.keys() if
-                                   ("Ref" not in mdl.__name__ and "Associations" not in mdl.__name__)])
+@pytest.mark.parametrize(
+    "model",
+    [mdl for mdl in datamodels.MODEL_REGISTRY.keys() if ("Ref" not in mdl.__name__ and "Associations" not in mdl.__name__)],
+)
 @pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
