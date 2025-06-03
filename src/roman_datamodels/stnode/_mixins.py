@@ -7,7 +7,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-from ._schema import Builder
+from ._schema import Builder, _get_properties
 from ._tagged import _get_schema_from_tag
 
 if TYPE_CHECKING:
@@ -177,3 +177,56 @@ class WfiImgPhotomRefMixin:
                 "DARK": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
             }
         return super().create_fake_data(defaults, shape, builder)
+
+
+class ImageSourceCatalogMixin:
+    @classmethod
+    def get_column_definitions(cls, aperture_radii, filters):
+        table_schema = _get_schema_from_tag(cls._default_tag)["properties"]["source_catalog"]
+        for raw_col_def in dict(_get_properties(table_schema))["columns"]["allOf"]:
+            col_def = raw_col_def["not"]["items"]["not"]
+            name_regex = col_def["properties"]["name"]["pattern"]
+            unit = col_def["unit"]
+            description = col_def["description"]
+            asdf_dtype = col_def["properties"]["data"]["properties"]["datatype"]["enum"][0]
+            import asdf
+
+            dtype = asdf.tags.core.ndarray.asdf_datatype_to_numpy_dtype(asdf_dtype)
+            name_queue = [name_regex[1:-1]]
+            from rad._source_catalogs import BAND_REGEX, RADIUS_REGEX
+
+            substitutions = [(RADIUS_REGEX, aperture_radii), (BAND_REGEX, filters)]
+            while name_queue:
+                name = name_queue.pop()
+                for regex, values in substitutions:
+                    if regex in name:
+                        name_queue.extend(name.replace(regex, value) for value in values)
+                        break
+                else:
+                    yield {"unit": unit, "description": description, "dtype": dtype, "name": name}
+
+    @classmethod
+    def create_fake_data(cls, defaults=None, shape=None, builder=None):
+        defaults = defaults or {}
+        if "source_catalog" not in defaults:
+            from astropy.table import Column, Table
+
+            cols = [Column([], **kwargs) for kwargs in cls.get_column_definitions(["00"], ["f184"])]
+            defaults["source_catalog"] = Table(cols)
+        return super().create_fake_data(defaults, shape, builder)
+
+
+class ForcedImageSourceCatalogMixin(ImageSourceCatalogMixin):
+    pass
+
+
+class MosaicSourceCatalogMixin(ImageSourceCatalogMixin):
+    pass
+
+
+class ForcedMosaicSourceCatalogMixin(ImageSourceCatalogMixin):
+    pass
+
+
+class MultibandSourceCatalogMixin(ImageSourceCatalogMixin):
+    pass
