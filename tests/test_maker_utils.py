@@ -48,8 +48,7 @@ def test_no_extra_fields(node_class):
     instance = maker_utils.mk_node(node_class, shape=(8, 8, 8))
     instance_keys = set(instance.keys())
 
-    schema_uri = instance._schema()["id"]
-    schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
+    schema = instance.get_schema()
 
     schema_keys = set()
     subschemas = [schema]

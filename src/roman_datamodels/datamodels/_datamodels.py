@@ -7,7 +7,9 @@ This module provides all the specific datamodels used by the Roman pipeline.
 """
 
 import copy
+import itertools
 import logging
+from pathlib import Path
 
 import astropy.table.meta
 import numpy as np
@@ -60,7 +62,7 @@ class _ParquetMixin:
                 }
             )
 
-        with _temporary_update_filename(self, filepath):
+        with _temporary_update_filename(self, Path(filepath).name):
             # Construct flat metadata dict
             flat_meta = self.to_flat_dict()
         # select only meta items
@@ -439,7 +441,8 @@ class WfiWcsModel(_RomanDataModel):
         # Retrieve the needed meta components
         wfi_wcs = cls()
         wfi_wcs.meta = {}
-        for k in wfi_wcs.meta._schema_attributes.explicit_properties:
+        schema = wfi_wcs.get_schema()
+        for k in itertools.chain(*(ss["properties"].keys() for ss in schema["properties"]["meta"]["allOf"])):
             if k in model.meta:
                 wfi_wcs.meta[k] = copy.deepcopy(model.meta[k])
 
