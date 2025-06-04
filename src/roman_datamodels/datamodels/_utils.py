@@ -166,7 +166,7 @@ def _open_asdf(init, lazy_tree=True, **kwargs):
             FilenameMismatchWarning,
             stacklevel=2,
         )
-        asdf_file["roman"]["meta"]["filename"] = path.name
+        asdf_file["roman"]["meta"]["filename"] = type(asdf_file["roman"]["meta"]["filename"])(path.name)
 
     return asdf_file
 

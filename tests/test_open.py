@@ -279,13 +279,23 @@ def test_open_asn(tmp_path):
     assert isinstance(lib, romancal.datamodels.ModelLibrary)
 
 
-def test_filename_matches_meta(tmp_path):
+@pytest.mark.parametrize(
+    "model",
+    [mdl for mdl in datamodels.MODEL_REGISTRY.keys() if ("Ref" not in mdl.__name__ and "Associations" not in mdl.__name__)],
+)
+@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
+@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
+@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
+def test_filename_matches_meta(tmp_path, model):
     save_path = tmp_path / "test_filename.asdf"
     open_path = tmp_path / "test_filename_read.asdf"
 
-    # Create an image model and save it
-    image = utils.mk_datamodel(datamodels.ImageModel, shape=(0, 0))
-    image.to_asdf(save_path)
+    # Create a node and write it to disk
+    gen_model = utils.mk_node(model, filepath=save_path, shape=(2, 8, 8))
+
+    # Save the filename type
+    gn_fn_type = type(gen_model.meta.filename)
 
     # Rename the model so filenames don't match
     os.rename(save_path, open_path)
@@ -303,3 +313,4 @@ def test_filename_matches_meta(tmp_path):
         datamodels.open(open_path) as model,
     ):
         assert model.meta.filename == open_path.name
+        assert isinstance(model.meta.filename, gn_fn_type)
