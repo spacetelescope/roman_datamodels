@@ -7,7 +7,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-from ._schema import Builder, _get_properties
+from ._schema import Builder, _get_keyword, _get_properties
 from ._tagged import _get_schema_from_tag
 
 if TYPE_CHECKING:
@@ -185,10 +185,11 @@ class ImageSourceCatalogMixin:
         table_schema = _get_schema_from_tag(cls._default_tag)["properties"]["source_catalog"]
         for raw_col_def in dict(_get_properties(table_schema))["columns"]["allOf"]:
             col_def = raw_col_def["not"]["items"]["not"]
-            name_regex = col_def["properties"]["name"]["pattern"]
-            unit = col_def["unit"]
-            description = col_def["description"]
-            asdf_dtype = col_def["properties"]["data"]["properties"]["datatype"]["enum"][0]
+            properties = dict(_get_properties(col_def))
+            name_regex = properties["name"]["pattern"]
+            unit = _get_keyword(col_def, "unit")
+            description = _get_keyword(col_def, "description")
+            asdf_dtype = properties["data"]["properties"]["datatype"]["enum"][0]
             import asdf
 
             dtype = asdf.tags.core.ndarray.asdf_datatype_to_numpy_dtype(asdf_dtype)
