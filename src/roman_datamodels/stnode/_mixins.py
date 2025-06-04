@@ -4,8 +4,11 @@ Mixin classes for additional functionality for STNode classes
 
 from __future__ import annotations
 
+import re
 from copy import deepcopy
 from typing import TYPE_CHECKING
+
+import asdf
 
 from ._schema import Builder, _get_keyword, _get_properties
 from ._tagged import _get_schema_from_tag
@@ -181,6 +184,19 @@ class WfiImgPhotomRefMixin:
 
 class ImageSourceCatalogMixin:
     @classmethod
+    def get_column_definition(cls, name):
+        definitions = _get_keyword(_get_schema_from_tag(cls._default_tag)["properties"]["source_catalog"], "definitions")
+        for def_name, definition in definitions.items():
+            if "~radius~" in def_name:
+                def_name = def_name.replace("~radius~", r"[0-9]{2}")
+            if "_~band~" in def_name:
+                def_name = def_name.replace("_~band~", r"(_f[0-9]{3}|)")
+            if "~band~" in def_name:
+                def_name = def_name.replace("~band~", r"(f[0-9]{3}|)")
+            if re.match(def_name, name):
+                return definition
+
+    @classmethod
     def get_column_definitions(cls, aperture_radii, filters):
         table_schema = _get_schema_from_tag(cls._default_tag)["properties"]["source_catalog"]
         for raw_col_def in dict(_get_properties(table_schema))["columns"]["allOf"]:
@@ -190,18 +206,19 @@ class ImageSourceCatalogMixin:
             unit = _get_keyword(col_def, "unit")
             description = _get_keyword(col_def, "description")
             asdf_dtype = properties["data"]["properties"]["datatype"]["enum"][0]
-            import asdf
 
             dtype = asdf.tags.core.ndarray.asdf_datatype_to_numpy_dtype(asdf_dtype)
             name_queue = [name_regex[1:-1]]
-            from rad._source_catalogs import BAND_REGEX, RADIUS_REGEX
 
-            substitutions = [(RADIUS_REGEX, aperture_radii), (BAND_REGEX, filters)]
+            substitutions = [
+                (r"\[0-9]\{2}", aperture_radii),
+                (r"\(.*\)", filters),
+            ]
             while name_queue:
                 name = name_queue.pop()
                 for regex, values in substitutions:
-                    if regex in name:
-                        name_queue.extend(name.replace(regex, value) for value in values)
+                    if re.search(regex, name):
+                        name_queue.extend(re.sub(regex, value, name) for value in values)
                         break
                 else:
                     yield {"unit": unit, "description": description, "dtype": dtype, "name": name}
