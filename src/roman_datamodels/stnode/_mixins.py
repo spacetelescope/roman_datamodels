@@ -183,9 +183,11 @@ class WfiImgPhotomRefMixin:
 
 
 class ImageSourceCatalogMixin:
-    @classmethod
-    def get_column_definition(cls, name):
-        definitions = _get_keyword(_get_schema_from_tag(cls._default_tag)["properties"]["source_catalog"], "definitions")
+    def get_column_definition(self, name):
+        """
+        TODO docstring
+        """
+        definitions = _get_keyword(self.get_schema()["properties"]["source_catalog"], "definitions")
         for def_name, definition in definitions.items():
             if "~radius~" in def_name:
                 def_name = def_name.replace("~radius~", r"[0-9]{2}")
@@ -197,8 +199,14 @@ class ImageSourceCatalogMixin:
                 return definition
 
     @classmethod
-    def get_column_definitions(cls, aperture_radii, filters):
+    def _create_empty_catalog(cls, aperture_radii=None, filters=None):
+        from astropy.table import Column, Table
+
+        aperture_radii = aperture_radii or ["00"]
+        filters = filters or ["f184"]
+
         table_schema = _get_schema_from_tag(cls._default_tag)["properties"]["source_catalog"]
+        columns = []
         for raw_col_def in dict(_get_properties(table_schema))["columns"]["allOf"]:
             col_def = raw_col_def["not"]["items"]["not"]
             properties = dict(_get_properties(col_def))
@@ -221,16 +229,14 @@ class ImageSourceCatalogMixin:
                         name_queue.extend(re.sub(regex, value, name) for value in values)
                         break
                 else:
-                    yield {"unit": unit, "description": description, "dtype": dtype, "name": name}
+                    columns.append(Column([], unit=unit, description=description, dtype=dtype, name=name))
+        return Table(columns)
 
     @classmethod
     def create_fake_data(cls, defaults=None, shape=None, builder=None):
         defaults = defaults or {}
         if "source_catalog" not in defaults:
-            from astropy.table import Column, Table
-
-            cols = [Column([], **kwargs) for kwargs in cls.get_column_definitions(["00"], ["f184"])]
-            defaults["source_catalog"] = Table(cols)
+            defaults["source_catalog"] = cls._create_empty_catalog()
         return super().create_fake_data(defaults, shape, builder)
 
 
