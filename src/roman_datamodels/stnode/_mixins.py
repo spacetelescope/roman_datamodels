@@ -8,7 +8,7 @@ import re
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-import asdf
+from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
 
 from ._schema import Builder, _get_keyword, _get_properties
 from ._tagged import _get_schema_from_tag
@@ -198,8 +198,8 @@ class ImageSourceCatalogMixin:
         Parameters
         ----------
         name: str
-            Column name, may contain aperture or filter/band but should
-            not be prefixed with "forced".
+            Column name, may contain aperture radisu or filter/band or prefixed
+            with "forced_".
 
         Returns
         -------
@@ -207,6 +207,8 @@ class ImageSourceCatalogMixin:
             Dictionary containing unit, description, and datatype information
             or None if the name does not match any definition.
         """
+        if name.startswith("forced_"):
+            _, name = name.split("forced_", maxsplit=1)
         definitions = _get_keyword(self.get_schema()["properties"]["source_catalog"], "definitions")
         for def_name, definition in definitions.items():
             if "~radius~" in def_name:
@@ -215,8 +217,14 @@ class ImageSourceCatalogMixin:
                 def_name = def_name.replace("_~band~", r"(_f[0-9]{3}|)")
             if "~band~" in def_name:
                 def_name = def_name.replace("~band~", r"(f[0-9]{3}|)")
-            if re.match(def_name, name):
-                return definition
+            if re.match(f"^{def_name}$", name):
+                return {
+                    "unit": definition["unit"],
+                    "description": definition["description"],
+                    "datatype": asdf_datatype_to_numpy_dtype(
+                        definition["properties"]["data"]["properties"]["datatype"]["enum"][0]
+                    ),
+                }
 
     @classmethod
     def _create_empty_catalog(cls, aperture_radii=None, filters=None):
@@ -233,9 +241,8 @@ class ImageSourceCatalogMixin:
             name_regex = properties["name"]["pattern"]
             unit = _get_keyword(col_def, "unit")
             description = _get_keyword(col_def, "description")
-            asdf_dtype = properties["data"]["properties"]["datatype"]["enum"][0]
+            dtype = asdf_datatype_to_numpy_dtype(properties["data"]["properties"]["datatype"]["enum"][0])
 
-            dtype = asdf.tags.core.ndarray.asdf_datatype_to_numpy_dtype(asdf_dtype)
             name_queue = [name_regex[1:-1]]
 
             substitutions = [

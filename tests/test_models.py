@@ -813,6 +813,29 @@ def test_make_mosaic_segmentation_map():
     assert isinstance(segmentation_map_model.data, np.ndarray)
 
 
+@pytest.mark.parametrize(
+    "model_class",
+    (
+        datamodels.ImageSourceCatalogModel,
+        datamodels.MosaicSourceCatalogModel,
+        datamodels.ForcedImageSourceCatalogModel,
+        datamodels.ForcedMosaicSourceCatalogModel,
+        datamodels.MultibandSourceCatalogModel,
+    ),
+)
+def test_get_column_description(model_class):
+    model = model_class.create_fake_data()
+    for column in model.source_catalog.columns.values():
+        column_def = model.get_column_definition(column.name)
+        assert column_def is not None
+        if column.unit == "none":
+            assert column_def["unit"] == "none"
+        else:
+            assert u.Unit(column_def["unit"]) == column.unit
+        assert column_def["description"] == column.description
+        assert np.dtype(column_def["datatype"]) == column.dtype
+
+
 def test_datamodel_info_search(capsys):
     wfi_science_raw = utils.mk_level1_science_raw(shape=(2, 8, 8))
     af = asdf.AsdfFile()
