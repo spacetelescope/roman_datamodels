@@ -199,7 +199,7 @@ class ImageSourceCatalogMixin:
         ----------
         name: str
             Column name, may contain aperture radisu or filter/band or prefixed
-            with "forced_".
+            with ``forced_``.
 
         Returns
         -------
