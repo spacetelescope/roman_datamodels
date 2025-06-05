@@ -1,0 +1,2 @@
+Use schemas to check source catalog tables.
+Introduce ForcedImageSourceCatalogModel, ForcedMosaicSourceCatalogModel and MultibandSourceCatalogModel.
