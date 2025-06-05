@@ -51,7 +51,24 @@ class _SourceCatalogMixin:
         return self._instance._create_empty_catalog(aperture_radii, filters)
 
     def get_column_definition(self, name):
-        # TODO docstring
+        """
+        Get the definition of a named column in the catalog table.
+
+        This function parses the "definitions" part of the catalog
+        schema and returns the parsed content.
+
+        Parameters
+        ----------
+        name: str
+            Column name, may contain aperture or filter/band but should
+            not be prefixed with "forced".
+
+        Returns
+        -------
+        dict or None
+            Dictionary containing unit, description, and datatype information
+            or None if the name does not match any definition.
+        """
         return self._instance.get_column_definition(name)
 
 
