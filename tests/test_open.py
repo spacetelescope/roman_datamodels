@@ -224,9 +224,19 @@ def test_opening_model(tmp_path, node_class):
             assert model.asn_type == "image"
         elif node_class == stnode.WfiMosaic:
             assert model.meta.basic.optical_element == "F158"
-        elif node_class in (stnode.SegmentationMap, stnode.ImageSourceCatalog, stnode.L1FaceGuidewindow):
+        elif node_class in (
+            stnode.SegmentationMap,
+            stnode.ImageSourceCatalog,
+            stnode.L1FaceGuidewindow,
+            stnode.ForcedImageSourceCatalog,
+        ):
             assert model.meta.optical_element == "F158"
-        elif node_class in (stnode.MosaicSegmentationMap, stnode.MosaicSourceCatalog):
+        elif node_class in (
+            stnode.MosaicSegmentationMap,
+            stnode.MosaicSourceCatalog,
+            stnode.MultibandSourceCatalog,
+            stnode.ForcedMosaicSourceCatalog,
+        ):
             assert hasattr(model.meta, "basic")
         else:
             # roman_skycells reference file does not contain optical_element. Skip this case

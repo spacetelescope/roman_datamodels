@@ -7,6 +7,7 @@ This module provides all the specific datamodels used by the Roman pipeline.
 """
 
 import copy
+import functools
 import itertools
 import logging
 from pathlib import Path
@@ -26,6 +27,33 @@ DTYPE_MAP = {}
 # Define logging
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
+
+
+class _SourceCatalogMixin:
+    def create_empty_catalog(self, aperture_radii=None, filters=None):
+        """
+        Create an empty but valid source catalog table
+
+        Parameters
+        ----------
+        aperture_radii: list of int (optional)
+            Aperture radii in tenths of an arcsecond.
+
+        filters: list of str (optional)
+            List of filters (for example: "f184")
+
+        Returns
+        -------
+        Table
+        """
+        if aperture_radii:
+            aperture_radii = [f"{i:02}" for i in aperture_radii]
+
+        return self._instance._create_empty_catalog(aperture_radii, filters)
+
+    @functools.wraps(stnode.ImageSourceCatalogMixin.get_column_definition)
+    def get_column_definition(self, name):
+        return self._instance.get_column_definition(name)
 
 
 class _ParquetMixin:
@@ -390,15 +418,27 @@ class TvacModel(_DataModel):
     _node_type = stnode.Tvac
 
 
-class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin):
+class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
     _node_type = stnode.MosaicSourceCatalog
+
+
+class MultibandSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    _node_type = stnode.MultibandSourceCatalog
+
+
+class ForcedImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    _node_type = stnode.ForcedImageSourceCatalog
+
+
+class ForcedMosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    _node_type = stnode.ForcedMosaicSourceCatalog
 
 
 class MosaicSegmentationMapModel(_RomanDataModel):
     _node_type = stnode.MosaicSegmentationMap
 
 
-class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin):
+class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
     _node_type = stnode.ImageSourceCatalog
 
 

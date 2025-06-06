@@ -771,6 +771,13 @@ def test_make_image_source_catalog():
     assert isinstance(source_catalog_model.source_catalog, Table)
 
 
+def test_make_forced_image_source_catalog():
+    source_catalog = utils.mk_forced_image_source_catalog()
+    source_catalog_model = datamodels.ForcedImageSourceCatalogModel(source_catalog)
+
+    assert isinstance(source_catalog_model.source_catalog, Table)
+
+
 def test_make_segmentation_map():
     segmentation_map = utils.mk_segmentation_map()
     segmentation_map_model = datamodels.SegmentationMapModel(segmentation_map)
@@ -785,11 +792,48 @@ def test_make_mosaic_source_catalog():
     assert isinstance(source_catalog_model.source_catalog, Table)
 
 
+def test_make_forced_mosaic_source_catalog():
+    source_catalog = utils.mk_forced_mosaic_source_catalog()
+    source_catalog_model = datamodels.ForcedMosaicSourceCatalogModel(source_catalog)
+
+    assert isinstance(source_catalog_model.source_catalog, Table)
+
+
+def test_make_multiband_source_catalog():
+    source_catalog = utils.mk_multiband_source_catalog()
+    source_catalog_model = datamodels.MultibandSourceCatalogModel(source_catalog)
+
+    assert isinstance(source_catalog_model.source_catalog, Table)
+
+
 def test_make_mosaic_segmentation_map():
     segmentation_map = utils.mk_mosaic_segmentation_map()
     segmentation_map_model = datamodels.MosaicSegmentationMapModel(segmentation_map)
 
     assert isinstance(segmentation_map_model.data, np.ndarray)
+
+
+@pytest.mark.parametrize(
+    "model_class",
+    (
+        datamodels.ImageSourceCatalogModel,
+        datamodels.MosaicSourceCatalogModel,
+        datamodels.ForcedImageSourceCatalogModel,
+        datamodels.ForcedMosaicSourceCatalogModel,
+        datamodels.MultibandSourceCatalogModel,
+    ),
+)
+def test_get_column_description(model_class):
+    model = model_class.create_fake_data()
+    for column in model.source_catalog.columns.values():
+        column_def = model.get_column_definition(column.name)
+        assert column_def is not None
+        if column.unit == "none":
+            assert column_def["unit"] == "none"
+        else:
+            assert u.Unit(column_def["unit"]) == column.unit
+        assert column_def["description"] == column.description
+        assert np.dtype(column_def["datatype"]) == column.dtype
 
 
 def test_datamodel_info_search(capsys):

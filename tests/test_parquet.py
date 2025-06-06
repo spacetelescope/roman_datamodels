@@ -20,9 +20,10 @@ source_catalogs = [
 @pytest.mark.parametrize("catalog_class", CATALOG_CLASSES)
 def test_source_catalog(catalog_class, tmp_path):
     sc_dm = utils.mk_datamodel(catalog_class)
+    name_a, name_b = sc_dm.source_catalog.colnames[:2]
 
-    sc_dm.source_catalog["a"].description = "a description"
-    sc_dm.source_catalog["b"].description = "b description"
+    sc_dm.source_catalog[name_a].description = "a description"
+    sc_dm.source_catalog[name_b].description = "b description"
 
     test_path = tmp_path / "test.parquet"
     sc_dm.to_parquet(test_path)
@@ -30,7 +31,7 @@ def test_source_catalog(catalog_class, tmp_path):
     ptab = astrotab.Table.read(test_path, format="parquet")
 
     # check that tables round trip
-    for cname in ["a", "b"]:
+    for cname in [name_a, name_b]:
         assert ptab[cname].description == sc_dm.source_catalog[cname].description
         assert ptab[cname].unit == sc_dm.source_catalog[cname].unit
         assert np.all(ptab[cname] == sc_dm.source_catalog[cname])
@@ -40,7 +41,7 @@ def test_source_catalog(catalog_class, tmp_path):
     tabmeta = par_schema.metadata
     assert tabmeta[b"roman.meta.telescope"] == sc_dm.meta.telescope.encode("ascii")
     # Spot check column metadata.
-    assert par_schema.field("a").metadata[b"unit"] == str(sc_dm.source_catalog["a"].unit).encode("ascii")
+    assert par_schema.field(name_a).metadata[b"unit"] == str(sc_dm.source_catalog[name_a].unit).encode("ascii")
 
     # check that the filename was recorded
     assert tabmeta[b"roman.meta.filename"] == test_path.name.encode("ascii")

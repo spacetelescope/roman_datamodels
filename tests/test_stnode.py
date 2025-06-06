@@ -256,7 +256,14 @@ def test_node_representation(model):
     mdl = maker_utils.mk_datamodel(model)
 
     if hasattr(mdl, "meta"):
-        if isinstance(mdl, datamodels.MosaicModel | datamodels.MosaicSegmentationMapModel | datamodels.MosaicSourceCatalogModel):
+        if isinstance(
+            mdl,
+            datamodels.MosaicModel
+            | datamodels.MosaicSegmentationMapModel
+            | datamodels.MosaicSourceCatalogModel
+            | datamodels.ForcedMosaicSourceCatalogModel
+            | datamodels.MultibandSourceCatalogModel,
+        ):
             assert repr(mdl.meta.basic) == repr(
                 {
                     "time_first_mjd": NONUM,
@@ -279,12 +286,18 @@ def test_node_representation(model):
                 datamodels.MosaicModel: "MosaicModel",
                 datamodels.MosaicSegmentationMapModel: "MosaicSegmentationMapModel",
                 datamodels.MosaicSourceCatalogModel: "MosaicSourceCatalogModel",
+                datamodels.ForcedMosaicSourceCatalogModel: "ForcedMosaicSourceCatalogModel",
+                datamodels.MultibandSourceCatalogModel: "MultibandSourceCatalogModel",
             }
             assert mdl.meta.model_type == model_types[type(mdl)]
             assert mdl.meta.telescope == "ROMAN"
             assert mdl.meta.filename == NOFN
         elif isinstance(
-            mdl, datamodels.SegmentationMapModel | datamodels.ImageSourceCatalogModel | datamodels.L1FaceGuidewindowModel
+            mdl,
+            datamodels.SegmentationMapModel
+            | datamodels.ImageSourceCatalogModel
+            | datamodels.L1FaceGuidewindowModel
+            | datamodels.ForcedImageSourceCatalogModel,
         ):
             assert mdl.meta.optical_element == "F158"
         else:
