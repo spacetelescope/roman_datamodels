@@ -341,6 +341,9 @@ class DataModel(abc.ABC):
     def __getitem__(self, key):
         return self._instance[key]
 
+    def __dir__(self):
+        return set(super().__dir__()) | set(dir(self._instance))
+
     def __iter__(self):
         return iter(self._instance)
 

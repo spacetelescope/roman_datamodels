@@ -3,6 +3,14 @@
 Using Roman Datamodels
 ======================
 
+.. note::
+   IPython and jupyter won't automatically tab-complete the
+   dynamic attributes of datamodels. To enable tab-completion
+   add the following to your `ipython configuration <https://ipython.readthedocs.io/en/stable/config/intro.html>`_::
+
+       c.IPCompleter.evaluation = "unsafe"
+       c.IPCompleter.use_jedi = False
+
 The following illustrates common operations with the datamodels.
 This is most relevant for interactive use with a loaded datamodel
 or if one is writing scripts or programs to view and manipulate
