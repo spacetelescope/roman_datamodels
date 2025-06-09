@@ -23,6 +23,7 @@ class DNode(MutableMapping):
     """
 
     _pattern = None
+    _latest_manifest = None
 
     def __init__(self, node=None, parent=None, name=None):
         # Handle if we are passed different data types
@@ -202,6 +203,7 @@ class LNode(UserList):
     """
 
     _pattern = None
+    _latest_manifest = None
 
     def __init__(self, node=None):
         if node is None:
