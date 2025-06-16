@@ -460,6 +460,7 @@ def mk_mosaic_meta(**kwargs):
     meta = mk_basic_meta(**kwargs)
     meta["basic"] = mk_mosaic_basic(**kwargs.get("basic", {}))
     meta["asn"] = mk_mosaic_associations(**kwargs.get("asn", {}))
+    meta["cal_logs"] = mk_cal_logs(**kwargs)
     meta["cal_step"] = mk_l3_cal_step(**kwargs.get("cal_step", {}))
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["individual_image_meta"] = mk_individual_image_meta(**kwargs.get("individual_image_meta", {}))
