@@ -257,12 +257,7 @@ def test_node_representation(model):
 
     if hasattr(mdl, "meta"):
         if isinstance(mdl, datamodels.MosaicModel):
-            assert repr(mdl.meta.instrument) == repr(
-                {
-                    "name": "WFI",
-                    "optical_element": "F062",
-                }
-            )
+            assert repr(mdl.meta.coordinates) == "{'reference_frame': 'ICRS'}"
         elif isinstance(
             mdl,
             datamodels.MosaicSegmentationMapModel
