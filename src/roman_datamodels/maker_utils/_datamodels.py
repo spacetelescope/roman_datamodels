@@ -14,7 +14,6 @@ from ._common_meta import (
     mk_l1_face_guidewindow_meta,
     mk_l2_meta,
     mk_mosaic_catalog_meta,
-    mk_mosaic_meta,
     mk_msos_stack_meta,
     mk_ramp_meta,
     mk_wcs,
@@ -177,18 +176,11 @@ def mk_level3_mosaic(*, shape=(4088, 4088), n_images=2, filepath=None, **kwargs)
             stacklevel=2,
         )
 
-    wfi_mosaic = stnode.WfiMosaic()
-    wfi_mosaic["meta"] = mk_mosaic_meta(**kwargs.get("meta", {}))
-    wfi_mosaic["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
-    wfi_mosaic["err"] = kwargs.get("err", np.zeros(shape, dtype=np.float32))
-    wfi_mosaic["context"] = kwargs.get("context", np.zeros((n_images, *shape), dtype=np.uint32))
-    wfi_mosaic["weight"] = kwargs.get("weight", np.zeros(shape, dtype=np.float32))
+    wfi_mosaic = stnode.WfiMosaic.create_fake_data(defaults=kwargs, shape=shape)
 
-    wfi_mosaic["var_poisson"] = kwargs.get("var_poisson", np.zeros(shape, dtype=np.float32))
-    wfi_mosaic["var_rnoise"] = kwargs.get("var_rnoise", np.zeros(shape, dtype=np.float32))
-    wfi_mosaic["var_flat"] = kwargs.get("var_flat", np.zeros(shape, dtype=np.float32))
-
-    wfi_mosaic["meta"]["wcs"] = mk_wcs()
+    # reshape the context array to match n_images
+    if "context" not in kwargs:
+        wfi_mosaic.context = np.zeros((n_images, *shape), dtype=wfi_mosaic.context.dtype)
 
     return save_node(wfi_mosaic, filepath=filepath)
 

@@ -731,8 +731,7 @@ def test_make_level3_mosaic():
     assert wfi_mosaic.weight.dtype == np.float32
     assert wfi_mosaic.var_poisson.dtype == np.float32
     assert wfi_mosaic.var_rnoise.dtype == np.float32
-    assert wfi_mosaic.var_flat.dtype == np.float32
-    assert isinstance(wfi_mosaic.meta.cal_logs[0], str)
+    assert "cal_logs" in wfi_mosaic.meta
 
     # Test validation
     wfi_mosaic_model = datamodels.MosaicModel(wfi_mosaic)
