@@ -223,7 +223,7 @@ def test_opening_model(tmp_path, node_class):
         if node_class == stnode.Associations:
             assert model.asn_type == "image"
         elif node_class == stnode.WfiMosaic:
-            assert model.meta.basic.optical_element == "F158"
+            assert model.meta.instrument.optical_element == "F062"
         elif node_class in (
             stnode.SegmentationMap,
             stnode.ImageSourceCatalog,

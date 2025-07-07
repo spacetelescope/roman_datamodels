@@ -256,10 +256,16 @@ def test_node_representation(model):
     mdl = maker_utils.mk_datamodel(model)
 
     if hasattr(mdl, "meta"):
-        if isinstance(
+        if isinstance(mdl, datamodels.MosaicModel):
+            assert repr(mdl.meta.instrument) == repr(
+                {
+                    "name": "WFI",
+                    "optical_element": "F062",
+                }
+            )
+        elif isinstance(
             mdl,
-            datamodels.MosaicModel
-            | datamodels.MosaicSegmentationMapModel
+            datamodels.MosaicSegmentationMapModel
             | datamodels.MosaicSourceCatalogModel
             | datamodels.ForcedMosaicSourceCatalogModel
             | datamodels.MultibandSourceCatalogModel,
