@@ -279,7 +279,7 @@ class Builder:
                 arr.append(copy.deepcopy(item))
             return arr
 
-        for subitem in items_keyword[len(arr):min_items]:
+        for subitem in items_keyword[len(arr) : min_items]:
             arr.append(self.build_node(subitem, _NO_VALUE))
         return arr
 
