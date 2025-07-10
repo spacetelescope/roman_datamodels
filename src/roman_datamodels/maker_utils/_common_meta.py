@@ -763,7 +763,7 @@ def _mk_ref_exposure(**kwargs):
     """
     exposure = {}
     exposure["type"] = kwargs.get("type", "WFI_IMAGE")
-    exposure["p_exptype"] = kwargs.get("p_exptype", "WFI_IMAGE|WFI_GRISM|WFI_PRISM|")
+    exposure["p_exptype"] = kwargs.get("p_exptype", "WFI_IMAGE|WFI_SPECTRAL|WFI_FLAT|")
 
     return exposure
 
