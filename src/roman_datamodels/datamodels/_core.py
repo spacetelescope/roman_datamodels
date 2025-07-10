@@ -340,6 +340,12 @@ class DataModel(abc.ABC):
     def __getattr__(self, attr):
         return getattr(self._instance, attr)
 
+    def __delattr__(self, attr):
+        if attr.startswith("_") and attr in self.__dict__:
+            super().__delattr__(attr)
+        else:
+            delattr(self._instance, attr)
+
     def __setitem__(self, key, value):
         if key.startswith("_"):
             raise ValueError("May not specify attributes/keys that start with _")
