@@ -35,8 +35,9 @@ class DNode(MutableMapping):
             raise ValueError("Initializer only accepts dicts")
 
         # Set the metadata tracked by the node
-        self._parent = parent
-        self._name = name
+        self.__dict__["_parent"] = parent
+        self.__dict__["_name"] = name
+        self.__dict__["_read_tag"] = None
 
     @staticmethod
     def _convert_to_scalar(key, value, ref=None):
@@ -98,7 +99,10 @@ class DNode(MutableMapping):
             # Finally set the value
             self._data[key] = value
         else:
-            self.__dict__[key] = value
+            if key in self.__dict__:
+                self.__dict__[key] = value
+            else:
+                raise AttributeError(f"Cannot set private attribute {key}")
 
     def _recursive_items(self):
         def recurse(tree, path=None):
@@ -214,6 +218,8 @@ class LNode(UserList):
             self.data = node.data
         else:
             raise ValueError("Initializer only accepts lists")
+
+        self.__dict__["_read_tag"] = None
 
     def __getitem__(self, index):
         value = self.data[index]
