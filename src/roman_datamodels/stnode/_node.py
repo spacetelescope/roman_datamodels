@@ -104,6 +104,17 @@ class DNode(MutableMapping):
             else:
                 raise AttributeError(f"Cannot set private attribute {key}")
 
+    def __delattr__(self, name):
+        print(name)
+        if name in self.__dict__:
+            super().__delattr__(name)
+
+        elif name[0] != "_":
+            self.__delitem__(name)
+
+        else:
+            raise AttributeError(f"No such attribute ({name}) found in node")
+
     def _recursive_items(self):
         def recurse(tree, path=None):
             path = path or []  # Avoid mutable default arguments
