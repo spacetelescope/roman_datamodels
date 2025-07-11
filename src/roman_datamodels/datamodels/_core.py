@@ -77,7 +77,8 @@ class DataModel(abc.ABC):
 
     crds_observatory = "roman"
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def _node_type(self):
         """Define the top-level node type for this model"""
         pass
