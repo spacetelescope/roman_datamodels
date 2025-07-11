@@ -299,10 +299,13 @@ class DataModel(abc.ABC):
 
     def to_asdf(self, init, *args, **kwargs):
         all_array_compression = kwargs.pop("all_array_compression", "lz4")
+        all_array_storage = kwargs.pop("all_array_storage", "internal")
         with validate.nuke_validation(), _temporary_update_filename(self, Path(init).name):
             asdf_file = self.open_asdf(**kwargs)
             asdf_file["roman"] = self._instance
-            asdf_file.write_to(init, *args, all_array_compression=all_array_compression, **kwargs)
+            asdf_file.write_to(
+                init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
+            )
 
     def get_primary_array_name(self):
         """
