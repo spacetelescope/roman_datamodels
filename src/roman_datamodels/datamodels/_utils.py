@@ -9,7 +9,7 @@ import warnings
 from collections.abc import Generator, Iterable, Mapping
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import asdf
 import numpy as np
@@ -19,10 +19,12 @@ from roman_datamodels import validate
 from ._core import MODEL_REGISTRY, DataModel
 
 if TYPE_CHECKING:
-    from roman_datamodels.stnode import Stnode
+    from astropy.time import Time
+
+    from roman_datamodels.stnode import Stnode, TaggedScalarNode
 
 
-__all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filename"]
+__all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filedate", "temporary_update_filename"]
 
 
 class FilenameMismatchWarning(UserWarning):
@@ -30,6 +32,40 @@ class FilenameMismatchWarning(UserWarning):
     Warning when the filename in the meta attribute does not match the filename
     of the file being opened.
     """
+
+
+def _temporary_update(
+    datamodel: DataModel, key: str, value: Any, wrapper: type[TaggedScalarNode] | None = None
+) -> Generator[None, None, None]:
+    """
+    Temporary update some meta key of a datamodel so that it can be saved with
+    that value without changing the current model's version of that value.
+
+    Parameters
+    ----------
+    datamodel :
+        The datamodel instance to update.
+
+    key : str
+        The key to update in the datamodel's meta attribute.
+
+    value : Any
+        The value to set for the key in the datamodel's meta attribute.
+
+    wrapper : type[TaggedScalarNode] | None
+        If provided, the value will be wrapped in this type before being set.
+        This is useful for ensuring that the value is of the correct type.
+    """
+    if "meta" in datamodel._instance and key in datamodel._instance.meta:
+        old_value = getattr(datamodel._instance.meta, key)
+        setattr(datamodel._instance.meta, key, wrapper(value) if wrapper else value)
+
+        yield
+        setattr(datamodel._instance.meta, key, old_value)
+        return
+
+    yield
+    return
 
 
 @contextmanager
@@ -48,16 +84,25 @@ def temporary_update_filename(datamodel: DataModel, filename: str) -> Generator[
     """
     from roman_datamodels.stnode import Filename
 
-    if "meta" in datamodel._instance and "filename" in datamodel._instance.meta:
-        old_filename = datamodel._instance.meta.filename
-        datamodel._instance.meta.filename = Filename(filename)
+    yield from _temporary_update(datamodel, "filename", filename, wrapper=Filename)
 
-        yield
-        datamodel._instance.meta.filename = old_filename
-        return
 
-    yield
-    return
+@contextmanager
+def temporary_update_filedate(datamodel: DataModel, file_date: Time) -> Generator[None, None, None]:
+    """
+    Context manager to temporarily update the filedate of a datamodel so that it
+    can be saved with that new file date without changing the current model's filedate.
+
+    Parameters
+    ----------
+    datamodel
+        The datamodel instance to update.
+    file_date
+        The new file date to use.
+    """
+    from roman_datamodels.stnode import FileDate
+
+    yield from _temporary_update(datamodel, "file_date", file_date, wrapper=FileDate)
 
 
 def node_update(
