@@ -10,6 +10,7 @@ from asdf.exceptions import ValidationError
 from astropy import units as u
 from astropy.modeling import Model
 from astropy.table import Table
+from astropy.time import Time, TimeDelta
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels, stnode, validate
@@ -1160,6 +1161,7 @@ def test_datamodel_construct_like_from_like(model):
 
 
 def test_datamodel_save_filename(tmp_path):
+    """Test that the filename is updated on the saved datamodel"""
     filename = tmp_path / "fancy_filename.asdf"
     ramp = utils.mk_datamodel(datamodels.RampModel, shape=(2, 8, 8))
     assert ramp.meta.filename != filename.name
@@ -1169,6 +1171,29 @@ def test_datamodel_save_filename(tmp_path):
 
     with datamodels.open(filename) as new_ramp:
         assert new_ramp.meta.filename == filename.name
+
+
+def test_datamodel_save_file_date(tmp_path):
+    """Test that the file date is updated on the saved datamodel"""
+    filename = tmp_path / "test.asdf"
+
+    ramp = utils.mk_datamodel(datamodels.RampModel, shape=(2, 8, 8))
+    assert ramp.meta.file_date == Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+
+    ramp.save(filename)
+    # Check that the file date has not been changed on the current model
+    assert ramp.meta.file_date == Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+
+    # Check that the file date has been updated in the saved model
+    with datamodels.open(filename) as new_ramp:
+        assert new_ramp.meta.file_date != Time("2020-01-01T00:00:00.0", format="isot", scale="utc")
+
+        # Time.now() is used to get the current time, which is what the model should be setting
+        #   as the file date on save. This value however is constantly changing, so we check
+        #   that it is within 1 second of the now current time. If this gets flacky, we can
+        #   increase the threshold, but this should only take a few milliseconds due to the
+        #   small size of the test ramp.
+        assert new_ramp.meta.file_date - Time.now() < TimeDelta(1 * u.s)
 
 
 @pytest.mark.parametrize(
