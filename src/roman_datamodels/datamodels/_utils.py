@@ -3,9 +3,13 @@ This module contains the utility functions for the datamodels sub-package. Mainl
     the open/factory function for creating datamodels
 """
 
+from __future__ import annotations
+
 import warnings
-from collections.abc import Mapping
+from collections.abc import Generator, Iterable, Mapping
+from contextlib import contextmanager
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import asdf
 import numpy as np
@@ -14,7 +18,11 @@ from roman_datamodels import validate
 
 from ._core import MODEL_REGISTRY, DataModel
 
-__all__ = ["FilenameMismatchWarning", "rdm_open"]
+if TYPE_CHECKING:
+    from roman_datamodels.stnode import Stnode
+
+
+__all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filename"]
 
 
 class FilenameMismatchWarning(UserWarning):
@@ -24,7 +32,41 @@ class FilenameMismatchWarning(UserWarning):
     """
 
 
-def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
+@contextmanager
+def temporary_update_filename(datamodel: DataModel, filename: str) -> Generator[None, None, None]:
+    """
+    Context manager to temporarily update the filename of a datamodel so that it
+    can be saved with that new file name without changing the current model's filename
+
+    Parameters
+    ----------
+    datamodel : DataModel
+        The datamodel instance to update.
+
+    filename : str
+        The new filename to use.
+    """
+    from roman_datamodels.stnode import Filename
+
+    if "meta" in datamodel._instance and "filename" in datamodel._instance.meta:
+        old_filename = datamodel._instance.meta.filename
+        datamodel._instance.meta.filename = Filename(filename)
+
+        yield
+        datamodel._instance.meta.filename = old_filename
+        return
+
+    yield
+    return
+
+
+def node_update(
+    to_node: Stnode,
+    from_node: Stnode | DataModel,
+    extras: Iterable[str] | None = None,
+    extras_key: str | None = None,
+    ignore: Iterable[str] | None = None,
+) -> None:
     """Copy node contents from an existing node to another existing node
 
     How the copy occurs depends on existence of keys in `to_node`
@@ -65,7 +107,7 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
 
     # Define utilities functions
     def _descend(attributes, key):
-        next_attributes = list()
+        next_attributes = []
         for item in attributes:
             level, _, name = item.partition(".")
             if level == key and name:
@@ -74,10 +116,10 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
 
     def _traverse(to_node, from_node, extras=None, ignore=None):
         if extras is None:
-            extras = tuple()
-        new_extras = dict()
+            extras = ()
+        new_extras = {}
         if ignore is None:
-            ignore = tuple()
+            ignore = ()
 
         for key in from_node.keys():
             if key in ignore:
