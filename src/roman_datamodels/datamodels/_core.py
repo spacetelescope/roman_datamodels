@@ -280,9 +280,13 @@ class DataModel(abc.ABC):
             return asdf.AsdfFile(init, **kwargs)
 
     def to_asdf(self, init, *args, all_array_compression="lz4", all_array_storage="internal", **kwargs):
-        from ._utils import temporary_update_filename
+        from ._utils import temporary_update_filedate, temporary_update_filename
 
-        with validate.nuke_validation(), temporary_update_filename(self, Path(init).name):
+        with (
+            validate.nuke_validation(),
+            temporary_update_filename(self, Path(init).name),
+            temporary_update_filedate(self, Time.now()),
+        ):
             asdf_file = self.open_asdf(**kwargs)
             asdf_file["roman"] = self._instance
             asdf_file.write_to(
