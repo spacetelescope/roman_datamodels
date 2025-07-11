@@ -1376,6 +1376,26 @@ def test_create_fake_data(model):
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+def test_no_hidden(model):
+    """Test that no hidden attributes are allowed"""
+    m = model.create_minimal()
+    with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
+        m._foo = "bar"  # Add a hidden attribute
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+def test_delattr(model):
+    """Test that delattr works as expected"""
+    m = model.create_minimal()
+
+    m.foo = "bar"
+    assert hasattr(m, "foo")
+
+    del m.foo
+    assert not hasattr(m, "foo")
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_create_minimal_copies(model, tmp_path):
     """Test that create_minimal does not retain references to input"""
     fn = tmp_path / "test.asdf"
