@@ -7,7 +7,8 @@ import pytest
 from astropy import units as u
 from astropy.time import Time
 
-from roman_datamodels import datamodels, maker_utils, stnode
+import roman_datamodels._maker_utils as maker_utils
+from roman_datamodels import datamodels, stnode
 from roman_datamodels.datamodels._datamodels import _RomanDataModel
 from roman_datamodels.testing import assert_node_equal
 
