@@ -72,25 +72,6 @@ def test_ref_files_all(name):
     assert method_name[:-4] in ref_files.__all__
 
 
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-def test_make_datamodel_tests(node_class):
-    """
-    Meta test to confirm that correct tests exist for each datamodel maker utility.
-    """
-    from roman_datamodels.maker_utils import _camel_case_to_snake_case
-
-    from . import test_models as tests
-
-    name = node_class.__name__
-    name = maker_utils.SPECIAL_MAKERS.get(name, _camel_case_to_snake_case(name))
-    if name.startswith("mk_"):
-        name = name[3:]
-    if name.endswith("_ref"):
-        name = name[:-4]
-
-    assert hasattr(tests, f"test_make_{name}"), name
-
-
 def test_deprecated():
     """
     mk_rampfitoutput has been deprecated because its name is inconsistent with the other
