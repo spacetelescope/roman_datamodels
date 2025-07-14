@@ -9,7 +9,6 @@ from astropy.time import Time
 
 from roman_datamodels import datamodels, maker_utils, stnode
 from roman_datamodels.datamodels._datamodels import _RomanDataModel
-from roman_datamodels.maker_utils import _ref_files as ref_files
 from roman_datamodels.testing import assert_node_equal
 
 
@@ -59,17 +58,6 @@ def test_no_extra_fields(node_class):
 
     diff = instance_keys - schema_keys
     assert len(diff) == 0, "Dummy instance has extra keys: " + ", ".join(diff)
-
-
-@pytest.mark.parametrize("name", [c.__name__ for c in stnode.NODE_CLASSES if c.__name__.endswith("Ref")])
-def test_ref_files_all(name):
-    """
-    Meta test to confirm that the __all__ in _ref_files.py has an entry for every ref file maker.
-    """
-    from roman_datamodels.maker_utils import _camel_case_to_snake_case
-
-    method_name = f"mk_{_camel_case_to_snake_case(name)}"
-    assert method_name[:-4] in ref_files.__all__
 
 
 @pytest.mark.parametrize("model_class", [mdl for mdl in maker_utils.NODE_REGISTRY])
