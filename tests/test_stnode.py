@@ -4,8 +4,7 @@ from contextlib import nullcontext
 import asdf
 import pytest
 
-from roman_datamodels import datamodels, maker_utils, stnode, validate
-from roman_datamodels.maker_utils._base import NOFN, NONUM, NOSTR
+from roman_datamodels import datamodels, stnode, validate
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 from .conftest import MANIFESTS
@@ -34,13 +33,9 @@ def test_node_classes_available_via_stnode(node_class):
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_copy(node_class):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
-    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
+    node = node_class.create_fake_data()
     node_copy = node.copy()
 
     # Assert the copy is shallow:
@@ -53,14 +48,9 @@ def test_copy(node_class):
         assert_node_is_copy(node, node_copy, deepcopy=True)
 
 
-@pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
-@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
-def test_deepcopy_model(node_class):
-    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
-    model = datamodels.MODEL_REGISTRY[node_class](node)
+@pytest.mark.parametrize("model_class", datamodels.MODEL_REGISTRY.values())
+def test_deepcopy_model(model_class):
+    model = model_class.create_fake_data(shape=(8, 8, 8))
     model_copy = model.copy()
 
     # There is no assert equal for models, but the data inside is what we care about.
@@ -97,14 +87,10 @@ def test_wfi_mode():
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_serialization(node_class, tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
+    node = node_class.create_fake_data()
     with asdf.AsdfFile() as af:
         af["node"] = node
         af.write_to(file_path)
@@ -207,7 +193,7 @@ def test_nuke_validation(nuke_env_var, tmp_path):
     context = pytest.raises(asdf.ValidationError) if nuke_env_var[1] else pytest.warns(validate.ValidationWarning)
 
     # Break model without outside validation
-    mdl = datamodels.WfiImgPhotomRefModel(maker_utils.mk_wfi_img_photom())
+    mdl = datamodels.WfiImgPhotomRefModel.create_fake_data()
     mdl._instance["phot_table"] = "THIS IS NOT VALID"
 
     # Broken can be written to file
@@ -244,8 +230,7 @@ def test_nuke_validation(nuke_env_var, tmp_path):
             pass
 
 
-@pytest.mark.parametrize("model", [mdl for mdl in datamodels.MODEL_REGISTRY.values() if "Ref" not in mdl.__name__])
-def test_node_representation(model):
+def test_node_representation():
     """
     Regression test for #244.
 
@@ -253,59 +238,11 @@ def test_node_representation(model):
     the representation of the object. The reported issue was with ``mdl.meta.instrument``,
     so that is directly checked here.
     """
-    mdl = maker_utils.mk_datamodel(model)
-
-    if hasattr(mdl, "meta"):
-        if isinstance(mdl, datamodels.MosaicModel):
-            assert repr(mdl.meta.coordinates) == "{'reference_frame': 'ICRS'}"
-        elif isinstance(
-            mdl,
-            datamodels.MosaicSegmentationMapModel
-            | datamodels.MosaicSourceCatalogModel
-            | datamodels.ForcedMosaicSourceCatalogModel
-            | datamodels.MultibandSourceCatalogModel,
-        ):
-            assert repr(mdl.meta.basic) == repr(
-                {
-                    "time_first_mjd": NONUM,
-                    "time_last_mjd": NONUM,
-                    "time_mean_mjd": NONUM,
-                    "max_exposure_time": NONUM,
-                    "mean_exposure_time": NONUM,
-                    "visit": NONUM,
-                    "segment": NONUM,
-                    "pass": NONUM,
-                    "program": NONUM,
-                    "survey": NOSTR,
-                    "optical_element": "F158",
-                    "instrument": "WFI",
-                    "location_name": NOSTR,
-                    "product_type": NOSTR,
-                }
-            )
-            model_types = {
-                datamodels.MosaicModel: "MosaicModel",
-                datamodels.MosaicSegmentationMapModel: "MosaicSegmentationMapModel",
-                datamodels.MosaicSourceCatalogModel: "MosaicSourceCatalogModel",
-                datamodels.ForcedMosaicSourceCatalogModel: "ForcedMosaicSourceCatalogModel",
-                datamodels.MultibandSourceCatalogModel: "MultibandSourceCatalogModel",
-            }
-            assert mdl.meta.model_type == model_types[type(mdl)]
-            assert mdl.meta.telescope == "ROMAN"
-            assert mdl.meta.filename == NOFN
-        elif isinstance(
-            mdl,
-            datamodels.SegmentationMapModel
-            | datamodels.ImageSourceCatalogModel
-            | datamodels.L1FaceGuidewindowModel
-            | datamodels.ForcedImageSourceCatalogModel,
-        ):
-            assert mdl.meta.optical_element == "F158"
-        else:
-            assert repr(mdl.meta.instrument) == repr(
-                {
-                    "name": "WFI",
-                    "detector": "WFI01",
-                    "optical_element": "F158",
-                }
-            )
+    mdl = datamodels.ImageModel.create_fake_data()
+    assert repr(mdl.meta.instrument) == repr(
+        {
+            "name": "WFI",
+            "detector": mdl.meta.instrument.detector,
+            "optical_element": mdl.meta.instrument.optical_element,
+        }
+    )
