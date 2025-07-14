@@ -193,9 +193,7 @@ class ScienceRawModel(_RomanDataModel):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base raw node with dummy values (for validation)
-        from roman_datamodels.maker_utils import mk_level1_science_raw
-
-        raw = mk_level1_science_raw(shape=model.shape)
+        raw = stnode.WfiScienceRaw.create_fake_data()
 
         _node_update(raw, model, extras=("meta.statistics",), extras_key="tvac")
 
@@ -252,9 +250,7 @@ class RampModel(_RomanDataModel):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base ramp node with dummy values (for validation)
-        from roman_datamodels.maker_utils import mk_ramp
-
-        ramp = mk_ramp(shape=model.shape)
+        ramp = stnode.Ramp.create_fake_data()
 
         # check if the input model has a resultantdq from SDF
         if hasattr(model, "resultantdq"):
