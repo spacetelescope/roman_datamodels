@@ -72,16 +72,6 @@ def test_ref_files_all(name):
     assert method_name[:-4] in ref_files.__all__
 
 
-def test_deprecated():
-    """
-    mk_rampfitoutput has been deprecated because its name is inconsistent with the other
-    maker utilities.  Confirm that it raises a DeprecationWarning.
-    """
-
-    with pytest.warns(DeprecationWarning):
-        maker_utils.mk_rampfitoutput(shape=(8, 8, 8))
-
-
 @pytest.mark.parametrize("model_class", [mdl for mdl in maker_utils.NODE_REGISTRY])
 @pytest.mark.filterwarnings("ignore:Input shape must be 1D")
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
