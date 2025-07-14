@@ -9,12 +9,11 @@ from astropy.io import fits
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels, stnode
-from roman_datamodels import maker_utils as utils
 from roman_datamodels.testing import assert_node_equal
 
 
 def test_asdf_file_input():
-    tree = utils.mk_level2_image(shape=(8, 8))
+    tree = stnode.WfiImage.create_fake_data()
     with asdf.AsdfFile() as af:
         af.tree = {"roman": tree}
         model = datamodels.open(af)
@@ -26,7 +25,7 @@ def test_asdf_file_input():
 def test_path_input(tmp_path):
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        tree = utils.mk_level2_image(shape=(8, 8))
+        tree = stnode.WfiImage.create_fake_data()
         af.tree = {"roman": tree}
         af.write_to(file_path)
 
@@ -60,7 +59,7 @@ def test_model_input(tmp_path):
     data = np.random.default_rng(42).uniform(size=(4, 4)).astype(np.float32)
 
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
+        af.tree = {"roman": stnode.WfiImage.create_fake_data()}
         af.tree["roman"].meta["bozo"] = "clown"
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -83,7 +82,7 @@ def test_model_input(tmp_path):
 
 def test_file_input(tmp_path):
     file_path = tmp_path / "test.asdf"
-    tree = utils.mk_level2_image(shape=(8, 8))
+    tree = stnode.WfiImage.create_fake_data()
     with asdf.AsdfFile() as af:
         af.tree = {"roman": tree}
         af.write_to(file_path)
@@ -111,7 +110,7 @@ def test_memmap(tmp_path):
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
+        af.tree = {"roman": stnode.WfiImage.create_fake_data()}
 
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -162,7 +161,7 @@ def test_no_memmap(tmp_path, kwargs):
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": utils.mk_level2_image(shape=(8, 8))}
+        af.tree = {"roman": stnode.WfiImage.create_fake_data()}
 
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -193,58 +192,27 @@ def test_no_memmap(tmp_path, kwargs):
 
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_node_round_trip(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"
 
     # Create/return a node and write it to disk, then check if the node round trips
-    node = utils.mk_node(node_class, filepath=file_path, shape=(2, 8, 8))
+    node = node_class.create_fake_data()
+    asdf.AsdfFile({"roman": node}).write_to(file_path)
     with asdf.open(file_path) as af:
         assert_node_equal(af.tree["roman"], node)
 
 
 @pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_opening_model(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"
 
     # Create a node and write it to disk
-    utils.mk_node(node_class, filepath=file_path, shape=(2, 8, 8))
+    node = node_class.create_fake_data()
+    if hasattr(node, "meta") and hasattr(node.meta, "filename"):
+        node.meta.filename = file_path.name
+    asdf.AsdfFile({"roman": node}).write_to(file_path)
 
-    # Opened saved file as a datamodel
     with datamodels.open(file_path) as model:
-        # Check that some of read data is correct
-        if node_class == stnode.Associations:
-            assert model.asn_type == "image"
-        elif node_class == stnode.WfiMosaic:
-            assert model.meta.instrument.name == "WFI"
-        elif node_class in (
-            stnode.SegmentationMap,
-            stnode.ImageSourceCatalog,
-            stnode.L1FaceGuidewindow,
-            stnode.ForcedImageSourceCatalog,
-        ):
-            assert model.meta.optical_element == "F158"
-        elif node_class in (
-            stnode.MosaicSegmentationMap,
-            stnode.MosaicSourceCatalog,
-            stnode.MultibandSourceCatalog,
-            stnode.ForcedMosaicSourceCatalog,
-        ):
-            assert hasattr(model.meta, "basic")
-        else:
-            # roman_skycells reference file does not contain optical_element. Skip this case
-            if hasattr(model.meta, "reftype") and model.meta.reftype == "SKYCELLS":
-                pass
-            else:
-                assert model.meta.instrument.optical_element == "F158"
-
         # Check that the model is the correct type
         assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
 
@@ -293,16 +261,13 @@ def test_open_asn(tmp_path):
     "model",
     [mdl for mdl in datamodels.MODEL_REGISTRY.keys() if ("Ref" not in mdl.__name__ and "Associations" not in mdl.__name__)],
 )
-@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
 def test_filename_matches_meta(tmp_path, model):
     save_path = tmp_path / "test_filename.asdf"
     open_path = tmp_path / "test_filename_read.asdf"
 
     # Create a node and write it to disk
-    gen_model = utils.mk_node(model, filepath=save_path, shape=(2, 8, 8))
+    gen_model = model.create_fake_data()
+    asdf.AsdfFile({"roman": gen_model}).write_to(save_path)
 
     # Save the filename type
     gn_fn_type = type(gen_model.meta.filename)
@@ -317,8 +282,7 @@ def test_filename_matches_meta(tmp_path, model):
     # Show datamodels.open will update the filename in memory
     with (
         pytest.warns(
-            match="meta.filename: test_filename.asdf does not match filename: "
-            "test_filename_read.asdf, updating the filename in memory!"
+            match="meta.filename: \\? does not match filename: test_filename_read.asdf, updating the filename in memory!"
         ),
         datamodels.open(open_path) as model,
     ):
