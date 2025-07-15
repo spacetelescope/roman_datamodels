@@ -1265,6 +1265,19 @@ def test_array_compression_override(tmp_path, compression):
         assert af.get_array_compression(af["roman"]["data"]) == compression
 
 
+@pytest.mark.parametrize("storage", [None, "inline", "internal", "external"])
+def test_array_storage_override(tmp_path, storage):
+    """
+    Test that providing a compression argument changes the
+    array compression.
+    """
+    fn = tmp_path / "foo.asdf"
+    model = utils.mk_datamodel(datamodels.ImageModel, shape=(2, 2))
+    model.save(fn, all_array_storage=storage)
+    with asdf.open(fn) as af:
+        assert af.get_array_storage(af["roman"]["data"]) == "internal" if storage is None else storage
+
+
 def test_apcorr_none_array():
     """
     Check that ApcorrRefModel data arrays can be None.

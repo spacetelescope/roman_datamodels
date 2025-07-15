@@ -273,14 +273,16 @@ class DataModel(abc.ABC):
         target._files_to_close = []
         target._shape = source._shape
 
-    def save(self, path, dir_path=None, *args, **kwargs):
+    def save(self, path, dir_path=None, *args, all_array_compression="lz4", all_array_storage="internal", **kwargs):
         path = Path(path(self.meta.filename) if callable(path) else path)
         output_path = Path(dir_path) / path.name if dir_path else path
         ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix
 
         # TODO: Support gzip-compressed fits
         if ext == ".asdf":
-            self.to_asdf(output_path, *args, **kwargs)
+            self.to_asdf(
+                output_path, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
+            )
         elif ext == ".parquet" and hasattr(self, "to_parquet"):
             self.to_parquet(output_path)
         else:
@@ -297,12 +299,13 @@ class DataModel(abc.ABC):
 
             return asdf.AsdfFile(init, **kwargs)
 
-    def to_asdf(self, init, *args, **kwargs):
-        all_array_compression = kwargs.pop("all_array_compression", "lz4")
+    def to_asdf(self, init, *args, all_array_compression=None, all_array_storage=None, **kwargs):
         with validate.nuke_validation(), _temporary_update_filename(self, Path(init).name):
             asdf_file = self.open_asdf(**kwargs)
             asdf_file["roman"] = self._instance
-            asdf_file.write_to(init, *args, all_array_compression=all_array_compression, **kwargs)
+            asdf_file.write_to(
+                init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
+            )
 
     def get_primary_array_name(self):
         """
