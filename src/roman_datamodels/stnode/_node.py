@@ -84,7 +84,7 @@ class DNode(MutableMapping):
                 return value
 
         # Raise the correct error for the attribute not being found
-        raise AttributeError(f"No such attribute ({key}) found in node")
+        raise AttributeError(f"No such attribute ({key}) found in node: {type(self)}")
 
     def __setattr__(self, key, value):
         """
