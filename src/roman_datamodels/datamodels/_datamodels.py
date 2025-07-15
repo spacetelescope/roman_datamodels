@@ -252,13 +252,14 @@ class RampModel(_RomanDataModel):
 
         # Create base ramp node with dummy values (for validation)
         ramp = stnode.Ramp.create_minimal()
-        ramp.meta.cal_step = stnode.L2CalStep()
+        ramp.meta.cal_step = stnode.L2CalStep.create_minimal()
         ramp.meta.cal_logs = stnode.CalLogs()
         shape = model.data.shape
         ramp.pixeldq = np.zeros(shape[1:], dtype=np.uint32)
         ramp.groupdq = np.zeros(shape, dtype=np.uint8)
         ramp.data = model.data.astype(np.float32)
         ramp.err = np.zeros_like(ramp.data)
+        ramp.amp33 = model.amp33.copy()
 
         # check if the input model has a resultantdq from SDF
         if hasattr(model, "resultantdq"):
