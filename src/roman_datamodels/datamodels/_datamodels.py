@@ -194,7 +194,10 @@ class ScienceRawModel(_RomanDataModel):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base raw node with dummy values (for validation)
-        raw = stnode.WfiScienceRaw.create_minimal()
+        if isinstance(model, (FpsModel | TvacModel)):
+            raw = stnode.WfiScienceRaw.create_fake_data()
+        else:
+            raw = stnode.WfiScienceRaw.create_minimal()
 
         node_update(raw, model, extras=("meta.statistics",), extras_key="tvac")
 
