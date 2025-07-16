@@ -99,16 +99,11 @@ def test_serialization(node_class, tmp_path):
         assert_node_equal(af["node"], node)
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-@pytest.mark.filterwarnings("ignore:Input shape must be 1D")
-@pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 4D")
-@pytest.mark.filterwarnings("ignore:Input shape must be 5D")
+@pytest.mark.parametrize("node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedObjectNode)])
 def test_no_hidden(node_class):
-    if issubclass(node_class, stnode.TaggedObjectNode):
-        node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
-        with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
-            node._foo = "bar"  # Add a hidden attribute
+    node = node_class.create_fake_data()
+    with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
+        node._foo = "bar"  # Add a hidden attribute
 
 
 def test_info(capsys):
