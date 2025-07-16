@@ -46,6 +46,8 @@ class TaggedObjectNode(DNode):
         base type: object.
     """
 
+    __slots__ = ()
+
     def __init_subclass__(cls, **kwargs) -> None:
         """
         Register any subclasses of this class in the OBJECT_NODE_CLASSES_BY_PATTERN
@@ -92,6 +94,8 @@ class TaggedListNode(LNode):
         There will be one of these for any tagged object defined by RAD, which has
         base type: array.
     """
+
+    __slots__ = ()
 
     def __init_subclass__(cls, **kwargs) -> None:
         """

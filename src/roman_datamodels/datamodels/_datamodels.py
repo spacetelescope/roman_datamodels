@@ -31,6 +31,8 @@ log.setLevel(logging.DEBUG)
 
 
 class _SourceCatalogMixin:
+    __slots__ = ()
+
     def create_empty_catalog(self, aperture_radii=None, filters=None):
         """
         Create an empty but valid source catalog table
@@ -59,6 +61,8 @@ class _SourceCatalogMixin:
 
 class _ParquetMixin:
     """Gives SourceCatalogModels the ability to save to parquet files."""
+
+    __slots__ = ()
 
     def to_parquet(self, filepath):
         """
@@ -128,6 +132,8 @@ class _DataModel(DataModel):
         documentation generation to work properly.
     """
 
+    __slots__ = ()
+
     def __init_subclass__(cls, **kwargs):
         """Register each subclass in the __all__ for this module"""
         super().__init_subclass__(**kwargs)
@@ -143,6 +149,8 @@ class _DataModel(DataModel):
 
 
 class _RomanDataModel(_DataModel):
+    __slots__ = ()
+
     def __init__(self, init=None, **kwargs):
         super().__init__(init, **kwargs)
 
@@ -151,14 +159,17 @@ class _RomanDataModel(_DataModel):
 
 
 class MosaicModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.WfiMosaic
 
 
 class ImageModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.WfiImage
 
 
 class ScienceRawModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.WfiScienceRaw
 
     @classmethod
@@ -214,10 +225,12 @@ class ScienceRawModel(_RomanDataModel):
 
 
 class MsosStackModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.MsosStack
 
 
 class RampModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.Ramp
 
     @classmethod
@@ -283,10 +296,12 @@ class RampModel(_RomanDataModel):
 
 
 class RampFitOutputModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.RampFitOutput
 
 
 class AssociationsModel(_DataModel):
+    __slots__ = ()
     # Need an init to allow instantiation from a JSON file
     _node_type = stnode.Associations
 
@@ -304,50 +319,62 @@ class AssociationsModel(_DataModel):
 
 
 class L1FaceGuidewindowModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.L1FaceGuidewindow
 
 
 class GuidewindowModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.Guidewindow
 
 
 class L1DetectorGuidewindowModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.L1DetectorGuidewindow
 
 
 class FlatRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.FlatRef
 
 
 class AbvegaoffsetRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.AbvegaoffsetRef
 
 
 class ApcorrRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.ApcorrRef
 
 
 class DarkRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.DarkRef
 
 
 class DistortionRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.DistortionRef
 
 
 class EpsfRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.EpsfRef
 
 
 class GainRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.GainRef
 
 
 class IpcRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.IpcRef
 
 
 class LinearityRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.LinearityRef
 
     def get_primary_array_name(self):
@@ -361,6 +388,7 @@ class LinearityRefModel(_DataModel):
 
 
 class InverselinearityRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.InverselinearityRef
 
     def get_primary_array_name(self):
@@ -374,6 +402,7 @@ class InverselinearityRefModel(_DataModel):
 
 
 class MaskRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.MaskRef
 
     def get_primary_array_name(self):
@@ -387,74 +416,92 @@ class MaskRefModel(_DataModel):
 
 
 class MATableRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.MatableRef
 
 
 class PixelareaRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.PixelareaRef
 
 
 class ReadnoiseRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.ReadnoiseRef
 
 
 class SkycellsRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.SkycellsRef
 
 
 class SuperbiasRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.SuperbiasRef
 
 
 class SaturationRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.SaturationRef
 
 
 class WfiImgPhotomRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.WfiImgPhotomRef
 
 
 class RefpixRefModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.RefpixRef
 
 
 class FpsModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.Fps
 
 
 class TvacModel(_DataModel):
+    __slots__ = ()
     _node_type = stnode.Tvac
 
 
 class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    __slots__ = ()
     _node_type = stnode.MosaicSourceCatalog
 
 
 class MultibandSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    __slots__ = ()
     _node_type = stnode.MultibandSourceCatalog
 
 
 class ForcedImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    __slots__ = ()
     _node_type = stnode.ForcedImageSourceCatalog
 
 
 class ForcedMosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    __slots__ = ()
     _node_type = stnode.ForcedMosaicSourceCatalog
 
 
 class MosaicSegmentationMapModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.MosaicSegmentationMap
 
 
 class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    __slots__ = ()
     _node_type = stnode.ImageSourceCatalog
 
 
 class SegmentationMapModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.SegmentationMap
 
 
 class WfiWcsModel(_RomanDataModel):
+    __slots__ = ()
     _node_type = stnode.WfiWcs
 
     @classmethod

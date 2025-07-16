@@ -4,8 +4,7 @@ Base node classes for all STNode classes.
 """
 
 import datetime
-from collections import UserList
-from collections.abc import MutableMapping
+from collections.abc import MutableMapping, MutableSequence
 
 import numpy as np
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
@@ -22,22 +21,24 @@ class DNode(MutableMapping):
     Base class describing all "object" (dict-like) data nodes for STNode classes.
     """
 
+    __slots__ = ("_data", "_name", "_parent", "_read_tag")
+
     _pattern = None
     _latest_manifest = None
 
     def __init__(self, node=None, parent=None, name=None):
         # Handle if we are passed different data types
         if node is None:
-            self.__dict__["_data"] = {}
+            self._data = {}
         elif isinstance(node, dict | AsdfDictNode):
-            self.__dict__["_data"] = node
+            self._data = node
         else:
             raise ValueError("Initializer only accepts dicts")
 
         # Set the metadata tracked by the node
-        self.__dict__["_parent"] = parent
-        self.__dict__["_name"] = name
-        self.__dict__["_read_tag"] = None
+        self._parent = parent
+        self._name = name
+        self._read_tag = None
 
     @staticmethod
     def _convert_to_scalar(key, value, ref=None):
@@ -99,14 +100,13 @@ class DNode(MutableMapping):
             # Finally set the value
             self._data[key] = value
         else:
-            if key in self.__dict__:
-                self.__dict__[key] = value
+            if key in DNode.__slots__:
+                DNode.__dict__[key].__set__(self, value)
             else:
-                raise AttributeError(f"Cannot set private attribute {key}")
+                raise AttributeError(f"Cannot set private attribute {key}, only allowed are {DNode.__slots__}")
 
     def __delattr__(self, name):
-        print(name)
-        if name in self.__dict__:
+        if name in self.__slots__:
             super().__delattr__(name)
 
         elif name[0] != "_":
@@ -206,16 +206,17 @@ class DNode(MutableMapping):
     def copy(self):
         """Handle copying of the node"""
         instance = self.__class__.__new__(self.__class__)
-        instance.__dict__.update(self.__dict__.copy())
-        instance.__dict__["_data"] = self.__dict__["_data"].copy()
+        instance._data = self._data.copy()
 
         return instance
 
 
-class LNode(UserList):
+class LNode(MutableSequence):
     """
     Base class describing all "array" (list-like) data nodes for STNode classes.
     """
+
+    __slots__ = ("_read_tag", "data")
 
     _pattern = None
     _latest_manifest = None
@@ -230,7 +231,7 @@ class LNode(UserList):
         else:
             raise ValueError("Initializer only accepts lists")
 
-        self.__dict__["_read_tag"] = None
+        self._read_tag = None
 
     def __getitem__(self, index):
         value = self.data[index]
@@ -241,5 +242,37 @@ class LNode(UserList):
         else:
             return value
 
+    def __setitem__(self, index, value):
+        self.data[index] = value
+
+    def __delitem__(self, index):
+        del self.data[index]
+
+    def __len__(self):
+        return len(self.data)
+
+    def insert(self, index, value):
+        self.data.insert(index, value)
+
     def __asdf_traverse__(self):
         return list(self)
+
+    def __setattr__(self, key, value):
+        if key in LNode.__slots__:
+            LNode.__dict__[key].__set__(self, value)
+        else:
+            raise AttributeError(f"Cannot set attribute {key}, only allowed are {LNode.__slots__}")
+
+    def __eq__(self, other):
+        if isinstance(other, LNode):
+            return self.data == other.data
+        elif isinstance(other, list | AsdfListNode):
+            return self.data == other
+        else:
+            return False
+
+    def copy(self):
+        """Handle copying of the node"""
+        instance = self.__class__.__new__(self.__class__)
+        instance.data = self.data.copy()
+        return instance
