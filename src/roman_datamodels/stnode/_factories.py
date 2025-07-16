@@ -155,6 +155,7 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
             "_default_tag": tag_def["tag_uri"],
             "__module__": "roman_datamodels.stnode",
             "__doc__": docstring_from_tag(tag_def),
+            "__slots__": (),
         },
     )
 
