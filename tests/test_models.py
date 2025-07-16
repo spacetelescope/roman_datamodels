@@ -848,6 +848,16 @@ def test_delattr(model):
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+def test_slotted(model):
+    """Test that the model is slotted as expected"""
+    m = model.create_minimal()
+
+    with pytest.raises(AttributeError, match=r"No attribute .*"):
+        # slotted object instances do not have a __dict__
+        m.__dict__  # noqa: B018
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_create_minimal_copies(model, tmp_path):
     """Test that create_minimal does not retain references to input"""
     fn = tmp_path / "test.asdf"

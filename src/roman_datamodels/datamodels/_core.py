@@ -152,6 +152,8 @@ class DataModel(abc.ABC):
         """
         return cls(cls._node_type.create_fake_data(defaults, shape))
 
+    __slots__ = ("_asdf", "_files_to_close", "_instance", "_iscopy", "_shape")
+
     @classmethod
     def create_from_model(cls, model):
         """
@@ -168,11 +170,11 @@ class DataModel(abc.ABC):
             # Due to __new__ above, this is already initialized.
             return
 
-        self.__dict__["_iscopy"] = False
-        self.__dict__["_shape"] = None
-        self.__dict__["_instance"] = None
-        self.__dict__["_asdf"] = None
-        self.__dict__["_files_to_close"] = None
+        self._iscopy = False
+        self._shape = None
+        self._instance = None
+        self._asdf = None
+        self._files_to_close = None
 
         if isinstance(init, stnode.TaggedObjectNode):
             if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
@@ -332,8 +334,8 @@ class DataModel(abc.ABC):
         return self._shape
 
     def __setattr__(self, attr, value):
-        if attr.startswith("_") and attr in self.__dict__:
-            self.__dict__[attr] = value
+        if attr.startswith("_") and attr in DataModel.__slots__:
+            DataModel.__dict__[attr].__set__(self, value)
         else:
             setattr(self._instance, attr, value)
 
@@ -341,7 +343,7 @@ class DataModel(abc.ABC):
         return getattr(self._instance, attr)
 
     def __delattr__(self, attr):
-        if attr.startswith("_") and attr in self.__dict__:
+        if attr.startswith("_") and attr in DataModel.__slots__:
             super().__delattr__(attr)
         else:
             delattr(self._instance, attr)
