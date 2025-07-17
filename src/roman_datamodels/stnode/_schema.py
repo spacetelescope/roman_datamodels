@@ -254,10 +254,34 @@ class Builder:
         return obj
 
     def from_array(self, schema, defaults):
-        if defaults is not _NO_VALUE:
-            return copy.deepcopy(defaults)
-        # minItems maxItems is unused so all arrays can be empty
-        return []
+        if defaults is _NO_VALUE:
+            defaults = []
+        arr = []
+
+        min_items = _get_keyword(schema, "minItems")
+        if min_items is _MISSING_KEYWORD:
+            return arr
+
+        for sub_default in defaults[:min_items]:
+            arr.append(copy.deepcopy(sub_default))
+
+        if len(arr) == min_items:
+            return arr
+
+        items_keyword = _get_keyword(schema, "items")
+        if items_keyword is _MISSING_KEYWORD:
+            return arr
+        if isinstance(items_keyword, dict):
+            item = self.build_node(items_keyword, _NO_VALUE)
+            if item is _NO_VALUE:
+                return arr
+            for _ in range(min_items - len(arr)):
+                arr.append(copy.deepcopy(item))
+            return arr
+
+        for subitem in items_keyword[len(arr) : min_items]:
+            arr.append(self.build_node(subitem, _NO_VALUE))
+        return arr
 
     def from_string(self, schema, defaults):
         if defaults is not _NO_VALUE:

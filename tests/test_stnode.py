@@ -256,10 +256,11 @@ def test_node_representation(model):
     mdl = maker_utils.mk_datamodel(model)
 
     if hasattr(mdl, "meta"):
-        if isinstance(
+        if isinstance(mdl, datamodels.MosaicModel):
+            assert repr(mdl.meta.coordinates) == "{'reference_frame': 'ICRS'}"
+        elif isinstance(
             mdl,
-            datamodels.MosaicModel
-            | datamodels.MosaicSegmentationMapModel
+            datamodels.MosaicSegmentationMapModel
             | datamodels.MosaicSourceCatalogModel
             | datamodels.ForcedMosaicSourceCatalogModel
             | datamodels.MultibandSourceCatalogModel,
