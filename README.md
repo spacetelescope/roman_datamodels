@@ -2,6 +2,7 @@
 [![Weekly Cron](https://github.com/spacetelescope/roman_datamodels/actions/workflows/ci_cron.yml/badge.svg)](https://github.com/spacetelescope/roman_datamodels/actions/workflows/ci_cron.yml)
 [![codecov](https://codecov.io/gh/spacetelescope/roman_datamodels/branch/main/graph/badge.svg)](https://codecov.io/gh/spacetelescope/roman_datamodels)
 [![Documentation Status](https://readthedocs.org/projects/roman-datamodels/badge/?version=latest)](https://roman-datamodels.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/338118033.svg)](https://doi.org/10.5281/zenodo.16048708)
 
 # Roman Datamodels Support
 
