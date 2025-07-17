@@ -1,1 +1,0 @@
-Add ``DataModel.from_schema`` and ``DataModel.fake_data``.

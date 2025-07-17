@@ -1,1 +1,0 @@
-Add support for the ``all_array_storage`` save option for asdf files to ``DataModel.save`` method.

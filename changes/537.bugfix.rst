@@ -1,1 +1,0 @@
-Remove use of out of date ``exposure_types``.

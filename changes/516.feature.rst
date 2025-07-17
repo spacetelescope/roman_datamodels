@@ -1,2 +1,0 @@
-Update ``roman_datamodels`` to support moving ``mosaic.cal_logs`` to
-``mosaic.meta.cal_logs`` for consistency with ``wfi_image.meta.cal_logs``.
