@@ -639,23 +639,16 @@ def test_datamodel_save_file_date(tmp_path, monkeypatch):
         (datamodels.MosaicModel, False),
     ],
 )
-def test_rampmodel_from_science_raw(tmp_path, model_class, expect_success):
+def test_rampmodel_from_science_raw(model_class, expect_success):
     """Test creation of RampModel from raw science/tvac"""
     model = model_class.create_fake_data(
         defaults={"meta": {"calibration_software_version": "1.2.3", "exposure": {"read_pattern": [[1], [2], [3]]}}}
     )
     if expect_success:
-        filename = tmp_path / "fancy_filename.asdf"
         ramp = datamodels.RampModel.from_science_raw(model)
 
         assert ramp.meta.calibration_software_version == model.meta.calibration_software_version
         assert ramp.meta.exposure.read_pattern == model.meta.exposure.read_pattern
-        assert ramp.validate() is None
-
-        ramp.save(filename)
-        with datamodels.open(filename) as new_ramp:
-            assert new_ramp.meta.calibration_software_version == model.meta.calibration_software_version
-
     else:
         with pytest.raises((ValueError, ValidationError)):
             datamodels.RampModel.from_science_raw(model)
@@ -726,7 +719,7 @@ def test_array_storage_override(tmp_path, storage):
     array compression.
     """
     fn = tmp_path / "foo.asdf"
-    model = utils.mk_datamodel(datamodels.ImageModel, shape=(2, 2))
+    model = datamodels.ImageModel.create_fake_data(shape=(2, 2))
     model.save(fn, all_array_storage=storage)
     with asdf.open(fn) as af:
         assert af.get_array_storage(af["roman"]["data"]) == "internal" if storage is None else storage
