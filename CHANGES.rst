@@ -1,3 +1,45 @@
+0.26.0 (2025-07-17)
+===================
+
+Bug Fixes
+---------
+
+- Fix meta.filename for writing to parquet. (`#513
+  <https://github.com/spacetelescope/roman_datamodels/issues/513>`_)
+- Fix bug in RDM caused by RAD's new "static" manifest. (`#518
+  <https://github.com/spacetelescope/roman_datamodels/issues/518>`_)
+- Use basenames in meta.filename in parquet metadata. (`#520
+  <https://github.com/spacetelescope/roman_datamodels/issues/520>`_)
+- Fix bug where DataModel.__deepcopy__ returned a shallow copy. (`#522
+  <https://github.com/spacetelescope/roman_datamodels/issues/522>`_)
+- Preserves the datatype of filename. (`#527
+  <https://github.com/spacetelescope/roman_datamodels/issues/527>`_)
+- Remove use of out of date ``exposure_types``. (`#537
+  <https://github.com/spacetelescope/roman_datamodels/issues/537>`_)
+
+
+New Features
+------------
+
+- Add ``DataModel.from_schema`` and ``DataModel.fake_data``. (`#514
+  <https://github.com/spacetelescope/roman_datamodels/issues/514>`_)
+- Update ``roman_datamodels`` to support moving ``mosaic.cal_logs`` to
+  ``mosaic.meta.cal_logs`` for consistency with ``wfi_image.meta.cal_logs``.
+  (`#516 <https://github.com/spacetelescope/roman_datamodels/issues/516>`_)
+- Implement __dir__ for nodes and datamodels. (`#524
+  <https://github.com/spacetelescope/roman_datamodels/issues/524>`_)
+- Use schemas to check source catalog tables.
+  Introduce ForcedImageSourceCatalogModel, ForcedMosaicSourceCatalogModel and
+  MultibandSourceCatalogModel. (`#529
+  <https://github.com/spacetelescope/roman_datamodels/issues/529>`_)
+- Update maker_utils based on level 3 MosaicModel metadata updates and improve
+  support for items for create_fake_data. (`#536
+  <https://github.com/spacetelescope/roman_datamodels/issues/536>`_)
+- Add support for the ``all_array_storage`` save option for asdf files to
+  ``DataModel.save`` method. (`#540
+  <https://github.com/spacetelescope/roman_datamodels/issues/540>`_)
+
+
 0.25.0 (2025-05-12)
 ===================
 
