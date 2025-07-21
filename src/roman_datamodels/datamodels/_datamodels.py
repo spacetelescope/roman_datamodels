@@ -15,10 +15,11 @@ from pathlib import Path
 import astropy.table.meta
 import numpy as np
 from astropy.modeling import models
+from astropy.time import Time
 
 from .. import stnode
 from ._core import DataModel
-from ._utils import node_update, temporary_update_filename
+from ._utils import node_update, temporary_update_filedate, temporary_update_filename
 
 __all__ = []
 
@@ -90,7 +91,7 @@ class _ParquetMixin:
                 }
             )
 
-        with temporary_update_filename(self, Path(filepath).name):
+        with temporary_update_filename(self, Path(filepath).name), temporary_update_filedate(self, Time.now()):
             # Construct flat metadata dict
             flat_meta = self.to_flat_dict()
         # select only meta items

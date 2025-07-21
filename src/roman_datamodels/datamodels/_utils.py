@@ -21,7 +21,7 @@ from ._core import MODEL_REGISTRY, DataModel
 if TYPE_CHECKING:
     from astropy.time import Time
 
-    from roman_datamodels.stnode import Stnode, TaggedScalarNode
+    from roman_datamodels.stnode import Stnode
 
 
 __all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filedate", "temporary_update_filename"]
@@ -34,9 +34,7 @@ class FilenameMismatchWarning(UserWarning):
     """
 
 
-def _temporary_update(
-    datamodel: DataModel, key: str, value: Any, wrapper: type[TaggedScalarNode] | None = None
-) -> Generator[None, None, None]:
+def _temporary_update(datamodel: DataModel, key: str, value: Any) -> Generator[None, None, None]:
     """
     Temporary update some meta key of a datamodel so that it can be saved with
     that value without changing the current model's version of that value.
@@ -51,14 +49,10 @@ def _temporary_update(
 
     value : Any
         The value to set for the key in the datamodel's meta attribute.
-
-    wrapper : type[TaggedScalarNode] | None
-        If provided, the value will be wrapped in this type before being set.
-        This is useful for ensuring that the value is of the correct type.
     """
     if "meta" in datamodel._instance and key in datamodel._instance.meta:
         old_value = getattr(datamodel._instance.meta, key)
-        setattr(datamodel._instance.meta, key, wrapper(value) if wrapper else value)
+        setattr(datamodel._instance.meta, key, value)
 
         yield
         setattr(datamodel._instance.meta, key, old_value)
@@ -82,9 +76,7 @@ def temporary_update_filename(datamodel: DataModel, filename: str) -> Generator[
     filename : str
         The new filename to use.
     """
-    from roman_datamodels.stnode import Filename
-
-    yield from _temporary_update(datamodel, "filename", filename, wrapper=Filename)
+    yield from _temporary_update(datamodel, "filename", filename)
 
 
 @contextmanager
@@ -100,9 +92,7 @@ def temporary_update_filedate(datamodel: DataModel, file_date: Time) -> Generato
     file_date
         The new file date to use.
     """
-    from roman_datamodels.stnode import FileDate
-
-    yield from _temporary_update(datamodel, "file_date", file_date, wrapper=FileDate)
+    yield from _temporary_update(datamodel, "file_date", file_date)
 
 
 def node_update(
