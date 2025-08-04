@@ -17,7 +17,7 @@ on:
 
 jobs:
   test:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@86823142467dd2afcd1bbac57d3a664cf468eb3b  # v2.1.0
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@28e947497bed4d6ec3fa1d66d198e95a1d17bc63  # v2.2.1
     with:
       envs: |
         - linux: py311-oldestdeps-cov
@@ -32,7 +32,7 @@ jobs:
         - linux: py3-withromancal-cov
           coverage: codecov
   test_upstream:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@86823142467dd2afcd1bbac57d3a664cf468eb3b  # v2.1.0
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@28e947497bed4d6ec3fa1d66d198e95a1d17bc63  # v2.2.1
     with:
       envs: |
         - linux: rad
@@ -48,7 +48,7 @@ jobs:
     uses: ./.github/workflows/contexts.yml
   romancal:
     needs: [ environment, crds_contexts ]
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@86823142467dd2afcd1bbac57d3a664cf468eb3b  # v2.1.0
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@28e947497bed4d6ec3fa1d66d198e95a1d17bc63  # v2.2.1
     with:
       setenv: |
         CRDS_PATH: ${{ needs.environment.outputs.data_path }}/crds
