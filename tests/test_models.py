@@ -1215,7 +1215,6 @@ def test_model_assignment_access_types(model_class):
     model = utils.mk_datamodel(
         model_class, meta={"calibration_software_version": "1.2.3", "exposure": {"read_pattern": [[1], [2], [3]]}}
     )
-
     assert model["meta"]["filename"] == model.meta["filename"]
     assert model["meta"]["filename"] == model.meta.filename
     assert model.meta.filename == model.meta["filename"]

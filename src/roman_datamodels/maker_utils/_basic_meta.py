@@ -127,15 +127,15 @@ def mk_basic_meta(**kwargs):
     dict (defined by the basic-1.0.0 schema)
     """
     meta = {}
-    meta["calibration_software_name"] = mk_calibration_software_name(**kwargs)
-    meta["calibration_software_version"] = mk_calibration_software_version(**kwargs)
-    meta["product_type"] = mk_product_type(**kwargs)
-    meta["filename"] = mk_filename(**kwargs)
-    meta["file_date"] = mk_file_date(**kwargs)
-    meta["model_type"] = mk_model_type(**kwargs)
-    meta["origin"] = mk_origin(**kwargs)
-    meta["prd_version"] = mk_prd_version(**kwargs)
-    meta["sdf_software_version"] = mk_sdf_software_version(**kwargs)
-    meta["telescope"] = mk_telescope(**kwargs)
+    meta["calibration_software_name"] = kwargs.get("calibration_software_name", "RomanCAL")
+    meta["calibration_software_version"] = kwargs.get("calibration_software_version", "9.9.0")
+    meta["product_type"] = kwargs.get("product_type", "l2")
+    meta["filename"] = kwargs.get("filename", NOFN)
+    meta["file_date"] = kwargs.get("file_date", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
+    meta["model_type"] = kwargs.get("model_type", NOSTR)
+    meta["origin"] = kwargs.get("origin", "STSCI/SOC")
+    meta["prd_version"] = kwargs.get("prd_version", "8.8.8")
+    meta["sdf_software_version"] = kwargs.get("sdf_software_version", "7.7.7")
+    meta["telescope"] = kwargs.get("telescope", "ROMAN")
 
     return meta

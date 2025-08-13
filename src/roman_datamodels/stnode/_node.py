@@ -24,8 +24,9 @@ class DNode(MutableMapping):
 
     _pattern = None
     _latest_manifest = None
+    _wrap_scalar_default = None
 
-    def __init__(self, node=None, parent=None, name=None):
+    def __init__(self, node=None, parent=None, name=None, wrap_scalar=None):
         # Handle if we are passed different data types
         if node is None:
             self.__dict__["_data"] = {}
@@ -38,8 +39,12 @@ class DNode(MutableMapping):
         self._parent = parent
         self._name = name
 
-    @staticmethod
-    def _convert_to_scalar(key, value, ref=None):
+        if wrap_scalar is not None:
+            self._wrap_scalar = wrap_scalar
+        else:
+            self._wrap_scalar = self._wrap_scalar_default if self._wrap_scalar_default is not None else True
+
+    def _convert_to_scalar(self, key, value, ref=None):
         """Find and wrap scalars in the appropriate class, if its a tagged one."""
         from ._tagged import TaggedScalarNode
 
@@ -52,7 +57,7 @@ class DNode(MutableMapping):
         if isinstance(value, TaggedScalarNode):
             return value
 
-        if key in SCALAR_NODE_CLASSES_BY_KEY:
+        if self._wrap_scalar and key in SCALAR_NODE_CLASSES_BY_KEY:
             value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
 
         return value
@@ -74,10 +79,10 @@ class DNode(MutableMapping):
 
             # Return objects as node classes, if applicable
             if isinstance(value, dict | AsdfDictNode):
-                return DNode(value, parent=self, name=key)
+                return DNode(value, parent=self, name=key, wrap_scalar=self._wrap_scalar)
 
             elif isinstance(value, list | AsdfListNode):
-                return LNode(value)
+                return LNode(value, wrap_scalar=self._wrap_scalar)
 
             else:
                 return value
@@ -204,8 +209,9 @@ class LNode(UserList):
 
     _pattern = None
     _latest_manifest = None
+    _wrap_scalar_default = None
 
-    def __init__(self, node=None):
+    def __init__(self, node=None, wrap_scalar=None):
         if node is None:
             self.data = []
         elif isinstance(node, list | AsdfListNode):
@@ -215,10 +221,15 @@ class LNode(UserList):
         else:
             raise ValueError("Initializer only accepts lists")
 
+        if wrap_scalar is not None:
+            self._wrap_scalar = wrap_scalar
+        else:
+            self._wrap_scalar = self._wrap_scalar_default if self._wrap_scalar_default is not None else True
+
     def __getitem__(self, index):
         value = self.data[index]
         if isinstance(value, dict | AsdfDictNode):
-            return DNode(value)
+            return DNode(value, wrap_scalar=self._wrap_scalar)
         elif isinstance(value, list | AsdfListNode):
             return LNode(value)
         else:

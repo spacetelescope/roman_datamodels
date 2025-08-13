@@ -58,11 +58,10 @@ def _temporary_update_filename(datamodel, filename):
     Context manager to temporarily update the filename of a datamodel so that it
     can be saved with that new file name without changing the current model's filename
     """
-    from roman_datamodels.stnode import Filename
 
     if "meta" in datamodel._instance and "filename" in datamodel._instance.meta:
         old_filename = datamodel._instance.meta.filename
-        datamodel._instance.meta.filename = Filename(filename)
+        datamodel._instance.meta.filename = filename
 
         yield
         datamodel._instance.meta.filename = old_filename

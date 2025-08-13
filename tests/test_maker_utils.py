@@ -177,10 +177,10 @@ def test_override_data(node_class):
                 node[key] = value
                 dict_[key] = value
 
-            return node.__class__(dict_)
+            return node.__class__(dict_, wrap_scalar=node._wrap_scalar)
 
         elif isinstance(node, stnode.LNode):
-            return node.__class__([mutate_node(value) for value in node])
+            return node.__class__([mutate_node(value) for value in node], wrap_scalar=node._wrap_scalar)
 
         else:
             return mutate_value(node)

@@ -8,7 +8,6 @@ This module provides all the specific datamodels used by the Roman pipeline.
 
 import copy
 import functools
-import itertools
 import logging
 from pathlib import Path
 
@@ -478,13 +477,25 @@ class WfiWcsModel(_RomanDataModel):
         if not isinstance(model, ImageModel):
             raise ValueError("Input must be an ImageModel")
 
+        def walk_and_add_properties(subschema, model, wfi_wcs):
+            if "properties" in subschema:
+                for prop in subschema["properties"]:
+                    if prop in model.meta:
+                        wfi_wcs.meta[prop] = copy.deepcopy(model.meta[prop])
+
+        def walk_and_add(schema, model, wfi_wcs):
+            walk_and_add_properties(schema, model, wfi_wcs)
+
+            if "allOf" in schema:
+                for subschema in schema["allOf"]:
+                    walk_and_add(subschema, model, wfi_wcs)
+
         # Retrieve the needed meta components
         wfi_wcs = cls()
         wfi_wcs.meta = {}
         schema = wfi_wcs.get_schema()
-        for k in itertools.chain(*(ss["properties"].keys() for ss in schema["properties"]["meta"]["allOf"])):
-            if k in model.meta:
-                wfi_wcs.meta[k] = copy.deepcopy(model.meta[k])
+
+        walk_and_add(schema["properties"]["meta"], model, wfi_wcs)
 
         # Check that a WCS has been defined.
         if model.meta.wcs is None:

@@ -115,7 +115,9 @@ def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) 
     )
 
 
-def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) -> type[TaggedObjectNode | TaggedListNode]:
+def node_factory(
+    pattern: str, latest_manifest: str, tag_def: dict[str, Any], wrap_scalar: bool
+) -> type[TaggedObjectNode | TaggedListNode]:
     """
     Factory to create a TaggedObjectNode or TaggedListNode class from a tag
 
@@ -129,6 +131,9 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
 
     tag_def: dict
         A tag entry from the RAD manifest
+
+    wrap_scalar: bool
+        Whether to wrap values in scalar types
 
     Returns
     -------
@@ -151,6 +156,7 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
         class_type,
         {
             "_pattern": pattern,
+            "_wrap_scalar_default": wrap_scalar,
             "_latest_manifest": latest_manifest,
             "_default_tag": tag_def["tag_uri"],
             "__module__": "roman_datamodels.stnode",
@@ -160,7 +166,7 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
 
 
 def stnode_factory(
-    pattern: str, latest_manifest: str, tag_def: dict[str, Any]
+    pattern: str, latest_manifest: str, tag_def: dict[str, Any], wrap_scalar: bool
 ) -> type[TaggedObjectNode | TaggedListNode | TaggedScalarNode]:
     """
     Construct a tagged STNode class from a tag
@@ -176,6 +182,9 @@ def stnode_factory(
     tag_def: dict
         A tag entry from the RAD manifest
 
+    wrap_scalar: bool
+        Whether to wrap values in scalar types
+
     Returns
     -------
     A dynamically generated TaggedScalarNode, TaggedObjectNode, or TaggedListNode subclass
@@ -185,4 +194,4 @@ def stnode_factory(
     if "tagged_scalar" in tag_def["schema_uri"]:
         return scalar_factory(pattern, latest_manifest, tag_def)
     else:
-        return node_factory(pattern, latest_manifest, tag_def)
+        return node_factory(pattern, latest_manifest, tag_def, wrap_scalar)

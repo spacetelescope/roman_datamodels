@@ -38,12 +38,12 @@ _DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL
 _MANIFESTS = _STATIC_MANIFESTS + _DATAMODEL_MANIFESTS
 
 
-def _factory(pattern, latest_manifest, tag_def):
+def _factory(pattern, latest_manifest, tag_def, wrap_scalar):
     """
     Wrap the __all__ append and class creation in a function to avoid the linter
         getting upset
     """
-    cls = stnode_factory(pattern, latest_manifest, tag_def)
+    cls = stnode_factory(pattern, latest_manifest, tag_def, wrap_scalar)
 
     class_name = cls.__name__
     globals()[class_name] = cls  # Add to namespace of module
@@ -59,10 +59,13 @@ for manifest in _MANIFESTS:
     for tag_def in manifest["tags"]:
         SCHEMA_URIS_BY_TAG[tag_def["tag_uri"]] = tag_def["schema_uri"]
         # make pattern from tag
-        base, _ = tag_def["tag_uri"].rsplit("-", maxsplit=1)
+        base, version = tag_def["tag_uri"].rsplit("-", maxsplit=1)
+        major = int(version.split(".")[0])
+        wrap_scalar = major < 2
+
         pattern = f"{base}-*"
         if pattern not in _generated:
-            _generated[pattern] = _factory(pattern, manifest_uri, tag_def)
+            _generated[pattern] = _factory(pattern, manifest_uri, tag_def, wrap_scalar)
         NODE_CLASSES_BY_TAG[tag_def["tag_uri"]] = _generated[pattern]
 
 

@@ -1,8 +1,11 @@
+from unittest.mock import Mock
+
 import gwcs
 import numpy as np
 from asdf.tags.core import NDArrayType
 from astropy.modeling import Model
 from astropy.table import Table
+from astropy.time import Time
 from numpy.testing import assert_array_equal
 
 from .stnode import DNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
@@ -47,6 +50,8 @@ def assert_node_equal(node1, node2):
         value2 = node2.__class__.__bases__[0](node2)
 
         assert value1 == value2
+    elif isinstance(node1, str | Time):
+        assert node1 == node2
     else:
         raise RuntimeError(f"Unhandled node class: {node1.__class__.__name__}")
 
@@ -62,6 +67,8 @@ def _assert_value_equal(value1, value2):
         assert (value1 == value2).all()
     elif isinstance(value1, gwcs.WCS):
         return True
+    elif isinstance(value1, Mock):
+        assert isinstance(value2, Mock), "Both values should be Mock instances"
     else:
         assert value1 == value2
 
