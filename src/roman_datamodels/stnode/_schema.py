@@ -7,6 +7,7 @@ import enum
 import functools
 
 import asdf
+from rad import constructors
 
 from ._registry import (
     NODE_CLASSES_BY_TAG,
@@ -286,6 +287,10 @@ class Builder:
     def from_string(self, schema, defaults):
         if defaults is not _NO_VALUE:
             return defaults
+
+        if (default := self.get_default_constructor(schema, defaults)) is not _NO_VALUE:
+            return default
+
         if (enum := self.from_enum(schema)) is not _NO_VALUE:
             return enum
         return defaults
@@ -314,13 +319,18 @@ class Builder:
     def from_null(self, schema, defaults):
         return None
 
+    def get_default_constructor(self, schema, defaults):
+        if (constructor_name := schema.get("minimal_default_constructor", _NO_VALUE)) is not _NO_VALUE:
+            return getattr(constructors, constructor_name)(defaults=defaults)
+        return constructor_name
+
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
             return property_class.create_minimal(defaults, builder=self)
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
-        return _NO_VALUE
+        return self.get_default_constructor(schema, defaults)
 
     def build_node(self, schema, defaults):
         match self.get_type(schema):
