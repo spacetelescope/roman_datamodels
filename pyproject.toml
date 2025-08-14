@@ -17,7 +17,7 @@ dependencies = [
   "numpy >=1.24",
   "astropy >=6.0.0",
   # "rad >=0.25.0",
-  "rad @ git+https://github.com/schlafly/rad.git@more-dark-data-removal",
+  "rad @ git+https://github.com/PaulHuwe/rad.git@RAD-215_OptionalDarkData",
   "asdf-standard >=1.1.0",
   "pyarrow >= 10.0.1",
 ]
