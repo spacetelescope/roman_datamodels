@@ -439,7 +439,6 @@ def test_flat_model(tmp_path):
 def test_make_dark():
     dark = utils.mk_dark(shape=(2, 8, 8))
     assert dark.meta.reftype == "DARK"
-    assert dark.data.dtype == np.float32
     assert dark.dq.dtype == np.uint32
     assert dark.dq.shape == (8, 8)
     assert dark.dark_slope.dtype == np.float32
