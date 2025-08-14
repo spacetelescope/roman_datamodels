@@ -199,7 +199,6 @@ def mk_dark(*, shape=(2, 4096, 4096), filepath=None, **kwargs):
     darkref = stnode.DarkRef()
     darkref["meta"] = mk_ref_dark_meta(**kwargs.get("meta", {}))
 
-    darkref["data"] = kwargs.get("data", np.zeros(shape, dtype=np.float32))
     darkref["dq"] = kwargs.get("dq", np.zeros(shape[1:], dtype=np.uint32))
     darkref["dark_slope"] = kwargs.get("dark_slope", np.zeros(shape[1:], dtype=np.float32))
     darkref["dark_slope_error"] = kwargs.get("dark_slope_error", np.zeros(shape[1:], dtype=np.float32))
