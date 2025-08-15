@@ -13,7 +13,6 @@ import copy
 import datetime
 import functools
 import sys
-from contextlib import contextmanager
 from pathlib import Path, PurePath
 
 import asdf
@@ -52,32 +51,13 @@ def _set_default_asdf(func):
     return wrapper
 
 
-@contextmanager
-def _temporary_update_filename(datamodel, filename):
-    """
-    Context manager to temporarily update the filename of a datamodel so that it
-    can be saved with that new file name without changing the current model's filename
-    """
-    from roman_datamodels.stnode import Filename
-
-    if "meta" in datamodel._instance and "filename" in datamodel._instance.meta:
-        old_filename = datamodel._instance.meta.filename
-        datamodel._instance.meta.filename = Filename(filename)
-
-        yield
-        datamodel._instance.meta.filename = old_filename
-        return
-
-    yield
-    return
-
-
 class DataModel(abc.ABC):
     """Base class for all top level datamodels"""
 
     crds_observatory = "roman"
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def _node_type(self):
         """Define the top-level node type for this model"""
         pass
@@ -299,8 +279,14 @@ class DataModel(abc.ABC):
 
             return asdf.AsdfFile(init, **kwargs)
 
-    def to_asdf(self, init, *args, all_array_compression=None, all_array_storage=None, **kwargs):
-        with validate.nuke_validation(), _temporary_update_filename(self, Path(init).name):
+    def to_asdf(self, init, *args, all_array_compression="lz4", all_array_storage="internal", **kwargs):
+        from ._utils import temporary_update_filedate, temporary_update_filename
+
+        with (
+            validate.nuke_validation(),
+            temporary_update_filename(self, Path(init).name),
+            temporary_update_filedate(self, Time.now()),
+        ):
             asdf_file = self.open_asdf(**kwargs)
             asdf_file["roman"] = self._instance
             asdf_file.write_to(

@@ -3,9 +3,13 @@ This module contains the utility functions for the datamodels sub-package. Mainl
     the open/factory function for creating datamodels
 """
 
+from __future__ import annotations
+
 import warnings
-from collections.abc import Mapping
+from collections.abc import Generator, Iterable, Mapping
+from contextlib import contextmanager
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import asdf
 import numpy as np
@@ -14,7 +18,13 @@ from roman_datamodels import validate
 
 from ._core import MODEL_REGISTRY, DataModel
 
-__all__ = ["FilenameMismatchWarning", "rdm_open"]
+if TYPE_CHECKING:
+    from astropy.time import Time
+
+    from roman_datamodels.stnode import Stnode
+
+
+__all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filedate", "temporary_update_filename"]
 
 
 class FilenameMismatchWarning(UserWarning):
@@ -24,7 +34,74 @@ class FilenameMismatchWarning(UserWarning):
     """
 
 
-def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
+def _temporary_update(datamodel: DataModel, key: str, value: Any) -> Generator[None, None, None]:
+    """
+    Temporary update some meta key of a datamodel so that it can be saved with
+    that value without changing the current model's version of that value.
+
+    Parameters
+    ----------
+    datamodel :
+        The datamodel instance to update.
+
+    key : str
+        The key to update in the datamodel's meta attribute.
+
+    value : Any
+        The value to set for the key in the datamodel's meta attribute.
+    """
+    if "meta" in datamodel._instance and key in datamodel._instance.meta:
+        old_value = getattr(datamodel._instance.meta, key)
+        setattr(datamodel._instance.meta, key, value)
+
+        yield
+        setattr(datamodel._instance.meta, key, old_value)
+        return
+
+    yield
+    return
+
+
+@contextmanager
+def temporary_update_filename(datamodel: DataModel, filename: str) -> Generator[None, None, None]:
+    """
+    Context manager to temporarily update the filename of a datamodel so that it
+    can be saved with that new file name without changing the current model's filename
+
+    Parameters
+    ----------
+    datamodel : DataModel
+        The datamodel instance to update.
+
+    filename : str
+        The new filename to use.
+    """
+    yield from _temporary_update(datamodel, "filename", filename)
+
+
+@contextmanager
+def temporary_update_filedate(datamodel: DataModel, file_date: Time) -> Generator[None, None, None]:
+    """
+    Context manager to temporarily update the filedate of a datamodel so that it
+    can be saved with that new file date without changing the current model's filedate.
+
+    Parameters
+    ----------
+    datamodel
+        The datamodel instance to update.
+    file_date
+        The new file date to use.
+    """
+    yield from _temporary_update(datamodel, "file_date", file_date)
+
+
+def node_update(
+    to_node: Stnode,
+    from_node: Stnode | DataModel,
+    extras: Iterable[str] | None = None,
+    extras_key: str | None = None,
+    ignore: Iterable[str] | None = None,
+) -> None:
     """Copy node contents from an existing node to another existing node
 
     How the copy occurs depends on existence of keys in `to_node`
@@ -65,7 +142,7 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
 
     # Define utilities functions
     def _descend(attributes, key):
-        next_attributes = list()
+        next_attributes = []
         for item in attributes:
             level, _, name = item.partition(".")
             if level == key and name:
@@ -74,10 +151,10 @@ def _node_update(to_node, from_node, extras=None, extras_key=None, ignore=None):
 
     def _traverse(to_node, from_node, extras=None, ignore=None):
         if extras is None:
-            extras = tuple()
-        new_extras = dict()
+            extras = ()
+        new_extras = {}
         if ignore is None:
-            ignore = tuple()
+            ignore = ()
 
         for key in from_node.keys():
             if key in ignore:
