@@ -13,6 +13,11 @@ from roman_datamodels.datamodels._datamodels import _RomanDataModel
 from roman_datamodels.testing import assert_node_equal
 
 
+def test_deprecation():
+    with pytest.warns(DeprecationWarning, match="maker_utils is deprecated"):
+        import roman_datamodels.maker_utils  # noqa
+
+
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 def test_maker_utility_implemented(node_class):
     """
