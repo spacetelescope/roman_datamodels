@@ -1,3 +1,13 @@
+0.27.0 (2025-08-15)
+===================
+
+Bug Fixes
+---------
+
+- Removed dark.data from tests and maker utils. (`#547
+  <https://github.com/spacetelescope/roman_datamodels/issues/547>`_)
+
+
 0.26.0 (2025-07-17)
 ===================
 
