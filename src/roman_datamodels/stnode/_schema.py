@@ -498,3 +498,85 @@ class FakeDataBuilder(Builder):
             shape = [2] * ndim
             arr = np.zeros(shape, dtype=arr.dtype)
         return u.Quantity(arr, unit=unit, dtype=arr.dtype, copy=False)
+
+
+class NodeBuilder(Builder):
+    """
+    Builder subclass that includes all provided data.
+
+    When constructing objects, values will be determined by (in this order):
+        TODO
+
+    TODO more information
+    """
+
+    def _copy_default(self, default):
+        # TODO is this always needed?
+        return copy.deepcopy(default)
+
+    def from_unknown(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_object(self, schema, defaults):
+        if defaults is _NO_VALUE:
+            return defaults
+
+        # TODO handle non-dict like defaults
+        obj = {}
+
+        subschemas = dict(_get_properties(schema))
+        for name, subdefaults in defaults.items():
+            subschema = subschemas.get(name, {})
+            # TODO handle _NO_VALUE?
+            obj[name] = self.build_node(subschema, subdefaults)
+        return obj
+
+    def from_array(self, schema, defaults):
+        if defaults is _NO_VALUE:
+            return defaults
+
+        # TODO handle non-array like defaults
+
+        # don't consider minItem maxItems, consider items
+        items_keyword = _get_keyword(schema, "items")
+        if items_keyword is _MISSING_KEYWORD:
+            return defaults.copy()
+
+        if isinstance(items_keyword, dict):
+            # single schema for all items
+            subschemas = {}
+            default_subschema = items_keyword
+        else:
+            # (possibly only some) items have schemas
+            subschemas = dict(enumerate(items_keyword))
+            default_subschema = {}
+
+        arr = []
+        for index, subitem in enumerate(defaults):
+            # TODO handle _NO_VALUE
+            subschema = subschemas.get(index, default_subschema)
+            self.build_node(subschema, subitem)
+        return arr
+
+    def from_string(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_integer(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_number(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_boolean(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_null(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_tagged(self, schema, defaults):
+        tag = _get_keyword(schema, "tag")
+        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+            return property_class.create_from_node(defaults, builder=self)
+        if defaults is not _NO_VALUE:
+            return copy.deepcopy(defaults)
+        return _NO_VALUE
