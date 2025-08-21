@@ -13,7 +13,7 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_KEY,
     SCALAR_NODE_CLASSES_BY_PATTERN,
 )
-from ._schema import _NO_VALUE, Builder, FakeDataBuilder, _get_schema_from_tag
+from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
 
 __all__ = [
     "TaggedListNode",
@@ -66,6 +66,10 @@ class TaggedObjectNode(DNode):
     def create_fake_data(cls, defaults=None, shape=None, builder=None):
         return cls.create_minimal(defaults, builder or FakeDataBuilder(shape))
 
+    @classmethod
+    def create_from_node(cls, node, builder=None):
+        return cls.create_minimal(node, builder or NodeBuilder())
+
     @property
     def _tag(self):
         # _tag is required by asdf to allow __asdf_traverse__
@@ -106,6 +110,10 @@ class TaggedListNode(LNode):
     @classmethod
     def create_fake_data(cls, defaults=None, shape=None, builder=None):
         return cls.create_minimal(defaults, builder or FakeDataBuilder(shape))
+
+    @classmethod
+    def create_from_node(cls, node, builder=None):
+        return cls.create_minimal(node, builder or NodeBuilder())
 
     @property
     def _tag(self):
@@ -154,6 +162,10 @@ class TaggedScalarNode:
     @classmethod
     def create_fake_data(cls, defaults=None, shape=None, builder=None):
         return cls.create_minimal(defaults, builder or FakeDataBuilder(shape))
+
+    @classmethod
+    def create_from_node(cls, node, builder=None):
+        return cls.create_minimal(node, builder or NodeBuilder())
 
     @property
     def _tag(self):
