@@ -5,8 +5,8 @@ from astropy.table import Table
 from astropy.time import Time
 from astropy.units import Quantity
 
-from roman_datamodels.stnode import SkyBackground
-from roman_datamodels.stnode._schema import _NO_VALUE, Builder, FakeDataBuilder, SchemaType, _NoValueType
+from roman_datamodels.stnode import Observation, SkyBackground
+from roman_datamodels.stnode._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, SchemaType, _NoValueType
 
 
 @pytest.mark.parametrize(
@@ -148,6 +148,68 @@ def test_fake_tag(tag, expected_type):
         "tag": tag,
     }
     assert isinstance(FakeDataBuilder().build(schema), expected_type)
+
+
+@pytest.mark.parametrize(
+    "schema",
+    (
+        {},
+        {"enum": [0]},
+        {"type": "integer"},
+        {"type": "number"},
+        {"type": "boolean"},
+        {"type": "null"},
+        {"type": "object"},
+        {"type": "array"},
+        {"properties": {"a": {}}, "required": "a"},
+        {"items": {}},
+    ),
+)
+@pytest.mark.parametrize("value", (1, 3.14, {"a": 1, "b": None}, [1, "a", None]))
+def test_node_builder(schema, value):
+    """Test NodeBuilder which prefers provided data over schema"""
+    result = NodeBuilder().build(schema, value)
+    assert result == value
+    if isinstance(value, list | tuple | dict):
+        assert result is not value
+
+
+def _make_old_observation():
+    """Helper to make a 1.0.0 Observation"""
+    obj = Observation.create_fake_data()
+    obj._read_tag = "asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"
+    return obj
+
+
+@pytest.mark.parametrize(
+    "tag, value",
+    (
+        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
+        ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", Observation.create_fake_data()),
+        ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", {"program": 1}),
+        ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", _make_old_observation()),
+    ),
+)
+def test_node_builder_tagged(tag, value):
+    result = NodeBuilder().build({"tag": tag}, value)
+    assert isinstance(result, Observation)
+    assert result is not value
+    assert result.tag == tag
+
+
+@pytest.mark.parametrize(
+    "tag, value",
+    (
+        # object-like
+        ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", [1, 2]),
+        # list-like
+        ("asdf://stsci.edu/datamodels/roman/tags/cal_logs-1.1.0", {"a": 1}),
+    ),
+)
+def test_node_builder_tag_mismatch(tag, value):
+    result = NodeBuilder().build({"tag": tag}, value)
+    # the tag is not picked up
+    assert type(result) is type(value)
 
 
 @pytest.mark.parametrize(

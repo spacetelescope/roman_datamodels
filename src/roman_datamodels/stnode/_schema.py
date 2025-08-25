@@ -5,6 +5,7 @@ Code for relating nodes and schema.
 import copy
 import enum
 import functools
+from collections.abc import Mapping, Sequence
 
 import asdf
 
@@ -521,7 +522,9 @@ class NodeBuilder(Builder):
         if defaults is _NO_VALUE:
             return defaults
 
-        # TODO handle non-dict like defaults
+        if not isinstance(defaults, Mapping):
+            return self._copy_default(defaults)
+
         obj = {}
 
         subschemas = dict(_get_properties(schema))
@@ -535,12 +538,13 @@ class NodeBuilder(Builder):
         if defaults is _NO_VALUE:
             return defaults
 
-        # TODO handle non-array like defaults
+        if not isinstance(defaults, Sequence) or isinstance(defaults, str):
+            return self._copy_default(defaults)
 
         # don't consider minItem maxItems, consider items
         items_keyword = _get_keyword(schema, "items")
         if items_keyword is _MISSING_KEYWORD:
-            return defaults.copy()
+            return self._copy_default(defaults)
 
         if isinstance(items_keyword, dict):
             # single schema for all items
@@ -555,7 +559,7 @@ class NodeBuilder(Builder):
         for index, subitem in enumerate(defaults):
             # TODO handle _NO_VALUE
             subschema = subschemas.get(index, default_subschema)
-            self.build_node(subschema, subitem)
+            arr.append(self.build_node(subschema, subitem))
         return arr
 
     def from_string(self, schema, defaults):
@@ -576,7 +580,13 @@ class NodeBuilder(Builder):
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
-            return property_class.create_from_node(defaults, builder=self)
+            try:
+                return property_class.create_from_node(defaults, builder=self)
+            except ValueError:
+                # Providing an incompatible value (list to a dict expecting class)
+                # will result in a ValueError. Don't let this stop the conversion
+                # and instead let the copy below return the defaults.
+                pass
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         return _NO_VALUE
