@@ -37,4 +37,3 @@ jobs:
           fetch-depth: 0
       - name: prevent direct changes to `CHANGES.rst` (write a towncrier fragment in `changes/` instead; you can override this with the `allow-manual-changelog-edit` label)
         run: git diff HEAD ${{ github.event.pull_request.base.sha }} --no-patch --exit-code CHANGES.rst
-
