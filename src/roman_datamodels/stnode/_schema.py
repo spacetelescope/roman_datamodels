@@ -505,14 +505,11 @@ class NodeBuilder(Builder):
     """
     Builder subclass that includes all provided data.
 
-    When constructing objects, values will be determined by (in this order):
-        TODO
-
-    TODO more information
+    When constructing objects, values will be copied from the
+    provided defaults and converted to tags defined in the schema.
     """
 
     def _copy_default(self, default):
-        # TODO is this always needed?
         return copy.deepcopy(default)
 
     def from_unknown(self, schema, defaults):
@@ -530,7 +527,6 @@ class NodeBuilder(Builder):
         subschemas = dict(_get_properties(schema))
         for name, subdefaults in defaults.items():
             subschema = subschemas.get(name, {})
-            # TODO handle _NO_VALUE?
             obj[name] = self.build_node(subschema, subdefaults)
         return obj
 
@@ -557,7 +553,6 @@ class NodeBuilder(Builder):
 
         arr = []
         for index, subitem in enumerate(defaults):
-            # TODO handle _NO_VALUE
             subschema = subschemas.get(index, default_subschema)
             arr.append(self.build_node(subschema, subitem))
         return arr
