@@ -1,4 +1,4 @@
-name: CI
+name: tests
 
 on:
   push:
@@ -31,11 +31,12 @@ jobs:
         - macos: py3
         - linux: py3-withromancal-cov
           coverage: codecov
+
   test_upstream:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@28e947497bed4d6ec3fa1d66d198e95a1d17bc63  # v2.2.1
     with:
       envs: |
-        - linux: rad
+        - linux: py3-rad
 
   environment:
     runs-on: ubuntu-latest
@@ -46,7 +47,7 @@ jobs:
       data_path: ${{ steps.data_path.outputs.path }}
   crds_contexts:
     uses: ./.github/workflows/contexts.yml
-  romancal:
+  test_downstream:
     needs: [ environment, crds_contexts ]
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@28e947497bed4d6ec3fa1d66d198e95a1d17bc63  # v2.2.1
     with:
@@ -58,4 +59,4 @@ jobs:
       cache-path: ${{ needs.environment.outputs.data_path }}/crds
       cache-key: crds-${{ needs.crds_contexts.outputs.roman }}
       envs: |
-        - linux: romancal
+        - linux: py3-romancal

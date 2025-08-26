@@ -1,4 +1,4 @@
-name: Weekly cron
+name: extra tests
 
 on:
   schedule:
@@ -20,5 +20,7 @@ jobs:
     if: (github.repository == 'spacetelescope/roman_datamodels' && (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'Weekly CI')))
     with:
       envs: |
+        - macos: py311
+        - macos: py312
         - macos: py3-devdeps
         - linux: py3-devdeps
