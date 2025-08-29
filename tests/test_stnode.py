@@ -38,8 +38,12 @@ def test_node_classes_available_via_stnode(node_class):
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
-def test_copy(node_class):
+def test_copy(node_class, request):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
+    if issubclass(node_class, stnode.TaggedScalarNode) and "Fps" not in node_class.__name__ and "Tvac" not in node_class.__name__:
+        request.applymarker(
+            pytest.mark.xfail(reason=f"{node_class.__name__} is a deprecated TaggedScalarNode and does not have a maker utility.")
+        )
     node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
     node_copy = node.copy()
 
@@ -101,7 +105,12 @@ def test_wfi_mode():
 @pytest.mark.filterwarnings("ignore:This function assumes shape is 2D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 4D")
 @pytest.mark.filterwarnings("ignore:Input shape must be 5D")
-def test_serialization(node_class, tmp_path):
+def test_serialization(node_class, tmp_path, request):
+    if issubclass(node_class, stnode.TaggedScalarNode) and "Fps" not in node_class.__name__ and "Tvac" not in node_class.__name__:
+        request.applymarker(
+            pytest.mark.xfail(reason=f"{node_class.__name__} is a deprecated TaggedScalarNode and does not have a maker utility.")
+        )
+
     file_path = tmp_path / "test.asdf"
 
     node = maker_utils.mk_node(node_class, shape=(8, 8, 8))
