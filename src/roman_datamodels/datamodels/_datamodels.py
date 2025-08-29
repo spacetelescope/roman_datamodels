@@ -15,10 +15,11 @@ from pathlib import Path
 import astropy.table.meta
 import numpy as np
 from astropy.modeling import models
+from astropy.time import Time
 
 from .. import stnode
-from ._core import DataModel, _temporary_update_filename
-from ._utils import _node_update
+from ._core import DataModel
+from ._utils import node_update, temporary_update_filedate, temporary_update_filename
 
 __all__ = []
 
@@ -90,7 +91,7 @@ class _ParquetMixin:
                 }
             )
 
-        with _temporary_update_filename(self, Path(filepath).name):
+        with temporary_update_filename(self, Path(filepath).name), temporary_update_filedate(self, Time.now()):
             # Construct flat metadata dict
             flat_meta = self.to_flat_dict()
         # select only meta items
@@ -197,7 +198,7 @@ class ScienceRawModel(_RomanDataModel):
 
         raw = mk_level1_science_raw(shape=model.shape)
 
-        _node_update(raw, model, extras=("meta.statistics",), extras_key="tvac")
+        node_update(raw, model, extras=("meta.statistics",), extras_key="tvac")
 
         # check for exposure data_problem
         if isinstance(raw.meta.exposure.data_problem, bool):
@@ -260,7 +261,7 @@ class RampModel(_RomanDataModel):
         if hasattr(model, "resultantdq"):
             ramp.groupdq = model.resultantdq.copy()
 
-        _node_update(ramp, model, ignore=("resultantdq",))
+        node_update(ramp, model, ignore=("resultantdq",))
 
         # check for exposure data_problem
         if isinstance(ramp.meta.exposure.data_problem, bool):
