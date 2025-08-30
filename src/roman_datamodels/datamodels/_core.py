@@ -152,6 +152,17 @@ class DataModel(abc.ABC):
         """
         return cls(cls._node_type.create_fake_data(defaults, shape))
 
+    @classmethod
+    def create_from_model(cls, model):
+        """
+        Create a new DataModel from an existing model.
+        """
+        if isinstance(model, DataModel):
+            node = model._instance
+        else:
+            node = model
+        return cls(cls._node_type.create_from_node(node))
+
     def __init__(self, init=None, **kwargs):
         if isinstance(init, self.__class__):
             # Due to __new__ above, this is already initialized.

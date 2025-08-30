@@ -5,6 +5,7 @@ Code for relating nodes and schema.
 import copy
 import enum
 import functools
+from collections.abc import Mapping, Sequence
 
 import asdf
 
@@ -498,3 +499,89 @@ class FakeDataBuilder(Builder):
             shape = [2] * ndim
             arr = np.zeros(shape, dtype=arr.dtype)
         return u.Quantity(arr, unit=unit, dtype=arr.dtype, copy=False)
+
+
+class NodeBuilder(Builder):
+    """
+    Builder subclass that includes all provided data.
+
+    When constructing objects, values will be copied from the
+    provided defaults and converted to tags defined in the schema.
+    """
+
+    def _copy_default(self, default):
+        return copy.deepcopy(default)
+
+    def from_unknown(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_object(self, schema, defaults):
+        if defaults is _NO_VALUE:
+            return defaults
+
+        if not isinstance(defaults, Mapping):
+            return self._copy_default(defaults)
+
+        obj = {}
+
+        subschemas = dict(_get_properties(schema))
+        for name, subdefaults in defaults.items():
+            subschema = subschemas.get(name, {})
+            obj[name] = self.build_node(subschema, subdefaults)
+        return obj
+
+    def from_array(self, schema, defaults):
+        if defaults is _NO_VALUE:
+            return defaults
+
+        if not isinstance(defaults, Sequence) or isinstance(defaults, str):
+            return self._copy_default(defaults)
+
+        # don't consider minItem maxItems, consider items
+        items_keyword = _get_keyword(schema, "items")
+        if items_keyword is _MISSING_KEYWORD:
+            return self._copy_default(defaults)
+
+        if isinstance(items_keyword, dict):
+            # single schema for all items
+            subschemas = {}
+            default_subschema = items_keyword
+        else:
+            # (possibly only some) items have schemas
+            subschemas = dict(enumerate(items_keyword))
+            default_subschema = {}
+
+        arr = []
+        for index, subitem in enumerate(defaults):
+            subschema = subschemas.get(index, default_subschema)
+            arr.append(self.build_node(subschema, subitem))
+        return arr
+
+    def from_string(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_integer(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_number(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_boolean(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_null(self, schema, defaults):
+        return self._copy_default(defaults)
+
+    def from_tagged(self, schema, defaults):
+        tag = _get_keyword(schema, "tag")
+        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+            try:
+                return property_class.create_from_node(defaults, builder=self)
+            except ValueError:
+                # Providing an incompatible value (list to a dict expecting class)
+                # will result in a ValueError. Don't let this stop the conversion
+                # and instead let the copy below return the defaults.
+                pass
+        if defaults is not _NO_VALUE:
+            return copy.deepcopy(defaults)
+        return _NO_VALUE
