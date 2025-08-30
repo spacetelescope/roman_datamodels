@@ -38,22 +38,20 @@ class DNode(MutableMapping):
         self._parent = parent
         self._name = name
 
-    @staticmethod
-    def _convert_to_scalar(key, value, ref=None):
-        """Find and wrap scalars in the appropriate class, if its a tagged one."""
-        from ._tagged import TaggedScalarNode
+    def _wrap_value(self, key, value):
+        # Return objects as node classes, if applicable
+        if isinstance(value, dict | AsdfDictNode):
+            return DNode(value, parent=self, name=key)
 
-        if isinstance(ref, TaggedScalarNode):
-            # we want the exact class (not possible subclasses)
-            if type(value) == type(ref):  # noqa: E721
-                return value
-            return type(ref)(value)
+        elif isinstance(value, list | AsdfListNode):
+            return LNode(value)
 
-        if isinstance(value, TaggedScalarNode):
+        else:
             return value
 
-        if key in SCALAR_NODE_CLASSES_BY_KEY:
-            value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
+    @staticmethod
+    def _convert_to_scalar(key, value, ref=None):
+        """For now this is a simple pass through so a mixin can override it."""
 
         return value
 
@@ -73,14 +71,7 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, self._data[key])
 
             # Return objects as node classes, if applicable
-            if isinstance(value, dict | AsdfDictNode):
-                return DNode(value, parent=self, name=key)
-
-            elif isinstance(value, list | AsdfListNode):
-                return LNode(value)
-
-            else:
-                return value
+            return self._wrap_value(key, value)
 
         # Raise the correct error for the attribute not being found
         raise AttributeError(f"No such attribute ({key}) found in node")
@@ -226,3 +217,37 @@ class LNode(UserList):
 
     def __asdf_traverse__(self):
         return list(self)
+
+
+class TaggedScalarDNode(DNode):
+    """Legacy class for nodes that have tagged scalars"""
+
+    @staticmethod
+    def _convert_to_scalar(key, value, ref=None):
+        """Find and wrap scalars in the appropriate class, if its a tagged one."""
+        from ._tagged import TaggedScalarNode
+
+        if isinstance(ref, TaggedScalarNode):
+            # we want the exact class (not possible subclasses)
+            if type(value) == type(ref):  # noqa: E721
+                return value
+            return type(ref)(value)
+
+        if isinstance(value, TaggedScalarNode):
+            return value
+
+        if key in SCALAR_NODE_CLASSES_BY_KEY:
+            value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
+
+        return value
+
+    def _wrap_value(self, key, value):
+        # Return objects as node classes, if applicable
+        if isinstance(value, dict | AsdfDictNode):
+            return TaggedScalarDNode(value, parent=self, name=key)
+
+        elif isinstance(value, list | AsdfListNode):
+            return LNode(value)
+
+        else:
+            return value
