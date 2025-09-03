@@ -7,10 +7,15 @@ import pytest
 from astropy import units as u
 from astropy.time import Time
 
-from roman_datamodels import datamodels, maker_utils, stnode
+import roman_datamodels._maker_utils as maker_utils
+from roman_datamodels import datamodels, stnode
 from roman_datamodels.datamodels._datamodels import _RomanDataModel
-from roman_datamodels.maker_utils import _ref_files as ref_files
 from roman_datamodels.testing import assert_node_equal
+
+
+def test_deprecation():
+    with pytest.warns(DeprecationWarning, match="maker_utils is deprecated"):
+        import roman_datamodels.maker_utils  # noqa
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
@@ -59,46 +64,6 @@ def test_no_extra_fields(node_class):
 
     diff = instance_keys - schema_keys
     assert len(diff) == 0, "Dummy instance has extra keys: " + ", ".join(diff)
-
-
-@pytest.mark.parametrize("name", [c.__name__ for c in stnode.NODE_CLASSES if c.__name__.endswith("Ref")])
-def test_ref_files_all(name):
-    """
-    Meta test to confirm that the __all__ in _ref_files.py has an entry for every ref file maker.
-    """
-    from roman_datamodels.maker_utils import _camel_case_to_snake_case
-
-    method_name = f"mk_{_camel_case_to_snake_case(name)}"
-    assert method_name[:-4] in ref_files.__all__
-
-
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-def test_make_datamodel_tests(node_class):
-    """
-    Meta test to confirm that correct tests exist for each datamodel maker utility.
-    """
-    from roman_datamodels.maker_utils import _camel_case_to_snake_case
-
-    from . import test_models as tests
-
-    name = node_class.__name__
-    name = maker_utils.SPECIAL_MAKERS.get(name, _camel_case_to_snake_case(name))
-    if name.startswith("mk_"):
-        name = name[3:]
-    if name.endswith("_ref"):
-        name = name[:-4]
-
-    assert hasattr(tests, f"test_make_{name}"), name
-
-
-def test_deprecated():
-    """
-    mk_rampfitoutput has been deprecated because its name is inconsistent with the other
-    maker utilities.  Confirm that it raises a DeprecationWarning.
-    """
-
-    with pytest.warns(DeprecationWarning):
-        maker_utils.mk_rampfitoutput(shape=(8, 8, 8))
 
 
 @pytest.mark.parametrize("model_class", [mdl for mdl in maker_utils.NODE_REGISTRY])

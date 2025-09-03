@@ -488,7 +488,7 @@ class FakeDataBuilder(Builder):
         import astropy.units as u
         import numpy as np
 
-        props = schema.get("properties", {})
+        props = dict(_get_properties(schema))
         unit = props.get("unit", {}).get("enum", ["dn"])[0]
         arr = self.make_array(props.get("value", {}), defaults)
         if arr.size < 2:
