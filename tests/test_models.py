@@ -862,3 +862,47 @@ def test_model_dir():
     assert "to_flat_dict" in items
     # and nested items
     assert "exposure" in dir(model.meta)
+
+
+def test_create_from_model_conversion():
+    """
+    Use create_from_model to convert from one model type to another.
+    Check that extra attributes are preserved.
+    """
+    raw = datamodels.ScienceRawModel.create_fake_data()
+    raw.meta.foo = 1
+    ramp = datamodels.RampModel.create_from_model(raw)
+    assert isinstance(ramp, datamodels.RampModel)
+    assert ramp.meta.foo == 1
+
+
+def test_create_from_model_dict():
+    """
+    Use create_from_model to construct a model from a non-model (dict).
+    """
+    model = datamodels.ImageModel.create_from_model({"meta": {"observation": {"visit": 42}}})
+    assert isinstance(model, datamodels.ImageModel)
+    assert isinstance(model.meta.observation, stnode.Observation)
+    assert model.meta.observation.visit == 42
+
+
+def test_create_from_model_old_tags():
+    """
+    Use create_from_model to update tags from old to new/default versions.
+    """
+    old_model_tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_image-1.2.0"
+    old_observation_tag = "asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"
+    new_model_tag = stnode.WfiImage._default_tag
+    new_observation_tag = stnode.Observation._default_tag
+
+    # check tags aren't defaults (which is required for this test)
+    assert old_model_tag != new_model_tag
+    assert old_observation_tag != new_observation_tag
+
+    old_model = datamodels.ImageModel.create_fake_data()
+    old_model._instance._read_tag = old_model_tag
+    old_model.meta.observation._read_tag = old_observation_tag
+
+    converted = datamodels.ImageModel.create_from_model(old_model)
+    assert converted.tag == new_model_tag
+    assert converted.meta.observation.tag == new_observation_tag
