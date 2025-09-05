@@ -162,6 +162,13 @@ class _RomanDataModel(_DataModel):
 
         if init is not None:
             self.meta.model_type = self.__class__.__name__
+            self.meta.calibration_software_name = "RomanCAL"
+
+            if "file_date" not in self.meta:
+                self.meta.file_date = Time.now()
+
+            if "origin" not in self.meta:
+                self.meta.origin = "STSCI/SOC"
 
 
 class MosaicModel(_RomanDataModel):
