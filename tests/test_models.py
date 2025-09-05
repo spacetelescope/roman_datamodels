@@ -772,7 +772,10 @@ def test_wfi_wcs_from_wcsmodel():
     for key in wfi_wcs.meta:
         wfi_wcs_value = getattr(wfi_wcs.meta, key)
         model_value = getattr(model.meta, key)
-        assert_node_equal(wfi_wcs_value, model_value)
+        if isinstance(wfi_wcs_value, str | Time):
+            assert wfi_wcs_value == model_value
+        else:
+            assert_node_equal(wfi_wcs_value, model_value)
 
     # Test wcs fidelity
     border = 4.0  # Default extra border for L1
@@ -825,6 +828,36 @@ def test_create_fake_data(model):
     m = model.create_fake_data()
     assert isinstance(m, model)
     assert m.validate() is None
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+def test_no_hidden(model):
+    """Test that no hidden attributes are allowed"""
+    m = model.create_minimal()
+    with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
+        m._foo = "bar"  # Add a hidden attribute
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+def test_delattr(model):
+    """Test that delattr works as expected"""
+    m = model.create_minimal()
+
+    m.foo = "bar"
+    assert hasattr(m, "foo")
+
+    del m.foo
+    assert not hasattr(m, "foo")
+
+
+@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
+def test_slotted(model):
+    """Test that the model is slotted as expected"""
+    m = model.create_minimal()
+
+    with pytest.raises(AttributeError, match=r"No attribute .*"):
+        # slotted object instances do not have a __dict__
+        m.__dict__  # noqa: B018
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())

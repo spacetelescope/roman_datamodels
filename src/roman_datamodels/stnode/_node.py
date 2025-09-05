@@ -4,17 +4,36 @@ Base node classes for all STNode classes.
 """
 
 import datetime
-from collections import UserList
-from collections.abc import MutableMapping
+from collections.abc import MutableMapping, MutableSequence
 
 import numpy as np
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
 from astropy.time import Time
+from semantic_version import Version
 
-from ._registry import SCALAR_NODE_CLASSES_BY_KEY
+from ._registry import INTERNAL_WRAP_LIMITS, SCALAR_NODE_CLASSES_BY_KEY
 
-__all__ = ["DNode", "LNode"]
+__all__ = ["DNode", "LNode", "TaggedScalarDNode"]
+
+
+def _convert_to_scalar(key, value, ref=None):
+    """Wrap scalars in into a tagged scalar object"""
+    from ._tagged import TaggedScalarNode
+
+    if isinstance(ref, TaggedScalarNode):
+        # we want the exact class (not possible subclasses)
+        if type(value) == type(ref):  # noqa: E721
+            return value
+        return type(ref)(value)
+
+    if isinstance(value, TaggedScalarNode):
+        return value
+
+    if key in SCALAR_NODE_CLASSES_BY_KEY:
+        value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
+
+    return value
 
 
 class DNode(MutableMapping):
@@ -22,38 +41,41 @@ class DNode(MutableMapping):
     Base class describing all "object" (dict-like) data nodes for STNode classes.
     """
 
+    __slots__ = ("_data", "_name", "_parent", "_read_tag")
+
     _pattern = None
     _latest_manifest = None
 
     def __init__(self, node=None, parent=None, name=None):
         # Handle if we are passed different data types
         if node is None:
-            self.__dict__["_data"] = {}
+            self._data = {}
         elif isinstance(node, dict | AsdfDictNode):
-            self.__dict__["_data"] = node
+            self._data = node
         else:
             raise ValueError("Initializer only accepts dicts")
 
         # Set the metadata tracked by the node
         self._parent = parent
         self._name = name
+        self._read_tag = None
 
-    @staticmethod
-    def _convert_to_scalar(key, value, ref=None):
+    def _convert_to_scalar(self, key, value, ref=None):
         """Find and wrap scalars in the appropriate class, if its a tagged one."""
-        from ._tagged import TaggedScalarNode
+        if self._read_tag is not None:
+            base_tag, version = self._read_tag.rsplit("-", maxsplit=1)
+            if (limit := INTERNAL_WRAP_LIMITS.get(base_tag)) is not None and Version(version) <= limit:
+                return _convert_to_scalar(key, value, ref)
 
-        if isinstance(ref, TaggedScalarNode):
-            # we want the exact class (not possible subclasses)
-            if type(value) == type(ref):  # noqa: E721
-                return value
-            return type(ref)(value)
+        return value
 
-        if isinstance(value, TaggedScalarNode):
-            return value
+    def _wrap_value(self, key, value):
+        # Return objects as node classes, if applicable
+        if isinstance(value, dict | AsdfDictNode):
+            return DNode(value, parent=self, name=key)
 
-        if key in SCALAR_NODE_CLASSES_BY_KEY:
-            value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
+        if isinstance(value, list | AsdfListNode):
+            return LNode(value)
 
         return value
 
@@ -73,17 +95,10 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, self._data[key])
 
             # Return objects as node classes, if applicable
-            if isinstance(value, dict | AsdfDictNode):
-                return DNode(value, parent=self, name=key)
-
-            elif isinstance(value, list | AsdfListNode):
-                return LNode(value)
-
-            else:
-                return value
+            return self._wrap_value(key, value)
 
         # Raise the correct error for the attribute not being found
-        raise AttributeError(f"No such attribute ({key}) found in node")
+        raise AttributeError(f"No such attribute ({key}) found in node: {type(self)}")
 
     def __setattr__(self, key, value):
         """
@@ -98,7 +113,20 @@ class DNode(MutableMapping):
             # Finally set the value
             self._data[key] = value
         else:
-            self.__dict__[key] = value
+            if key in DNode.__slots__:
+                DNode.__dict__[key].__set__(self, value)
+            else:
+                raise AttributeError(f"Cannot set private attribute {key}, only allowed are {DNode.__slots__}")
+
+    def __delattr__(self, name):
+        if name in self.__slots__:
+            super().__delattr__(name)
+
+        elif name[0] != "_":
+            self.__delitem__(name)
+
+        else:
+            raise AttributeError(f"No such attribute ({name}) found in node")
 
     def _recursive_items(self):
         def recurse(tree, path=None):
@@ -191,16 +219,40 @@ class DNode(MutableMapping):
     def copy(self):
         """Handle copying of the node"""
         instance = self.__class__.__new__(self.__class__)
-        instance.__dict__.update(self.__dict__.copy())
-        instance.__dict__["_data"] = self.__dict__["_data"].copy()
+
+        instance._parent = self._parent
+        instance._name = self._name
+        instance._read_tag = self._read_tag
+        instance._data = self._data.copy()
 
         return instance
 
 
-class LNode(UserList):
+class TaggedScalarDNode(DNode):
+    """Legacy class for nodes that have tagged scalars"""
+
+    __slots__ = ()
+
+    def _convert_to_scalar(self, key, value, ref=None):
+        return _convert_to_scalar(key, value, ref)
+
+    def _wrap_value(self, key, value):
+        # Return objects as node classes, if applicable
+        if isinstance(value, dict | AsdfDictNode):
+            return TaggedScalarDNode(value, parent=self, name=key)
+
+        if isinstance(value, list | AsdfListNode):
+            return LNode(value)
+
+        return value
+
+
+class LNode(MutableSequence):
     """
     Base class describing all "array" (list-like) data nodes for STNode classes.
     """
+
+    __slots__ = ("_read_tag", "data")
 
     _pattern = None
     _latest_manifest = None
@@ -215,6 +267,8 @@ class LNode(UserList):
         else:
             raise ValueError("Initializer only accepts lists")
 
+        self._read_tag = None
+
     def __getitem__(self, index):
         value = self.data[index]
         if isinstance(value, dict | AsdfDictNode):
@@ -224,5 +278,39 @@ class LNode(UserList):
         else:
             return value
 
+    def __setitem__(self, index, value):
+        self.data[index] = value
+
+    def __delitem__(self, index):
+        del self.data[index]
+
+    def __len__(self):
+        return len(self.data)
+
+    def insert(self, index, value):
+        self.data.insert(index, value)
+
     def __asdf_traverse__(self):
         return list(self)
+
+    def __setattr__(self, key, value):
+        if key in LNode.__slots__:
+            LNode.__dict__[key].__set__(self, value)
+        else:
+            raise AttributeError(f"Cannot set attribute {key}, only allowed are {LNode.__slots__}")
+
+    def __eq__(self, other):
+        if isinstance(other, LNode):
+            return self.data == other.data
+        elif isinstance(other, list | AsdfListNode):
+            return self.data == other
+        else:
+            return False
+
+    def copy(self):
+        """Handle copying of the node"""
+        instance = self.__class__.__new__(self.__class__)
+
+        instance.data = self.data.copy()
+        instance._read_tag = self._read_tag
+        return instance

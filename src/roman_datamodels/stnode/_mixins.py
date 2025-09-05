@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
 
+from ._node import TaggedScalarDNode
 from ._schema import Builder, _get_keyword, _get_properties
 from ._tagged import _get_schema_from_tag
 
@@ -43,6 +44,8 @@ class WfiModeMixin:
     Extensions to the WfiMode class.
         Adds to indication properties
     """
+
+    __slots__ = ()
 
     # Every optical element is a grating or a filter
     #   There are less gratings than filters so its easier to list out the
@@ -133,6 +136,8 @@ class TelescopeMixin:
 
 
 class RefFileMixin:
+    __slots__ = ()
+
     @classmethod
     def create_minimal(cls, defaults=None, builder=None):
         # copy defaults as we may modify them below
@@ -155,6 +160,8 @@ class RefFileMixin:
 
 
 class L2CalStepMixin:
+    __slots__ = ()
+
     @classmethod
     def create_minimal(cls, defaults=None, builder=None):
         defaults = defaults or {}
@@ -163,10 +170,12 @@ class L2CalStepMixin:
 
 
 class L3CalStepMixin(L2CalStepMixin):  # same as L2CalStepMixin
-    pass
+    __slots__ = ()
 
 
 class WfiImgPhotomRefMixin:
+    __slots__ = ()
+
     @classmethod
     def create_fake_data(cls, defaults=None, shape=None, builder=None):
         defaults = defaults or {}
@@ -188,6 +197,8 @@ class WfiImgPhotomRefMixin:
 
 
 class ImageSourceCatalogMixin:
+    __slots__ = ()
+
     def get_column_definition(self, name):
         """
         Get the definition of a named column in the catalog table.
@@ -268,16 +279,29 @@ class ImageSourceCatalogMixin:
 
 
 class ForcedImageSourceCatalogMixin(ImageSourceCatalogMixin):
-    pass
+    __slots__ = ()
 
 
 class MosaicSourceCatalogMixin(ImageSourceCatalogMixin):
-    pass
+    __slots__ = ()
 
 
 class ForcedMosaicSourceCatalogMixin(ImageSourceCatalogMixin):
-    pass
+    __slots__ = ()
 
 
 class MultibandSourceCatalogMixin(ImageSourceCatalogMixin):
-    pass
+    __slots__ = ()
+
+
+# Legacy support for tagged scalars in nodes
+class GuidewindowMixin(TaggedScalarDNode):
+    __slots__ = ()
+
+
+class FpsMixin(TaggedScalarDNode):
+    __slots__ = ()
+
+
+class TvacMixin(TaggedScalarDNode):
+    __slots__ = ()
