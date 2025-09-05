@@ -19,12 +19,16 @@ def test_deprecation():
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-def test_maker_utility_implemented(node_class):
+def test_maker_utility_implemented(node_class, request):
     """
     Confirm that a subclass of TaggedObjectNode has a maker utility.
 
     (note: will be using full defaults for this one)
     """
+    if issubclass(node_class, stnode.TaggedScalarNode) and "Fps" not in node_class.__name__ and "Tvac" not in node_class.__name__:
+        request.applymarker(
+            pytest.mark.xfail(reason=f"{node_class.__name__} is a deprecated TaggedScalarNode and does not have a maker utility.")
+        )
     instance = maker_utils.mk_node(node_class)
     assert isinstance(instance, node_class)
 
