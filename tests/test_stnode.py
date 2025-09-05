@@ -99,6 +99,37 @@ def test_serialization(node_class, tmp_path):
         assert_node_equal(af["node"], node)
 
 
+@pytest.mark.parametrize("node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedObjectNode)])
+def test_no_hidden(node_class):
+    node = node_class.create_fake_data()
+    with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
+        node._foo = "bar"  # Add a hidden attribute
+
+
+@pytest.mark.parametrize("node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedListNode)])
+def test_list_node_no_new_attributes(node_class):
+    """Test that no new attributes can be added to a list node."""
+    node = node_class.create_fake_data()
+    with pytest.raises(AttributeError, match=r"Cannot set attribute .*, only allowed are .*"):
+        node.foo = "bar"
+
+    with pytest.raises(AttributeError, match=r"Cannot set attribute .*, only allowed are .*"):
+        node._foo = "bar"
+
+
+@pytest.mark.parametrize(
+    "node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedObjectNode | stnode.TaggedListNode)]
+)
+def test_slotted(node_class):
+    """
+    Test that slotted nodes do not allow new attributes to be added.
+    """
+    node = node_class.create_fake_data()
+    with pytest.raises(AttributeError, match=r".* attribute .*__dict__.*"):
+        # Attempt to access __dict__ directly, slotted classes do not have __dict__
+        node.__dict__  # noqa: B018
+
+
 def test_info(capsys):
     node = stnode.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
     tree = dict(wfimode=node)

@@ -46,6 +46,8 @@ class TaggedObjectNode(DNode):
         base type: object.
     """
 
+    __slots__ = ()
+
     def __init_subclass__(cls, **kwargs) -> None:
         """
         Register any subclasses of this class in the OBJECT_NODE_CLASSES_BY_PATTERN
@@ -72,8 +74,10 @@ class TaggedObjectNode(DNode):
 
     @property
     def _tag(self):
-        # _tag is required by asdf to allow __asdf_traverse__
-        return getattr(self, "_read_tag", self._default_tag)
+        if self._read_tag is None:
+            return self._default_tag
+
+        return self._read_tag
 
     @property
     def tag(self):
@@ -90,6 +94,8 @@ class TaggedListNode(LNode):
         There will be one of these for any tagged object defined by RAD, which has
         base type: array.
     """
+
+    __slots__ = ()
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -117,8 +123,10 @@ class TaggedListNode(LNode):
 
     @property
     def _tag(self):
-        # _tag is required by asdf to allow __asdf_traverse__
-        return getattr(self, "_read_tag", self._default_tag)
+        if self._read_tag is None:
+            return self._default_tag
+
+        return self._read_tag
 
     @property
     def tag(self):
