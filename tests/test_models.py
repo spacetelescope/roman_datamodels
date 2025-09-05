@@ -744,7 +744,10 @@ def test_wfi_wcs_from_wcsmodel():
     for key in wfi_wcs.meta:
         wfi_wcs_value = getattr(wfi_wcs.meta, key)
         model_value = getattr(model.meta, key)
-        assert_node_equal(wfi_wcs_value, model_value)
+        if isinstance(wfi_wcs_value, str | Time):
+            assert wfi_wcs_value == model_value
+        else:
+            assert_node_equal(wfi_wcs_value, model_value)
 
     # Test wcs fidelity
     border = 4.0  # Default extra border for L1

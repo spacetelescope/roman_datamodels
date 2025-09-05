@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
 
+from ._node import TaggedScalarDNode
 from ._schema import Builder, _get_keyword, _get_properties
 from ._tagged import _get_schema_from_tag
 
@@ -323,4 +324,17 @@ class ForcedMosaicSourceCatalogMixin(ImageSourceCatalogMixin):
 
 
 class MultibandSourceCatalogMixin(ImageSourceCatalogMixin):
+    __slots__ = ()
+
+
+# Legacy support for tagged scalars in nodes
+class GuidewindowMixin(TaggedScalarDNode):
+    __slots__ = ()
+
+
+class FpsMixin(TaggedScalarDNode):
+    __slots__ = ()
+
+
+class TvacMixin(TaggedScalarDNode):
     __slots__ = ()

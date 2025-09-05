@@ -13,13 +13,33 @@ import numpy as np
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
 from astropy.time import Time
+from semantic_version import Version
 
-from ._registry import SCALAR_NODE_CLASSES_BY_KEY
+from ._registry import INTERNAL_WRAP_LIMITS, SCALAR_NODE_CLASSES_BY_KEY
 
 if TYPE_CHECKING:
     from typing import ClassVar
 
-__all__ = ["DNode", "LNode"]
+__all__ = ["DNode", "LNode", "TaggedScalarDNode"]
+
+
+def _convert_to_scalar(key, value, ref=None):
+    """Wrap scalars in into a tagged scalar object"""
+    from ._tagged import TaggedScalarNode
+
+    if isinstance(ref, TaggedScalarNode):
+        # we want the exact class (not possible subclasses)
+        if type(value) == type(ref):  # noqa: E721
+            return value
+        return type(ref)(value)
+
+    if isinstance(value, TaggedScalarNode):
+        return value
+
+    if key in SCALAR_NODE_CLASSES_BY_KEY:
+        value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
+
+    return value
 
 
 class DNode(MutableMapping):
@@ -46,22 +66,22 @@ class DNode(MutableMapping):
         self._name = name
         self._read_tag = None
 
-    @staticmethod
-    def _convert_to_scalar(key, value, ref=None):
+    def _convert_to_scalar(self, key, value, ref=None):
         """Find and wrap scalars in the appropriate class, if its a tagged one."""
-        from ._tagged import TaggedScalarNode
+        if self._read_tag is not None:
+            base_tag, version = self._read_tag.rsplit("-", maxsplit=1)
+            if (limit := INTERNAL_WRAP_LIMITS.get(base_tag)) is not None and Version(version) <= limit:
+                return _convert_to_scalar(key, value, ref)
 
-        if isinstance(ref, TaggedScalarNode):
-            # we want the exact class (not possible subclasses)
-            if type(value) == type(ref):  # noqa: E721
-                return value
-            return type(ref)(value)
+        return value
 
-        if isinstance(value, TaggedScalarNode):
-            return value
+    def _wrap_value(self, key, value):
+        # Return objects as node classes, if applicable
+        if isinstance(value, dict | AsdfDictNode):
+            return DNode(value, parent=self, name=key)
 
-        if key in SCALAR_NODE_CLASSES_BY_KEY:
-            value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
+        if isinstance(value, list | AsdfListNode):
+            return LNode(value)
 
         return value
 
@@ -81,14 +101,7 @@ class DNode(MutableMapping):
             value = self._convert_to_scalar(key, self._data[key])
 
             # Return objects as node classes, if applicable
-            if isinstance(value, dict | AsdfDictNode):
-                return DNode(value, parent=self, name=key)
-
-            elif isinstance(value, list | AsdfListNode):
-                return LNode(value)
-
-            else:
-                return value
+            return self._wrap_value(key, value)
 
         # Raise the correct error for the attribute not being found
         raise AttributeError(f"No such attribute ({key}) found in node: {type(self)}")
@@ -212,9 +225,32 @@ class DNode(MutableMapping):
     def copy(self):
         """Handle copying of the node"""
         instance = self.__class__.__new__(self.__class__)
+
+        instance._parent = self._parent
+        instance._name = self._name
+        instance._read_tag = self._read_tag
         instance._data = self._data.copy()
 
         return instance
+
+
+class TaggedScalarDNode(DNode):
+    """Legacy class for nodes that have tagged scalars"""
+
+    __slots__ = ()
+
+    def _convert_to_scalar(self, key, value, ref=None):
+        return _convert_to_scalar(key, value, ref)
+
+    def _wrap_value(self, key, value):
+        # Return objects as node classes, if applicable
+        if isinstance(value, dict | AsdfDictNode):
+            return TaggedScalarDNode(value, parent=self, name=key)
+
+        if isinstance(value, list | AsdfListNode):
+            return LNode(value)
+
+        return value
 
 
 class LNode(MutableSequence):
@@ -280,5 +316,7 @@ class LNode(MutableSequence):
     def copy(self):
         """Handle copying of the node"""
         instance = self.__class__.__new__(self.__class__)
+
         instance.data = self.data.copy()
+        instance._read_tag = self._read_tag
         return instance
