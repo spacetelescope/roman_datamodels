@@ -1,7 +1,5 @@
 from astropy import time
 
-from roman_datamodels import stnode
-
 from ._base import NOFN, NOSTR
 
 
@@ -13,7 +11,7 @@ def mk_calibration_software_name(**kwargs):
     -------
     roman_datamodels.stnode.CalibrationSoftwareName
     """
-    return stnode.CalibrationSoftwareName(kwargs.get("calibration_software_name", "RomanCAL"))
+    return kwargs.get("calibration_software_name", "RomanCAL")
 
 
 def mk_calibration_software_version(**kwargs):
@@ -24,7 +22,7 @@ def mk_calibration_software_version(**kwargs):
     -------
     roman_datamodels.stnode.CalibrationSoftwareVersion
     """
-    return stnode.CalibrationSoftwareVersion(kwargs.get("calibration_software_version", "9.9.0"))
+    return kwargs.get("calibration_software_version", "9.9.0")
 
 
 def mk_sdf_software_version(**kwargs):
@@ -36,7 +34,7 @@ def mk_sdf_software_version(**kwargs):
     roman_datamodels.stnode.SdfSoftwareVersion
     """
 
-    return stnode.SdfSoftwareVersion(kwargs.get("sdf_software_version", "7.7.7"))
+    return kwargs.get("sdf_software_version", "7.7.7")
 
 
 def mk_filename(**kwargs):
@@ -47,7 +45,7 @@ def mk_filename(**kwargs):
     -------
     roman_datamodels.stnode.Filename
     """
-    return stnode.Filename(kwargs.get("filename", NOFN))
+    return kwargs.get("filename", NOFN)
 
 
 def mk_file_date(**kwargs):
@@ -59,7 +57,7 @@ def mk_file_date(**kwargs):
     roman_datamodels.stnode.FileDate
     """
 
-    return stnode.FileDate(kwargs.get("file_date", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")))
+    return kwargs.get("file_date", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc"))
 
 
 def mk_model_type(**kwargs):
@@ -70,7 +68,7 @@ def mk_model_type(**kwargs):
     -------
     roman_datamodels.stnode.ModelType
     """
-    return stnode.ModelType(kwargs.get("model_type", NOSTR))
+    return kwargs.get("model_type", NOSTR)
 
 
 def mk_origin(**kwargs):
@@ -82,7 +80,7 @@ def mk_origin(**kwargs):
     roman_datamodels.stnode.Origin
     """
 
-    return stnode.Origin(kwargs.get("origin", "STSCI/SOC"))
+    return kwargs.get("origin", "STSCI/SOC")
 
 
 def mk_prd_version(**kwargs):
@@ -93,7 +91,7 @@ def mk_prd_version(**kwargs):
     -------
     roman_datamodels.stnode.PrdVersion
     """
-    return stnode.PrdVersion(kwargs.get("prd_version", "8.8.8"))
+    return kwargs.get("prd_version", "8.8.8")
 
 
 def mk_product_type(**kwargs):
@@ -104,7 +102,7 @@ def mk_product_type(**kwargs):
     -------
     roman_datamodels.stnode.ProductType
     """
-    return stnode.ProductType(kwargs.get("product_type", "l2"))
+    return kwargs.get("product_type", "l2")
 
 
 def mk_telescope(**kwargs):
@@ -115,7 +113,7 @@ def mk_telescope(**kwargs):
     -------
     roman_datamodels.stnode.Telescope
     """
-    return stnode.Telescope(kwargs.get("telescope", "ROMAN"))
+    return kwargs.get("telescope", "ROMAN")
 
 
 def mk_basic_meta(**kwargs):
