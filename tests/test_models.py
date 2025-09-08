@@ -1,16 +1,19 @@
 import gc
 from contextlib import nullcontext
 from copy import deepcopy
+from functools import reduce
 
 import asdf
 import numpy as np
 import pytest
 from asdf.exceptions import ValidationError
 from astropy import units as u
+from astropy.table import Table
 from astropy.time import Time
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels, stnode
+from roman_datamodels.datamodels._meta_blender import _MetaBlender, _SchemaTable
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 from .conftest import MANIFESTS
@@ -966,3 +969,211 @@ class TestRomanDatamodelCreatorDefaults:
             # Sanity check to show the chosen test data is different from the default
             assert getattr(default_mdl.meta, key) != value
             assert getattr(mdl.meta, key) == value, f"meta.{key} was not set to input default"
+
+
+class TestMetaBlend:
+    """Test the MetaBlender for combining multiple image meta nodes together."""
+
+    def test_table_blend(self):
+        """Test the blending of the table metadata."""
+
+        names = ["Foo", "Bar", "Baz", "Qux"]
+        defaults = {"Foo": 1, "Bar": 2.0}
+
+        schema_table = _SchemaTable(names=names, defaults=defaults)
+        schema_table.add_row(stnode.DNode({}))
+        schema_table.add_row(stnode.DNode({"Foo": 27, "Bar": 3.14, "Baz": "Hello"}))
+        schema_table.add_row(stnode.DNode({"Foo": -3, "Bar": 2.72, "Baz": ["A", "B"]}))
+        schema_table.add_row(stnode.DNode({"Foo": 0, "Bar": None, "Baz": None}))
+
+        table = schema_table.create_table()
+        assert isinstance(table, Table)
+
+        assert table.colnames == names
+
+        assert table["Foo"].dtype == np.int64
+        assert (table["Foo"] == np.array([1, 27, -3, 0])).all()
+
+        assert table["Bar"].dtype == np.float64
+        assert np.array_equal(table["Bar"], np.array([2.0, 3.14, 2.72, np.nan]), equal_nan=True)
+
+        assert table["Baz"].dtype == np.dtype("<U12")
+        assert (table["Baz"] == np.array(["MISSING_CELL", "Hello", "['A', 'B']", "None"])).all()
+
+        assert table["Qux"].dtype == np.dtype("<U4")
+        assert (table["Qux"] == np.array(["None"] * 4)).all()
+
+        schema_table.reset()
+        assert not schema_table.create_table()  # empty table
+
+    def test_meta_blend(self):
+        """Test the blending of multiple meta nodes."""
+
+        schema_tables = {"foo": _SchemaTable(names=["A", "B"]), "bar": _SchemaTable(names=["C", "D"])}
+
+        blender = _MetaBlender(schema_tables=schema_tables)
+
+        assert blender.n_models == 0
+        assert blender.start_times == []
+
+        blender.add_image(stnode.DNode({"meta": {"foo": {"A": 1, "B": 2}, "bar": {"C": 3, "D": 4}}}))
+        blender.add_image(stnode.DNode({"meta": {"foo": {"A": 5, "B": 6}, "bar": {"C": 7, "D": 8}}}))
+
+        with pytest.raises(ValueError, match=r"Image does not have a meta attribute"):
+            blender.add_image(stnode.DNode({}))
+
+        assert blender.n_models == 2
+
+        tables = blender.create_tables()
+        assert isinstance(tables, dict)
+        assert len(tables) == 2
+        assert tables.keys() == schema_tables.keys()
+        assert all(isinstance(t, Table) for t in tables.values())
+
+        assert tables["foo"].colnames == ["A", "B"]
+        assert (tables["foo"]["A"] == np.array([1, 5])).all()
+        assert (tables["foo"]["B"] == np.array([2, 6])).all()
+
+        assert tables["bar"].colnames == ["C", "D"]
+        assert (tables["bar"]["C"] == np.array([3, 7])).all()
+        assert (tables["bar"]["D"] == np.array([4, 8])).all()
+
+    def base_image(self):
+        image = datamodels.ImageModel.create_fake_data(shape=(100, 100))
+        image.meta.cal_logs = stnode.CalLogs.create_fake_data()
+        image.meta.cal_step = stnode.L2CalStep.create_fake_data()
+        image.meta.background = stnode.SkyBackground.create_fake_data()
+
+        return image
+
+    def test_individual_image_meta(self):
+        """Test that we can blend individual image meta nodes."""
+        image0 = self.base_image()
+        image0.meta.filename = "foo"
+        image0.meta.photometry.pixel_area = None
+        del image0.meta["background"]
+
+        image1 = self.base_image()
+        image1.meta.filename = "bar"
+        image1.meta.photometry.pixel_area = 1
+        image1.meta["extra"] = {}
+        image1.meta.extra = {"a": 1}
+
+        # Run blender as RCAL will do it
+        mosaic_model = datamodels.MosaicModel.create_fake_data()
+        mosaic_model.blend_image(image0)
+        mosaic_model.blend_image(image1)
+        mosaic_model.finish_blend()
+
+        # Make sure the new table and updated meta attributes are valid
+        mosaic_model.validate()
+
+        for table in mosaic_model.meta.individual_image_meta.values():
+            assert isinstance(table, Table)
+            assert len(table) == 2  # two images blended
+
+        # Spot check the filename in basic column as we know what it should be
+        assert (mosaic_model.meta.individual_image_meta.basic["filename"] == ["foo", "bar"]).all()
+
+        assert "background" in mosaic_model.meta.individual_image_meta
+
+        assert "photometry" in mosaic_model.meta.individual_image_meta
+        assert np.isnan(mosaic_model.meta.individual_image_meta.photometry["pixel_area"][0])
+        assert mosaic_model.meta.individual_image_meta.photometry["pixel_area"][1] == 1
+
+        assert "extra" not in mosaic_model.meta.individual_image_meta
+        assert "extra" not in mosaic_model.meta.individual_image_meta.basic.colnames
+
+    @pytest.mark.parametrize(
+        "meta_overrides, expected",
+        [
+            (  # 2 exposures, share visit, etc
+                (
+                    {
+                        "meta.observation.visit": 1,
+                        "meta.observation.pass": 1,
+                        "meta.observation.segment": 1,
+                        "meta.observation.program": 1,
+                        "meta.instrument.optical_element": "F158",
+                        "meta.instrument.name": "WFI",
+                    },
+                    {
+                        "meta.observation.visit": 1,
+                        "meta.observation.pass": 1,
+                        "meta.observation.segment": 1,
+                        "meta.observation.program": 1,
+                        "meta.instrument.optical_element": "F158",
+                        "meta.instrument.name": "WFI",
+                    },
+                ),
+                {
+                    "meta.observation.visit": 1,
+                    "meta.observation.pass": 1,
+                    "meta.observation.segment": 1,
+                    "meta.instrument.optical_element": "F158",
+                    "meta.instrument.name": "WFI",
+                },
+            ),
+            (  # 2 exposures, different metadata
+                (
+                    {
+                        "meta.observation.visit": 1,
+                        "meta.observation.pass": 1,
+                        "meta.observation.segment": 1,
+                        "meta.observation.program": 1,
+                        "meta.instrument.optical_element": "F158",
+                        "meta.instrument.name": "WFI",
+                    },
+                    {
+                        "meta.observation.visit": 2,
+                        "meta.observation.pass": 2,
+                        "meta.observation.segment": 2,
+                        "meta.observation.program": 2,
+                        "meta.instrument.optical_element": "F062",
+                        "meta.instrument.name": "WFI",
+                    },
+                ),
+                {
+                    "meta.observation.visit": None,
+                    "meta.observation.pass": None,
+                    "meta.observation.segment": None,
+                    "meta.instrument.optical_element": None,
+                    "meta.instrument.name": "WFI",
+                },
+            ),
+        ],
+    )
+    def test_populate_mosaic_metadata(self, meta_overrides, expected):
+        """Test that the mosaic metadata is being populated"""
+        models = []
+        for i, meta_override in enumerate(meta_overrides):
+            model = self.base_image()
+
+            model.meta.observation.observation_id = i
+
+            model.meta.exposure.start_time = Time(59000 + i, format="mjd")
+            model.meta.exposure.end_time = Time(59001 + i, format="mjd")
+            model.meta.exposure.exposure_time = 3600 * 24
+
+            for key, value in meta_override.items():
+                *parent_keys, child_key = key.split(".")
+                setattr(reduce(getattr, parent_keys, model), child_key, value)
+            models.append(model)
+
+        output_model = datamodels.MosaicModel.create_fake_data()
+        for model in models:
+            output_model.blend_image(model)
+
+        output_model.finish_blend()
+        output_model.validate()
+
+        assert output_model.meta.coadd_info.time_first == models[0].meta.exposure.start_time
+        assert output_model.meta.coadd_info.time_last == models[-1].meta.exposure.end_time
+        assert output_model.meta.coadd_info.time_mean.mjd == np.mean([m.meta.exposure.start_time.mjd for m in models])
+
+        for key, value in expected.items():
+            *path, final = key.split(".")
+            obj = output_model
+            for sub_path in path:
+                obj = obj[sub_path]
+            assert obj[final] == value
