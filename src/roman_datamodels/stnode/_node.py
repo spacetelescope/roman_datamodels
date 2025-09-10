@@ -17,7 +17,7 @@ from ._registry import INTERNAL_WRAP_LIMITS, SCALAR_NODE_CLASSES_BY_KEY
 __all__ = ["DNode", "LNode", "TaggedScalarDNode"]
 
 
-def _convert_to_scalar(key, value, ref=None):
+def _convert_to_tagged_scalar(key, value, ref=None):
     """Wrap scalars in into a tagged scalar object"""
     from ._tagged import TaggedScalarNode
 
@@ -60,12 +60,27 @@ class DNode(MutableMapping):
         self._name = name
         self._read_tag = None
 
-    def _convert_to_scalar(self, key, value, ref=None):
-        """Find and wrap scalars in the appropriate class, if its a tagged one."""
+    @property
+    def needs_to_wrap(self):
+        if self._parent is not None:
+            return self._parent.needs_to_wrap
+
         if self._read_tag is not None:
             base_tag, version = self._read_tag.rsplit("-", maxsplit=1)
             if (limit := INTERNAL_WRAP_LIMITS.get(base_tag)) is not None and Version(version) <= limit:
-                return _convert_to_scalar(key, value, ref)
+                return True
+
+        return False
+
+    def _handle_scalar(self, key, value, ref=None):
+        """Find and wrap scalars in the appropriate class, if its a tagged one."""
+        from ._tagged import TaggedScalarNode
+
+        if self.needs_to_wrap:
+            return _convert_to_tagged_scalar(key, value, ref)
+
+        if isinstance(value, TaggedScalarNode):
+            return value.unwrap()
 
         return value
 
@@ -76,6 +91,13 @@ class DNode(MutableMapping):
 
         if isinstance(value, list | AsdfListNode):
             return LNode(value)
+
+        return value
+
+    def _assign_parent(self, key, value):
+        if isinstance(value, DNode):
+            value._parent = self
+            value._name = key
 
         return value
 
@@ -92,7 +114,8 @@ class DNode(MutableMapping):
         # If the key is in the schema, then we can return the value
         if key in self._data:
             # Cast the value into the appropriate tagged scalar class
-            value = self._convert_to_scalar(key, self._data[key])
+            value = self._handle_scalar(key, self._data[key])
+            value = self._assign_parent(key, value)
 
             # Return objects as node classes, if applicable
             return self._wrap_value(key, value)
@@ -108,10 +131,10 @@ class DNode(MutableMapping):
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
             # Wrap things in the tagged scalar classes if necessary
-            value = self._convert_to_scalar(key, value, self._data.get(key))
+            value = self._handle_scalar(key, value, self._data.get(key))
 
             # Finally set the value
-            self._data[key] = value
+            self._data[key] = self._assign_parent(key, value)
         else:
             if key in DNode.__slots__:
                 DNode.__dict__[key].__set__(self, value)
@@ -142,7 +165,7 @@ class DNode(MutableMapping):
 
         yield from recurse(self)
 
-    def to_flat_dict(self, include_arrays=True, recursive=False):
+    def to_flat_dict(self, include_arrays=True, recursive=False, convert_times=True):
         """
         Returns a dictionary of all of the schema items as a flat dictionary.
 
@@ -158,10 +181,13 @@ class DNode(MutableMapping):
             """
             Unwrap the tagged scalars if necessary.
             """
-            if isinstance(val, datetime.datetime):
-                return val.isoformat()
-            elif isinstance(val, Time):
-                return str(val)
+            if convert_times:
+                if isinstance(val, datetime.datetime):
+                    return val.isoformat()
+
+                if isinstance(val, Time):
+                    return str(val)
+
             return val
 
         item_getter = self._recursive_items if recursive else self.items
@@ -184,7 +210,7 @@ class DNode(MutableMapping):
     def __getitem__(self, key):
         """Dictionary style access data"""
         if key in self._data:
-            return self._data[key]
+            return self._assign_parent(key, self._handle_scalar(key, self._data[key]))
 
         raise KeyError(f"No such key ({key}) found in node")
 
@@ -192,14 +218,14 @@ class DNode(MutableMapping):
         """Dictionary style access set data"""
 
         # Convert the value to a tagged scalar if necessary
-        value = self._convert_to_scalar(key, value, self._data.get(key))
+        value = self._handle_scalar(key, value, self._data.get(key))
 
         # If the value is a dictionary, loop over its keys and convert them to tagged scalars
         if isinstance(value, dict | AsdfDictNode):
             for sub_key, sub_value in value.items():
-                value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
+                value[sub_key] = self._handle_scalar(sub_key, sub_value)
 
-        self._data[key] = value
+        self._data[key] = self._assign_parent(key, value)
 
     def __delitem__(self, key):
         """Dictionary style access delete data"""
@@ -233,8 +259,8 @@ class TaggedScalarDNode(DNode):
 
     __slots__ = ()
 
-    def _convert_to_scalar(self, key, value, ref=None):
-        return _convert_to_scalar(key, value, ref)
+    def _handle_scalar(self, key, value, ref=None):
+        return _convert_to_tagged_scalar(key, value, ref)
 
     def _wrap_value(self, key, value):
         # Return objects as node classes, if applicable

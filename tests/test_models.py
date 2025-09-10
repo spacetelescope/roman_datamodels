@@ -9,8 +9,10 @@ from asdf.exceptions import ValidationError
 from astropy import units as u
 from astropy.time import Time
 from numpy.testing import assert_array_equal
+from rad._tag_associations import _INTERNAL_TAG_REMOVAL_MAP
 
 from roman_datamodels import datamodels, stnode, validate
+from roman_datamodels.stnode import RadConversionWarning
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 from .conftest import MANIFESTS
@@ -939,3 +941,66 @@ def test_create_from_model_old_tags():
     converted = datamodels.ImageModel.create_from_model(old_model)
     assert converted.tag == new_model_tag
     assert converted.meta.observation.tag == new_observation_tag
+
+
+@pytest.mark.parametrize("old_tag, new_tag", _INTERNAL_TAG_REMOVAL_MAP.items())
+def test_internal_tag_removal(old_tag, new_tag, tmp_path):
+    """
+    Test that old internal tags are replaced with new tags
+    during create_from_model.
+    """
+
+    model_cls = datamodels.MODEL_REGISTRY[stnode._registry.NODE_CLASSES_BY_TAG[old_tag]]
+    assert model_cls is datamodels.MODEL_REGISTRY[stnode._registry.NODE_CLASSES_BY_TAG[new_tag]]
+
+    old_model = model_cls.create_fake_data()
+    flat_data = deepcopy({key.split("roman.")[-1]: value for key, value in old_model.to_flat_dict(convert_times=False).items()})
+
+    collapse_keys = {}
+    for key in flat_data:
+        final = key.split(".")[-1]
+        try:
+            int(final)
+        except ValueError:
+            continue
+
+        if (prefix := ".".join(key.split(".")[:-1])) not in collapse_keys:
+            collapse_keys[prefix] = []
+
+        collapse_keys[prefix].append(key)
+
+    for prefix, keys in collapse_keys.items():
+        flat_data[prefix] = [flat_data.pop(key) for key in sorted(keys)]
+
+    old_model._instance._read_tag = old_tag
+    for key, value in flat_data.items():
+        item = old_model._instance
+
+        *path, last = key.split(".")
+        for p in path:
+            item = getattr(item, p)
+
+        setattr(item, last, value)
+
+    if "meta" in old_model._instance and "basic" in old_model._instance.meta:
+        old_model._instance.meta.basic._read_tag = "asdf://stsci.edu/datamodels/roman/tags/mosaic_basic-1.2.0"
+
+    old_path = tmp_path / "old.asdf"
+    old_model.save(old_path)
+
+    new_path = tmp_path / "new.asdf"
+    with pytest.warns(RadConversionWarning, match=r".*Converting.*"), datamodels.open(old_path) as model:
+        assert model._read_tag == new_tag
+
+        for key, cls in stnode._registry.SCALAR_NODE_CLASSES_BY_KEY.items():
+            if "meta" in model._instance and key in model._instance.meta:
+                assert not isinstance(getattr(model._instance.meta, key), cls)
+
+        model.save(new_path)
+
+    with datamodels.open(new_path) as new_model:
+        assert new_model._read_tag == new_tag
+
+        for key, cls in stnode._registry.SCALAR_NODE_CLASSES_BY_KEY.items():
+            if "meta" in new_model._instance and key in new_model._instance.meta:
+                assert not isinstance(getattr(new_model._instance.meta, key), cls)

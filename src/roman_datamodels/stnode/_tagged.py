@@ -192,3 +192,11 @@ class TaggedScalarNode:
 
     def copy(self):
         return copy.copy(self)
+
+    def unwrap(self):
+        """
+        Unwrap the object to be of the scalar type.
+            This is useful when you want to remove the tag from a scalar
+            and just have the base type.
+        """
+        return self.__class__.__bases__[0](self)

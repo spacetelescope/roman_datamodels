@@ -340,47 +340,57 @@ class L1DetectorGuidewindowModel(_RomanDataModel):
     _node_type = stnode.L1DetectorGuidewindow
 
 
-class FlatRefModel(_DataModel):
+class _ReferenceFileDataModel(_DataModel):
+    __slots__ = ()
+
+    def __init__(self, init=None, **kwargs):
+        super().__init__(init, **kwargs)
+
+        if init is not None:
+            self.meta.origin = "STSCI/SOC"
+
+
+class FlatRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.FlatRef
 
 
-class AbvegaoffsetRefModel(_DataModel):
+class AbvegaoffsetRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.AbvegaoffsetRef
 
 
-class ApcorrRefModel(_DataModel):
+class ApcorrRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.ApcorrRef
 
 
-class DarkRefModel(_DataModel):
+class DarkRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.DarkRef
 
 
-class DistortionRefModel(_DataModel):
+class DistortionRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.DistortionRef
 
 
-class EpsfRefModel(_DataModel):
+class EpsfRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.EpsfRef
 
 
-class GainRefModel(_DataModel):
+class GainRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.GainRef
 
 
-class IpcRefModel(_DataModel):
+class IpcRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.IpcRef
 
 
-class LinearityRefModel(_DataModel):
+class LinearityRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.LinearityRef
 
@@ -394,7 +404,7 @@ class LinearityRefModel(_DataModel):
         return "coeffs"
 
 
-class InverselinearityRefModel(_DataModel):
+class InverselinearityRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.InverselinearityRef
 
@@ -408,7 +418,7 @@ class InverselinearityRefModel(_DataModel):
         return "coeffs"
 
 
-class MaskRefModel(_DataModel):
+class MaskRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.MaskRef
 
@@ -422,42 +432,42 @@ class MaskRefModel(_DataModel):
         return "dq"
 
 
-class MATableRefModel(_DataModel):
+class MATableRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.MatableRef
 
 
-class PixelareaRefModel(_DataModel):
+class PixelareaRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.PixelareaRef
 
 
-class ReadnoiseRefModel(_DataModel):
+class ReadnoiseRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.ReadnoiseRef
 
 
-class SkycellsRefModel(_DataModel):
+class SkycellsRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.SkycellsRef
 
 
-class SuperbiasRefModel(_DataModel):
+class SuperbiasRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.SuperbiasRef
 
 
-class SaturationRefModel(_DataModel):
+class SaturationRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.SaturationRef
 
 
-class WfiImgPhotomRefModel(_DataModel):
+class WfiImgPhotomRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.WfiImgPhotomRef
 
 
-class RefpixRefModel(_DataModel):
+class RefpixRefModel(_ReferenceFileDataModel):
     __slots__ = ()
     _node_type = stnode.RefpixRef
 
