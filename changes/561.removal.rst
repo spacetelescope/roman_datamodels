@@ -1,0 +1,1 @@
+Remove support for setting ``ROMAN_VALIDATE=false`` to disable validation. Writing invalid files is not supported. Please convert invalid models to standard python objects before saving them to ASDF (which is still supported).
