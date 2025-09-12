@@ -362,7 +362,7 @@ class DataModel(abc.ABC):
     def __iter__(self):
         return iter(self._instance)
 
-    def to_flat_dict(self, include_arrays=True):
+    def to_flat_dict(self, include_arrays=True, convert_times=True):
         """
         Returns a dictionary of all of the model items as a flat dictionary.
 
@@ -377,10 +377,13 @@ class DataModel(abc.ABC):
         """
 
         def convert_val(val):
-            if isinstance(val, datetime.datetime):
-                return val.isoformat()
-            elif isinstance(val, Time):
-                return str(val)
+            if convert_times:
+                if isinstance(val, datetime.datetime):
+                    return val.isoformat()
+
+                if isinstance(val, Time):
+                    return str(val)
+
             return val
 
         return {

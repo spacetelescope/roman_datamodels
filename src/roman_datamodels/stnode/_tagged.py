@@ -143,6 +143,7 @@ class TaggedScalarNode:
 
     _pattern = None
     _latest_manifest = None
+    _read_tag = None
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -178,7 +179,9 @@ class TaggedScalarNode:
     @property
     def _tag(self):
         # _tag is required by asdf to allow __asdf_traverse__
-        return getattr(self, "_read_tag", self._default_tag)
+        if self._read_tag is None:
+            return self._default_tag
+        return self._read_tag
 
     @property
     def tag(self):
@@ -189,3 +192,11 @@ class TaggedScalarNode:
 
     def copy(self):
         return copy.copy(self)
+
+    def unwrap(self):
+        """
+        Unwrap the object to be of the scalar type.
+            This is useful when you want to remove the tag from a scalar
+            and just have the base type.
+        """
+        return self.__class__.__bases__[0](self)

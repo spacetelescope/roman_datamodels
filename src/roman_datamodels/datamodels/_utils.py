@@ -12,9 +12,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import asdf
+import asdf.treeutil
 import numpy as np
+from rad._tag_associations import _INTERNAL_TAG_REMOVAL_MAP
 
 from roman_datamodels import validate
+from roman_datamodels.stnode import TaggedScalarNode
 
 from ._core import MODEL_REGISTRY, DataModel
 
@@ -24,13 +27,26 @@ if TYPE_CHECKING:
     from roman_datamodels.stnode import Stnode
 
 
-__all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filedate", "temporary_update_filename"]
+__all__ = [
+    "FilenameMismatchWarning",
+    "RadConversionWarning",
+    "node_update",
+    "rdm_open",
+    "temporary_update_filedate",
+    "temporary_update_filename",
+]
 
 
 class FilenameMismatchWarning(UserWarning):
     """
     Warning when the filename in the meta attribute does not match the filename
     of the file being opened.
+    """
+
+
+class RadConversionWarning(UserWarning):
+    """
+    Warning for when an implicit conversion of a RAD object occurs during opening.
     """
 
 
@@ -248,7 +264,7 @@ def _open_asdf(init, lazy_tree=True, **kwargs):
     return asdf_file
 
 
-def rdm_open(init, memmap=False, **kwargs):
+def _rdm_open(init, *, memmap=False, **kwargs):
     """
     Datamodel open/create function.
         This function opens a Roman datamodel from an asdf file or generates
@@ -277,6 +293,7 @@ def rdm_open(init, memmap=False, **kwargs):
                 return ModelLibrary(init)
             except ImportError as err:
                 raise ImportError("Please install romancal to allow opening associations with roman_datamodels") from err
+
     with validate.nuke_validation():
         if isinstance(init, DataModel):
             # Copy the object so it knows not to close here
@@ -302,3 +319,64 @@ def rdm_open(init, memmap=False, **kwargs):
 
         asdf_file.close()
         raise TypeError(f"Unknown datamodel type: {model_type}")
+
+
+def rdm_open(init, memmap=False, *, auto_upgrade=True, **kwargs):
+    """
+    Datamodel open/create function.
+        This function opens a Roman datamodel from an asdf file or generates
+        the datamodel from an existing one.
+
+    Parameters
+    ----------
+    init : str, ``Path``, `DataModel`, `asdf.AsdfFile`, file-like
+        May be any one of the following types:
+            - `asdf.AsdfFile` instance
+            - string or ``Path`` indicating the path to an ASDF file
+            - `DataModel` Roman data model instance
+            - file-like object compatible with `asdf.open`
+    memmap : bool
+        Open ASDF file binary data using memmap (default: False)
+
+    auto_upgrade : bool
+        If True, automatically upgrade the model to the latest version if needed.
+
+    Returns
+    -------
+    `DataModel`
+    """
+    output = _rdm_open(init, memmap=memmap, **kwargs)
+
+    # Bail out if not a datamodel
+    if not isinstance(output, DataModel):
+        return output
+
+    # Bail out if upgrade is disabled
+    if not auto_upgrade:
+        return output
+
+    # Bail out if read tag is found so it is already the latest version
+    if (tag := output._instance._read_tag) is None:
+        return output
+
+    # Bail out if the tag is not in the internal tag removal map
+    #   We may want to consider removing this check and always upgrading
+    if tag not in _INTERNAL_TAG_REMOVAL_MAP:
+        return output
+
+    warnings.warn(
+        f"Converting {tag} to structually equivalent {_INTERNAL_TAG_REMOVAL_MAP[tag]} with no internally tagged nodes",
+        RadConversionWarning,
+        stacklevel=2,
+    )
+    output.validate()
+
+    def _callback(node):
+        if isinstance(node, TaggedScalarNode):
+            return node.unwrap()
+        return node
+
+    new = type(output).create_from_model(asdf.treeutil.walk_and_modify(dict(output._instance), _callback))
+    new._instance._read_tag = _INTERNAL_TAG_REMOVAL_MAP[tag]
+    output.close()
+    return new

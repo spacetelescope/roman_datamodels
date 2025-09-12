@@ -22,6 +22,12 @@ __all__ = [
 ]
 
 
+class RadConversionWarning(Warning):
+    """
+    Warning class for any warnings raised during implicit conversion of a RAD object during opening.
+    """
+
+
 class _RomanConverter(Converter):
     """
     Base class for the roman_datamodels converters.
