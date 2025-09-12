@@ -306,24 +306,6 @@ class RampFitOutputModel(_RomanDataModel):
     _node_type = stnode.RampFitOutput  # type: ignore[attr-defined]
 
 
-class AssociationsModel(_DataModel):
-    __slots__ = ()
-    # Need an init to allow instantiation from a JSON file
-    _node_type = stnode.Associations  # type: ignore[attr-defined]
-
-    @classmethod
-    def is_association(cls, asn_data):
-        """
-        Test if an object is an association by checking for required fields
-
-        Parameters
-        ----------
-        asn_data :
-            The data to be tested.
-        """
-        return isinstance(asn_data, dict) and "asn_id" in asn_data and "asn_pool" in asn_data
-
-
 class L1FaceGuidewindowModel(_RomanDataModel):
     __slots__ = ()
     _node_type = stnode.L1FaceGuidewindow  # type: ignore[attr-defined]
