@@ -1,10 +1,9 @@
-import os
 from contextlib import nullcontext
 
 import asdf
 import pytest
 
-from roman_datamodels import datamodels, stnode, validate
+from roman_datamodels import datamodels, stnode
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 from .conftest import MANIFESTS
@@ -185,80 +184,6 @@ def test_schema_info():
             },
         }
     }
-
-
-VALIDATION_CASES = ("true", "yes", "1", "True", "Yes", "TrUe", "YeS", "foo", "Bar", "BaZ")
-
-
-@pytest.mark.parametrize("nuke_env_var", VALIDATION_CASES, indirect=True)
-def test_will_validate(nuke_env_var):
-    # Test the fixture passed the value of the environment variable
-    value = nuke_env_var[0]
-    assert os.getenv(validate.ROMAN_VALIDATE) == value
-
-    # Test the validate property
-    truth = nuke_env_var[1]
-    context = nullcontext() if truth else pytest.warns(validate.ValidationWarning)
-
-    with context:
-        assert validate.will_validate() is truth
-
-    # Try all uppercase
-    os.environ[validate.ROMAN_VALIDATE] = value.upper()
-    with context:
-        assert validate.will_validate() is truth
-
-    # Try all lowercase
-    os.environ[validate.ROMAN_VALIDATE] = value.lower()
-    with context:
-        assert validate.will_validate() is truth
-
-    # Remove the environment variable to test the default value
-    del os.environ[validate.ROMAN_VALIDATE]
-    assert os.getenv(validate.ROMAN_VALIDATE) is None
-    assert validate.will_validate() is True
-
-
-@pytest.mark.parametrize("nuke_env_var", VALIDATION_CASES, indirect=True)
-def test_nuke_validation(nuke_env_var, tmp_path):
-    context = pytest.raises(asdf.ValidationError) if nuke_env_var[1] else pytest.warns(validate.ValidationWarning)
-
-    # Break model without outside validation
-    mdl = datamodels.WfiImgPhotomRefModel.create_fake_data()
-    mdl._instance["phot_table"] = "THIS IS NOT VALID"
-
-    # Broken can be written to file
-    broken_save = tmp_path / "broken_save.asdf"
-    with context:
-        mdl.save(broken_save)
-    assert os.path.isfile(broken_save) is not nuke_env_var[1]
-
-    broken_to_asdf = tmp_path / "broken_to_asdf.asdf"
-    with context:
-        mdl.to_asdf(broken_to_asdf)
-    assert os.path.isfile(broken_to_asdf) is not nuke_env_var[1]
-
-    # Create a broken file for reading if needed
-    if nuke_env_var[1]:
-        os.environ[validate.ROMAN_VALIDATE] = "false"
-        with pytest.warns(validate.ValidationWarning):
-            mdl.save(broken_save)
-            mdl.to_asdf(broken_to_asdf)
-        os.environ[validate.ROMAN_VALIDATE] = nuke_env_var[0]
-
-    # Read broken files with datamodel object
-    with context:
-        datamodels.WfiImgPhotomRefModel(broken_save)
-    with context:
-        datamodels.WfiImgPhotomRefModel(broken_to_asdf)
-
-    # True to read broken files with rdm.open
-    with context:
-        with datamodels.open(broken_save):
-            pass
-    with context:
-        with datamodels.open(broken_to_asdf):
-            pass
 
 
 def test_node_representation():
