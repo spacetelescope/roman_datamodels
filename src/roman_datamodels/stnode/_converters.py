@@ -2,11 +2,8 @@
 The ASDF Converters to handle the serialization/deseialization of the STNode classes to ASDF.
 """
 
-import warnings
-
 from asdf.extension import Converter, ManifestExtension
 from astropy.time import Time
-from rad._tag_associations import _INTERNAL_TAG_REMOVAL_MAP
 
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
@@ -19,7 +16,6 @@ from ._stnode import _MANIFESTS
 
 __all__ = [
     "NODE_EXTENSIONS",
-    "RadConversionWarning",
     "TaggedListNodeConverter",
     "TaggedObjectNodeConverter",
     "TaggedScalarNodeConverter",
@@ -55,20 +51,8 @@ class _RomanConverter(Converter):
         return obj.tag
 
     def from_yaml_tree(self, node, tag, ctx):
-        cls = NODE_CLASSES_BY_TAG[tag]
-
         obj = NODE_CLASSES_BY_TAG[tag](node)
         obj._read_tag = tag
-
-        if tag in _INTERNAL_TAG_REMOVAL_MAP:
-            warnings.warn(
-                f"Converting {tag} to structually equivalent {_INTERNAL_TAG_REMOVAL_MAP[tag]} with no internally tagged nodes",
-                RadConversionWarning,
-                stacklevel=2,
-            )
-            obj = cls.create_from_node(obj)
-            obj._read_tag = _INTERNAL_TAG_REMOVAL_MAP[tag]
-
         return obj
 
 

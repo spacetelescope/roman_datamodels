@@ -12,7 +12,6 @@ from numpy.testing import assert_array_equal
 from rad._tag_associations import _INTERNAL_TAG_REMOVAL_MAP
 
 from roman_datamodels import datamodels, stnode, validate
-from roman_datamodels.stnode import RadConversionWarning
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 from .conftest import MANIFESTS
@@ -989,8 +988,9 @@ def test_internal_tag_removal(old_tag, new_tag, tmp_path):
     old_model.save(old_path)
 
     new_path = tmp_path / "new.asdf"
-    with pytest.warns(RadConversionWarning, match=r".*Converting.*"), datamodels.open(old_path) as model:
+    with pytest.warns(datamodels.RadConversionWarning, match=r".*Converting.*"), datamodels.open(old_path) as model:
         assert model._read_tag == new_tag
+        model.validate()
 
         for key, cls in stnode._registry.SCALAR_NODE_CLASSES_BY_KEY.items():
             if "meta" in model._instance and key in model._instance.meta:
