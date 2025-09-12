@@ -73,7 +73,6 @@ filterwarnings = [
   "ignore:The `hash` argument is deprecated in favor of `unsafe_hash` and will be removed in or after August 2025:DeprecationWarning",
   "ignore:The unit 'erg' has been deprecated in the VOUnit standard.:astropy.units.core.UnitsWarning",
 ]
-env = ["ROMAN_VALIDATE=true", "ROMAN_STRICT_VALIDATION=true"]
 
 [tool.coverage.report]
 exclude_lines = [

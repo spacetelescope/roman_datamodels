@@ -21,7 +21,7 @@ from asdf.exceptions import ValidationError
 from asdf.tags.core.ndarray import NDArrayType
 from astropy.time import Time
 
-from roman_datamodels import stnode, validate
+from roman_datamodels import stnode
 
 __all__ = ["MODEL_REGISTRY", "DataModel"]
 
@@ -38,11 +38,10 @@ def _set_default_asdf(func):
     def wrapper(self, *args, **kwargs):
         if self._asdf is None:
             try:
-                with validate.nuke_validation():
-                    af = asdf.AsdfFile()
-                    af["roman"] = self._instance
-                    af.validate()
-                    self._asdf = af
+                af = asdf.AsdfFile()
+                af["roman"] = self._instance
+                af.validate()
+                self._asdf = af
             except ValidationError as err:
                 raise ValueError(f"DataModel needs to have all its data flushed out before calling {func.__name__}") from err
 
@@ -287,17 +286,15 @@ class DataModel(abc.ABC):
     def open_asdf(self, init=None, **kwargs):
         from ._utils import _open_asdf
 
-        with validate.nuke_validation():
-            if isinstance(init, str):
-                return _open_asdf(init, **kwargs)
+        if isinstance(init, str):
+            return _open_asdf(init, **kwargs)
 
-            return asdf.AsdfFile(init, **kwargs)
+        return asdf.AsdfFile(init, **kwargs)
 
     def to_asdf(self, init, *args, all_array_compression="lz4", all_array_storage="internal", **kwargs):
         from ._utils import temporary_update_filedate, temporary_update_filename
 
         with (
-            validate.nuke_validation(),
             temporary_update_filename(self, Path(init).name),
             temporary_update_filedate(self, Time.now()),
         ):
