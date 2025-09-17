@@ -217,6 +217,7 @@ def mk_msos_stack(*, shape=(4096, 4096), filepath=None, **kwargs):
     msos_stack["uncertainty"] = kwargs.get("uncertainty", np.zeros(shape, dtype=np.float64))
     msos_stack["mask"] = kwargs.get("mask", np.zeros(shape, dtype=np.uint8))
     msos_stack["coverage"] = kwargs.get("coverage", np.zeros(shape, dtype=np.uint8))
+    msos_stack["psf"] = kwargs.get("psf", np.zeros(shape, dtype=np.float64))
 
     return save_node(msos_stack, filepath=filepath)
 
