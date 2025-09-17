@@ -47,6 +47,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 write_to = "src/roman_datamodels/_version.py"
+version_scheme = "release-branch-semver"
 
 [tool.setuptools.packages.find]
 where = ["src"]
