@@ -14,8 +14,6 @@ from typing import TYPE_CHECKING, Any
 import asdf
 import numpy as np
 
-from roman_datamodels import validate
-
 from ._core import MODEL_REGISTRY, DataModel
 
 if TYPE_CHECKING:
@@ -277,28 +275,28 @@ def rdm_open(init, memmap=False, **kwargs):
                 return ModelLibrary(init)
             except ImportError as err:
                 raise ImportError("Please install romancal to allow opening associations with roman_datamodels") from err
-    with validate.nuke_validation():
-        if isinstance(init, DataModel):
-            # Copy the object so it knows not to close here
-            return init.copy(deepcopy=False)
 
-        # Temp fix to catch JWST args before being passed to asdf open
-        kwargs.pop("asn_n_members", None)
+    if isinstance(init, DataModel):
+        # Copy the object so it knows not to close here
+        return init.copy(deepcopy=False)
 
-        asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_asdf(init, memmap=memmap, **kwargs)
-        if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
-            return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
+    # Temp fix to catch JWST args before being passed to asdf open
+    kwargs.pop("asn_n_members", None)
 
-        # Check if the datamodel is a GDPS datamodel
-        try:
-            import roman_gdps  # noqa: F401
-        except ImportError as err:
-            asdf_file.close()
-            raise ImportError("Please install roman-gdps to allow opening GDPS datamodels") from err
+    asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_asdf(init, memmap=memmap, **kwargs)
+    if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
+        return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
 
-        # We assume at this point that an asdf file with `roman` key is a GDPS datamodel
-        if "roman" in asdf_file.tree:
-            return asdf_file.tree["roman"]
-
+    # Check if the datamodel is a GDPS datamodel
+    try:
+        import roman_gdps  # noqa: F401
+    except ImportError as err:
         asdf_file.close()
-        raise TypeError(f"Unknown datamodel type: {model_type}")
+        raise ImportError("Please install roman-gdps to allow opening GDPS datamodels") from err
+
+    # We assume at this point that an asdf file with `roman` key is a GDPS datamodel
+    if "roman" in asdf_file.tree:
+        return asdf_file.tree["roman"]
+
+    asdf_file.close()
+    raise TypeError(f"Unknown datamodel type: {model_type}")
