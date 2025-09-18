@@ -35,6 +35,8 @@ __all__ = [
     "ForcedImageSourceCatalogMixin",
     "ForcedMosaicSourceCatalogMixin",
     "FpsFileDateMixin",
+    "FpsMixin",
+    "GuidewindowMixin",
     "ImageSourceCatalogMixin",
     "L2CalStepMixin",
     "L3CalStepMixin",
@@ -46,6 +48,7 @@ __all__ = [
     "SdfSoftwareVersionMixin",
     "TelescopeMixin",
     "TvacFileDateMixin",
+    "TvacMixin",
     "WfiImgPhotomRefMixin",
     "WfiModeMixin",
 ]
