@@ -29,7 +29,7 @@ def _convert_to_scalar(key, value, ref=None):
 
     if isinstance(ref, TaggedScalarNode):
         # we want the exact class (not possible subclasses)
-        if type(value) == type(ref):  # noqa: E721
+        if type(value) is type(ref):
             return value
         return type(ref)(value)
 
