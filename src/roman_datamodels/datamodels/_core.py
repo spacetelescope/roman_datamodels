@@ -92,7 +92,7 @@ class DataModel(abc.ABC):
         return super().__new__(cls)
 
     @classmethod
-    def create_minimal(cls, defaults=None):
+    def create_minimal(cls, defaults=None, *, tag: str | None = None):
         """
         Class method that constructs an "minimal" model.
 
@@ -110,6 +110,10 @@ class DataModel(abc.ABC):
             If provided, defaults will be used in place of schema
             defined values for required attributes.
 
+        tag: str or None
+            If provided, specifically create a model using this tag not the
+            default one.
+
         Returns
         -------
         DataModel
@@ -117,10 +121,10 @@ class DataModel(abc.ABC):
             be incomplete (invalid) as not all required attributes
             can be guessed.
         """
-        return cls(cls._node_type.create_minimal(defaults))
+        return cls(cls._node_type.create_minimal(defaults, tag=tag))
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None):
+    def create_fake_data(cls, defaults=None, shape=None, *, tag: str | None = None):
         """
         Class method that constructs a model filled with fake data.
 
@@ -144,12 +148,16 @@ class DataModel(abc.ABC):
             When provided use this shape to determine the
             shape used to construct fake arrays.
 
+        tag: str or None
+            If provided, specifically create a model using this tag not the
+            default one.
+
         Returns
         -------
         DataModel
             A valid model with fake data.
         """
-        return cls(cls._node_type.create_fake_data(defaults, shape))
+        return cls(cls._node_type.create_fake_data(defaults, shape, tag=tag))
 
     __slots__ = ("_asdf", "_files_to_close", "_instance", "_iscopy", "_shape")
 
