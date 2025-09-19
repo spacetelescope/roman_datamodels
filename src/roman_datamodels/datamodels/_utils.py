@@ -6,20 +6,19 @@ This module contains the utility functions for the datamodels sub-package. Mainl
 from __future__ import annotations
 
 import warnings
-from collections.abc import Generator, Iterable, Mapping
+from collections.abc import Generator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import asdf
 import numpy as np
+from astropy import time
 
 from ._core import MODEL_REGISTRY, DataModel
 
 if TYPE_CHECKING:
-    from astropy.time import Time
-
-    from roman_datamodels.stnode import Stnode
+    from roman_datamodels.stnode import DNode, LNode, TaggedScalarNode
 
 
 __all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filedate", "temporary_update_filename"]
@@ -78,7 +77,7 @@ def temporary_update_filename(datamodel: DataModel, filename: str) -> Generator[
 
 
 @contextmanager
-def temporary_update_filedate(datamodel: DataModel, file_date: Time) -> Generator[None, None, None]:
+def temporary_update_filedate(datamodel: DataModel, file_date: time.Time) -> Generator[None, None, None]:
     """
     Context manager to temporarily update the filedate of a datamodel so that it
     can be saved with that new file date without changing the current model's filedate.
@@ -94,47 +93,47 @@ def temporary_update_filedate(datamodel: DataModel, file_date: Time) -> Generato
 
 
 def node_update(
-    to_node: Stnode,
-    from_node: Stnode | DataModel,
-    extras: Iterable[str] | None = None,
+    to_node: DNode | LNode | TaggedScalarNode,
+    from_node: DNode | LNode | TaggedScalarNode | DataModel,
+    extras: list[str] | tuple[str, ...] | None = None,
     extras_key: str | None = None,
-    ignore: Iterable[str] | None = None,
+    ignore: list[str] | tuple[str, ...] | None = None,
 ) -> None:
     """Copy node contents from an existing node to another existing node
 
-    How the copy occurs depends on existence of keys in `to_node`
+    How the copy occurs depends on existence of keys in ``to_node``
 
-    If key exists in `to_node`, contents are converted from `from_node` stnode type to
+    If key exists in ``to_node``, contents are converted from ``from_node`` stnode type to
     the stnode type expected in order to preserve validation of the node.
 
-    If key only exists in `from_node`, the contents are copied as-is.
+    If key only exists in ``from_node``, the contents are copied as-is.
 
-    If key exists in the list `extras`, the contents are placed in the dict `["extras"]`.
-    if `extras_key` is given, then the sub-dictionary `["extras"][extras_key]` is used.
+    If key exists in the list ``extras``, the contents are placed in the dict ``["extras"]``.
+    if ``extras_key`` is given, then the sub-dictionary ``["extras"][extras_key]`` is used.
     Extra keys are used to avoid collisions between node trees where the underlying structures are
     completely different.
 
-    Keys in `ignore` are not considered.
+    Keys in ``ignore`` are not considered.
 
     Keys are also
 
     Parameters
     ----------
-    to_node : stnode
+    to_node : DNode, LNode or TaggedScalarNode
         Node to receive the contents.
 
-    from_node : stnode, DataModel
+    from_node : DNode, LNode, TaggedScalarNode or DataModel
         Node to copy from
 
-    extras : [str[,...]]
+    extras : list[str], tuple[str, ...] or None
         Keys that may create collisions between the two node trees. All such keys are placed
-        in the `extras` key. If `extras_key` is defined, the contents are placed in a subdict
+        in the ``extras`` key. If ``extras_key`` is defined, the contents are placed in a subdict
         of that name.
 
     extras_key : str or None
-        See parameter `extras`.
+        See parameter ``extras``.
 
-    ignore : list-like or None
+    ignore : list[str], tuple[str, ...] or None
         Keys that should be completely ignored.
     """
 
