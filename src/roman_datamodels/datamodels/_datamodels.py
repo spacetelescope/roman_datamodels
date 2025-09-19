@@ -27,8 +27,6 @@ from ._utils import node_update, temporary_update_filedate, temporary_update_fil
 if TYPE_CHECKING:
     from typing import Any
 
-__all__ = []
-
 DTYPE_MAP: dict[str, Any] = {}
 
 # Define logging
@@ -131,30 +129,7 @@ class _ParquetMixin:
         pq.write_table(table, filepath, compression=None)
 
 
-class _DataModel(DataModel):
-    """
-    Exists only to populate the __all__ for this file automatically
-        This is something which is easily missed, but is important for the automatic
-        documentation generation to work properly.
-    """
-
-    __slots__ = ()
-
-    def __init_subclass__(cls, **kwargs):
-        """Register each subclass in the __all__ for this module"""
-        super().__init_subclass__(**kwargs)
-
-        # Don't register private classes
-        if cls.__name__.startswith("_"):
-            return
-
-        if cls.__name__ in __all__:
-            raise ValueError(f"Duplicate model type {cls.__name__}")
-
-        __all__.append(cls.__name__)
-
-
-class _RomanDataModel(_DataModel):
+class _RomanDataModel(DataModel):
     __slots__ = ()
 
     def __init__(self, init=None, **kwargs):
@@ -306,7 +281,7 @@ class RampFitOutputModel(_RomanDataModel):
     _node_type = stnode.RampFitOutput  # type: ignore[attr-defined]
 
 
-class AssociationsModel(_DataModel):
+class AssociationsModel(DataModel):
     __slots__ = ()
     # Need an init to allow instantiation from a JSON file
     _node_type = stnode.Associations  # type: ignore[attr-defined]
@@ -339,47 +314,47 @@ class L1DetectorGuidewindowModel(_RomanDataModel):
     _node_type = stnode.L1DetectorGuidewindow  # type: ignore[attr-defined]
 
 
-class FlatRefModel(_DataModel):
+class FlatRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.FlatRef  # type: ignore[attr-defined]
 
 
-class AbvegaoffsetRefModel(_DataModel):
+class AbvegaoffsetRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.AbvegaoffsetRef  # type: ignore[attr-defined]
 
 
-class ApcorrRefModel(_DataModel):
+class ApcorrRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.ApcorrRef  # type: ignore[attr-defined]
 
 
-class DarkRefModel(_DataModel):
+class DarkRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.DarkRef  # type: ignore[attr-defined]
 
 
-class DistortionRefModel(_DataModel):
+class DistortionRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.DistortionRef  # type: ignore[attr-defined]
 
 
-class EpsfRefModel(_DataModel):
+class EpsfRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.EpsfRef  # type: ignore[attr-defined]
 
 
-class GainRefModel(_DataModel):
+class GainRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.GainRef  # type: ignore[attr-defined]
 
 
-class IpcRefModel(_DataModel):
+class IpcRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.IpcRef  # type: ignore[attr-defined]
 
 
-class LinearityRefModel(_DataModel):
+class LinearityRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.LinearityRef  # type: ignore[attr-defined]
 
@@ -393,7 +368,7 @@ class LinearityRefModel(_DataModel):
         return "coeffs"
 
 
-class InverselinearityRefModel(_DataModel):
+class InverselinearityRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.InverselinearityRef  # type: ignore[attr-defined]
 
@@ -407,7 +382,7 @@ class InverselinearityRefModel(_DataModel):
         return "coeffs"
 
 
-class MaskRefModel(_DataModel):
+class MaskRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.MaskRef  # type: ignore[attr-defined]
 
@@ -421,52 +396,52 @@ class MaskRefModel(_DataModel):
         return "dq"
 
 
-class MATableRefModel(_DataModel):
+class MATableRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.MatableRef  # type: ignore[attr-defined]
 
 
-class PixelareaRefModel(_DataModel):
+class PixelareaRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.PixelareaRef  # type: ignore[attr-defined]
 
 
-class ReadnoiseRefModel(_DataModel):
+class ReadnoiseRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.ReadnoiseRef  # type: ignore[attr-defined]
 
 
-class SkycellsRefModel(_DataModel):
+class SkycellsRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.SkycellsRef  # type: ignore[attr-defined]
 
 
-class SuperbiasRefModel(_DataModel):
+class SuperbiasRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.SuperbiasRef  # type: ignore[attr-defined]
 
 
-class SaturationRefModel(_DataModel):
+class SaturationRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.SaturationRef  # type: ignore[attr-defined]
 
 
-class WfiImgPhotomRefModel(_DataModel):
+class WfiImgPhotomRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.WfiImgPhotomRef  # type: ignore[attr-defined]
 
 
-class RefpixRefModel(_DataModel):
+class RefpixRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.RefpixRef  # type: ignore[attr-defined]
 
 
-class FpsModel(_DataModel):
+class FpsModel(DataModel):
     __slots__ = ()
     _node_type = stnode.Fps  # type: ignore[attr-defined]
 
 
-class TvacModel(_DataModel):
+class TvacModel(DataModel):
     __slots__ = ()
     _node_type = stnode.Tvac  # type: ignore[attr-defined]
 

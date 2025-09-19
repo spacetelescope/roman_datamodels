@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import MutableMapping, MutableSequence
-from typing import TYPE_CHECKING
 
 import numpy as np
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
@@ -15,9 +14,6 @@ from asdf.tags.core import ndarray
 from astropy.time import Time
 
 from ._registry import SCALAR_NODE_CLASSES_BY_KEY
-
-if TYPE_CHECKING:
-    from typing import ClassVar
 
 __all__ = ["DNode", "LNode"]
 
@@ -28,9 +24,6 @@ class DNode(MutableMapping):
     """
 
     __slots__ = ("_data", "_name", "_parent", "_read_tag")
-
-    _pattern: ClassVar[str]
-    _latest_manifest: ClassVar[str]
 
     def __init__(self, node=None, parent=None, name=None):
         # Handle if we are passed different data types
@@ -223,9 +216,6 @@ class LNode(MutableSequence):
     """
 
     __slots__ = ("_read_tag", "data")
-
-    _pattern: ClassVar[str]
-    _latest_manifest: ClassVar[str]
 
     def __init__(self, node=None):
         if node is None:

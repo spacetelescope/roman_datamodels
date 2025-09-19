@@ -7,6 +7,7 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from ._node import DNode, LNode
@@ -19,16 +20,13 @@ from ._registry import (
 from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
 
 if TYPE_CHECKING:
-    from typing import ClassVar, TypeAlias
+    from collections.abc import Mapping
+    from typing import Any, ClassVar, Self, TypeAlias
 
-__all__ = [
-    "TaggedListNode",
-    "TaggedObjectNode",
-    "TaggedScalarNode",
-]
+__all__ = ["TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
 
 
-def name_from_tag_uri(tag_uri):
+def name_from_tag_uri(tag_uri: str) -> str:
     """
     Compute the name of the schema from the tag_uri.
 
@@ -45,7 +43,108 @@ def name_from_tag_uri(tag_uri):
     return tag_uri_split
 
 
-class TaggedObjectNode(DNode):
+class _TaggedNodeMixin(ABC):
+    """
+    Mixin class for all tagged nodes
+    """
+
+    __slots__ = ()
+
+    _pattern: ClassVar[str]
+    _latest_manifest: ClassVar[str]
+    _default_tag: ClassVar[str]
+
+    @classmethod
+    @abstractmethod
+    def create_minimal(
+        cls, defaults: Mapping[str, Any] | None = None, builder: Builder | None = None, *, tag: str | None = None
+    ) -> Self:
+        """
+        Create a minimal instance of this class, only things with the attributes
+        which have a default value that can be determined.
+
+        Parameters
+        ----------
+        defaults : Mapping[str, Any] | None
+            A mapping of default values to use when creating the instance
+        builder : Builder | None
+            The builder to use when creating the instance
+        tag : str | None
+            The tag to use when creating the instance. If None, the default tag for the class will be used.
+
+        Returns
+        -------
+        Self
+            An instance of this class
+        """
+
+    @classmethod
+    def create_fake_data(
+        cls,
+        defaults: Mapping[str, Any] | None = None,
+        shape: tuple[int, ...] | None = None,
+        builder: Builder | None = None,
+        *,
+        tag: str | None = None,
+    ) -> Self:
+        """
+        Create an instance of this class with with all required attributes
+        filled in with fake data.
+
+        Parameters
+        ----------
+        defaults, optional
+            A mapping of default values to use when creating the instance
+        shape, optional
+            The shape of the data to create
+        builder, optional
+            The builder to use when creating the instance
+        tag, optional
+            The tag to use when creating the instance. If None, the default tag for the class will be used.
+
+        Returns
+        -------
+        Self
+            An instance of this class
+        """
+        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
+
+    @classmethod
+    def create_from_node(cls, node: Mapping[str, Any], builder: Builder | None = None, *, tag: str | None = None) -> Self:
+        """
+        Create an instance of this class from a node (dict-like object)
+
+        Parameters
+        ----------
+        node
+            The node to create the instance from
+        builder, optional
+            The builder to use when creating the instance
+        tag, optional
+            The tag to use when creating the instance. If None, the default tag for the class will be used.
+
+        Returns
+        -------
+        Self
+            An instance of this class
+        """
+        return cls.create_minimal(node, builder or NodeBuilder(), tag=tag)
+
+    @property
+    @abstractmethod
+    def _tag(self):
+        pass
+
+    @property
+    def tag(self):
+        return self._tag
+
+    def get_schema(self):
+        """Retrieve the schema associated with this tag"""
+        return _get_schema_from_tag(self.tag)
+
+
+class TaggedObjectNode(DNode, _TaggedNodeMixin):
     """
     Base class for all tagged objects defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -53,8 +152,6 @@ class TaggedObjectNode(DNode):
     """
 
     __slots__ = ()
-
-    _default_tag: ClassVar[str]
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -68,7 +165,7 @@ class TaggedObjectNode(DNode):
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def create_minimal(cls, defaults=None, builder=None, *, tag=None):
         builder = builder or Builder()
         new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
 
@@ -77,14 +174,6 @@ class TaggedObjectNode(DNode):
 
         return new
 
-    @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
-
-    @classmethod
-    def create_from_node(cls, node, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(node, builder or NodeBuilder(), tag=tag)
-
     @property
     def _tag(self):
         if self._read_tag is None:
@@ -92,16 +181,8 @@ class TaggedObjectNode(DNode):
 
         return self._read_tag
 
-    @property
-    def tag(self):
-        return self._tag
 
-    def get_schema(self):
-        """Retrieve the schema associated with this tag"""
-        return _get_schema_from_tag(self.tag)
-
-
-class TaggedListNode(LNode):
+class TaggedListNode(LNode, _TaggedNodeMixin):
     """
     Base class for all tagged list defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -109,8 +190,6 @@ class TaggedListNode(LNode):
     """
 
     __slots__ = ()
-
-    _default_tag: ClassVar[str]
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -124,7 +203,7 @@ class TaggedListNode(LNode):
             LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def create_minimal(cls, defaults=None, builder=None, *, tag=None):
         builder = builder or Builder()
         new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
 
@@ -133,14 +212,6 @@ class TaggedListNode(LNode):
 
         return new
 
-    @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
-
-    @classmethod
-    def create_from_node(cls, node, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(node, builder or NodeBuilder(), tag=tag)
-
     @property
     def _tag(self):
         if self._read_tag is None:
@@ -148,22 +219,14 @@ class TaggedListNode(LNode):
 
         return self._read_tag
 
-    @property
-    def tag(self):
-        return self._tag
 
-
-class TaggedScalarNode:
+class TaggedScalarNode(_TaggedNodeMixin):
     """
     Base class for all tagged scalars defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
         a scalar base type, or wraps a scalar base type.
         These will all be in the tagged_scalars directory.
     """
-
-    _pattern: ClassVar[str]
-    _latest_manifest: ClassVar[str]
-    _default_tag: ClassVar[str]
 
     _read_tag: str
 
@@ -198,25 +261,10 @@ class TaggedScalarNode:
 
         return new
 
-    @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
-
-    @classmethod
-    def create_from_node(cls, node, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(node, builder or NodeBuilder(), tag=tag)
-
     @property
     def _tag(self):
         # _tag is required by asdf to allow __asdf_traverse__
         return getattr(self, "_read_tag", self._default_tag)
-
-    @property
-    def tag(self):
-        return self._tag
-
-    def get_schema(self):
-        return _get_schema_from_tag(self.tag)
 
     def copy(self):
         return copy.copy(self)
