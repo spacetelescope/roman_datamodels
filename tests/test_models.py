@@ -812,6 +812,19 @@ def test_create_fake_data(model):
     assert m.validate() is None
 
 
+@pytest.mark.parametrize("tag, node_class", stnode._registry.NODE_CLASSES_BY_TAG.items())
+def test_create_tag(tag, node_class):
+    """Test that we can create a node for every registered tag"""
+
+    node = node_class.create_minimal(tag=tag)
+    if node is not stnode._tagged._NO_VALUE:
+        assert node._read_tag == tag
+
+    node = node_class.create_fake_data(tag=tag)
+    if node is not stnode._tagged._NO_VALUE:
+        assert node._read_tag == tag
+
+
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_no_hidden(model):
     """Test that no hidden attributes are allowed"""
@@ -914,9 +927,9 @@ def test_create_from_model_old_tags():
     assert old_model_tag != new_model_tag
     assert old_observation_tag != new_observation_tag
 
-    old_model = datamodels.ImageModel.create_fake_data()
-    old_model._instance._read_tag = old_model_tag
-    old_model.meta.observation._read_tag = old_observation_tag
+    old_model = datamodels.ImageModel.create_fake_data(tag=old_model_tag)
+    assert old_model._instance._read_tag == old_model_tag
+    assert old_model.meta.observation._read_tag == old_observation_tag
 
     converted = datamodels.ImageModel.create_from_model(old_model)
     assert converted.tag == new_model_tag

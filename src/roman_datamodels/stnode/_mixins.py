@@ -74,16 +74,20 @@ class WfiModeMixin:
 
 class FileDateMixin:
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None):
-        if defaults:
-            return cls(defaults)
-        return cls.now()
+    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+        new = cls(defaults) if defaults else cls.now()
+        if tag:
+            new._read_tag = tag
+
+        return new
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None):
-        if defaults:
-            return cls(defaults)
-        return cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
+    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
+        new = cls(defaults) if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
+        if tag:
+            new._read_tag = tag
+
+        return new
 
 
 class FpsFileDateMixin(FileDateMixin):
@@ -96,55 +100,65 @@ class TvacFileDateMixin(FileDateMixin):
 
 class CalibrationSoftwareNameMixin:
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None):
-        if defaults:
-            return cls(defaults)
-        return cls("RomanCAL")
+    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+        new = cls(defaults) if defaults else cls("RomanCAL")
+        if tag:
+            new._read_tag = tag
+
+        return new
 
 
 class PrdVersionMixin:
     @classmethod
-    def create_fake_data(cls, defaults=None, builder=None):
-        if defaults:
-            return cls(defaults)
-        return cls("8.8.8")
+    def create_fake_data(cls, defaults=None, builder=None, *, tag: str | None = None):
+        new = cls(defaults) if defaults else cls("8.8.8")
+        if tag:
+            new._read_tag = tag
+
+        return new
 
 
 class SdfSoftwareVersionMixin:
     @classmethod
-    def create_fake_data(cls, defaults=None, builder=None):
-        if defaults:
-            return cls(defaults)
-        return cls("7.7.7")
+    def create_fake_data(cls, defaults=None, builder=None, *, tag: str | None = None):
+        new = cls(defaults) if defaults else cls("7.7.7")
+        if tag:
+            new._read_tag = tag
+
+        return new
 
 
 class OriginMixin:
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None):
-        if defaults:
-            return cls(defaults)
-        return cls("STSCI/SOC")
+    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+        new = cls(defaults) if defaults else cls("STSCI/SOC")
+        if tag:
+            new._read_tag = tag
+
+        return new
 
 
 class TelescopeMixin:
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None):
-        if defaults:
-            return cls(defaults)
-        return cls("ROMAN")
+    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+        new = cls(defaults) if defaults else cls("ROMAN")
+        if tag:
+            new._read_tag = tag
+
+        return new
 
 
 class RefFileMixin:
     __slots__ = ()
 
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         # copy defaults as we may modify them below
         if defaults:
             defaults = deepcopy(defaults)
         else:
             defaults = {}
-        schema = _get_schema_from_tag(cls._default_tag)
+        schema = _get_schema_from_tag(tag or cls._default_tag)
         for k, v in schema["properties"].items():
             if v["type"] != "string":
                 continue
@@ -154,18 +168,25 @@ class RefFileMixin:
         if not builder:
             builder = Builder()
         data = builder.from_object(schema, defaults)
-        obj = cls(data)
-        return obj
+        new = cls(data)
+        if tag:
+            new._read_tag = tag
+
+        return new
 
 
 class L2CalStepMixin:
     __slots__ = ()
 
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None):
+    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         defaults = defaults or {}
-        schema = _get_schema_from_tag(cls._default_tag)
-        return cls({k: defaults.get(k, "INCOMPLETE") for k in schema["properties"]})
+        schema = _get_schema_from_tag(tag or cls._default_tag)
+        new = cls({k: defaults.get(k, "INCOMPLETE") for k in schema["properties"]})
+        if tag:
+            new._read_tag = tag
+
+        return new
 
 
 class L3CalStepMixin(L2CalStepMixin):  # same as L2CalStepMixin
@@ -176,7 +197,7 @@ class WfiImgPhotomRefMixin:
     __slots__ = ()
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None):
+    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
         defaults = defaults or {}
         if "phot_table" not in defaults:
             defaults["phot_table"] = {
@@ -192,7 +213,7 @@ class WfiImgPhotomRefMixin:
                 "PRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
                 "DARK": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
             }
-        return super().create_fake_data(defaults, shape, builder)
+        return super().create_fake_data(defaults, shape, builder, tag=tag)
 
 
 class ImageSourceCatalogMixin:
@@ -270,11 +291,11 @@ class ImageSourceCatalogMixin:
         return Table(columns)
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None):
+    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
         defaults = defaults or {}
         if "source_catalog" not in defaults:
             defaults["source_catalog"] = cls._create_empty_catalog()
-        return super().create_fake_data(defaults, shape, builder)
+        return super().create_fake_data(defaults, shape, builder, tag=tag)
 
 
 class ForcedImageSourceCatalogMixin(ImageSourceCatalogMixin):

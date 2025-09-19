@@ -1,0 +1,3 @@
+Add a ``tag`` keyword only argument to ``create_minimal`` and ``create_fake_data`` methods
+for instantiating a datamodel. This will make those methods target the specified tag
+rather than the default tag for the given model class.
