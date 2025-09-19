@@ -3,12 +3,17 @@ Factories for creating Tagged STNode classes from tag_uris.
     These are used to dynamically create classes from the RAD manifest.
 """
 
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from astropy.time import Time
 
 from . import _mixins
 from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, name_from_tag_uri
+
+if TYPE_CHECKING:
+    from ._tagged import tagged_type
 
 __all__ = ["stnode_factory"]
 
@@ -136,15 +141,16 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
     """
     class_name = class_name_from_tag_uri(pattern)
 
-    class_type = _NODE_TYPE_BY_PATTERN.get(pattern, TaggedObjectNode)
+    base_class_type = _NODE_TYPE_BY_PATTERN.get(pattern, TaggedObjectNode)
 
     # In special cases one may need to add additional features to a tagged node class.
     #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
     #   Here we mixin the mixin class if it exists.
+    class_type: tuple[Any, tagged_type] | tuple[tagged_type]
     if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-        class_type = (getattr(_mixins, mixin), class_type)
+        class_type = (getattr(_mixins, mixin), base_class_type)
     else:
-        class_type = (class_type,)
+        class_type = (base_class_type,)
 
     return type(
         class_name,

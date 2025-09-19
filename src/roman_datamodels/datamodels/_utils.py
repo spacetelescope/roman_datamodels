@@ -185,12 +185,14 @@ def node_update(
     # Now do the copy.
     new_extras = _traverse(to_node, from_node, extras=extras, ignore=ignore)
     if new_extras:
-        extras_node = to_node.get("extras", dict())
-        if extras_key:
-            extras_node[extras_key] = new_extras
-        else:
-            extras_node.update(new_extras)
-        to_node["extras"] = extras_node
+        if isinstance(to_node, Mapping):
+            extras_node = to_node.get("extras", dict())
+
+            if extras_key:
+                extras_node[extras_key] = new_extras
+            else:
+                extras_node.update(new_extras)
+            to_node["extras"] = extras_node
 
 
 def _open_asdf(init, lazy_tree=True, **kwargs):
@@ -270,7 +272,7 @@ def rdm_open(init, memmap=False, **kwargs):
     if isinstance(init, str | Path):
         if Path(init).suffix.lower() == ".json":
             try:
-                from romancal.datamodels.library import ModelLibrary
+                from romancal.datamodels.library import ModelLibrary  # type: ignore[import-not-found]
 
                 return ModelLibrary(init)
             except ImportError as err:
@@ -289,7 +291,7 @@ def rdm_open(init, memmap=False, **kwargs):
 
     # Check if the datamodel is a GDPS datamodel
     try:
-        import roman_gdps  # noqa: F401
+        import roman_gdps  # type: ignore[import-not-found]  # noqa: F401
     except ImportError as err:
         asdf_file.close()
         raise ImportError("Please install roman-gdps to allow opening GDPS datamodels") from err

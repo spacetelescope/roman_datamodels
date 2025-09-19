@@ -14,7 +14,19 @@ from ._schema import Builder, _get_keyword, _get_properties
 from ._tagged import _get_schema_from_tag
 
 if TYPE_CHECKING:
-    from typing import ClassVar
+    from typing import ClassVar, TypeAlias
+
+    from astropy.time import Time
+
+    from ._tagged import TaggedObjectNode, TaggedScalarNode
+
+    _ObjectBase: TypeAlias = TaggedObjectNode
+    _ScalarBase: TypeAlias = TaggedScalarNode
+    _TimeBase: TypeAlias = Time
+else:
+    _ObjectBase = object
+    _ScalarBase: TypeAlias = object
+    _TimeBase: TypeAlias = object
 
 __all__ = [
     "CalibrationSoftwareNameMixin",
@@ -72,7 +84,7 @@ class WfiModeMixin:
             return None
 
 
-class FileDateMixin:
+class FileDateMixin(_TimeBase):
     @classmethod
     def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         new = cls(defaults) if defaults else cls.now()
@@ -98,7 +110,7 @@ class TvacFileDateMixin(FileDateMixin):
     pass
 
 
-class CalibrationSoftwareNameMixin:
+class CalibrationSoftwareNameMixin(_ScalarBase):
     @classmethod
     def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         new = cls(defaults) if defaults else cls("RomanCAL")
@@ -108,9 +120,9 @@ class CalibrationSoftwareNameMixin:
         return new
 
 
-class PrdVersionMixin:
+class PrdVersionMixin(_ScalarBase):
     @classmethod
-    def create_fake_data(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
         new = cls(defaults) if defaults else cls("8.8.8")
         if tag:
             new._read_tag = tag
@@ -118,9 +130,9 @@ class PrdVersionMixin:
         return new
 
 
-class SdfSoftwareVersionMixin:
+class SdfSoftwareVersionMixin(_ScalarBase):
     @classmethod
-    def create_fake_data(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
         new = cls(defaults) if defaults else cls("7.7.7")
         if tag:
             new._read_tag = tag
@@ -128,7 +140,7 @@ class SdfSoftwareVersionMixin:
         return new
 
 
-class OriginMixin:
+class OriginMixin(_ScalarBase):
     @classmethod
     def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         new = cls(defaults) if defaults else cls("STSCI/SOC")
@@ -138,7 +150,7 @@ class OriginMixin:
         return new
 
 
-class TelescopeMixin:
+class TelescopeMixin(_ScalarBase):
     @classmethod
     def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         new = cls(defaults) if defaults else cls("ROMAN")
@@ -148,7 +160,7 @@ class TelescopeMixin:
         return new
 
 
-class RefFileMixin:
+class RefFileMixin(_ObjectBase):
     __slots__ = ()
 
     @classmethod
@@ -175,7 +187,7 @@ class RefFileMixin:
         return new
 
 
-class L2CalStepMixin:
+class L2CalStepMixin(_ObjectBase):
     __slots__ = ()
 
     @classmethod
@@ -193,7 +205,7 @@ class L3CalStepMixin(L2CalStepMixin):  # same as L2CalStepMixin
     __slots__ = ()
 
 
-class WfiImgPhotomRefMixin:
+class WfiImgPhotomRefMixin(_ObjectBase):
     __slots__ = ()
 
     @classmethod
@@ -216,7 +228,7 @@ class WfiImgPhotomRefMixin:
         return super().create_fake_data(defaults, shape, builder, tag=tag)
 
 
-class ImageSourceCatalogMixin:
+class ImageSourceCatalogMixin(_ObjectBase):
     __slots__ = ()
 
     def get_column_definition(self, name):

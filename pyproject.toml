@@ -105,6 +105,13 @@ extend-select = [
   "S101", # Bandit: Use of assert detected (useful public API for testing only)
 ]
 
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+disable_error_code = "import-untyped" # do not check imports
+exclude = ['tests.*']
+python_version = "3.11"
+
 [tool.codespell]
 skip = "*.pdf,*.fits,*.asdf,.tox,build,./tags,.git,docs/_build"
 

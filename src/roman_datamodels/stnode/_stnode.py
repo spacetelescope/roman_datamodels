@@ -7,6 +7,7 @@ Dynamic creation of STNode classes from the RAD manifest.
 """
 
 import importlib.resources
+from pathlib import Path
 
 import yaml
 from rad import resources
@@ -20,15 +21,13 @@ from ._registry import (
     SCHEMA_URIS_BY_TAG,
 )
 
-__all__ = [
-    "NODE_CLASSES",
-]
+__all__ = ["NODE_CLASSES"]
 
 
 # Load the manifest directly from the rad resources and not from ASDF.
 #   This is because the ASDF extensions have to be created before they can be registered
 #   and this module creates the classes used by the ASDF extension.
-_MANIFEST_DIR = importlib.resources.files(resources) / "manifests"
+_MANIFEST_DIR = Path(str(importlib.resources.files(resources) / "manifests"))
 # sort manifests by version (newest first)
 _STATIC_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*static-*.yaml")], reverse=True)
 _STATIC_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _STATIC_MANIFEST_PATHS]

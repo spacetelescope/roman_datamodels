@@ -4,7 +4,10 @@ Base classes for all the tagged objects defined by RAD.
     from RAD's manifest.
 """
 
+from __future__ import annotations
+
 import copy
+from typing import TYPE_CHECKING
 
 from ._node import DNode, LNode
 from ._registry import (
@@ -14,6 +17,9 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_PATTERN,
 )
 from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
+
+if TYPE_CHECKING:
+    from typing import ClassVar, TypeAlias
 
 __all__ = [
     "TaggedListNode",
@@ -47,6 +53,8 @@ class TaggedObjectNode(DNode):
     """
 
     __slots__ = ()
+
+    _default_tag: ClassVar[str]
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -102,6 +110,8 @@ class TaggedListNode(LNode):
 
     __slots__ = ()
 
+    _default_tag: ClassVar[str]
+
     def __init_subclass__(cls, **kwargs) -> None:
         """
         Register any subclasses of this class in the LIST_NODE_CLASSES_BY_PATTERN
@@ -151,8 +161,11 @@ class TaggedScalarNode:
         These will all be in the tagged_scalars directory.
     """
 
-    _pattern = None
-    _latest_manifest = None
+    _pattern: ClassVar[str]
+    _latest_manifest: ClassVar[str]
+    _default_tag: ClassVar[str]
+
+    _read_tag: str
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -168,6 +181,9 @@ class TaggedScalarNode:
 
     def __asdf_traverse__(self):
         return self
+
+    def __init__(self, value, **kwargs):
+        pass
 
     @classmethod
     def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
@@ -204,3 +220,6 @@ class TaggedScalarNode:
 
     def copy(self):
         return copy.copy(self)
+
+
+tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]
