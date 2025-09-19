@@ -12,7 +12,7 @@ import copy
 import functools
 import itertools
 import logging
-from collections.abc import Mapping
+from collections.abc import MutableMapping
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -166,8 +166,8 @@ class _RomanDataModel(_DataModel):
 
     @classmethod
     def _creator_defaults(
-        cls, defaults: dict[str, Any] | None = None, *, time: Time | None = None
-    ) -> dict[str, dict[str, str | Time]]:
+        cls, defaults: MutableMapping[str, Any] | None = None, *, time: Time | None = None
+    ) -> MutableMapping[str, Any]:
         """
         The default values for the create constructors, `create_minimal` and `create_fake_data`.
 
@@ -185,11 +185,11 @@ class _RomanDataModel(_DataModel):
             some values that we want to always set to a specific value.
         """
 
-        def merge_dicts(dict1, dict2):
+        def merge_dicts(dict1: MutableMapping[str, Any], dict2: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
             for key in dict2:
                 if key in dict1:
-                    dict1_is_mapping = isinstance(dict1[key], Mapping)
-                    dict2_is_mapping = isinstance(dict2[key], Mapping)
+                    dict1_is_mapping = isinstance(dict1[key], MutableMapping)
+                    dict2_is_mapping = isinstance(dict2[key], MutableMapping)
 
                     if dict1_is_mapping and dict2_is_mapping:
                         dict1[key] = merge_dicts(dict1[key], dict2[key])
@@ -215,7 +215,7 @@ class _RomanDataModel(_DataModel):
         )
 
     @classmethod
-    def create_minimal(cls, defaults=None):
+    def create_minimal(cls, defaults=None, *, tag=None):
         """
         Class method that constructs an "minimal" model.
 
@@ -240,10 +240,10 @@ class _RomanDataModel(_DataModel):
             be incomplete (invalid) as not all required attributes
             can be guessed.
         """
-        return super().create_minimal(defaults=cls._creator_defaults(defaults))
+        return super().create_minimal(defaults=cls._creator_defaults(defaults), tag=tag)
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None):
+    def create_fake_data(cls, defaults=None, shape=None, *, tag=None):
         """
         Class method that constructs a model filled with fake data.
 
@@ -273,7 +273,9 @@ class _RomanDataModel(_DataModel):
             A valid model with fake data.
         """
         return super().create_fake_data(
-            defaults=cls._creator_defaults(defaults, time=Time("2020-01-01T00:00:00.0", format="isot", scale="utc")), shape=shape
+            defaults=cls._creator_defaults(defaults, time=Time("2020-01-01T00:00:00.0", format="isot", scale="utc")),
+            shape=shape,
+            tag=tag,
         )
 
 
