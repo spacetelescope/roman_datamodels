@@ -12,23 +12,36 @@ import copy
 import functools
 import itertools
 import logging
-from collections.abc import MutableMapping
-from pathlib import Path
+import pathlib
+from collections import abc
 from typing import TYPE_CHECKING
 
 import astropy.table.meta
 import numpy as np
+from astropy import time as _time
 from astropy.modeling import models
-from astropy.time import Time
 
-from .. import stnode
+from roman_datamodels import stnode
+
 from ._core import DataModel
 from ._utils import node_update, temporary_update_filedate, temporary_update_filename
 
 if TYPE_CHECKING:
     from typing import Any
 
-__all__ = []
+# NOTE: this module does not have the typical `__all__`` present like most of the other
+#    modules in `roman_datamodels``. The presence of the `__all__` variable causes is
+#    entirely to control what is imported by the wildcard `*` import. This style of
+#    import is used by `spiinx-automodapi` to determine what to document within a given
+#    module. However, in this module's case we would have to list every single datamodel
+#    in the `__all__` which would become tedious and error-prone. Therefore, we simply
+#    omit the `__all__` variable and carefully control what we make publicly available
+#    in the module's namespace via the use of `_` prefixes on private classes and avoiding
+#    the import of items from other modules directly into this module's namespace and instead
+#    importing them as the namespace from that module (e.g. `from astropy import time` and
+#    using `time.Time` instead of `from astropy.time import Time` and using `Time` directly).
+#    this prevents `spinx-automodapi` from documenting these items which can cause documentation
+#    warnings and bloat.
 
 DTYPE_MAP: dict[str, Any] = {}
 
@@ -102,7 +115,7 @@ class _ParquetMixin:
                 }
             )
 
-        with temporary_update_filename(self, Path(filepath).name), temporary_update_filedate(self, Time.now()):
+        with temporary_update_filename(self, pathlib.Path(filepath).name), temporary_update_filedate(self, _time.Time.now()):
             # Construct flat metadata dict
             flat_meta = self.to_flat_dict()
         # select only meta items
@@ -132,30 +145,7 @@ class _ParquetMixin:
         pq.write_table(table, filepath, compression=None)
 
 
-class _DataModel(DataModel):
-    """
-    Exists only to populate the __all__ for this file automatically
-        This is something which is easily missed, but is important for the automatic
-        documentation generation to work properly.
-    """
-
-    __slots__ = ()
-
-    def __init_subclass__(cls, **kwargs):
-        """Register each subclass in the __all__ for this module"""
-        super().__init_subclass__(**kwargs)
-
-        # Don't register private classes
-        if cls.__name__.startswith("_"):
-            return
-
-        if cls.__name__ in __all__:
-            raise ValueError(f"Duplicate model type {cls.__name__}")
-
-        __all__.append(cls.__name__)
-
-
-class _RomanDataModel(_DataModel):
+class _RomanDataModel(DataModel):
     __slots__ = ()
 
     def __init__(self, init=None, **kwargs):
@@ -166,8 +156,8 @@ class _RomanDataModel(_DataModel):
 
     @classmethod
     def _creator_defaults(
-        cls, defaults: MutableMapping[str, Any] | None = None, *, time: Time | None = None
-    ) -> MutableMapping[str, Any]:
+        cls, defaults: abc.MutableMapping[str, Any] | None = None, *, time: _time.Time | None = None
+    ) -> abc.MutableMapping[str, Any]:
         """
         The default values for the create constructors, `create_minimal` and `create_fake_data`.
 
@@ -185,11 +175,11 @@ class _RomanDataModel(_DataModel):
             some values that we want to always set to a specific value.
         """
 
-        def merge_dicts(dict1: MutableMapping[str, Any], dict2: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        def merge_dicts(dict1: abc.MutableMapping[str, Any], dict2: abc.MutableMapping[str, Any]) -> abc.MutableMapping[str, Any]:
             for key in dict2:
                 if key in dict1:
-                    dict1_is_mapping = isinstance(dict1[key], MutableMapping)
-                    dict2_is_mapping = isinstance(dict2[key], MutableMapping)
+                    dict1_is_mapping = isinstance(dict1[key], abc.MutableMapping)
+                    dict2_is_mapping = isinstance(dict2[key], abc.MutableMapping)
 
                     if dict1_is_mapping and dict2_is_mapping:
                         dict1[key] = merge_dicts(dict1[key], dict2[key])
@@ -208,7 +198,7 @@ class _RomanDataModel(_DataModel):
             {
                 "meta": {
                     "calibration_software_name": "RomanCAL",
-                    "file_date": time or Time.now(),
+                    "file_date": time or _time.Time.now(),
                     "origin": "STSCI/SOC",
                 }
             },
@@ -273,7 +263,7 @@ class _RomanDataModel(_DataModel):
             A valid model with fake data.
         """
         return super().create_fake_data(
-            defaults=cls._creator_defaults(defaults, time=Time("2020-01-01T00:00:00.0", format="isot", scale="utc")),
+            defaults=cls._creator_defaults(defaults, time=_time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")),
             shape=shape,
             tag=tag,
         )
@@ -436,47 +426,47 @@ class L1DetectorGuidewindowModel(_RomanDataModel):
     _node_type = stnode.L1DetectorGuidewindow  # type: ignore[attr-defined]
 
 
-class FlatRefModel(_DataModel):
+class FlatRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.FlatRef  # type: ignore[attr-defined]
 
 
-class AbvegaoffsetRefModel(_DataModel):
+class AbvegaoffsetRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.AbvegaoffsetRef  # type: ignore[attr-defined]
 
 
-class ApcorrRefModel(_DataModel):
+class ApcorrRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.ApcorrRef  # type: ignore[attr-defined]
 
 
-class DarkRefModel(_DataModel):
+class DarkRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.DarkRef  # type: ignore[attr-defined]
 
 
-class DistortionRefModel(_DataModel):
+class DistortionRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.DistortionRef  # type: ignore[attr-defined]
 
 
-class EpsfRefModel(_DataModel):
+class EpsfRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.EpsfRef  # type: ignore[attr-defined]
 
 
-class GainRefModel(_DataModel):
+class GainRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.GainRef  # type: ignore[attr-defined]
 
 
-class IpcRefModel(_DataModel):
+class IpcRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.IpcRef  # type: ignore[attr-defined]
 
 
-class LinearityRefModel(_DataModel):
+class LinearityRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.LinearityRef  # type: ignore[attr-defined]
 
@@ -490,7 +480,7 @@ class LinearityRefModel(_DataModel):
         return "coeffs"
 
 
-class InverselinearityRefModel(_DataModel):
+class InverselinearityRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.InverselinearityRef  # type: ignore[attr-defined]
 
@@ -504,7 +494,7 @@ class InverselinearityRefModel(_DataModel):
         return "coeffs"
 
 
-class MaskRefModel(_DataModel):
+class MaskRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.MaskRef  # type: ignore[attr-defined]
 
@@ -518,52 +508,52 @@ class MaskRefModel(_DataModel):
         return "dq"
 
 
-class MATableRefModel(_DataModel):
+class MATableRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.MatableRef  # type: ignore[attr-defined]
 
 
-class PixelareaRefModel(_DataModel):
+class PixelareaRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.PixelareaRef  # type: ignore[attr-defined]
 
 
-class ReadnoiseRefModel(_DataModel):
+class ReadnoiseRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.ReadnoiseRef  # type: ignore[attr-defined]
 
 
-class SkycellsRefModel(_DataModel):
+class SkycellsRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.SkycellsRef  # type: ignore[attr-defined]
 
 
-class SuperbiasRefModel(_DataModel):
+class SuperbiasRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.SuperbiasRef  # type: ignore[attr-defined]
 
 
-class SaturationRefModel(_DataModel):
+class SaturationRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.SaturationRef  # type: ignore[attr-defined]
 
 
-class WfiImgPhotomRefModel(_DataModel):
+class WfiImgPhotomRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.WfiImgPhotomRef  # type: ignore[attr-defined]
 
 
-class RefpixRefModel(_DataModel):
+class RefpixRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.RefpixRef  # type: ignore[attr-defined]
 
 
-class FpsModel(_DataModel):
+class FpsModel(DataModel):
     __slots__ = ()
     _node_type = stnode.Fps  # type: ignore[attr-defined]
 
 
-class TvacModel(_DataModel):
+class TvacModel(DataModel):
     __slots__ = ()
     _node_type = stnode.Tvac  # type: ignore[attr-defined]
 
