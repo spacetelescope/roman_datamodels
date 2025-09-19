@@ -1,0 +1,2 @@
+Minor improvements to stnode and the datamodels to make them easier for
+static analysis tools like mypy to understand.
