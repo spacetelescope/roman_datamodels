@@ -11,9 +11,11 @@ from pathlib import Path
 
 import yaml
 from rad import resources
+from semantic_version import Version
 
 from ._factories import stnode_factory
 from ._registry import (
+    INTERNAL_WRAP_LIMITS,
     LIST_NODE_CLASSES_BY_PATTERN,
     NODE_CLASSES_BY_TAG,
     OBJECT_NODE_CLASSES_BY_PATTERN,
@@ -36,6 +38,9 @@ _DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL
 # Notice that the static manifests are first so that we defer to them
 _MANIFESTS = _STATIC_MANIFESTS + _DATAMODEL_MANIFESTS
 
+# Last internal tagged manifest URI
+_LAST_INTERNAL_TAGGED_MANIFEST = "asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.4.0"
+
 
 def _factory(pattern, latest_manifest, tag_def):
     """
@@ -57,8 +62,13 @@ for manifest in _MANIFESTS:
     manifest_uri = manifest["id"]
     for tag_def in manifest["tags"]:
         SCHEMA_URIS_BY_TAG[tag_def["tag_uri"]] = tag_def["schema_uri"]
+        base, version = tag_def["tag_uri"].rsplit("-", maxsplit=1)
+        if manifest_uri == _LAST_INTERNAL_TAGGED_MANIFEST:
+            if base in INTERNAL_WRAP_LIMITS:
+                raise RuntimeError(f"Duplicate base wrapper URI: {base}")
+            INTERNAL_WRAP_LIMITS[base] = Version(version)
+
         # make pattern from tag
-        base, _ = tag_def["tag_uri"].rsplit("-", maxsplit=1)
         pattern = f"{base}-*"
         if pattern not in _generated:
             _generated[pattern] = _factory(pattern, manifest_uri, tag_def)

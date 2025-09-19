@@ -12,6 +12,7 @@ import copy
 import functools
 import itertools
 import logging
+from collections.abc import MutableMapping
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -162,6 +163,120 @@ class _RomanDataModel(_DataModel):
 
         if init is not None:
             self.meta.model_type = self.__class__.__name__
+
+    @classmethod
+    def _creator_defaults(
+        cls, defaults: MutableMapping[str, Any] | None = None, *, time: Time | None = None
+    ) -> MutableMapping[str, Any]:
+        """
+        The default values for the create constructors, `create_minimal` and `create_fake_data`.
+
+        Parameters
+        ----------
+        defaults : None or dict
+            If provided, defaults will be used in place of schema
+        time: default time value
+
+
+        Returns
+        -------
+        dict
+            The default values to use when creating a new model. This will include
+            some values that we want to always set to a specific value.
+        """
+
+        def merge_dicts(dict1: MutableMapping[str, Any], dict2: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+            for key in dict2:
+                if key in dict1:
+                    dict1_is_mapping = isinstance(dict1[key], MutableMapping)
+                    dict2_is_mapping = isinstance(dict2[key], MutableMapping)
+
+                    if dict1_is_mapping and dict2_is_mapping:
+                        dict1[key] = merge_dicts(dict1[key], dict2[key])
+
+                    elif dict1_is_mapping ^ dict2_is_mapping:
+                        raise ValueError("Cannot merge mapping with non-mapping")
+
+                else:
+                    dict1[key] = dict2[key]
+
+            return dict1
+
+        return merge_dicts(
+            defaults or {},
+            {
+                "meta": {
+                    "model_type": cls.__name__,
+                    "calibration_software_name": "RomanCAL",
+                    "file_date": time or Time.now(),
+                    "origin": "STSCI/SOC",
+                }
+            },
+        )
+
+    @classmethod
+    def create_minimal(cls, defaults=None, *, tag=None):
+        """
+        Class method that constructs an "minimal" model.
+
+        The "minimal" model will contain schema-required attributes
+        where a default value can be determined:
+
+            * node class defining a default value
+            * defined in the schema (for example single item enums)
+            * empty container classes (for example a "meta" dict)
+            * required items with a corresponding provided default
+
+        Parameters
+        ----------
+        defaults : None or dict
+            If provided, defaults will be used in place of schema
+            defined values for required attributes.
+
+        Returns
+        -------
+        DataModel
+            "Empty" model with optional defaults. This will often
+            be incomplete (invalid) as not all required attributes
+            can be guessed.
+        """
+        return super().create_minimal(defaults=cls._creator_defaults(defaults), tag=tag)
+
+    @classmethod
+    def create_fake_data(cls, defaults=None, shape=None, *, tag=None):
+        """
+        Class method that constructs a model filled with fake data.
+
+        Similar to `DataModel.create_minimal` this only creates
+        required attributes.
+
+        Fake arrays will have a number of dimensions matching
+        the schema requirements. If shape is provided only the
+        dimensions matching the schema requirements will be used.
+        For example if a 3 dimensional shape is provided but a fake
+        array only requires 2 dimensions only the first 2 values
+        from shape will be used.
+
+        Parameters
+        ----------
+        defaults : None or dict
+            If provided, defaults will be used in place of schema
+            defined or fake values for required attributes.
+
+        shape : None or tuple of int
+            When provided use this shape to determine the
+            shape used to construct fake arrays.
+
+        Returns
+        -------
+        DataModel
+            A valid model with fake data.
+        """
+        return super().create_fake_data(
+            defaults=cls._creator_defaults(defaults, time=Time("2020-01-01T00:00:00.0", format="isot", scale="utc")),
+            shape=shape,
+            tag=tag,
+        )
 
 
 class MosaicModel(_RomanDataModel):
