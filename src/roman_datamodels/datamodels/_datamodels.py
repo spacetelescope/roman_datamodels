@@ -6,11 +6,14 @@ This module provides all the specific datamodels used by the Roman pipeline.
     from the schema manifest defined by RAD.
 """
 
+from __future__ import annotations
+
 import copy
 import functools
 import itertools
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import astropy.table.meta
 import numpy as np
@@ -21,9 +24,12 @@ from .. import stnode
 from ._core import DataModel
 from ._utils import node_update, temporary_update_filedate, temporary_update_filename
 
+if TYPE_CHECKING:
+    from typing import Any
+
 __all__ = []
 
-DTYPE_MAP = {}
+DTYPE_MAP: dict[str, Any] = {}
 
 # Define logging
 log = logging.getLogger(__name__)
@@ -160,17 +166,17 @@ class _RomanDataModel(_DataModel):
 
 class MosaicModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.WfiMosaic
+    _node_type = stnode.WfiMosaic  # type: ignore[attr-defined]
 
 
 class ImageModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.WfiImage
+    _node_type = stnode.WfiImage  # type: ignore[attr-defined]
 
 
 class ScienceRawModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.WfiScienceRaw
+    _node_type = stnode.WfiScienceRaw  # type: ignore[attr-defined]
 
     @classmethod
     def from_tvac_raw(cls, model):
@@ -226,12 +232,12 @@ class ScienceRawModel(_RomanDataModel):
 
 class MsosStackModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.MsosStack
+    _node_type = stnode.MsosStack  # type: ignore[attr-defined]
 
 
 class RampModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.Ramp
+    _node_type = stnode.Ramp  # type: ignore[attr-defined]
 
     @classmethod
     def from_science_raw(cls, model):
@@ -297,13 +303,13 @@ class RampModel(_RomanDataModel):
 
 class RampFitOutputModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.RampFitOutput
+    _node_type = stnode.RampFitOutput  # type: ignore[attr-defined]
 
 
 class AssociationsModel(_DataModel):
     __slots__ = ()
     # Need an init to allow instantiation from a JSON file
-    _node_type = stnode.Associations
+    _node_type = stnode.Associations  # type: ignore[attr-defined]
 
     @classmethod
     def is_association(cls, asn_data):
@@ -320,62 +326,62 @@ class AssociationsModel(_DataModel):
 
 class L1FaceGuidewindowModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.L1FaceGuidewindow
+    _node_type = stnode.L1FaceGuidewindow  # type: ignore[attr-defined]
 
 
 class GuidewindowModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.Guidewindow
+    _node_type = stnode.Guidewindow  # type: ignore[attr-defined]
 
 
 class L1DetectorGuidewindowModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.L1DetectorGuidewindow
+    _node_type = stnode.L1DetectorGuidewindow  # type: ignore[attr-defined]
 
 
 class FlatRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.FlatRef
+    _node_type = stnode.FlatRef  # type: ignore[attr-defined]
 
 
 class AbvegaoffsetRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.AbvegaoffsetRef
+    _node_type = stnode.AbvegaoffsetRef  # type: ignore[attr-defined]
 
 
 class ApcorrRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.ApcorrRef
+    _node_type = stnode.ApcorrRef  # type: ignore[attr-defined]
 
 
 class DarkRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.DarkRef
+    _node_type = stnode.DarkRef  # type: ignore[attr-defined]
 
 
 class DistortionRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.DistortionRef
+    _node_type = stnode.DistortionRef  # type: ignore[attr-defined]
 
 
 class EpsfRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.EpsfRef
+    _node_type = stnode.EpsfRef  # type: ignore[attr-defined]
 
 
 class GainRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.GainRef
+    _node_type = stnode.GainRef  # type: ignore[attr-defined]
 
 
 class IpcRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.IpcRef
+    _node_type = stnode.IpcRef  # type: ignore[attr-defined]
 
 
 class LinearityRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.LinearityRef
+    _node_type = stnode.LinearityRef  # type: ignore[attr-defined]
 
     def get_primary_array_name(self):
         """
@@ -389,7 +395,7 @@ class LinearityRefModel(_DataModel):
 
 class InverselinearityRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.InverselinearityRef
+    _node_type = stnode.InverselinearityRef  # type: ignore[attr-defined]
 
     def get_primary_array_name(self):
         """
@@ -403,7 +409,7 @@ class InverselinearityRefModel(_DataModel):
 
 class MaskRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.MaskRef
+    _node_type = stnode.MaskRef  # type: ignore[attr-defined]
 
     def get_primary_array_name(self):
         """
@@ -417,92 +423,92 @@ class MaskRefModel(_DataModel):
 
 class MATableRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.MatableRef
+    _node_type = stnode.MatableRef  # type: ignore[attr-defined]
 
 
 class PixelareaRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.PixelareaRef
+    _node_type = stnode.PixelareaRef  # type: ignore[attr-defined]
 
 
 class ReadnoiseRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.ReadnoiseRef
+    _node_type = stnode.ReadnoiseRef  # type: ignore[attr-defined]
 
 
 class SkycellsRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.SkycellsRef
+    _node_type = stnode.SkycellsRef  # type: ignore[attr-defined]
 
 
 class SuperbiasRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.SuperbiasRef
+    _node_type = stnode.SuperbiasRef  # type: ignore[attr-defined]
 
 
 class SaturationRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.SaturationRef
+    _node_type = stnode.SaturationRef  # type: ignore[attr-defined]
 
 
 class WfiImgPhotomRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.WfiImgPhotomRef
+    _node_type = stnode.WfiImgPhotomRef  # type: ignore[attr-defined]
 
 
 class RefpixRefModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.RefpixRef
+    _node_type = stnode.RefpixRef  # type: ignore[attr-defined]
 
 
 class FpsModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.Fps
+    _node_type = stnode.Fps  # type: ignore[attr-defined]
 
 
 class TvacModel(_DataModel):
     __slots__ = ()
-    _node_type = stnode.Tvac
+    _node_type = stnode.Tvac  # type: ignore[attr-defined]
 
 
 class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
-    _node_type = stnode.MosaicSourceCatalog
+    _node_type = stnode.MosaicSourceCatalog  # type: ignore[attr-defined]
 
 
 class MultibandSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
-    _node_type = stnode.MultibandSourceCatalog
+    _node_type = stnode.MultibandSourceCatalog  # type: ignore[attr-defined]
 
 
 class ForcedImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
-    _node_type = stnode.ForcedImageSourceCatalog
+    _node_type = stnode.ForcedImageSourceCatalog  # type: ignore[attr-defined]
 
 
 class ForcedMosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
-    _node_type = stnode.ForcedMosaicSourceCatalog
+    _node_type = stnode.ForcedMosaicSourceCatalog  # type: ignore[attr-defined]
 
 
 class MosaicSegmentationMapModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.MosaicSegmentationMap
+    _node_type = stnode.MosaicSegmentationMap  # type: ignore[attr-defined]
 
 
 class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
-    _node_type = stnode.ImageSourceCatalog
+    _node_type = stnode.ImageSourceCatalog  # type: ignore[attr-defined]
 
 
 class SegmentationMapModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.SegmentationMap
+    _node_type = stnode.SegmentationMap  # type: ignore[attr-defined]
 
 
 class WfiWcsModel(_RomanDataModel):
     __slots__ = ()
-    _node_type = stnode.WfiWcs
+    _node_type = stnode.WfiWcs  # type: ignore[attr-defined]
 
     @classmethod
     def from_model_with_wcs(cls, model, l1_border=4):

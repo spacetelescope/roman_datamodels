@@ -55,11 +55,7 @@ class DataModel(abc.ABC):
 
     crds_observatory = "roman"
 
-    @property
-    @abc.abstractmethod
-    def _node_type(self):
-        """Define the top-level node type for this model"""
-        pass
+    _node_type: type[stnode.TaggedObjectNode]
 
     def __init_subclass__(cls, **kwargs):
         """Register each subclass in the MODEL_REGISTRY"""
