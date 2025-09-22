@@ -68,8 +68,8 @@ class TaggedObjectNode(DNode):
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
-        builder = builder or Builder()
+    def create_minimal(cls, defaults=None, _builder=None, *, tag: str | None = None):
+        builder = _builder or Builder()
         new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
 
         if tag:
@@ -78,12 +78,12 @@ class TaggedObjectNode(DNode):
         return new
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
+    def create_fake_data(cls, defaults=None, shape=None, _builder=None, *, tag: str | None = None):
+        return cls.create_minimal(defaults, _builder or FakeDataBuilder(shape), tag=tag)
 
     @classmethod
-    def create_from_node(cls, node, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(node, builder or NodeBuilder(), tag=tag)
+    def create_from_node(cls, node, _builder=None, *, tag: str | None = None):
+        return cls.create_minimal(node, _builder or NodeBuilder(), tag=tag)
 
     @property
     def _tag(self):
@@ -124,8 +124,8 @@ class TaggedListNode(LNode):
             LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
-        builder = builder or Builder()
+    def create_minimal(cls, defaults=None, _builder=None, *, tag: str | None = None):
+        builder = _builder or Builder()
         new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
 
         if tag:
@@ -134,12 +134,12 @@ class TaggedListNode(LNode):
         return new
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
+    def create_fake_data(cls, defaults=None, shape=None, _builder=None, *, tag: str | None = None):
+        return cls.create_minimal(defaults, _builder or FakeDataBuilder(shape), tag=tag)
 
     @classmethod
-    def create_from_node(cls, node, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(node, builder or NodeBuilder(), tag=tag)
+    def create_from_node(cls, node, _builder=None, *, tag: str | None = None):
+        return cls.create_minimal(node, _builder or NodeBuilder(), tag=tag)
 
     @property
     def _tag(self):
@@ -186,8 +186,8 @@ class TaggedScalarNode:
         pass
 
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
-        builder = builder or Builder()
+    def create_minimal(cls, defaults=None, _builder=None, *, tag: str | None = None):
+        builder = _builder or Builder()
         value = builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults)
         if value is _NO_VALUE:
             return value
@@ -199,12 +199,12 @@ class TaggedScalarNode:
         return new
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
+    def create_fake_data(cls, defaults=None, shape=None, _builder=None, *, tag: str | None = None):
+        return cls.create_minimal(defaults, _builder or FakeDataBuilder(shape), tag=tag)
 
     @classmethod
-    def create_from_node(cls, node, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(node, builder or NodeBuilder(), tag=tag)
+    def create_from_node(cls, node, _builder=None, *, tag: str | None = None):
+        return cls.create_minimal(node, _builder or NodeBuilder(), tag=tag)
 
     @property
     def _tag(self):
