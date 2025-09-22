@@ -37,8 +37,13 @@ def datamodel_names():
             schema_uri = extension_manager.get_tag_definition(tag["tag_uri"]).schema_uris[0]
             schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
 
-            if "datamodel_name" in schema:
-                names.append(schema["datamodel_name"])
+            if not (datamodel_name := schema.get("datamodel_name")):
+                continue
+
+            if datamodel_name == "AssociationsModel":
+                continue
+
+            names.append(datamodel_name)
 
     return names
 
@@ -166,24 +171,6 @@ def test_core_schema(tmp_path):
     with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(file_path) as model:
         assert model.meta.telescope == "XOMAN"
     asdf.get_config().validate_on_read = True
-
-
-@pytest.mark.parametrize(
-    "expected, asn_data",
-    [
-        (True, {"asn_id": "foo", "asn_pool": "bar"}),
-        (False, {"asn_id": "foo"}),
-        (False, {"asn_pool": "bar"}),
-        (False, {"foo": "bar"}),
-        (False, "foo"),
-    ],
-)
-def test_is_association(expected, asn_data):
-    """
-    Test the is_association function.
-    """
-
-    assert datamodels.AssociationsModel.is_association(asn_data) is expected
 
 
 def test_add_model_attribute(tmp_path):
@@ -385,7 +372,7 @@ def test_datamodel_schema_info_values():
 )
 def test_datamodel_schema_info_existence(name):
     # Loop over datamodels that have archive_catalog entries
-    if not name.endswith("RefModel") and name != "AssociationsModel":
+    if not name.endswith("RefModel"):
         model_class = getattr(datamodels, name)
         model = model_class.create_fake_data()
         info = model.schema_info("archive_catalog")
