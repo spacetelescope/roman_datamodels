@@ -45,7 +45,50 @@ def name_from_tag_uri(tag_uri):
     return tag_uri_split
 
 
-class TaggedObjectNode(DNode):
+class _TaggedNodeMixin:
+    if TYPE_CHECKING:
+        __slots__ = ("_read_tag",)
+    else:
+        __slots__ = ()
+
+    _default_tag: ClassVar[str]
+    _read_tag: str
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def _create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+        builder = builder or Builder()
+        new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
+
+        if tag:
+            new._read_tag = tag
+
+        return new
+
+    @classmethod
+    def create_minimal(cls, defaults=None, *, tag: str | None = None):
+        return cls._create_minimal(defaults, tag=tag)
+
+    @classmethod
+    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
+        return cls._create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
+
+    @classmethod
+    def create_fake_data(cls, defaults=None, shape=None, *, tag: str | None = None):
+        return cls._create_fake_data(defaults, shape, tag=tag)
+
+    @classmethod
+    def _create_from_node(cls, node, builder=None, *, tag: str | None = None):
+        return cls._create_minimal(node, builder or NodeBuilder(), tag=tag)
+
+    @classmethod
+    def create_from_node(cls, node, *, tag: str | None = None):
+        return cls._create_from_node(node, tag=tag)
+
+
+class TaggedObjectNode(DNode, _TaggedNodeMixin):
     """
     Base class for all tagged objects defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -53,8 +96,6 @@ class TaggedObjectNode(DNode):
     """
 
     __slots__ = ()
-
-    _default_tag: ClassVar[str]
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -66,24 +107,6 @@ class TaggedObjectNode(DNode):
             if cls._pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
                 raise RuntimeError(f"TaggedObjectNode class for tag '{cls._pattern}' has been defined twice")
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
-
-    @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
-        builder = builder or Builder()
-        new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
-
-        if tag:
-            new._read_tag = tag
-
-        return new
-
-    @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
-
-    @classmethod
-    def create_from_node(cls, node, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(node, builder or NodeBuilder(), tag=tag)
 
     @property
     def _tag(self):
@@ -101,7 +124,7 @@ class TaggedObjectNode(DNode):
         return _get_schema_from_tag(self.tag)
 
 
-class TaggedListNode(LNode):
+class TaggedListNode(LNode, _TaggedNodeMixin):
     """
     Base class for all tagged list defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -109,8 +132,6 @@ class TaggedListNode(LNode):
     """
 
     __slots__ = ()
-
-    _default_tag: ClassVar[str]
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -122,24 +143,6 @@ class TaggedListNode(LNode):
             if cls._pattern in LIST_NODE_CLASSES_BY_PATTERN:
                 raise RuntimeError(f"TaggedListNode class for tag '{cls._pattern}' has been defined twice")
             LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
-
-    @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
-        builder = builder or Builder()
-        new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
-
-        if tag:
-            new._read_tag = tag
-
-        return new
-
-    @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
-
-    @classmethod
-    def create_from_node(cls, node, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(node, builder or NodeBuilder(), tag=tag)
 
     @property
     def _tag(self):
@@ -153,7 +156,7 @@ class TaggedListNode(LNode):
         return self._tag
 
 
-class TaggedScalarNode:
+class TaggedScalarNode(_TaggedNodeMixin):
     """
     Base class for all tagged scalars defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -163,9 +166,6 @@ class TaggedScalarNode:
 
     _pattern: ClassVar[str]
     _latest_manifest: ClassVar[str]
-    _default_tag: ClassVar[str]
-
-    _read_tag: str
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -186,7 +186,7 @@ class TaggedScalarNode:
         pass
 
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def _create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         builder = builder or Builder()
         value = builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults)
         if value is _NO_VALUE:
@@ -197,14 +197,6 @@ class TaggedScalarNode:
             new._read_tag = tag
 
         return new
-
-    @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
-
-    @classmethod
-    def create_from_node(cls, node, builder=None, *, tag: str | None = None):
-        return cls.create_minimal(node, builder or NodeBuilder(), tag=tag)
 
     @property
     def _tag(self):
