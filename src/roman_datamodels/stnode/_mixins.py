@@ -8,6 +8,7 @@ import re
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
+import numpy as np
 from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
 
 from ._node import TaggedScalarDNode
@@ -16,7 +17,7 @@ from ._tagged import _get_schema_from_tag
 
 # This is a workaround for MyPy to understand the Mixin classes
 if TYPE_CHECKING:
-    from typing import ClassVar, TypeAlias
+    from typing import Any, ClassVar, TypeAlias
 
     from astropy.time import Time
 
@@ -219,20 +220,52 @@ class WfiImgPhotomRefMixin(_ObjectBase):
     @classmethod
     def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         defaults = defaults or {}
+        _shape = shape or (0,)
+        _shape = _shape[:1]
         if "phot_table" not in defaults:
-            defaults["phot_table"] = {
-                "F062": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
-                "F087": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
-                "F106": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
-                "F129": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
-                "F146": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
-                "F158": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
-                "F184": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
-                "F213": {"photmjsr": 1e-15, "uncertainty": 1e-16, "pixelareasr": 1e-13},
-                "GRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
-                "PRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
-                "DARK": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
-            }
+            phot_table = {}
+            for entry in (
+                "F062",
+                "F087",
+                "F106",
+                "F129",
+                "F146",
+                "F158",
+                "F184",
+                "F213",
+                "GRISM",
+                "GRISM_0",
+                "PRISM",
+                "DARK",
+                "NOT_CONFIGURED",
+            ):
+                table_entry: dict[str, Any] = {
+                    "photmjsr": None,
+                    "uncertainty": None,
+                    "pixelareasr": None,
+                    "collecting_area": None,
+                    "wavelength": None,
+                    "effective_area": None,
+                }
+                if entry not in ("DARK", "NOT_CONFIGURED"):
+                    table_entry.update(
+                        {
+                            "collecting_area": 1.0,
+                            "wavelength": np.zeros(_shape, dtype=np.float32),
+                            "effective_area": np.zeros(_shape, dtype=np.float32),
+                        }
+                    )
+                    if entry not in ("GRISM", "GRISM_0", "PRISM"):
+                        table_entry.update(
+                            {
+                                "photmjsr": 1e-15,
+                                "uncertainty": 1e-16,
+                                "pixelareasr": 1e-13,
+                            }
+                        )
+                phot_table[entry] = table_entry
+
+            defaults["phot_table"] = phot_table
         return super()._create_fake_data(defaults, shape, builder, tag=tag)
 
 

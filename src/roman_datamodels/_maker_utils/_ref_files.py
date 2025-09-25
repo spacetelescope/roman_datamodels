@@ -591,34 +591,50 @@ def mk_pixelarea(*, shape=(4096, 4096), filepath=None, **kwargs):
     return save_node(pixelarearef, filepath=filepath)
 
 
-def _mk_phot_table_entry(key, **kwargs):
+def _mk_phot_table_entry(key, shape=(4096,), **kwargs):
     """
     Create single phot_table entry for a given key.
     """
-    if key in ("GRISM", "PRISM", "DARK"):
-        entry = {
-            "photmjsr": kwargs.get("photmjsr"),
-            "uncertainty": kwargs.get("uncertainty"),
-        }
-    else:
-        entry = {
-            "photmjsr": kwargs.get("photmjsr", 1.0e-15),
-            "uncertainty": kwargs.get("uncertainty", 1.0e-16),
-        }
+    entry = {
+        "photmjsr": kwargs.get("photmjsr"),
+        "uncertainty": kwargs.get("uncertainty"),
+        "pixelareasr": kwargs.get("pixelareasr"),
+        "collecting_area": kwargs.get("collecting_area"),
+        "wavelength": kwargs.get("wavelength"),
+        "effective_area": kwargs.get("effective_area"),
+    }
 
-    entry["pixelareasr"] = kwargs.get("pixelareasr", 1.0e-13)
+    if key not in ("DARK", "NOT_CONFIGURED"):
+        entry.update(
+            {
+                "collecting_area": kwargs.get("collecting_area", 1.0),
+                "wavelength": kwargs.get("wavelength", np.zeros(shape, dtype=np.float32)),
+                "effective_area": kwargs.get("effective_area", np.zeros(shape, dtype=np.float32)),
+            }
+        )
+
+        if key not in ("GRISM", "GRISM_0", "PRISM"):
+            entry.update(
+                {
+                    "photmjsr": kwargs.get("photmjsr", 1.0e-15),
+                    "uncertainty": kwargs.get("uncertainty", 1.0e-16),
+                    "pixelareasr": kwargs.get("pixelareasr", 1.0e-13),
+                }
+            )
 
     return entry
 
 
-def _mk_phot_table(**kwargs):
+def _mk_phot_table(shape=(4096,), **kwargs):
     """
     Create the phot_table for the photom reference file.
     """
-    return {entry: _mk_phot_table_entry(entry, **kwargs.get(entry, {})) for entry in OPT_ELEM}
+    return {
+        entry: _mk_phot_table_entry(entry, shape, **kwargs.get(entry, {})) for entry in (*OPT_ELEM, "GRISM_0", "NOT_CONFIGURED")
+    }
 
 
-def mk_wfi_img_photom(*, filepath=None, **kwargs):
+def mk_wfi_img_photom(*, shape=(4096,), filepath=None, **kwargs):
     """
     Create a dummy WFI Img Photom instance (or file) with dictionary and valid
     values for attributes required by the schema.
@@ -632,10 +648,15 @@ def mk_wfi_img_photom(*, filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.WfiImgPhotomRef
     """
+    if len(shape) > 1:
+        shape = shape[:1]
+
+        warnings.warn(f"{MESSAGE} assuming the first entry. The remaining is thrown out!", UserWarning, stacklevel=2)
+
     wfi_img_photomref = stnode.WfiImgPhotomRef()
     wfi_img_photomref["meta"] = mk_ref_common("PHOTOM", **kwargs.get("meta", {}))
 
-    wfi_img_photomref["phot_table"] = _mk_phot_table(**kwargs.get("phot_table", {}))
+    wfi_img_photomref["phot_table"] = _mk_phot_table(shape=shape, **kwargs.get("phot_table", {}))
 
     return save_node(wfi_img_photomref, filepath=filepath)
 
