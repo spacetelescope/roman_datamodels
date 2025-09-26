@@ -924,3 +924,45 @@ def test_create_from_model_old_tags():
     converted = datamodels.ImageModel.create_from_model(old_model)
     assert converted.tag == new_model_tag
     assert converted.meta.observation.tag == new_observation_tag
+
+
+@pytest.mark.parametrize("method", ["create_minimal", "create_fake_data"])
+class TestRomanDatamodelCreatorDefaults:
+    """
+    Tests for the `defaults` argument to `create_minimal` and `create_fake_data`
+    methods of the romancal data products datamodels
+    """
+
+    def test_no_modify_input_defaults(self, method):
+        defaults = {"foo": "bar"}
+        truth = deepcopy(defaults)
+
+        if method == "create_minimal":
+            datamodels.ImageModel.create_minimal(defaults=defaults)
+        else:
+            datamodels.ImageModel.create_fake_data(defaults=defaults)
+
+        assert defaults == truth, "Input defaults dictionary was modified"
+
+    @pytest.mark.parametrize(
+        "meta",
+        [
+            {"calibration_software_name": "TestCAL"},
+            {"file_date": Time("2025-09-21T00:00:00.0", format="isot", scale="utc")},
+            {"origin": "IPAC/SSC"},
+        ],
+    )
+    def test_respect_input_defaults(self, method, meta):
+        defaults = {"meta": meta}
+
+        if method == "create_minimal":
+            mdl = datamodels.ImageModel.create_minimal(defaults=defaults)
+            default_mdl = datamodels.ImageModel.create_minimal()
+        else:
+            mdl = datamodels.ImageModel.create_fake_data(defaults=defaults)
+            default_mdl = datamodels.ImageModel.create_fake_data()
+
+        for key, value in meta.items():
+            # Sanity check to show the chosen test data is different from the default
+            assert getattr(default_mdl.meta, key) != value
+            assert getattr(mdl.meta, key) == value, f"meta.{key} was not set to input default"
