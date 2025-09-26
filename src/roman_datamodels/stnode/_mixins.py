@@ -14,6 +14,7 @@ from ._node import TaggedScalarDNode
 from ._schema import Builder, _get_keyword, _get_properties
 from ._tagged import _get_schema_from_tag
 
+# This is a workaround for MyPy to understand the Mixin classes
 if TYPE_CHECKING:
     from typing import ClassVar, TypeAlias
 
@@ -21,9 +22,12 @@ if TYPE_CHECKING:
 
     from ._tagged import TaggedObjectNode, TaggedScalarNode
 
+    class _TimeNode(Time, TaggedScalarNode):
+        pass
+
     _ObjectBase: TypeAlias = TaggedObjectNode
     _ScalarBase: TypeAlias = TaggedScalarNode
-    _TimeBase: TypeAlias = Time
+    _TimeBase: TypeAlias = _TimeNode
 else:
     _ObjectBase = object
     _ScalarBase: TypeAlias = object
@@ -90,7 +94,7 @@ class WfiModeMixin:
 
 class FileDateMixin(_TimeBase):
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls.now()
         if tag:
             new._read_tag = tag
@@ -98,7 +102,7 @@ class FileDateMixin(_TimeBase):
         return new
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
+    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
         if tag:
             new._read_tag = tag
@@ -116,7 +120,7 @@ class TvacFileDateMixin(FileDateMixin):
 
 class CalibrationSoftwareNameMixin(_ScalarBase):
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("RomanCAL")
         if tag:
             new._read_tag = tag
@@ -126,7 +130,7 @@ class CalibrationSoftwareNameMixin(_ScalarBase):
 
 class PrdVersionMixin(_ScalarBase):
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
+    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("8.8.8")
         if tag:
             new._read_tag = tag
@@ -136,7 +140,7 @@ class PrdVersionMixin(_ScalarBase):
 
 class SdfSoftwareVersionMixin(_ScalarBase):
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
+    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("7.7.7")
         if tag:
             new._read_tag = tag
@@ -146,7 +150,7 @@ class SdfSoftwareVersionMixin(_ScalarBase):
 
 class OriginMixin(_ScalarBase):
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("STSCI/SOC")
         if tag:
             new._read_tag = tag
@@ -156,7 +160,7 @@ class OriginMixin(_ScalarBase):
 
 class TelescopeMixin(_ScalarBase):
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("ROMAN")
         if tag:
             new._read_tag = tag
@@ -168,7 +172,7 @@ class RefFileMixin(_ObjectBase):
     __slots__ = ()
 
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         # copy defaults as we may modify them below
         if defaults:
             defaults = deepcopy(defaults)
@@ -195,7 +199,7 @@ class L2CalStepMixin(_ObjectBase):
     __slots__ = ()
 
     @classmethod
-    def create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
+    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         defaults = defaults or {}
         schema = _get_schema_from_tag(tag or cls._default_tag)
         new = cls({k: defaults.get(k, "INCOMPLETE") for k in schema["properties"]})
@@ -213,7 +217,7 @@ class WfiImgPhotomRefMixin(_ObjectBase):
     __slots__ = ()
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
+    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         defaults = defaults or {}
         if "phot_table" not in defaults:
             defaults["phot_table"] = {
@@ -229,7 +233,7 @@ class WfiImgPhotomRefMixin(_ObjectBase):
                 "PRISM": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
                 "DARK": {"photmjsr": None, "uncertainty": None, "pixelareasr": 1e-13},
             }
-        return super().create_fake_data(defaults, shape, builder, tag=tag)
+        return super()._create_fake_data(defaults, shape, builder, tag=tag)
 
 
 class ImageSourceCatalogMixin(_ObjectBase):
@@ -307,11 +311,11 @@ class ImageSourceCatalogMixin(_ObjectBase):
         return Table(columns)
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag: str | None = None):
+    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         defaults = defaults or {}
         if "source_catalog" not in defaults:
             defaults["source_catalog"] = cls._create_empty_catalog()
-        return super().create_fake_data(defaults, shape, builder, tag=tag)
+        return super()._create_fake_data(defaults, shape, builder, tag=tag)
 
 
 class ForcedImageSourceCatalogMixin(ImageSourceCatalogMixin):

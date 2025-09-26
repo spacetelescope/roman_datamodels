@@ -1,0 +1,6 @@
+Minor improvements to stnode and the datamodels to make them easier for
+static analysis tools like mypy to understand.
+
+Slight API change to stnode to hide the ``builder`` parameter in the ``create_*``
+methods. This parameter was only intended for the internal implementation of
+these methods, and not for public use. The other changes uncovered this issue.

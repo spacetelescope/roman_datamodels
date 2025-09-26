@@ -8,12 +8,15 @@ This provides the abstract base class ``Datamodel`` for all the specific datamod
     working datamodels.
 """
 
+from __future__ import annotations
+
 import abc
 import copy
 import datetime
 import functools
 import sys
 from pathlib import Path, PurePath
+from typing import TYPE_CHECKING
 
 import asdf
 import numpy as np
@@ -23,9 +26,13 @@ from astropy.time import Time
 
 from roman_datamodels import stnode
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from typing import Any, Self
+
 __all__ = ["MODEL_REGISTRY", "DataModel"]
 
-MODEL_REGISTRY = {}
+MODEL_REGISTRY: dict[str, type[DataModel]] = {}
 
 
 def _set_default_asdf(func):
@@ -88,7 +95,7 @@ class DataModel(abc.ABC):
         return super().__new__(cls)
 
     @classmethod
-    def create_minimal(cls, defaults=None, *, tag: str | None = None):
+    def create_minimal(cls, defaults: Mapping[str, Any] | None = None, *, tag: str | None = None) -> Self:
         """
         Class method that constructs an "minimal" model.
 
@@ -120,7 +127,9 @@ class DataModel(abc.ABC):
         return cls(cls._node_type.create_minimal(defaults, tag=tag))
 
     @classmethod
-    def create_fake_data(cls, defaults=None, shape=None, *, tag: str | None = None):
+    def create_fake_data(
+        cls, defaults: Mapping[str, Any] | None = None, shape: tuple[int, ...] | None = None, *, tag: str | None = None
+    ) -> Self:
         """
         Class method that constructs a model filled with fake data.
 
@@ -158,7 +167,7 @@ class DataModel(abc.ABC):
     __slots__ = ("_asdf", "_files_to_close", "_instance", "_iscopy", "_shape")
 
     @classmethod
-    def create_from_model(cls, model):
+    def create_from_model(cls, model: DataModel | stnode.DNode) -> Self:
         """
         Create a new DataModel from an existing model.
         """
