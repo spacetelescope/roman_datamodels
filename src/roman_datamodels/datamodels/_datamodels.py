@@ -203,10 +203,10 @@ class _RomanDataModel(_DataModel):
             return dict1
 
         return merge_dicts(
-            defaults or {},
+            # deepcopy to avoid modifying input
+            {} if defaults is None else copy.deepcopy(dict(defaults)),
             {
                 "meta": {
-                    "model_type": cls.__name__,
                     "calibration_software_name": "RomanCAL",
                     "file_date": time or Time.now(),
                     "origin": "STSCI/SOC",
