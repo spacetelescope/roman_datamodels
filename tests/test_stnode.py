@@ -1,10 +1,13 @@
 from contextlib import nullcontext
 
 import asdf
+import numpy as np
 import pytest
+from astropy.table import Table
 from astropy.time import Time
 
 from roman_datamodels import datamodels, stnode
+from roman_datamodels.stnode._individual_image_meta import _MetaTables, _SchemaTable
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 from .conftest import MANIFESTS
@@ -220,3 +223,70 @@ def test_node_representation():
             "optical_element": mdl.meta.instrument.optical_element,
         }
     )
+
+
+class TestMetaTables:
+    """Test the _MetaTables for combining multiple image meta nodes together."""
+
+    def test_create_table(self):
+        """Test the blending of the table metadata."""
+
+        names = ["Foo", "Bar", "Baz", "Qux"]
+        defaults = {"Foo": 1, "Bar": 2.0}
+
+        schema_table = _SchemaTable(names=names, defaults=defaults)
+        schema_table.add_row(stnode.DNode({}))
+        schema_table.add_row(stnode.DNode({"Foo": 27, "Bar": 3.14, "Baz": "Hello"}))
+        schema_table.add_row(stnode.DNode({"Foo": -3, "Bar": 2.72, "Baz": ["A", "B"]}))
+        schema_table.add_row(stnode.DNode({"Foo": 0, "Bar": None, "Baz": None}))
+
+        table = schema_table.create_table()
+        assert isinstance(table, Table)
+
+        assert table.colnames == names
+
+        assert table["Foo"].dtype == np.int64
+        assert (table["Foo"] == np.array([1, 27, -3, 0])).all()
+
+        assert table["Bar"].dtype == np.float64
+        assert np.array_equal(table["Bar"], np.array([2.0, 3.14, 2.72, np.nan]), equal_nan=True)
+
+        assert table["Baz"].dtype == np.dtype("<U12")
+        assert (table["Baz"] == np.array(["MISSING_CELL", "Hello", "['A', 'B']", "None"])).all()
+
+        assert table["Qux"].dtype == np.dtype("<U4")
+        assert (table["Qux"] == np.array(["None"] * 4)).all()
+
+        schema_table.reset()
+        assert not schema_table.create_table()  # empty table
+
+    def test_create_tables(self):
+        """Test the the building of multiple tables from multiple nodes with meta attributes for each table."""
+
+        schema_tables = {"foo": _SchemaTable(names=["A", "B"]), "bar": _SchemaTable(names=["C", "D"])}
+
+        meta_tables = _MetaTables(schema_tables=schema_tables)
+
+        assert meta_tables.n_models == 0
+
+        meta_tables.add_image(stnode.DNode({"meta": {"foo": {"A": 1, "B": 2}, "bar": {"C": 3, "D": 4}}}))
+        meta_tables.add_image(stnode.DNode({"meta": {"foo": {"A": 5, "B": 6}, "bar": {"C": 7, "D": 8}}}))
+
+        with pytest.raises(ValueError, match=r"Image does not have a meta attribute"):
+            meta_tables.add_image(stnode.DNode({}))
+
+        assert meta_tables.n_models == 2
+
+        tables = meta_tables.create_tables()
+        assert isinstance(tables, dict)
+        assert len(tables) == 2
+        assert tables.keys() == schema_tables.keys()
+        assert all(isinstance(t, Table) for t in tables.values())
+
+        assert tables["foo"].colnames == ["A", "B"]
+        assert (tables["foo"]["A"] == np.array([1, 5])).all()
+        assert (tables["foo"]["B"] == np.array([2, 6])).all()
+
+        assert tables["bar"].colnames == ["C", "D"]
+        assert (tables["bar"]["C"] == np.array([3, 7])).all()
+        assert (tables["bar"]["D"] == np.array([4, 8])).all()
