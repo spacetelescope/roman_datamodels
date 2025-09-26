@@ -23,10 +23,11 @@ from astropy.time import Time
 
 from .. import stnode
 from ._core import DataModel
+from ._meta_blender import ImageModelBlender
 from ._utils import node_update, temporary_update_filedate, temporary_update_filename
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, ClassVar
 
 __all__ = []
 
@@ -280,8 +281,119 @@ class _RomanDataModel(_DataModel):
 
 
 class MosaicModel(_RomanDataModel):
-    __slots__ = ()
+    __slots__ = ("_image_meta_blender",)
     _node_type = stnode.WfiMosaic  # type: ignore[attr-defined]
+
+    _meta_blend_paths: ClassVar = {
+        "observation.execution_plan": None,
+        "observation.exposure": None,
+        "observation.observation": None,
+        "observation.pass": None,
+        "observation.program": None,
+        "observation.segment": None,
+        "observation.visit": None,
+        "program.title": None,
+        "program.investigator_name": None,
+        "program.category": None,
+        "program.subcategory": None,
+        "program.science_category": None,
+        "instrument.optical_element": None,
+        "cal_step.flux": "INCOMPLETE",
+        "cal_step.outlier_detection": "INCOMPLETE",
+        "cal_step.skymatch": "INCOMPLETE",
+    }
+
+    def __init__(self, init=None, **kwargs):
+        if isinstance(init, self.__class__):
+            # Bail out if __new__ is used
+            return
+
+        super().__init__(init=init, **kwargs)
+        self._image_meta_blender = ImageModelBlender()
+
+    def __setattr__(self, attr, value):
+        if attr.startswith("_") and attr in MosaicModel.__slots__:
+            MosaicModel.__dict__[attr].__set__(self, value)
+        else:
+            super().__setattr__(attr, value)
+
+    def _blend_meta(self, model: ImageModel, first: bool = False) -> None:
+        """Blend the metadata from the ImageModel into this mosaic model
+
+        Parameters
+        ----------
+        image
+            The ImageModel to extract metadata from
+        """
+        for path, default in self._meta_blend_paths.items():
+            dst = self.meta
+            src = model.meta
+            *sub_path, key = path.split(".")
+            for k in sub_path:
+                src = src.get(k, {})
+                dst = dst[k]
+
+            if first:
+                dst[key] = src.get(key, default)
+                continue
+
+            if key not in src:
+                continue
+
+            if dst[key] != src[key]:
+                dst[key] = default
+
+    def _blend_first_image(self, image: ImageModel) -> None:
+        # FIXME assuming everything is a prompt coadd
+        self.meta.product_type = "p_visit_coadd"
+        self["individual_image_cal_logs"] = []
+
+        self.meta.coadd_info.time_first = image.meta.exposure.start_time
+        self.meta.coadd_info.time_last = image.meta.exposure.end_time
+
+        self._blend_meta(image, True)
+
+    def blend_image(self, image: ImageModel) -> None:
+        """
+        Blend the metadata from an ImageModel into this mosaic
+
+        Parameters
+        ----------
+        image
+            The ImageModel to extract metadata from
+        """
+        if not isinstance(image, ImageModel):
+            raise ValueError("Input must be an ImageModel")
+
+        if self._image_meta_blender.n_models == 0:
+            self._blend_first_image(image)
+        else:
+            self._blend_meta(image)
+
+        self.meta.coadd_info.time_first = min(self.meta.coadd_info.time_first, image.meta.exposure.start_time)
+        self.meta.coadd_info.time_last = max(self.meta.coadd_info.time_last, image.meta.exposure.end_time)
+
+        self._image_meta_blender.start_times.append(image.meta.exposure.start_time)
+        if cal_logs := image.meta.get("cal_logs"):
+            self.individual_image_cal_logs.append(cal_logs)
+
+        self.meta.resample.members.append(image.meta.filename)
+        self._image_meta_blender.add_image(image)
+
+    def finish_blend(self) -> None:
+        self.meta.coadd_info.time_mean = self._image_meta_blender.mean_time()
+
+        if all(
+            getattr(self.meta.observation, key) is not None
+            for key in ("execution_plan", "pass", "segment", "observation", "visit")
+        ):
+            self.meta.observation.exposure_grouping = (
+                "v{execution_plan:02d}{pass:03d}{segment:03d}{observation:03d}{visit:03d}".format(**self.meta.observation)
+            )
+        else:
+            self.meta.observation.exposure_grouping = None
+
+        self.meta.individual_image_meta = self._image_meta_blender.create_tables()
 
 
 class ImageModel(_RomanDataModel):
