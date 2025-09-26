@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
 
+from ._individual_image_meta import IndividualImageMeta
 from ._node import TaggedScalarDNode
 from ._schema import Builder, _get_keyword, _get_properties
 from ._tagged import _get_schema_from_tag
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
 
     from astropy.time import Time
 
+    from ._node import DNode
     from ._tagged import TaggedObjectNode, TaggedScalarNode
 
     _ObjectBase: TypeAlias = TaggedObjectNode
@@ -51,6 +53,7 @@ __all__ = [
     "TvacMixin",
     "WfiImgPhotomRefMixin",
     "WfiModeMixin",
+    "WfiMosaicMixin",
 ]
 
 
@@ -328,6 +331,35 @@ class ForcedMosaicSourceCatalogMixin(ImageSourceCatalogMixin):
 
 class MultibandSourceCatalogMixin(ImageSourceCatalogMixin):
     __slots__ = ()
+
+
+class WfiMosaicMixin(_ObjectBase):
+    __slots__ = ()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._meta_tables = IndividualImageMeta()
+
+    def add_image(self, image: DNode) -> None:
+        """
+        Add the metadata from an image to the appropriate tables
+
+        Parameters
+        ----------
+        image
+            The WfiImage node instance to extract metadata
+        """
+        self._meta_tables.add_image(image)
+
+    def create_individual_image_meta(self) -> None:
+        """
+        Create the individual_image_meta table with the metadata from all added images
+        and reset the _meta_tables to be empty again.
+        """
+
+        self.meta.individual_image_meta = self._meta_tables.create_tables()
+        self._meta_tables.reset()
 
 
 # Legacy support for tagged scalars in nodes

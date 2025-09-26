@@ -290,3 +290,65 @@ class TestMetaTables:
         assert tables["bar"].colnames == ["C", "D"]
         assert (tables["bar"]["C"] == np.array([3, 7])).all()
         assert (tables["bar"]["D"] == np.array([4, 8])).all()
+
+    def base_image(self):
+        image = datamodels.ImageModel.create_fake_data()
+        image.meta.background = stnode.SkyBackground.create_fake_data()
+        image.meta.cal_step = stnode.L2CalStep.create_fake_data()
+        image.meta.source_catalog = stnode.SourceCatalog.create_fake_data()
+        return image
+
+    def test_mosaic(self):
+        image0 = self.base_image()
+        image0.meta.filename = "foo.asdf"
+        image0.meta.photometry.pixel_area = None
+        image0.meta.photometry["extra"] = "test"
+        del image0.meta["background"]
+
+        image1 = self.base_image()
+        image1.meta.filename = "bar.asdf"
+        image1.meta.photometry.pixel_area = 1.0
+        image1.meta["extra"] = {"a": 1, "b": 2}
+
+        mosaic = stnode.WfiMosaic.create_fake_data()
+        model = datamodels.MosaicModel(mosaic)
+        model.validate()
+
+        model.add_image(image0)
+        model.add_image(image1)
+
+        assert mosaic._meta_tables.n_models == 2
+        model.populate_individual_image_meta()
+        assert mosaic._meta_tables.n_models == 0
+
+        # # Check that nothing got blown up by the individual_image_meta creation
+        model.validate()
+
+        assert len(mosaic.meta.individual_image_meta) == len(mosaic._meta_tables._schema_tables)
+        assert len(mosaic._meta_tables._schema_tables) > 0  # at least one table blended
+        for name, table in mosaic.meta.individual_image_meta.items():
+            assert isinstance(table, Table)
+            assert len(table) == 2  # two images added
+            assert name in mosaic._meta_tables._schema_tables
+
+        assert (mosaic.meta.individual_image_meta.basic["filename"] == ["foo.asdf", "bar.asdf"]).all()
+
+        assert "background" in mosaic.meta.individual_image_meta  # from SkyBackground
+        for value in mosaic.meta.individual_image_meta.background[0]:  # First image has no sky background
+            assert (value == "MISSING_CELL") or np.isnan(value)
+        for value in mosaic.meta.individual_image_meta.background[1]:  # Second image has sky background
+            if isinstance(value, str):
+                assert value != "MISSING_CELL"  # Second image has sky background
+            else:
+                assert not np.isnan(value)
+
+        assert "photometry" in mosaic.meta.individual_image_meta  # from Photometry
+        assert np.isnan(
+            mosaic.meta.individual_image_meta.photometry["pixel_area"][0]
+        )  # This was None, but its Float column, so it is NaN
+        assert mosaic.meta.individual_image_meta.photometry["pixel_area"][1] == 1.0
+        assert "extra" not in mosaic.meta.individual_image_meta.photometry.colnames  # extra not in schema, so not include
+
+        # Extra is not part of any of the schemas in the individual_image_meta, so it should not be included
+        assert "extra" not in mosaic.meta.individual_image_meta
+        assert "extra" not in mosaic.meta.individual_image_meta.basic.colnames

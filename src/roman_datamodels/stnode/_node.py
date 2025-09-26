@@ -47,7 +47,10 @@ class DNode(MutableMapping):
     Base class describing all "object" (dict-like) data nodes for STNode classes.
     """
 
-    __slots__ = ("_data", "_name", "_parent", "_read_tag")
+    # Note: Due to layout issues when we have multiple inheritance, we need to add
+    #    a slot here for each of the unique things that we may need to add in the
+    #    mixins.
+    __slots__ = ("_data", "_meta_tables", "_name", "_parent", "_read_tag")
 
     _pattern: ClassVar[str]
     _latest_manifest: ClassVar[str]

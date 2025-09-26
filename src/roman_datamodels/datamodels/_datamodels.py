@@ -283,6 +283,25 @@ class MosaicModel(_RomanDataModel):
     __slots__ = ()
     _node_type = stnode.WfiMosaic  # type: ignore[attr-defined]
 
+    def add_image(self, model: ImageModel):
+        """
+        Add an ImageModel to the mosaic
+
+        Parameters
+        ----------
+        model
+            The ImageModel instance to add
+        """
+        self._instance.add_image(model._instance)
+
+    def populate_individual_image_meta(self):
+        """
+        Populate the individual_image_meta attribute from the _meta_tables
+
+        This should be called after all images have been added to the mosaic
+        """
+        self._instance.create_individual_image_meta()
+
 
 class ImageModel(_RomanDataModel):
     __slots__ = ()
