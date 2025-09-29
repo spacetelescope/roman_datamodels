@@ -1,0 +1,3 @@
+Explicit construction of ``individual_image_meta`` tables from RAD schemas so that
+they can be ensured to have the exact construction we want for them rather than
+relying on inferring this information.
