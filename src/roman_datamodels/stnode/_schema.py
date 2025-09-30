@@ -11,7 +11,7 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
 import asdf
-import asdf.schema
+import asdf.treeutil
 from semantic_version import Version
 
 from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
@@ -25,6 +25,42 @@ __all__ = ["get_latest_schema"]
 NOSTR = "?"
 NONUM = -999999
 NOBOOL = False
+
+
+@functools.cache
+def _load_schema(schema_uri: str) -> dict[str, Any]:
+    """
+    Load a schema by URI.
+
+    Parameters
+    ----------
+    uri : str
+        The URI of the schema to load.
+    """
+    # See Issue https://github.com/asdf-format/asdf/issues/1977
+    if Version(asdf.__version__) < Version("5.1.0"):
+        schema = asdf.schema.load_schema(schema_uri, resolve_references=False)
+
+        def resolve_refs(node, json_id):
+            if json_id is None:
+                json_id = schema_uri
+
+            if isinstance(node, dict) and "$ref" in node:
+                suburl_base, suburl_fragment = asdf.schema._safe_resolve(json_id, node["$ref"])
+
+                if suburl_base == schema_uri or suburl_base == schema.get("id"):
+                    # This is a local ref, which we'll resolve in both cases.
+                    subschema = schema
+                else:
+                    subschema = asdf.schema.load_schema(suburl_base, True)
+
+                return asdf.treeutil.walk_and_modify(asdf.reference.resolve_fragment(subschema, suburl_fragment), resolve_refs)
+
+            return node
+
+        return asdf.treeutil.walk_and_modify(schema, resolve_refs)  # type: ignore[no-any-return]
+
+    return asdf.schema.load_schema(schema_uri, resolve_references=True)  # type: ignore[no-any-return]
 
 
 @functools.cache
@@ -51,7 +87,7 @@ def get_latest_schema(uri: str) -> tuple[str, dict[str, Any]]:
     if latest_uri is None:
         raise ValueError(f"No schema found for {uri}")
 
-    return latest_uri, asdf.schema.load_schema(latest_uri, resolve_references=True)
+    return latest_uri, _load_schema(latest_uri)
 
 
 @functools.cache
@@ -66,7 +102,7 @@ def _get_schema_from_tag(tag):
     """
     schema_uri = SCHEMA_URIS_BY_TAG[tag]
 
-    return asdf.schema.load_schema(schema_uri, resolve_references=True)
+    return _load_schema(schema_uri)
 
 
 class _MissingKeywordType:
