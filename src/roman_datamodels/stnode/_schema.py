@@ -11,7 +11,7 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
 import asdf
-import asdf.schema
+import asdf.treeutil
 from semantic_version import Version
 
 from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
@@ -65,6 +65,29 @@ def _get_schema_from_tag(tag):
         The tag_uri of the schema to load.
     """
     schema_uri = SCHEMA_URIS_BY_TAG[tag]
+
+    # See Issue https://github.com/asdf-format/asdf/issues/1977
+    if Version(asdf.__version__) < Version("5.0.0"):
+        schema = asdf.schema.load_schema(schema_uri, resolve_references=False)
+
+        def resolve_refs(node, json_id):
+            if json_id is None:
+                json_id = schema_uri
+
+            if isinstance(node, dict) and "$ref" in node:
+                suburl_base, suburl_fragment = asdf.schema._safe_resolve(None, json_id, node["$ref"])
+
+                if suburl_base == schema_uri or suburl_base == schema.get("id"):
+                    # This is a local ref, which we'll resolve in both cases.
+                    subschema = schema
+                else:
+                    subschema = asdf.schema.load_schema(suburl_base, None, True)
+
+                return asdf.treeutil.walk_and_modify(asdf.reference.resolve_fragment(subschema, suburl_fragment), resolve_refs)
+
+            return node
+
+        return asdf.treeutil.walk_and_modify(schema, resolve_refs)
 
     return asdf.schema.load_schema(schema_uri, resolve_references=True)
 
@@ -266,13 +289,17 @@ class Builder:
         return defaults
 
     def from_object(self, schema, defaults):
+        print("From object")
         if defaults is _NO_VALUE:
             defaults = {}
         obj = {}
         required = _get_required(schema)
+        print(f"    {required=}")
         if not required:
             return obj
+        print("    Looping Properties")
         for name, subschema in _get_properties(schema):
+            print(f"        {name=}")
             if name not in required:
                 continue
             if (subdefaults := defaults.get(name, _NO_VALUE)) is not _NO_VALUE:
@@ -356,24 +383,37 @@ class Builder:
         return _NO_VALUE
 
     def build_node(self, schema, defaults):
+        print("Building")
+        # import pprint
+        # pp = pprint.PrettyPrinter(indent=4)
+        # pp.pprint(schema)
         match self.get_type(schema):
             case SchemaType.UNKNOWN:
+                print("   Unknown")
                 return self.from_unknown(schema, defaults)
             case SchemaType.OBJECT:
+                print("   Object")
                 return self.from_object(schema, defaults)
             case SchemaType.ARRAY:
+                print("   Array")
                 return self.from_array(schema, defaults)
             case SchemaType.STRING:
+                print("   String")
                 return self.from_string(schema, defaults)
             case SchemaType.INTEGER:
+                print("   Integer")
                 return self.from_integer(schema, defaults)
             case SchemaType.NUMBER:
+                print("   Number")
                 return self.from_number(schema, defaults)
             case SchemaType.BOOLEAN:
+                print("   Boolean")
                 return self.from_boolean(schema, defaults)
             case SchemaType.NULL:
+                print("   Null")
                 return self.from_null(schema, defaults)
             case SchemaType.TAGGED:
+                print("   Tagged")
                 return self.from_tagged(schema, defaults)
 
     def build(self, schema, defaults=_NO_VALUE):

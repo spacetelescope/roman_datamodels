@@ -39,7 +39,7 @@ __all__ = [
     "mk_wfi_img_photom",
 ]
 
-OPT_ELEM = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK")
+OPT_ELEM = ("F062", "F087", "F106", "F129", "F146", "F158", "F184", "F213", "GRISM", "PRISM", "DARK", "NOT_CONFIGURED")
 
 
 def mk_ref_abvegaoffset_data(**kwargs):
@@ -629,9 +629,7 @@ def _mk_phot_table(shape=(4096,), **kwargs):
     """
     Create the phot_table for the photom reference file.
     """
-    return {
-        entry: _mk_phot_table_entry(entry, shape, **kwargs.get(entry, {})) for entry in (*OPT_ELEM, "GRISM_0", "NOT_CONFIGURED")
-    }
+    return {entry: _mk_phot_table_entry(entry, shape, **kwargs.get(entry, {})) for entry in (*OPT_ELEM, "GRISM_0")}
 
 
 def mk_wfi_img_photom(*, shape=(4096,), filepath=None, **kwargs):
