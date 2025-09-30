@@ -220,3 +220,13 @@ def test_node_representation():
             "optical_element": mdl.meta.instrument.optical_element,
         }
     )
+
+
+def test_get_latest_schema(object_node, object_node_default_uri, object_node_uris):
+    assert len(object_node_uris) > 0, "This test requires at lest one URI available."
+
+    for uri in [object_node_default_uri.rsplit("-", 1)[0], *object_node_uris]:
+        latest_uri, schema = stnode.get_latest_schema(uri)
+        assert latest_uri == object_node_default_uri
+
+        assert stnode._schema._get_schema_from_tag(object_node._default_tag) == schema
