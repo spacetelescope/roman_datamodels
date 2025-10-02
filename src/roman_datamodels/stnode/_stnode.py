@@ -63,7 +63,8 @@ for manifest in _MANIFESTS:
     for tag_def in manifest["tags"]:
         SCHEMA_URIS_BY_TAG[tag_def["tag_uri"]] = tag_def["schema_uri"]
         base, version = tag_def["tag_uri"].rsplit("-", maxsplit=1)
-        if manifest_uri == _LAST_INTERNAL_TAGGED_MANIFEST:
+        # See issue https://github.com/spacetelescope/rad/issues/694
+        if "mosaic_basic" not in base and manifest_uri == _LAST_INTERNAL_TAGGED_MANIFEST:
             if base in INTERNAL_WRAP_LIMITS:
                 raise RuntimeError(f"Duplicate base wrapper URI: {base}")
             INTERNAL_WRAP_LIMITS[base] = Version(version)

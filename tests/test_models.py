@@ -900,7 +900,11 @@ def test_create_from_model_dict():
     """
     model = datamodels.ImageModel.create_from_model({"meta": {"observation": {"visit": 42}}})
     assert isinstance(model, datamodels.ImageModel)
-    assert isinstance(model.meta.observation, stnode.Observation)
+
+    # Observation tagged node is no longer used
+    assert not isinstance(model.meta.observation, stnode.Observation)
+    assert isinstance(model.meta.observation, stnode.DNode)
+
     assert model.meta.observation.visit == 42
 
 
@@ -923,7 +927,9 @@ def test_create_from_model_old_tags():
 
     converted = datamodels.ImageModel.create_from_model(old_model)
     assert converted.tag == new_model_tag
-    assert converted.meta.observation.tag == new_observation_tag
+    # New models should not have a tagged observation node
+    assert not isinstance(converted.meta.observation, stnode.Observation)
+    assert isinstance(converted.meta.observation, stnode.DNode)
 
 
 @pytest.mark.parametrize("method", ["create_minimal", "create_fake_data"])
