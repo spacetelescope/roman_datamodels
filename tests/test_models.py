@@ -927,7 +927,7 @@ def test_create_from_model_old_tags():
 
     converted = datamodels.ImageModel.create_from_model(old_model)
     assert converted.tag == new_model_tag
-    # New models should notg have a tagged observation node
+    # New models should not have a tagged observation node
     assert not isinstance(converted.meta.observation, stnode.Observation)
     assert isinstance(converted.meta.observation, stnode.DNode)
 
