@@ -687,15 +687,8 @@ def mk_mosaic_source_catalog(*, filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.MosaicSourceCatalog
     """
-    source_catalog = stnode.MosaicSourceCatalog()
-
-    if "source_catalog" in kwargs:
-        source_catalog["source_catalog"] = kwargs["source_catalog"]
-    else:
-        source_catalog["source_catalog"] = source_catalog.create_fake_data().source_catalog
-
-    source_catalog["meta"] = mk_mosaic_catalog_meta(**kwargs.get("meta", {}))
-
+    kwargs.pop("shape", None)
+    source_catalog = stnode.MosaicSourceCatalog.create_fake_data(defaults=kwargs)
     return save_node(source_catalog, filepath=filepath)
 
 
@@ -713,15 +706,8 @@ def mk_forced_mosaic_source_catalog(*, filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.ForcedMosaicSourceCatalog
     """
-    source_catalog = stnode.ForcedMosaicSourceCatalog()
-
-    if "source_catalog" in kwargs:
-        source_catalog["source_catalog"] = kwargs["source_catalog"]
-    else:
-        source_catalog["source_catalog"] = source_catalog.create_fake_data().source_catalog
-
-    source_catalog["meta"] = mk_mosaic_catalog_meta(**kwargs.get("meta", {}))
-
+    kwargs.pop("shape", None)
+    source_catalog = stnode.ForcedMosaicSourceCatalog.create_fake_data(defaults=kwargs)
     return save_node(source_catalog, filepath=filepath)
 
 
@@ -777,10 +763,7 @@ def mk_mosaic_segmentation_map(*, filepath=None, shape=(4096, 4096), **kwargs):
             stacklevel=2,
         )
 
-    segmentation_map = stnode.MosaicSegmentationMap()
-    segmentation_map["data"] = kwargs.get("data", np.zeros(shape, dtype=np.uint32))
-    segmentation_map["meta"] = mk_mosaic_catalog_meta(**kwargs.get("meta", {}))
-
+    segmentation_map = stnode.MosaicSegmentationMap.create_fake_data(defaults=kwargs, shape=shape)
     return save_node(segmentation_map, filepath=filepath)
 
 
