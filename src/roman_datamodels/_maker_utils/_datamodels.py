@@ -13,7 +13,6 @@ from ._common_meta import (
     mk_l1_detector_guidewindow_meta,
     mk_l1_face_guidewindow_meta,
     mk_l2_meta,
-    mk_mosaic_catalog_meta,
     mk_msos_stack_meta,
     mk_ramp_meta,
     mk_wcs,
@@ -725,15 +724,8 @@ def mk_multiband_source_catalog(*, filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.MultibandSourceCatalog
     """
-    source_catalog = stnode.MultibandSourceCatalog()
-
-    if "source_catalog" in kwargs:
-        source_catalog["source_catalog"] = kwargs["source_catalog"]
-    else:
-        source_catalog["source_catalog"] = source_catalog.create_fake_data().source_catalog
-
-    source_catalog["meta"] = mk_mosaic_catalog_meta(**kwargs.get("meta", {}))
-
+    kwargs.pop("shape", None)
+    source_catalog = stnode.MultibandSourceCatalog().create_fake_data(defaults=kwargs)
     return save_node(source_catalog, filepath=filepath)
 
 
