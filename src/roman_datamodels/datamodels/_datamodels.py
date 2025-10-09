@@ -583,6 +583,11 @@ class MosaicSegmentationMapModel(_RomanDataModel):
     _node_type = stnode.MosaicSegmentationMap  # type: ignore[attr-defined]
 
 
+class MultibandSegmentationMapModel(_RomanDataModel):
+    __slots__ = ()
+    _node_type = stnode.MultibandSegmentationMap  # type: ignore[attr-defined]
+
+
 class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
     _node_type = stnode.ImageSourceCatalog  # type: ignore[attr-defined]
