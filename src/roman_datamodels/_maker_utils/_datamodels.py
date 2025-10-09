@@ -7,7 +7,6 @@ from roman_datamodels import stnode
 
 from ._base import MESSAGE, save_node
 from ._common_meta import (
-    mk_catalog_meta,
     mk_common_meta,
     mk_guidewindow_meta,
     mk_l1_detector_guidewindow_meta,
@@ -759,6 +758,36 @@ def mk_mosaic_segmentation_map(*, filepath=None, shape=(4096, 4096), **kwargs):
     return save_node(segmentation_map, filepath=filepath)
 
 
+def mk_multiband_segmentation_map(*, filepath=None, shape=(4096, 4096), **kwargs):
+    """
+    Create a mock Segmentation Map (or file) with arrays and valid values
+    for attributes required by the schema.
+
+    Parameters
+    ----------
+    filepath
+        (optional, keyword-only) File name and path to write model to.
+
+    shape
+        (optional, keyword-only) Shape of arrays in the model.
+
+    Returns
+    -------
+    roman_datamodels.stnode.MultibandSegmentationMap
+    """
+    if len(shape) > 2:
+        shape = shape[1:3]
+
+        warnings.warn(
+            f"{MESSAGE} assuming the first entry is n_groups followed by y, x. The remaining is thrown out!",
+            UserWarning,
+            stacklevel=2,
+        )
+
+    segmentation_map = stnode.MultibandSegmentationMap.create_fake_data(defaults=kwargs, shape=shape)
+    return save_node(segmentation_map, filepath=filepath)
+
+
 def mk_image_source_catalog(*, filepath=None, **kwargs):
     """
     Create a dummy Source Catalog instance (or file) with arrays and valid values
@@ -773,15 +802,8 @@ def mk_image_source_catalog(*, filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.ImageSourceCatalog
     """
-    source_catalog = stnode.ImageSourceCatalog()
-
-    if "source_catalog" in kwargs:
-        source_catalog["source_catalog"] = kwargs["source_catalog"]
-    else:
-        source_catalog["source_catalog"] = source_catalog.create_fake_data().source_catalog
-
-    source_catalog["meta"] = mk_catalog_meta(**kwargs.get("meta", {}))
-
+    kwargs.pop("shape", None)
+    source_catalog = stnode.ImageSourceCatalog.create_fake_data(defaults=kwargs)
     return save_node(source_catalog, filepath=filepath)
 
 
@@ -799,15 +821,8 @@ def mk_forced_image_source_catalog(*, filepath=None, **kwargs):
     -------
     roman_datamodels.stnode.ForcedImageSourceCatalog
     """
-    source_catalog = stnode.ForcedImageSourceCatalog()
-
-    if "source_catalog" in kwargs:
-        source_catalog["source_catalog"] = kwargs["source_catalog"]
-    else:
-        source_catalog["source_catalog"] = source_catalog.create_fake_data().source_catalog
-
-    source_catalog["meta"] = mk_catalog_meta(**kwargs.get("meta", {}))
-
+    kwargs.pop("shape", None)
+    source_catalog = stnode.ForcedImageSourceCatalog.create_fake_data(defaults=kwargs)
     return save_node(source_catalog, filepath=filepath)
 
 
@@ -837,10 +852,7 @@ def mk_segmentation_map(*, filepath=None, shape=(4096, 4096), **kwargs):
             stacklevel=2,
         )
 
-    segmentation_map = stnode.SegmentationMap()
-    segmentation_map["data"] = kwargs.get("data", np.zeros(shape, dtype=np.uint32))
-    segmentation_map["meta"] = mk_catalog_meta(**kwargs.get("meta", {}))
-
+    segmentation_map = stnode.SegmentationMap.create_fake_data(defaults=kwargs, shape=kwargs.pop("shape", None))
     return save_node(segmentation_map, filepath=filepath)
 
 
