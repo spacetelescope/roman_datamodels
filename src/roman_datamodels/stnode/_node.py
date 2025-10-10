@@ -14,7 +14,10 @@ from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
 from astropy.time import Time
 
-__all__ = ["DNode", "LNode", "TaggedScalarDNode"]
+if TYPE_CHECKING:
+    from typing import ClassVar
+
+__all__ = ["DNode", "LNode"]
 
 
 class _NodeMixin:
@@ -201,22 +204,6 @@ class DNode(MutableMapping, _NodeMixin):
         instance._data = self._data.copy()
 
         return instance
-
-
-class TaggedScalarDNode(DNode):
-    """Legacy class for nodes that have tagged scalars"""
-
-    __slots__ = ()
-
-    def _wrap_value(self, key, value):
-        # Return objects as node classes, if applicable
-        if isinstance(value, dict | AsdfDictNode):
-            return TaggedScalarDNode(value, parent=self, name=key)
-
-        if isinstance(value, list | AsdfListNode):
-            return LNode(value)
-
-        return value
 
 
 class LNode(MutableSequence, _NodeMixin):

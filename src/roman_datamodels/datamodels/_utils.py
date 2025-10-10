@@ -49,7 +49,7 @@ def _temporary_update(datamodel: DataModel, key: str, value: Any) -> Generator[N
     """
     if "meta" in datamodel._instance and key in datamodel._instance.meta:
         old_value = getattr(datamodel._instance.meta, key)
-        setattr(datamodel._instance.meta, key, value)
+        setattr(datamodel._instance.meta, key, type(old_value)(value))
 
         yield
         setattr(datamodel._instance.meta, key, old_value)
