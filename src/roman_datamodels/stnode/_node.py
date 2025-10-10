@@ -14,9 +14,6 @@ from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
 from astropy.time import Time
 
-if TYPE_CHECKING:
-    from typing import ClassVar
-
 __all__ = ["DNode", "LNode"]
 
 
