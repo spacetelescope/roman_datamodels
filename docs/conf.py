@@ -111,7 +111,7 @@ suppress_warnings = [
 # General information about the project
 project = setup_cfg["name"]
 primary_author = setup_cfg["authors"][0]
-author = f"{primary_author['name']} <{primary_author['email']}>"
+author = primary_author["name"]
 copyright = f"{datetime.datetime.now().year}, {author}"
 
 # The version info for the project you're documenting, acts as replacement for
