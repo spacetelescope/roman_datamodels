@@ -13,30 +13,8 @@ import numpy as np
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
 from astropy.time import Time
-from semantic_version import Version
-
-from ._registry import INTERNAL_WRAP_LIMITS, SCALAR_NODE_CLASSES_BY_KEY
 
 __all__ = ["DNode", "LNode", "TaggedScalarDNode"]
-
-
-def _convert_to_scalar(key, value, ref=None):
-    """Wrap scalars in into a tagged scalar object"""
-    from ._tagged import TaggedScalarNode
-
-    if isinstance(ref, TaggedScalarNode):
-        # we want the exact class (not possible subclasses)
-        if type(value) is type(ref):
-            return value
-        return type(ref)(value)
-
-    if isinstance(value, TaggedScalarNode):
-        return value
-
-    if key in SCALAR_NODE_CLASSES_BY_KEY:
-        value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
-
-    return value
 
 
 class _NodeMixin:
@@ -81,15 +59,6 @@ class DNode(MutableMapping, _NodeMixin):
         self._parent = parent
         self._name = name
 
-    def _convert_to_scalar(self, key, value, ref=None):
-        """Find and wrap scalars in the appropriate class, if its a tagged one."""
-        if self._read_tag is not None:
-            base_tag, version = self._read_tag.rsplit("-", maxsplit=1)
-            if (limit := INTERNAL_WRAP_LIMITS.get(base_tag)) is not None and Version(version) <= limit:
-                return _convert_to_scalar(key, value, ref)
-
-        return value
-
     def _wrap_value(self, key, value):
         # Return objects as node classes, if applicable
         if isinstance(value, dict | AsdfDictNode):
@@ -112,11 +81,8 @@ class DNode(MutableMapping, _NodeMixin):
 
         # If the key is in the schema, then we can return the value
         if key in self._data:
-            # Cast the value into the appropriate tagged scalar class
-            value = self._convert_to_scalar(key, self._data[key])
-
             # Return objects as node classes, if applicable
-            return self._wrap_value(key, value)
+            return self._wrap_value(key, self._data[key])
 
         # Raise the correct error for the attribute not being found
         raise AttributeError(f"No such attribute ({key}) found in node: {type(self)}")
@@ -128,9 +94,6 @@ class DNode(MutableMapping, _NodeMixin):
 
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
-            # Wrap things in the tagged scalar classes if necessary
-            value = self._convert_to_scalar(key, value, self._data.get(key))
-
             # Finally set the value
             self._data[key] = value
         else:
@@ -211,15 +174,6 @@ class DNode(MutableMapping, _NodeMixin):
 
     def __setitem__(self, key, value):
         """Dictionary style access set data"""
-
-        # Convert the value to a tagged scalar if necessary
-        value = self._convert_to_scalar(key, value, self._data.get(key))
-
-        # If the value is a dictionary, loop over its keys and convert them to tagged scalars
-        if isinstance(value, dict | AsdfDictNode):
-            for sub_key, sub_value in value.items():
-                value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
-
         self._data[key] = value
 
     def __delitem__(self, key):
@@ -253,9 +207,6 @@ class TaggedScalarDNode(DNode):
     """Legacy class for nodes that have tagged scalars"""
 
     __slots__ = ()
-
-    def _convert_to_scalar(self, key, value, ref=None):
-        return _convert_to_scalar(key, value, ref)
 
     def _wrap_value(self, key, value):
         # Return objects as node classes, if applicable
