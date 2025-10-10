@@ -15,6 +15,8 @@ import asdf
 import numpy as np
 from astropy import time
 
+from roman_datamodels import stnode
+
 from ._core import MODEL_REGISTRY, DataModel
 
 if TYPE_CHECKING:
@@ -176,6 +178,8 @@ def node_update(
                         value = getattr(value, "value", value)
                     else:
                         value = getattr(from_node, key)
+                    if isinstance(value, stnode.TaggedScalarNode):
+                        value = type(to_node[key])(value)
                     setattr(to_node, key, value)
             else:
                 to_node[key] = from_node[key]
