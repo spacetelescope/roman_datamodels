@@ -9,7 +9,6 @@ from ._base import MESSAGE, save_node
 from ._common_meta import (
     mk_catalog_meta,
     mk_common_meta,
-    mk_guidewindow_meta,
     mk_l1_detector_guidewindow_meta,
     mk_l1_face_guidewindow_meta,
     mk_l2_meta,
@@ -466,13 +465,7 @@ def mk_guidewindow(*, shape=(2, 8, 16, 32, 32), filepath=None, **kwargs):
         shape = (2, 8, 16, 32, 32)
         warnings.warn("Input shape must be 5D. Defaulting to (2, 8, 16, 32, 32)", UserWarning, stacklevel=2)
 
-    guidewindow = stnode.Guidewindow()
-    guidewindow["meta"] = mk_guidewindow_meta(**kwargs.get("meta", {}))
-
-    guidewindow["pedestal_frames"] = kwargs.get("pedestal_frames", np.zeros(shape, dtype=np.uint16))
-    guidewindow["signal_frames"] = kwargs.get("signal_frames", np.zeros(shape, dtype=np.uint16))
-    guidewindow["amp33"] = kwargs.get("amp33", np.zeros(shape, dtype=np.uint16))
-
+    guidewindow = stnode.Guidewindow.create_fake_data(defaults=kwargs, shape=shape)
     return save_node(guidewindow, filepath=filepath)
 
 
