@@ -17,9 +17,6 @@ from semantic_version import Version
 
 from ._registry import INTERNAL_WRAP_LIMITS, SCALAR_NODE_CLASSES_BY_KEY
 
-if TYPE_CHECKING:
-    from typing import ClassVar
-
 __all__ = ["DNode", "LNode", "TaggedScalarDNode"]
 
 
@@ -42,17 +39,36 @@ def _convert_to_scalar(key, value, ref=None):
     return value
 
 
-class DNode(MutableMapping):
+class _NodeMixin:
+    """
+    Mixin class to provide the common API for all Node objects
+    """
+
+    # This is a hack to avoid mypy and __slots__ inheritance issues concerning `_read_tag`
+    #    ideally we would just define `_read_tag` like we did below, but mypy gets upset because
+    #    __slots__ is defined so that the subclasses will be fully slotted. You can't have the
+    #    same slot attributed defined in both parent classes when they are mixed together.
+    if TYPE_CHECKING:
+        __slots__ = ("_read_tag",)
+    else:
+        __slots__ = ()
+
+    _read_tag: str | None
+
+    def __init__(self, *args, **kwargs):
+        self._read_tag = None
+
+
+class DNode(MutableMapping, _NodeMixin):
     """
     Base class describing all "object" (dict-like) data nodes for STNode classes.
     """
 
     __slots__ = ("_data", "_name", "_parent", "_read_tag")
 
-    _pattern: ClassVar[str]
-    _latest_manifest: ClassVar[str]
-
     def __init__(self, node=None, parent=None, name=None):
+        super().__init__(node, parent=parent, name=name)
+
         # Handle if we are passed different data types
         if node is None:
             self._data = {}
@@ -64,7 +80,6 @@ class DNode(MutableMapping):
         # Set the metadata tracked by the node
         self._parent = parent
         self._name = name
-        self._read_tag = None
 
     def _convert_to_scalar(self, key, value, ref=None):
         """Find and wrap scalars in the appropriate class, if its a tagged one."""
@@ -253,17 +268,16 @@ class TaggedScalarDNode(DNode):
         return value
 
 
-class LNode(MutableSequence):
+class LNode(MutableSequence, _NodeMixin):
     """
     Base class describing all "array" (list-like) data nodes for STNode classes.
     """
 
     __slots__ = ("_read_tag", "data")
 
-    _pattern: ClassVar[str]
-    _latest_manifest: ClassVar[str]
-
     def __init__(self, node=None):
+        super().__init__(node=node)
+
         if node is None:
             self.data = []
         elif isinstance(node, list | AsdfListNode):
@@ -272,8 +286,6 @@ class LNode(MutableSequence):
             self.data = node.data
         else:
             raise ValueError("Initializer only accepts lists")
-
-        self._read_tag = None
 
     def __getitem__(self, index):
         value = self.data[index]
