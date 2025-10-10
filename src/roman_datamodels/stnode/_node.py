@@ -45,10 +45,10 @@ class DNode(MutableMapping, _NodeMixin):
     Base class describing all "object" (dict-like) data nodes for STNode classes.
     """
 
-    __slots__ = ("_data", "_name", "_parent", "_read_tag")
+    __slots__ = ("_data", "_read_tag")
 
-    def __init__(self, node=None, parent=None, name=None):
-        super().__init__(node, parent=parent, name=name)
+    def __init__(self, node=None):
+        super().__init__(node)
 
         # Handle if we are passed different data types
         if node is None:
@@ -58,14 +58,10 @@ class DNode(MutableMapping, _NodeMixin):
         else:
             raise ValueError("Initializer only accepts dicts")
 
-        # Set the metadata tracked by the node
-        self._parent = parent
-        self._name = name
-
     def _wrap_value(self, key, value):
         # Return objects as node classes, if applicable
         if isinstance(value, dict | AsdfDictNode):
-            return DNode(value, parent=self, name=key)
+            return DNode(value)
 
         if isinstance(value, list | AsdfListNode):
             return LNode(value)
@@ -198,8 +194,6 @@ class DNode(MutableMapping, _NodeMixin):
         """Handle copying of the node"""
         instance = self.__class__.__new__(self.__class__)
 
-        instance._parent = self._parent
-        instance._name = self._name
         instance._read_tag = self._read_tag
         instance._data = self._data.copy()
 
