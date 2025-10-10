@@ -1,0 +1,1 @@
+Fix error where DNode/LNode assignment to a DataModel results in an invalid model.
