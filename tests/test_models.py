@@ -624,8 +624,8 @@ def test_model_assignment_access_types(model_class):
     # Test assignment
     model2 = model_class.create_fake_data(defaults={"meta": {"calibration_software_version": "4.5.6"}})
 
-    model.meta["filename"] = "Roman_keys_test.asdf"
-    model2.meta.filename = "Roman_dot_test.asdf"
+    model.meta["filename"] = type(model.meta.filename)("Roman_keys_test.asdf")
+    model2.meta.filename = type(model2.meta.filename)("Roman_dot_test.asdf")
 
     assert model.validate() is None
     assert model2.validate() is None
