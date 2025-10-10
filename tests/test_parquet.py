@@ -1,10 +1,11 @@
 import astropy.table as astrotab
 import numpy as np
-import pyarrow.parquet as pq
 import pytest
 from asdf.exceptions import ValidationError
 
 from roman_datamodels import datamodels
+
+pq = pytest.importorskip("pyarrow.parquet")
 
 CATALOG_CLASSES = (
     datamodels.ImageSourceCatalogModel,
