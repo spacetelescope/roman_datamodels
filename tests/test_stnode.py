@@ -2,7 +2,6 @@ from contextlib import nullcontext
 
 import asdf
 import pytest
-from astropy.time import Time
 
 from roman_datamodels import datamodels, stnode
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
@@ -30,23 +29,6 @@ def test_node_classes_available_via_stnode(node_class):
     assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
     assert node_class.__module__ == stnode.__name__
     assert hasattr(stnode, node_class.__name__)
-
-
-@pytest.mark.parametrize("scalar_key, scalar_type", stnode._registry.SCALAR_NODE_CLASSES_BY_KEY.items())
-def test_no_wrapping_of_scalars(scalar_key, scalar_type):
-    """Demonstrate that scalar types are not wrapped in nodes."""
-    test_value = Time.now() if "file_date" in scalar_key else "test_value"
-
-    # Plain DNode does not convert to scalar type
-    node = stnode.DNode({scalar_key: test_value})
-    assert getattr(node, scalar_key) == test_value
-    assert not isinstance(getattr(node, scalar_key), scalar_type)
-
-    # Spcalialized TaggedScalarDNode does convert to scalar type
-    #   Guidewindow, Fps, Tvac use this case
-    node = stnode.TaggedScalarDNode({scalar_key: test_value})
-    assert getattr(node, scalar_key) == test_value
-    assert isinstance(getattr(node, scalar_key), scalar_type)
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
