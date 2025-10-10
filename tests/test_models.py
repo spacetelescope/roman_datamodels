@@ -885,6 +885,17 @@ def test_create_from_model_dict():
     assert model.meta.observation.visit == 42
 
 
+def test_meta_reassignment():
+    """
+    Test that assigning meta to meta doesn't result in an invalid model.
+
+    Minimal reproducer for https://github.com/spacetelescope/roman_datamodels/issues/581
+    """
+    model = datamodels.ImageModel.create_fake_data()
+    model.meta = model.meta
+    assert model.validate() is None
+
+
 def test_create_from_model_old_tags():
     """
     Use create_from_model to update tags from old to new/default versions.

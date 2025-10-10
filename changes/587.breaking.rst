@@ -1,0 +1,1 @@
+Remove automatic scalar node wrapping for old models.

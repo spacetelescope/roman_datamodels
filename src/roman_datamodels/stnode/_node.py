@@ -20,6 +20,34 @@ if TYPE_CHECKING:
 __all__ = ["DNode", "LNode"]
 
 
+def _wrap(value):
+    """
+    Convert dict to DNode and list to LNode
+    """
+    # Return objects as node classes, if applicable
+    if isinstance(value, dict | AsdfDictNode):
+        return DNode(value)
+
+    if isinstance(value, list | AsdfListNode):
+        return LNode(value)
+
+    return value
+
+
+def _unwrap(value):
+    """
+    Convert DNode to dict and LNode to list
+    """
+    # use "type(...) is" so that we don't unwrap subclasses
+    if type(value) is DNode:
+        return value._data
+
+    if type(value) is LNode:
+        return value.data
+
+    return value
+
+
 class _NodeMixin:
     """
     Mixin class to provide the common API for all Node objects
@@ -58,16 +86,6 @@ class DNode(MutableMapping, _NodeMixin):
         else:
             raise ValueError("Initializer only accepts dicts")
 
-    def _wrap_value(self, key, value):
-        # Return objects as node classes, if applicable
-        if isinstance(value, dict | AsdfDictNode):
-            return DNode(value)
-
-        if isinstance(value, list | AsdfListNode):
-            return LNode(value)
-
-        return value
-
     def __getattr__(self, key):
         """
         Permit accessing dict keys as attributes, assuming they are legal Python
@@ -81,7 +99,7 @@ class DNode(MutableMapping, _NodeMixin):
         # If the key is in the schema, then we can return the value
         if key in self._data:
             # Return objects as node classes, if applicable
-            return self._wrap_value(key, self._data[key])
+            return _wrap(self._data[key])
 
         # Raise the correct error for the attribute not being found
         raise AttributeError(f"No such attribute ({key}) found in node: {type(self)}")
@@ -94,7 +112,7 @@ class DNode(MutableMapping, _NodeMixin):
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
             # Finally set the value
-            self._data[key] = value
+            self._data[key] = _unwrap(value)
         else:
             if key in DNode.__slots__:
                 DNode.__dict__[key].__set__(self, value)
@@ -220,16 +238,10 @@ class LNode(MutableSequence, _NodeMixin):
             raise ValueError("Initializer only accepts lists")
 
     def __getitem__(self, index):
-        value = self.data[index]
-        if isinstance(value, dict | AsdfDictNode):
-            return DNode(value)
-        elif isinstance(value, list | AsdfListNode):
-            return LNode(value)
-        else:
-            return value
+        return _wrap(self.data[index])
 
     def __setitem__(self, index, value):
-        self.data[index] = value
+        self.data[index] = _unwrap(value)
 
     def __delitem__(self, index):
         del self.data[index]
