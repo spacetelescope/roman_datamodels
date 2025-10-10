@@ -13,28 +13,34 @@ import numpy as np
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
 from astropy.time import Time
-from semantic_version import Version
 
-from ._registry import INTERNAL_WRAP_LIMITS, SCALAR_NODE_CLASSES_BY_KEY
-
-__all__ = ["DNode", "LNode", "TaggedScalarDNode"]
+__all__ = ["DNode", "LNode"]
 
 
-def _convert_to_scalar(key, value, ref=None):
-    """Wrap scalars in into a tagged scalar object"""
-    from ._tagged import TaggedScalarNode
+def _wrap(value):
+    """
+    Convert dict to DNode and list to LNode
+    """
+    # Return objects as node classes, if applicable
+    if isinstance(value, dict | AsdfDictNode):
+        return DNode(value)
 
-    if isinstance(ref, TaggedScalarNode):
-        # we want the exact class (not possible subclasses)
-        if type(value) is type(ref):
-            return value
-        return type(ref)(value)
+    if isinstance(value, list | AsdfListNode):
+        return LNode(value)
 
-    if isinstance(value, TaggedScalarNode):
-        return value
+    return value
 
-    if key in SCALAR_NODE_CLASSES_BY_KEY:
-        value = SCALAR_NODE_CLASSES_BY_KEY[key](value)
+
+def _unwrap(value):
+    """
+    Convert DNode to dict and LNode to list
+    """
+    # use "type(...) is" so that we don't unwrap subclasses
+    if type(value) is DNode:
+        return value._data
+
+    if type(value) is LNode:
+        return value.data
 
     return value
 
@@ -64,10 +70,10 @@ class DNode(MutableMapping, _NodeMixin):
     Base class describing all "object" (dict-like) data nodes for STNode classes.
     """
 
-    __slots__ = ("_data", "_name", "_parent", "_read_tag")
+    __slots__ = ("_data", "_read_tag")
 
-    def __init__(self, node=None, parent=None, name=None):
-        super().__init__(node, parent=parent, name=name)
+    def __init__(self, node=None):
+        super().__init__(node)
 
         # Handle if we are passed different data types
         if node is None:
@@ -76,29 +82,6 @@ class DNode(MutableMapping, _NodeMixin):
             self._data = node
         else:
             raise ValueError("Initializer only accepts dicts")
-
-        # Set the metadata tracked by the node
-        self._parent = parent
-        self._name = name
-
-    def _convert_to_scalar(self, key, value, ref=None):
-        """Find and wrap scalars in the appropriate class, if its a tagged one."""
-        if self._read_tag is not None:
-            base_tag, version = self._read_tag.rsplit("-", maxsplit=1)
-            if (limit := INTERNAL_WRAP_LIMITS.get(base_tag)) is not None and Version(version) <= limit:
-                return _convert_to_scalar(key, value, ref)
-
-        return value
-
-    def _wrap_value(self, key, value):
-        # Return objects as node classes, if applicable
-        if isinstance(value, dict | AsdfDictNode):
-            return DNode(value, parent=self, name=key)
-
-        if isinstance(value, list | AsdfListNode):
-            return LNode(value)
-
-        return value
 
     def __getattr__(self, key):
         """
@@ -112,11 +95,8 @@ class DNode(MutableMapping, _NodeMixin):
 
         # If the key is in the schema, then we can return the value
         if key in self._data:
-            # Cast the value into the appropriate tagged scalar class
-            value = self._convert_to_scalar(key, self._data[key])
-
             # Return objects as node classes, if applicable
-            return self._wrap_value(key, value)
+            return _wrap(self._data[key])
 
         # Raise the correct error for the attribute not being found
         raise AttributeError(f"No such attribute ({key}) found in node: {type(self)}")
@@ -128,11 +108,8 @@ class DNode(MutableMapping, _NodeMixin):
 
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
-            # Wrap things in the tagged scalar classes if necessary
-            value = self._convert_to_scalar(key, value, self._data.get(key))
-
             # Finally set the value
-            self._data[key] = value
+            self._data[key] = _unwrap(value)
         else:
             if key in DNode.__slots__:
                 DNode.__dict__[key].__set__(self, value)
@@ -211,15 +188,6 @@ class DNode(MutableMapping, _NodeMixin):
 
     def __setitem__(self, key, value):
         """Dictionary style access set data"""
-
-        # Convert the value to a tagged scalar if necessary
-        value = self._convert_to_scalar(key, value, self._data.get(key))
-
-        # If the value is a dictionary, loop over its keys and convert them to tagged scalars
-        if isinstance(value, dict | AsdfDictNode):
-            for sub_key, sub_value in value.items():
-                value[sub_key] = self._convert_to_scalar(sub_key, sub_value)
-
         self._data[key] = value
 
     def __delitem__(self, key):
@@ -241,31 +209,10 @@ class DNode(MutableMapping, _NodeMixin):
         """Handle copying of the node"""
         instance = self.__class__.__new__(self.__class__)
 
-        instance._parent = self._parent
-        instance._name = self._name
         instance._read_tag = self._read_tag
         instance._data = self._data.copy()
 
         return instance
-
-
-class TaggedScalarDNode(DNode):
-    """Legacy class for nodes that have tagged scalars"""
-
-    __slots__ = ()
-
-    def _convert_to_scalar(self, key, value, ref=None):
-        return _convert_to_scalar(key, value, ref)
-
-    def _wrap_value(self, key, value):
-        # Return objects as node classes, if applicable
-        if isinstance(value, dict | AsdfDictNode):
-            return TaggedScalarDNode(value, parent=self, name=key)
-
-        if isinstance(value, list | AsdfListNode):
-            return LNode(value)
-
-        return value
 
 
 class LNode(MutableSequence, _NodeMixin):
@@ -288,16 +235,10 @@ class LNode(MutableSequence, _NodeMixin):
             raise ValueError("Initializer only accepts lists")
 
     def __getitem__(self, index):
-        value = self.data[index]
-        if isinstance(value, dict | AsdfDictNode):
-            return DNode(value)
-        elif isinstance(value, list | AsdfListNode):
-            return LNode(value)
-        else:
-            return value
+        return _wrap(self.data[index])
 
     def __setitem__(self, index, value):
-        self.data[index] = value
+        self.data[index] = _unwrap(value)
 
     def __delitem__(self, index):
         del self.data[index]

@@ -152,7 +152,7 @@ class _RomanDataModel(DataModel):
         super().__init__(init, **kwargs)
 
         if init is not None:
-            self.meta.model_type = self.__class__.__name__
+            self.meta.model_type = type(self.get("meta", {}).get("model_type", ""))(self.__class__.__name__)
 
     @classmethod
     def _creator_defaults(

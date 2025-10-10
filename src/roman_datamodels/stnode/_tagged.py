@@ -13,7 +13,6 @@ from ._node import DNode, LNode
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     OBJECT_NODE_CLASSES_BY_PATTERN,
-    SCALAR_NODE_CLASSES_BY_KEY,
     SCALAR_NODE_CLASSES_BY_PATTERN,
 )
 from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
@@ -223,15 +222,13 @@ class TaggedScalarNode(_TaggedNodeMixin):
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
-        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN
-        and SCALAR_NODE_CLASSES_BY_KEY registry.
+        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
         """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedScalarNode":
             if cls._pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
                 raise RuntimeError(f"TaggedScalarNode class for tag '{cls._pattern}' has been defined twice")
             SCALAR_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
-            SCALAR_NODE_CLASSES_BY_KEY[name_from_tag_uri(cls._pattern)] = cls
 
     def __asdf_traverse__(self):
         return self

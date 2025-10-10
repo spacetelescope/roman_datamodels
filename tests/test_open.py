@@ -209,7 +209,7 @@ def test_opening_model(tmp_path, node_class):
     # Create a node and write it to disk
     node = node_class.create_fake_data()
     if hasattr(node, "meta") and hasattr(node.meta, "filename"):
-        node.meta.filename = file_path.name
+        node.meta.filename = type(node.meta.filename)(file_path.name)
     asdf.AsdfFile({"roman": node}).write_to(file_path)
 
     with datamodels.open(file_path) as model:

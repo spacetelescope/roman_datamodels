@@ -11,11 +11,9 @@ from pathlib import Path
 
 import yaml
 from rad import resources
-from semantic_version import Version
 
 from ._factories import stnode_factory
 from ._registry import (
-    INTERNAL_WRAP_LIMITS,
     LIST_NODE_CLASSES_BY_PATTERN,
     NODE_CLASSES_BY_TAG,
     OBJECT_NODE_CLASSES_BY_PATTERN,
@@ -37,9 +35,6 @@ _DATAMODEL_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*datamo
 _DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL_MANIFEST_PATHS]
 # Notice that the static manifests are first so that we defer to them
 _MANIFESTS = _STATIC_MANIFESTS + _DATAMODEL_MANIFESTS
-
-# Last internal tagged manifest URI
-_LAST_INTERNAL_TAGGED_MANIFEST = "asdf://stsci.edu/datamodels/roman/manifests/datamodels-1.4.0"
 
 
 def _factory(pattern, latest_manifest, tag_def):
@@ -63,11 +58,6 @@ for manifest in _MANIFESTS:
     for tag_def in manifest["tags"]:
         SCHEMA_URIS_BY_TAG[tag_def["tag_uri"]] = tag_def["schema_uri"]
         base, version = tag_def["tag_uri"].rsplit("-", maxsplit=1)
-        # See issue https://github.com/spacetelescope/rad/issues/694
-        if "mosaic_basic" not in base and manifest_uri == _LAST_INTERNAL_TAGGED_MANIFEST:
-            if base in INTERNAL_WRAP_LIMITS:
-                raise RuntimeError(f"Duplicate base wrapper URI: {base}")
-            INTERNAL_WRAP_LIMITS[base] = Version(version)
 
         # make pattern from tag
         pattern = f"{base}-*"
