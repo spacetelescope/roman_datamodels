@@ -44,13 +44,9 @@ def _set_default_asdf(func):
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         if self._asdf is None:
-            try:
-                af = asdf.AsdfFile()
-                af["roman"] = self._instance
-                af.validate()
-                self._asdf = af
-            except ValidationError as err:
-                raise ValueError(f"DataModel needs to have all its data flushed out before calling {func.__name__}") from err
+            af = asdf.AsdfFile()
+            af["roman"] = self._instance
+            self._asdf = af
 
         return func(self, *args, **kwargs)
 
