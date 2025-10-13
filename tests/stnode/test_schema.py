@@ -78,6 +78,10 @@ def test_type(schema, type_):
         ({"minItems": 3, "items": [{"enum": [42]}]}, [0, 1], [0, 1]),
         ({"minItems": 3, "items": {"enum": [42]}}, [0, 1], [0, 1, 42]),
         ({"minItems": 2, "items": {"enum": [42]}}, [0, 1], [0, 1]),
+        ({"patternProperties": {"^(A|B)$": {"enum": [0]}}}, {}, {}),
+        ({"required": ["B"], "patternProperties": {"^(A|B)$": {"enum": [0]}}}, {}, {"B": 0}),
+        ({"required": ["B"], "patternProperties": {"^(A|B)$": {"enum": [0]}}}, {"B": 1}, {"B": 1}),
+        ({"required": ["A", "B"], "patternProperties": {"^(A|B)$": {"enum": [0]}}}, {}, {"A": 0, "B": 0}),
     ),
 )
 def test_build(schema, defaults, expected):
