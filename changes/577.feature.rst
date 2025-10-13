@@ -1,0 +1,1 @@
+Support explicit pattern properties in reference file schemas.
