@@ -1,0 +1,1 @@
+Support patternProperties for create_minimal/fake_data/from_model.
