@@ -11,6 +11,7 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
 import asdf
+import asdf.schema
 import asdf.treeutil
 from semantic_version import Version
 
@@ -18,6 +19,11 @@ from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
 
 if TYPE_CHECKING:
     from typing import Any
+
+if Version(asdf.__version__) < Version("5.0.0"):
+    _safe_resolve = functools.partial(asdf.schema._safe_resolve, None)
+else:
+    _safe_resolve = asdf.schema._safe_resolve
 
 __all__ = ["get_latest_schema"]
 
@@ -46,13 +52,13 @@ def _load_schema(schema_uri: str) -> dict[str, Any]:
                 json_id = schema_uri
 
             if isinstance(node, dict) and "$ref" in node:
-                suburl_base, suburl_fragment = asdf.schema._safe_resolve(json_id, node["$ref"])
+                suburl_base, suburl_fragment = _safe_resolve(json_id, node["$ref"])
 
                 if suburl_base == schema_uri or suburl_base == schema.get("id"):
                     # This is a local ref, which we'll resolve in both cases.
                     subschema = schema
                 else:
-                    subschema = asdf.schema.load_schema(suburl_base, True)
+                    subschema = asdf.schema.load_schema(suburl_base, resolve_references=True)
 
                 return asdf.treeutil.walk_and_modify(asdf.reference.resolve_fragment(subschema, suburl_fragment), resolve_refs)
 
