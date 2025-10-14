@@ -15,6 +15,8 @@ import asdf
 import numpy as np
 from astropy import time
 
+from roman_datamodels import stnode
+
 from ._core import MODEL_REGISTRY, DataModel
 
 if TYPE_CHECKING:
@@ -49,7 +51,7 @@ def _temporary_update(datamodel: DataModel, key: str, value: Any) -> Generator[N
     """
     if "meta" in datamodel._instance and key in datamodel._instance.meta:
         old_value = getattr(datamodel._instance.meta, key)
-        setattr(datamodel._instance.meta, key, value)
+        setattr(datamodel._instance.meta, key, type(old_value)(value))
 
         yield
         setattr(datamodel._instance.meta, key, old_value)
@@ -176,6 +178,8 @@ def node_update(
                         value = getattr(value, "value", value)
                     else:
                         value = getattr(from_node, key)
+                    if isinstance(value, stnode.TaggedScalarNode):
+                        value = type(to_node[key])(value)
                     setattr(to_node, key, value)
             else:
                 to_node[key] = from_node[key]

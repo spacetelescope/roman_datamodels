@@ -624,8 +624,8 @@ def test_model_assignment_access_types(model_class):
     # Test assignment
     model2 = model_class.create_fake_data(defaults={"meta": {"calibration_software_version": "4.5.6"}})
 
-    model.meta["filename"] = "Roman_keys_test.asdf"
-    model2.meta.filename = "Roman_dot_test.asdf"
+    model.meta["filename"] = type(model.meta.filename)("Roman_keys_test.asdf")
+    model2.meta.filename = type(model2.meta.filename)("Roman_dot_test.asdf")
 
     assert model.validate() is None
     assert model2.validate() is None
@@ -883,6 +883,17 @@ def test_create_from_model_dict():
     assert isinstance(model.meta.observation, stnode.DNode)
 
     assert model.meta.observation.visit == 42
+
+
+def test_meta_reassignment():
+    """
+    Test that assigning meta to meta doesn't result in an invalid model.
+
+    Minimal reproducer for https://github.com/spacetelescope/roman_datamodels/issues/581
+    """
+    model = datamodels.ImageModel.create_fake_data()
+    model.meta = model.meta
+    assert model.validate() is None
 
 
 def test_create_from_model_old_tags():
