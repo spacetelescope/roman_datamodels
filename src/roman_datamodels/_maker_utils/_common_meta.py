@@ -8,7 +8,7 @@ from gwcs.wcs import WCS
 
 from roman_datamodels import stnode
 
-from ._base import NONUM, NOSTR
+from ._base import NOFN, NONUM, NOSTR
 from ._basic_meta import mk_basic_meta
 from ._tagged_nodes import mk_cal_logs, mk_photometry, mk_resample, mk_source_catalog
 
@@ -197,6 +197,20 @@ def mk_coordinates(**kwargs):
     coord["reference_frame"] = kwargs.get("reference_frame", "ICRS")
 
     return coord
+
+
+def mk_catalog_image_meta(**kwargs):
+    """
+    Create fake catalog-related image meta
+
+    Returns
+    -------
+    dict
+    """
+    return {
+        "filename": kwargs.get("filename", NOFN),
+        "file_date": kwargs.get("file_date", time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")),
+    }
 
 
 def mk_pointing(**kwargs):
@@ -1049,11 +1063,15 @@ def mk_catalog_meta(**kwargs):
     """
 
     meta = mk_basic_meta(**kwargs)
-    meta["program"] = mk_program(**kwargs.get("program", {}))
-    meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
-    meta["visit"] = mk_visit(**kwargs.get("visit", {}))
-    meta["optical_element"] = kwargs.get("optical_element", "F158")
+    meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["exposure"] = mk_exposure(**kwargs.get("exposure", {}))
+    meta["image"] = mk_catalog_image_meta(**kwargs.get("image", {}))
+    meta["instrument"] = mk_wfi_mode(**kwargs.get("instrument", {}))
+    meta["observation"] = mk_observation(**kwargs.get("observation", {}))
+    meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
+    meta["pointing"] = mk_pointing(**kwargs.get("pointing", {}))
+    meta["program"] = mk_program(**kwargs.get("program", {}))
     meta["ref_file"] = mk_ref_file(**kwargs.get("ref_file", {}))
+    meta["visit"] = mk_visit(**kwargs.get("visit", {}))
 
     return meta
