@@ -199,7 +199,7 @@ def mk_coordinates(**kwargs):
     return coord
 
 
-def mk_image(**kwargs):
+def mk_catalog_image_meta(**kwargs):
     """
     Create fake catalog-related image meta
 
@@ -1065,7 +1065,7 @@ def mk_catalog_meta(**kwargs):
     meta = mk_basic_meta(**kwargs)
     meta["coordinates"] = mk_coordinates(**kwargs.get("coordinates", {}))
     meta["exposure"] = mk_exposure(**kwargs.get("exposure", {}))
-    meta["image"] = mk_image(**kwargs.get("image", {}))
+    meta["image"] = mk_catalog_image_meta(**kwargs.get("image", {}))
     meta["instrument"] = mk_wfi_mode(**kwargs.get("instrument", {}))
     meta["observation"] = mk_observation(**kwargs.get("observation", {}))
     meta["photometry"] = mk_photometry(**kwargs.get("photometry", {}))
