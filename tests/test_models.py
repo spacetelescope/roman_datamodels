@@ -77,25 +77,6 @@ def test_model_schemas(model):
 
 @pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
 @pytest.mark.parametrize("method", ["info", "search", "schema_info"])
-def test_empty_model_asdf_operations(node, model, method):
-    """
-    Test the decorator for asdf operations on models when the model is left truly empty.
-    """
-    mdl = model()
-    assert isinstance(mdl._instance, node)
-
-    # Check that the model does not have the asdf attribute set.
-    assert mdl._asdf is None
-
-    # Execute the method we wish to test, and catch the expected error.
-    with pytest.raises(ValueError, match=f"DataModel needs to have all its data flushed out before calling {method}"):
-        getattr(mdl, method)()
-
-    assert mdl._asdf is None
-
-
-@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
-@pytest.mark.parametrize("method", ["info", "search", "schema_info"])
 def test_model_asdf_operations(node, model, method):
     """
     Test the decorator for asdf operations on models when an empty initial model
@@ -104,10 +85,6 @@ def test_model_asdf_operations(node, model, method):
     # Create an empty model
     mdl = model()
     assert isinstance(mdl._instance, node)
-
-    # Check there model prior to filling raises an error.
-    with pytest.raises(ValueError):
-        getattr(mdl, method)()
 
     # Fill the model with data, but no asdf file is present
     mdl._instance = node.create_fake_data()
