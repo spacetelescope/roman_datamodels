@@ -50,50 +50,18 @@ Datamodel Outline
 To some extent, this is also a summary of how the ASDF converter
 machinery works, as applied to Roman ASDF files.
 
-Unlike the JWST datamodels, where nodes of the ASDF tree are essentially
-generic regardless of what the content is (that is to say, except for GWCS
-and arrays, no tags are used), for Roman, they mostly do have specific types
-and have unique tags in the ASDF file. As it turns out, the nodes are usually
-generic (with a few exceptions) in that outside of having specific class
-types, they behave as generic dicts and lists.
-
-There are advantages of doing it this way which are:
-
-- Unlike JWST, the code to convert between ASDF and python is much more modular
-  rather than one monolithic module.
-- Given that there is a strong desire to reuse as much of JWST calibration code
-  as possible, and that not all metadata has the same names or values, this
-  approach allows presenting the Roman version to the JWST code by aliasing
-  Roman terms to JWST corresponding terms (e.g., Roman optical_elements to
-  filters), or similar kinds of mappings that reduce the need to complicate the
-  calibration code.
-- It specifically identifies the type of ASDF node rather than relies on the
-  current convention of the type depending on the location in the ASDF tree.
-  For example, the node can be passed to functions that can verify that they
-  are receiving the right node type.
-- It makes defining schemas for data models simpler rather than the "kitchen
-  sink" approach used for JWST schemas that consist of a union of all possible
-  attributes, where many do not apply to specific datamodels. The Roman
-  datamodels can be made much more specific to what is and is not expected
-  in a particular data file.
-
 As the ASDF file is read, each tag invokes the appropriate code to convert
 the node contents to the corresponding Python object.
 
-One other important difference in the ASDF structure between JWST and Roman
+One important difference in the ASDF structure between JWST and Roman
 is that the content starts at the top level of the ASDF tree. Unfortunately
 there is no mechanism to tag the tree at the top level. For Roman, all the
 content was placed as the value of the roman attribute at the top level, and
 the content is then tagged as one of the permissible Roman datamodels.
 
-Normally the info and search utilities do not look at the contents of the
-Python objects that tags convert to, but ASDF provides a mechanism to permit
-such introspection, and the Roman objects make use of that so that info and
-search works on them.
-
 Each Roman data file type corresponds to a specific Roman datamodel for which
 there is a corresponding schema file for that datamodel. Any changes to the
-contents of the data file must be accompanied by corresponding changes to the
+structure of the data file must be accompanied by corresponding changes to the
 schema. This ensures that the validation tools stay in sync with the file
 contents.
 
