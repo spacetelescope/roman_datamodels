@@ -1,1 +1,0 @@
-Fix deprecated maker_utils for catalog metadata updates.

@@ -1,1 +1,0 @@
-Enable MyPy usage and fix type issues that were found.

@@ -1,3 +1,91 @@
+0.28.0 (2025-10-16)
+===================
+
+Bug Fixes
+---------
+
+- Minor bugfixes for node and datamodels attributes including, raising explicit
+  errors
+  when attempting to set private variables outside of RDM internal code and
+  adding a
+  ``__delattr__`` method to allow the deletion of attributes for both nodes and
+  datamodels. (`#538
+  <https://github.com/spacetelescope/roman_datamodels/issues/538>`_)
+- Bugfix for ``create_*`` methods modifying the input defaults dictionary.
+  (`#573 <https://github.com/spacetelescope/roman_datamodels/issues/573>`_)
+- Fixes for internal tag removals. (`#575
+  <https://github.com/spacetelescope/roman_datamodels/issues/575>`_)
+- Fix deprecated maker_utils for catalog metadata updates. (`#585
+  <https://github.com/spacetelescope/roman_datamodels/issues/585>`_)
+- Fix error where DNode/LNode assignment to a DataModel results in an invalid
+  model. (`#587
+  <https://github.com/spacetelescope/roman_datamodels/issues/587>`_)
+- Remove unnecessary validation prior to info, schema_info, search and
+  validate. (`#590
+  <https://github.com/spacetelescope/roman_datamodels/issues/590>`_)
+
+
+Documentation
+-------------
+
+- Remove or update out-dated documentation. (`#593
+  <https://github.com/spacetelescope/roman_datamodels/issues/593>`_)
+
+
+New Features
+------------
+
+- Update the ``meta.file_date`` of the saved model to the current time when
+  saving a model. (`#539
+  <https://github.com/spacetelescope/roman_datamodels/issues/539>`_)
+- Add ``DataModel.create_from_model`` for constructing new models from existing
+  models, raw dictionaries, or old models. (`#550
+  <https://github.com/spacetelescope/roman_datamodels/issues/550>`_)
+- Added support for the removal of tagged scalars in the latest version of RAD,
+  while
+  maintaining backward compatibility with older versions that still use tagged
+  scalars. (`#555
+  <https://github.com/spacetelescope/roman_datamodels/issues/555>`_)
+- Added psf to the MSOS Datamodel. (`#560
+  <https://github.com/spacetelescope/roman_datamodels/issues/560>`_)
+- Add a ``tag`` keyword only argument to ``create_minimal`` and
+  ``create_fake_data`` methods
+  for instantiating a datamodel. This will make those methods target the
+  specified tag
+  rather than the default tag for the given model class. (`#565
+  <https://github.com/spacetelescope/roman_datamodels/issues/565>`_)
+- Enable MyPy usage and fix type issues that were found. (`#566
+  <https://github.com/spacetelescope/roman_datamodels/issues/566>`_)
+- Minor improvements to stnode and the datamodels to make them easier for
+  static analysis tools like mypy to understand.
+
+  Slight API change to stnode to hide the ``builder`` parameter in the
+  ``create_*``
+  methods. This parameter was only intended for the internal implementation of
+  these methods, and not for public use. The other changes uncovered this
+  issue. (`#568
+  <https://github.com/spacetelescope/roman_datamodels/issues/568>`_)
+- Updates to RDM to support the new wfi_image_photom schema. (`#571
+  <https://github.com/spacetelescope/roman_datamodels/issues/571>`_)
+- Add API to enable grabbing the latest version of a schema via a schema URI.
+  (`#578 <https://github.com/spacetelescope/roman_datamodels/issues/578>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- Deprecate ``maker_utils``. Please use ``DataModel.create_minimal`` or
+  ``DataModel.create_fake_data``. (`#548
+  <https://github.com/spacetelescope/roman_datamodels/issues/548>`_)
+- Remove support for setting ``ROMAN_VALIDATE=false`` to disable validation.
+  Writing invalid files is not supported. Please convert invalid models to
+  standard python objects before saving them to ASDF (which is still
+  supported). (`#561
+  <https://github.com/spacetelescope/roman_datamodels/issues/561>`_)
+- Remove unused ``AssociationsModel``. (`#562
+  <https://github.com/spacetelescope/roman_datamodels/issues/562>`_)
+
+
 0.27.0 (2025-08-15)
 ===================
 

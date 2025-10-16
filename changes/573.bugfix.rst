@@ -1,1 +1,0 @@
-Bugfix for ``create_*`` methods modifying the input defaults dictionary.

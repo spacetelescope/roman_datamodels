@@ -1,1 +1,0 @@
-Add API to enable grabbing the latest version of a schema via a schema URI.

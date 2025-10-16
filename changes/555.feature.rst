@@ -1,2 +1,0 @@
-Added support for the removal of tagged scalars in the latest version of RAD, while
-maintaining backward compatibility with older versions that still use tagged scalars.

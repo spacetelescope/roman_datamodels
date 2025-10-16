@@ -1,1 +1,0 @@
-Remove unnecessary validation prior to info, schema_info, search and validate.

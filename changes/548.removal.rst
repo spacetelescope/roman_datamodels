@@ -1,1 +1,0 @@
-Deprecate ``maker_utils``. Please use ``DataModel.create_minimal`` or ``DataModel.create_fake_data``.
