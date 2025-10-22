@@ -662,3 +662,13 @@ class WfiWcsModel(_RomanDataModel):
 
         # That's all folks.
         return wfi_wcs
+
+
+class CustomProductModel(_RomanDataModel):
+    __slots__ = ()
+    _node_type = stnode.CustomProduct  # type: ignore[attr-defined]
+
+
+class DerivedMosaicModel(_RomanDataModel):
+    __slots__ = ()
+    _node_type = stnode.DerivedMosaic  # type: ignore[attr-defined]
