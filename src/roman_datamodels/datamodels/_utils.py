@@ -289,19 +289,20 @@ def rdm_open(init, memmap=False, **kwargs):
     kwargs.pop("asn_n_members", None)
 
     asdf_file = init if isinstance(init, asdf.AsdfFile) else _open_asdf(init, memmap=memmap, **kwargs)
+
+    # Check for "roman" key
+    if "roman" not in asdf_file.tree:
+        if not isinstance(init, asdf.AsdfFile):
+            asdf_file.close()
+        raise ValueError(f"'{init}' is not a roman file, please use asdf.open")
+
     if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
         return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
 
-    # Check if the datamodel is a GDPS datamodel
-    try:
-        import roman_gdps  # type: ignore[import-not-found]  # noqa: F401
-    except ImportError as err:
-        asdf_file.close()
-        raise ImportError("Please install roman-gdps to allow opening GDPS datamodels") from err
-
-    # We assume at this point that an asdf file with `roman` key is a GDPS datamodel
-    if "roman" in asdf_file.tree:
+    # Check if the datamodel is a roman_gdps datamodel
+    if model_type.__module__.startswith("roman_gdps."):
         return asdf_file.tree["roman"]
 
-    asdf_file.close()
-    raise TypeError(f"Unknown datamodel type: {model_type}")
+    if not isinstance(init, asdf.AsdfFile):
+        asdf_file.close()
+    raise TypeError(f"Unknown datamodel type: {model_type}, please use asdf.open for non-roman_datamodels files")

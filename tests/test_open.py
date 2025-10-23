@@ -221,20 +221,21 @@ def test_read_pattern_properties():
     """
     Regression test for reading pattern properties
     """
-
-    from roman_datamodels.datamodels import open as rdm_open
-
     # This file has been modified by hand to break the `photmjsr` value
     with pytest.raises(asdf.ValidationError):
-        rdm_open(Path(__file__).parent / "data" / "photmjsm.asdf")
+        datamodels.open(Path(__file__).parent / "data" / "photmjsm.asdf")
 
 
-@pytest.mark.xfail(reason="We currently do not have a way to identify if a datamodel is a GDPS datamodel")
 def test_rdm_open_non_datamodel():
-    from roman_datamodels.datamodels import open as rdm_open
-
     with pytest.raises(TypeError, match=r"Unknown datamodel type: .*"):
-        rdm_open(Path(__file__).parent / "data" / "not_a_datamodel.asdf")
+        datamodels.open(Path(__file__).parent / "data" / "not_a_datamodel.asdf")
+
+
+def test_rdm_open_asdf(tmp_path):
+    fn = tmp_path / "test.asdf"
+    asdf.AsdfFile({"a": 1}).write_to(fn)
+    with pytest.raises(ValueError, match=r"is not a roman file"):
+        datamodels.open(fn)
 
 
 def test_open_asn(tmp_path):
