@@ -24,19 +24,24 @@ jobs:
           coverage: codecov
         - linux: py311
         - linux: py312
+        - linux: py313-cov
+          coverage: codecov
+        - macos: py313
+        - linux: py313-withromancal-cov
+          coverage: codecov
         # `tox` does not currently respect `requires-python` versions when creating testing environments;
         # if this breaks, add an upper pin to `requires-python` and revert this py3 to the latest working version
-        - linux: py3-cov
-          coverage: codecov
-        - macos: py3
-        - linux: py3-withromancal-cov
-          coverage: codecov
+        # - linux: py3-cov
+        #   coverage: codecov
+        # - macos: py3
+        # - linux: py3-withromancal-cov
+        #   coverage: codecov
 
   test_upstream:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@28e947497bed4d6ec3fa1d66d198e95a1d17bc63  # v2.2.1
     with:
       envs: |
-        - linux: py3-rad
+        - linux: py313-rad
 
   environment:
     runs-on: ubuntu-latest
@@ -59,4 +64,4 @@ jobs:
       cache-path: ${{ needs.environment.outputs.data_path }}/crds
       cache-key: crds-${{ needs.crds_contexts.outputs.roman }}
       envs: |
-        - linux: py3-romancal
+        - linux: py313-romancal
