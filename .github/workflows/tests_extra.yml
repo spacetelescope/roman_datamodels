@@ -22,5 +22,6 @@ jobs:
       envs: |
         - macos: py311
         - macos: py312
+        - macos: py313
         - macos: py3-devdeps
         - linux: py3-devdeps

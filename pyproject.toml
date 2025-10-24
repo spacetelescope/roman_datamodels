@@ -26,12 +26,7 @@ license-files = ["LICENSE"]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = [
-  "pytest >=6.0.0",
-  "pytest-doctestplus",
-  "pytest-doctestplus >=1.2.1",
-  "pandas >=2.2.3",
-]
+test = ["pytest >=6.0.0", "pytest-doctestplus >=1.2.1", "pandas >=2.2.3"]
 docs = ["sphinx", "sphinx-automodapi", "sphinx-rtd-theme", "sphinx-astropy"]
 
 [project.urls]
