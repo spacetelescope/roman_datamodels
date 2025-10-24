@@ -259,7 +259,7 @@ def test_open_asn(tmp_path):
 
 @pytest.mark.parametrize(
     "model",
-    [mdl for mdl in datamodels.MODEL_REGISTRY.keys() if ("Ref" not in mdl.__name__ and "Associations" not in mdl.__name__)],
+    [mdl for mdl in datamodels.MODEL_REGISTRY.keys() if ("Ref" not in mdl.__name__ and "CustomProduct" not in mdl.__name__)],
 )
 def test_filename_matches_meta(tmp_path, model):
     save_path = tmp_path / "test_filename.asdf"
