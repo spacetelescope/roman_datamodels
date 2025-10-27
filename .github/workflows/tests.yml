@@ -24,9 +24,10 @@ jobs:
           coverage: codecov
         - linux: py311
         - linux: py312
-        - linux: py313-cov
+        - linux: py313
+        - linux: py314-cov
           coverage: codecov
-        - macos: py313
+        - macos: py314
         - linux: py313-withromancal-cov
           coverage: codecov
 
@@ -34,7 +35,7 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@28e947497bed4d6ec3fa1d66d198e95a1d17bc63  # v2.2.1
     with:
       envs: |
-        - linux: py313-rad
+        - linux: py314-rad
 
   environment:
     runs-on: ubuntu-latest
