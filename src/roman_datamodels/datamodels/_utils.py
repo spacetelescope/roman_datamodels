@@ -299,10 +299,6 @@ def rdm_open(init, memmap=False, **kwargs):
     if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
         return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
 
-    # Check if the datamodel is a roman_gdps datamodel
-    if model_type.__module__.startswith("roman_gdps."):
-        return asdf_file.tree["roman"]
-
     if not isinstance(init, asdf.AsdfFile):
         asdf_file.close()
     raise TypeError(f"Unknown datamodel type: {model_type}, please use asdf.open for non-roman_datamodels files")
