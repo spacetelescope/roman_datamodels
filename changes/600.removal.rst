@@ -1,0 +1,1 @@
+Remove support for opening files from private package ``roman_gdps``.
