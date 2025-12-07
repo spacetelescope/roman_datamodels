@@ -493,6 +493,7 @@ class IntegralinverselinearityRefModel(DataModel):
         """
         return "value"
 
+
 class InverselinearityRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.InverselinearityRef  # type: ignore[attr-defined]
