@@ -446,6 +446,11 @@ class DarkRefModel(DataModel):
     _node_type = stnode.DarkRef  # type: ignore[attr-defined]
 
 
+class DarkdecaysignalRefModel(DataModel):
+    __slots__ = ()
+    _node_type = stnode.DarkdecaysignalRef  # type: ignore[attr-defined]
+
+
 class DistortionRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.DistortionRef  # type: ignore[attr-defined]
