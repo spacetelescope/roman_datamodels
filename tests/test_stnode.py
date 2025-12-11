@@ -3,7 +3,8 @@ from contextlib import nullcontext
 import asdf
 import pytest
 
-from roman_datamodels import datamodels, stnode
+from roman_datamodels import _stnode as stnode
+from roman_datamodels import datamodels
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 from .conftest import MANIFESTS

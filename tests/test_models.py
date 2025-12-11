@@ -10,21 +10,37 @@ from astropy import units as u
 from astropy.time import Time
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels, stnode
+from roman_datamodels import datamodels
+from roman_datamodels._stnode import (
+    CalLogs,
+    DNode,
+    IndividualImageMeta,
+    LNode,
+    MosaicAssociations,
+    Observation,
+    OutlierDetection,
+    Resample,
+    SkyBackground,
+    SourceCatalog,
+    WfiImage,
+    WfiWcs,
+)
+from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
+from roman_datamodels._stnode._tagged import _NO_VALUE
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 from .conftest import MANIFESTS
 
 # Nodes for metadata schema that do not contain any archive_catalog keywords
 NODES_LACKING_ARCHIVE_CATALOG = [
-    stnode.CalLogs,
-    stnode.OutlierDetection,
-    stnode.MosaicAssociations,
-    stnode.IndividualImageMeta,
-    stnode.Resample,
-    stnode.SkyBackground,
-    stnode.SourceCatalog,
-    stnode.WfiWcs,
+    CalLogs,
+    OutlierDetection,
+    MosaicAssociations,
+    IndividualImageMeta,
+    Resample,
+    SkyBackground,
+    SourceCatalog,
+    WfiWcs,
 ]
 
 
@@ -103,7 +119,7 @@ def test_core_schema(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
 
-    wfi_image = stnode.WfiImage.create_fake_data(shape=(8, 8))
+    wfi_image = WfiImage.create_fake_data(shape=(8, 8))
     with asdf.AsdfFile() as af:
         af.tree = {"roman": wfi_image}
 
@@ -193,19 +209,19 @@ def test_node_assignment():
     """Test round trip attribute access and assignment"""
     wfi_image = datamodels.ImageModel.create_fake_data()
     exposure = wfi_image.meta.exposure
-    assert isinstance(exposure, stnode.DNode)
+    assert isinstance(exposure, DNode)
     wfi_image.meta.exposure = exposure
-    assert isinstance(wfi_image.meta.exposure, stnode.DNode)
+    assert isinstance(wfi_image.meta.exposure, DNode)
 
     # The following tests that supplying a LNode passes validation.
     rampmodel = datamodels.RampModel.create_fake_data()
     rampmodel.meta.exposure.read_pattern = [1, 2, 3]
-    assert isinstance(rampmodel.meta.exposure.read_pattern[1:], stnode.LNode)
+    assert isinstance(rampmodel.meta.exposure.read_pattern[1:], LNode)
 
     # Test that supplying a DNode passes validation
     darkmodel = datamodels.DarkRefModel.create_fake_data()
     darkexp = darkmodel.meta.exposure
-    assert isinstance(darkexp, stnode.DNode)
+    assert isinstance(darkexp, DNode)
 
 
 @pytest.mark.parametrize(
@@ -355,7 +371,7 @@ def test_datamodel_schema_info_existence(name):
         info = model.schema_info("archive_catalog")
         for keyword in model.meta.keys():
             # Only DNodes or LNodes need to be canvassed
-            if isinstance(model.meta[keyword], stnode.DNode | stnode.LNode):
+            if isinstance(model.meta[keyword], DNode | LNode):
                 # Ignore metadata schemas that lack archive_catalog entries
                 if type(model.meta[keyword]) not in NODES_LACKING_ARCHIVE_CATALOG:
                     assert keyword in info["roman"]["meta"]
@@ -445,7 +461,7 @@ def test_ramp_from_science_raw(mk_raw):
                 if meta_key in raw_meta:
                     assert ramp_meta[meta_key] == raw_meta[meta_key]
 
-        elif isinstance(ramp_value, stnode.DNode):
+        elif isinstance(ramp_value, DNode):
             assert_node_equal(ramp_value, raw_value)
 
         else:
@@ -500,7 +516,7 @@ def test_science_raw_from_tvac_raw(mk_tvac):
                 if meta_key in tvac_meta:
                     assert raw_meta[meta_key] == tvac_meta[meta_key]
 
-        elif isinstance(raw_value, stnode.DNode):
+        elif isinstance(raw_value, DNode):
             assert_node_equal(raw_value, tvac_value)
 
         else:
@@ -779,16 +795,16 @@ def test_create_fake_data(model):
     assert m.validate() is None
 
 
-@pytest.mark.parametrize("tag, node_class", stnode._registry.NODE_CLASSES_BY_TAG.items())
+@pytest.mark.parametrize("tag, node_class", NODE_CLASSES_BY_TAG.items())
 def test_create_tag(tag, node_class):
     """Test that we can create a node for every registered tag"""
 
     node = node_class.create_minimal(tag=tag)
-    if node is not stnode._tagged._NO_VALUE:
+    if node is not _NO_VALUE:
         assert node._read_tag == tag
 
     node = node_class.create_fake_data(tag=tag)
-    if node is not stnode._tagged._NO_VALUE:
+    if node is not _NO_VALUE:
         assert node._read_tag == tag
 
 
@@ -879,8 +895,8 @@ def test_create_from_model_dict():
     assert isinstance(model, datamodels.ImageModel)
 
     # Observation tagged node is no longer used
-    assert not isinstance(model.meta.observation, stnode.Observation)
-    assert isinstance(model.meta.observation, stnode.DNode)
+    assert not isinstance(model.meta.observation, Observation)
+    assert isinstance(model.meta.observation, DNode)
 
     assert model.meta.observation.visit == 42
 
@@ -902,8 +918,8 @@ def test_create_from_model_old_tags():
     """
     old_model_tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_image-1.2.0"
     old_observation_tag = "asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"
-    new_model_tag = stnode.WfiImage._default_tag
-    new_observation_tag = stnode.Observation._default_tag
+    new_model_tag = WfiImage._default_tag
+    new_observation_tag = Observation._default_tag
 
     # check tags aren't defaults (which is required for this test)
     assert old_model_tag != new_model_tag
@@ -916,8 +932,8 @@ def test_create_from_model_old_tags():
     converted = datamodels.ImageModel.create_from_model(old_model)
     assert converted.tag == new_model_tag
     # New models should not have a tagged observation node
-    assert not isinstance(converted.meta.observation, stnode.Observation)
-    assert isinstance(converted.meta.observation, stnode.DNode)
+    assert not isinstance(converted.meta.observation, Observation)
+    assert isinstance(converted.meta.observation, DNode)
 
 
 @pytest.mark.parametrize("method", ["create_minimal", "create_fake_data"])

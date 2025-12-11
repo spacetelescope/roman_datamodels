@@ -34,7 +34,7 @@ issues = "https://github.com/spacetelescope/roman_datamodels/issues"
 repository = "https://github.com/spacetelescope/roman_datamodels"
 
 [project.entry-points."asdf.extensions"]
-roman_datamodels = "roman_datamodels.stnode._integration:get_extensions"
+roman_datamodels = "roman_datamodels._stnode._integration:get_extensions"
 
 [build-system]
 requires = ["setuptools >=61", "setuptools_scm[toml] >=3.4"]

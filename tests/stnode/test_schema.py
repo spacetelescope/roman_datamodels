@@ -4,9 +4,9 @@ import pytest
 from astropy.table import Table
 from astropy.time import Time
 from astropy.units import Quantity
-from roman_datamodels.stnode._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, SchemaType, _NoValueType
 
-from roman_datamodels.stnode import Observation, SkyBackground
+from roman_datamodels._stnode import Observation, SkyBackground
+from roman_datamodels._stnode._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, SchemaType, _NoValueType
 
 
 @pytest.mark.parametrize(

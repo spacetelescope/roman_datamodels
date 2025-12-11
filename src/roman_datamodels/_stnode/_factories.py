@@ -114,7 +114,7 @@ def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) 
             "_pattern": pattern,
             "_latest_manifest": latest_manifest,
             "_default_tag": tag_def["tag_uri"],
-            "__module__": "roman_datamodels.stnode",
+            "__module__": "roman_datamodels._stnode",
             "__doc__": docstring_from_tag(tag_def),
         },
     )
@@ -159,7 +159,7 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
             "_pattern": pattern,
             "_latest_manifest": latest_manifest,
             "_default_tag": tag_def["tag_uri"],
-            "__module__": "roman_datamodels.stnode",
+            "__module__": "roman_datamodels._stnode",
             "__doc__": docstring_from_tag(tag_def),
             "__slots__": (),
         },
