@@ -480,9 +480,9 @@ class LinearityRefModel(DataModel):
         return "coeffs"
 
 
-class IntegralinverselinearityRefModel(DataModel):
+class IntegralnonlinearityRefModel(DataModel):
     __slots__ = ()
-    _node_type = stnode.IntegralinverselinearityRef  # type: ignore[attr-defined]
+    _node_type = stnode.IntegralnonlinearityRef  # type: ignore[attr-defined]
 
     def get_primary_array_name(self):
         """
