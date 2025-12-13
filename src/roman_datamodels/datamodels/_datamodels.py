@@ -446,6 +446,11 @@ class DarkRefModel(DataModel):
     _node_type = stnode.DarkRef  # type: ignore[attr-defined]
 
 
+class DetectorstatusRefModel(DataModel):
+    __slots__ = ()
+    _node_type = stnode.DetectorstatusRef  # type: ignore[attr-defined]
+
+
 class DistortionRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.DistortionRef  # type: ignore[attr-defined]
