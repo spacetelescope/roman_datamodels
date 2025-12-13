@@ -1,0 +1,1 @@
+Added a datamodel for Dark Decay Signal reference files.
