@@ -449,6 +449,8 @@ class DarkRefModel(DataModel):
 class DetectorstatusRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.DetectorstatusRef  # type: ignore[attr-defined]
+
+
 class DarkdecaysignalRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.DarkdecaysignalRef  # type: ignore[attr-defined]
