@@ -485,6 +485,20 @@ class LinearityRefModel(DataModel):
         return "coeffs"
 
 
+class IntegralnonlinearityRefModel(DataModel):
+    __slots__ = ()
+    _node_type = stnode.IntegralnonlinearityRef  # type: ignore[attr-defined]
+
+    def get_primary_array_name(self):
+        """
+        Returns the name "primary" array for this model, which
+        controls the size of other arrays that are implicitly created.
+        This is intended to be overridden in the subclasses if the
+        primary array's name is not "data".
+        """
+        return "value"
+
+
 class InverselinearityRefModel(DataModel):
     __slots__ = ()
     _node_type = stnode.InverselinearityRef  # type: ignore[attr-defined]
