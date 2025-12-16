@@ -20,7 +20,7 @@ from roman_datamodels._stnode import TaggedScalarNode
 from ._core import MODEL_REGISTRY, DataModel
 
 if TYPE_CHECKING:
-    from roman_datamodels.stnode import DNode, LNode
+    from roman_datamodels._stnode import DNode, LNode
 
 
 __all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filedate", "temporary_update_filename"]

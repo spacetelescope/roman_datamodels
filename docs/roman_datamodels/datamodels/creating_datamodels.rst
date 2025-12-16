@@ -43,10 +43,10 @@ DataModel.__init__
 ..................
 
 ``DataModel.__init__`` constructs a new datamodel which optionally
-contains the provided `roman_datamodels.stnode.TaggedObjectNode`. This is used when
+contains the provided `roman_datamodels._stnode.TaggedObjectNode`. This is used when
 `roman_datamodels.datamodels.open` constructs a new datamodel
 from an ASDF file which contains the serialized contents of the
-`roman_datamodels.stnode.TaggedObjectNode`. However this is less useful for pipeline
+`roman_datamodels._stnode.TaggedObjectNode`. However this is less useful for pipeline
 and/or test code where no node contents are available as the
 produced datamodel will be invalid since it lacks all required
 attributes.
