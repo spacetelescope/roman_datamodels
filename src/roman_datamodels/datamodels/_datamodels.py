@@ -316,8 +316,6 @@ class ScienceRawModel(_RomanDataModel):
             If the input was a ScienceRawModel, that model is simply returned.
 
         """
-        from roman_datamodels import _stnode as stnode
-
         ALLOWED_MODELS = (FpsModel, ScienceRawModel, TvacModel)
 
         if isinstance(model, cls):
@@ -327,21 +325,19 @@ class ScienceRawModel(_RomanDataModel):
 
         # Create base raw node with dummy values (for validation)
         if isinstance(model, (FpsModel | TvacModel)):
-            raw = stnode.WfiScienceRaw.create_fake_data()
+            raw_model = cls.create_fake_data()
         else:
-            raw = stnode.WfiScienceRaw.create_minimal()
+            raw_model = cls.create_minimal()
 
-        node_update(raw, model, extras=("meta.statistics",), extras_key="tvac")
+        node_update(raw_model._instance, model, extras=("meta.statistics",), extras_key="tvac", ignore=("meta.model_type",))
 
         # check for exposure data_problem
-        if isinstance(raw.meta.exposure.data_problem, bool):
-            if raw.meta.exposure.data_problem:
-                raw.meta.exposure.data_problem = "True"
+        if isinstance(raw_model.meta.exposure.data_problem, bool):
+            if raw_model.meta.exposure.data_problem:
+                raw_model.meta.exposure.data_problem = "True"
             else:
-                raw.meta.exposure.data_problem = None
+                raw_model.meta.exposure.data_problem = None
 
-        # Create model from node
-        raw_model = ScienceRawModel(raw)
         return raw_model
 
 
@@ -384,8 +380,6 @@ class RampModel(_RomanDataModel):
             a RampModel, it is simply returned.
 
         """
-        from roman_datamodels import _stnode as stnode
-
         ALLOWED_MODELS = (FpsModel, RampModel, ScienceRawModel, TvacModel)
 
         if isinstance(model, cls):
@@ -394,31 +388,28 @@ class RampModel(_RomanDataModel):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base ramp node with dummy values (for validation)
-        ramp = stnode.Ramp.create_minimal()
-        ramp.meta.cal_step = stnode.L2CalStep.create_minimal()
-        ramp.meta.cal_logs = stnode.CalLogs()
+        ramp_model = cls.create_fake_data()
+
         shape = model.data.shape
-        ramp.pixeldq = np.zeros(shape[1:], dtype=np.uint32)
-        ramp.groupdq = np.zeros(shape, dtype=np.uint8)
-        ramp.data = model.data.astype(np.float32)
-        ramp.err = np.zeros_like(ramp.data)
-        ramp.amp33 = model.amp33.copy()
+        ramp_model.pixeldq = np.zeros(shape[1:], dtype=np.uint32)
+        ramp_model.groupdq = np.zeros(shape, dtype=np.uint8)
+        ramp_model.data = model.data.astype(np.float32)
+        ramp_model.err = np.zeros_like(ramp_model.data)
+        ramp_model.amp33 = model.amp33.copy()
 
         # check if the input model has a resultantdq from SDF
         if hasattr(model, "resultantdq"):
-            ramp.groupdq = model.resultantdq.copy()
+            ramp_model.groupdq = model.resultantdq.copy()
 
-        node_update(ramp, model, ignore=("resultantdq",))
+        node_update(ramp_model._instance, model, ignore=("resultantdq", "meta.model_type"))
 
         # check for exposure data_problem
-        if isinstance(ramp.meta.exposure.data_problem, bool):
-            if ramp.meta.exposure.data_problem:
-                ramp.meta.exposure.data_problem = "True"
+        if isinstance(ramp_model.meta.exposure.data_problem, bool):
+            if ramp_model.meta.exposure.data_problem:
+                ramp_model.meta.exposure.data_problem = "True"
             else:
-                ramp.meta.exposure.data_problem = None
+                ramp_model.meta.exposure.data_problem = None
 
-        # Create model from node
-        ramp_model = RampModel(ramp)
         return ramp_model
 
 
