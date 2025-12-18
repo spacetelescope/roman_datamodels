@@ -1,8 +1,8 @@
 import asdf
 import pytest
 
-from roman_datamodels.stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN, SCHEMA_URIS_BY_TAG
-from roman_datamodels.stnode._stnode import _MANIFESTS as MANIFESTS
+from roman_datamodels._stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN, SCHEMA_URIS_BY_TAG
+from roman_datamodels._stnode._stnode import _MANIFESTS as MANIFESTS
 
 
 @pytest.fixture(scope="session", params=MANIFESTS)

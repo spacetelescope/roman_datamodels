@@ -1,0 +1,6 @@
+Deprecate the use of ``stnode``'s public API in favor of making it private to RDM.
+This limits the exposure of all the legacy support code that ``stnode`` has, which
+can cause unintended side effects if used directly. Since the only tagged objects
+in RDM are now the base nodes for the datamodels, there is no reason to expose them
+publicly anymore to users as they can just call any of the public API for those nodes
+on the datamodels directly.

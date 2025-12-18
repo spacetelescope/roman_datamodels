@@ -15,12 +15,12 @@ import asdf
 import numpy as np
 from astropy import time
 
-from roman_datamodels import stnode
+from roman_datamodels._stnode import TaggedScalarNode
 
 from ._core import MODEL_REGISTRY, DataModel
 
 if TYPE_CHECKING:
-    from roman_datamodels.stnode import DNode, LNode, TaggedScalarNode
+    from roman_datamodels._stnode import DNode, LNode
 
 
 __all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filedate", "temporary_update_filename"]
@@ -178,7 +178,7 @@ def node_update(
                         value = getattr(value, "value", value)
                     else:
                         value = getattr(from_node, key)
-                    if isinstance(value, stnode.TaggedScalarNode):
+                    if isinstance(value, TaggedScalarNode):
                         value = type(to_node[key])(value)
                     setattr(to_node, key, value)
             else:

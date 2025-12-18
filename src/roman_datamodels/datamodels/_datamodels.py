@@ -21,8 +21,6 @@ import numpy as np
 from astropy import time as _time
 from astropy.modeling import models
 
-from roman_datamodels import stnode
-
 from ._core import DataModel
 from ._utils import node_update, temporary_update_filedate, temporary_update_filename
 
@@ -51,6 +49,8 @@ log.setLevel(logging.DEBUG)
 
 
 class _SourceCatalogMixin:
+    from roman_datamodels._stnode import ImageSourceCatalogMixin
+
     __slots__ = ()
 
     def create_empty_catalog(self, aperture_radii=None, filters=None):
@@ -74,7 +74,7 @@ class _SourceCatalogMixin:
 
         return self._instance._create_empty_catalog(aperture_radii, filters)
 
-    @functools.wraps(stnode.ImageSourceCatalogMixin.get_column_definition)
+    @functools.wraps(ImageSourceCatalogMixin.get_column_definition)
     def get_column_definition(self, name):
         return self._instance.get_column_definition(name)
 
@@ -90,6 +90,8 @@ class _ParquetMixin:
 
         Defers import of parquet to minimize import overhead for all other models.
         """
+        from roman_datamodels._stnode import DNode
+
         # parquet does not provide validation so validate first with asdf
         self.validate()
 
@@ -124,7 +126,7 @@ class _ParquetMixin:
         source_cat = self.source_catalog
         scmeta = source_cat.meta
         # Wrap it as a DNode so it can be flattened
-        dn_scmeta = stnode.DNode(scmeta)
+        dn_scmeta = DNode(scmeta)
         flat_scmeta = dn_scmeta.to_flat_dict(recursive=True)
         # Add prefix to flattened keys to indicate table metadata
         flat_scmeta = {"source_catalog." + k: str(v) for (k, v) in flat_scmeta.items()}
@@ -270,18 +272,24 @@ class _RomanDataModel(DataModel):
 
 
 class MosaicModel(_RomanDataModel):
+    from roman_datamodels._stnode import WfiMosaic
+
     __slots__ = ()
-    _node_type = stnode.WfiMosaic  # type: ignore[attr-defined]
+    _node_type = WfiMosaic
 
 
 class ImageModel(_RomanDataModel):
+    from roman_datamodels._stnode import WfiImage
+
     __slots__ = ()
-    _node_type = stnode.WfiImage  # type: ignore[attr-defined]
+    _node_type = WfiImage
 
 
 class ScienceRawModel(_RomanDataModel):
+    from roman_datamodels._stnode import WfiScienceRaw
+
     __slots__ = ()
-    _node_type = stnode.WfiScienceRaw  # type: ignore[attr-defined]
+    _node_type = WfiScienceRaw
 
     @classmethod
     def from_tvac_raw(cls, model):
@@ -317,32 +325,34 @@ class ScienceRawModel(_RomanDataModel):
 
         # Create base raw node with dummy values (for validation)
         if isinstance(model, (FpsModel | TvacModel)):
-            raw = stnode.WfiScienceRaw.create_fake_data()
+            raw_model = cls.create_fake_data()
         else:
-            raw = stnode.WfiScienceRaw.create_minimal()
+            raw_model = cls.create_minimal()
 
-        node_update(raw, model, extras=("meta.statistics",), extras_key="tvac")
+        node_update(raw_model._instance, model, extras=("meta.statistics",), extras_key="tvac", ignore=("meta.model_type",))
 
         # check for exposure data_problem
-        if isinstance(raw.meta.exposure.data_problem, bool):
-            if raw.meta.exposure.data_problem:
-                raw.meta.exposure.data_problem = "True"
+        if isinstance(raw_model.meta.exposure.data_problem, bool):
+            if raw_model.meta.exposure.data_problem:
+                raw_model.meta.exposure.data_problem = "True"
             else:
-                raw.meta.exposure.data_problem = None
+                raw_model.meta.exposure.data_problem = None
 
-        # Create model from node
-        raw_model = ScienceRawModel(raw)
         return raw_model
 
 
 class MsosStackModel(_RomanDataModel):
+    from roman_datamodels._stnode import MsosStack
+
     __slots__ = ()
-    _node_type = stnode.MsosStack  # type: ignore[attr-defined]
+    _node_type = MsosStack
 
 
 class RampModel(_RomanDataModel):
+    from roman_datamodels._stnode import Ramp
+
     __slots__ = ()
-    _node_type = stnode.Ramp  # type: ignore[attr-defined]
+    _node_type = Ramp
 
     @classmethod
     def from_science_raw(cls, model):
@@ -378,107 +388,134 @@ class RampModel(_RomanDataModel):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base ramp node with dummy values (for validation)
-        ramp = stnode.Ramp.create_minimal()
-        ramp.meta.cal_step = stnode.L2CalStep.create_minimal()
-        ramp.meta.cal_logs = stnode.CalLogs()
+        ramp_model = cls.create_fake_data()
+
         shape = model.data.shape
-        ramp.pixeldq = np.zeros(shape[1:], dtype=np.uint32)
-        ramp.groupdq = np.zeros(shape, dtype=np.uint8)
-        ramp.data = model.data.astype(np.float32)
-        ramp.err = np.zeros_like(ramp.data)
-        ramp.amp33 = model.amp33.copy()
+        ramp_model.pixeldq = np.zeros(shape[1:], dtype=np.uint32)
+        ramp_model.groupdq = np.zeros(shape, dtype=np.uint8)
+        ramp_model.data = model.data.astype(np.float32)
+        ramp_model.err = np.zeros_like(ramp_model.data)
+        ramp_model.amp33 = model.amp33.copy()
 
         # check if the input model has a resultantdq from SDF
         if hasattr(model, "resultantdq"):
-            ramp.groupdq = model.resultantdq.copy()
+            ramp_model.groupdq = model.resultantdq.copy()
 
-        node_update(ramp, model, ignore=("resultantdq",))
+        node_update(ramp_model._instance, model, ignore=("resultantdq", "meta.model_type"))
 
         # check for exposure data_problem
-        if isinstance(ramp.meta.exposure.data_problem, bool):
-            if ramp.meta.exposure.data_problem:
-                ramp.meta.exposure.data_problem = "True"
+        if isinstance(ramp_model.meta.exposure.data_problem, bool):
+            if ramp_model.meta.exposure.data_problem:
+                ramp_model.meta.exposure.data_problem = "True"
             else:
-                ramp.meta.exposure.data_problem = None
+                ramp_model.meta.exposure.data_problem = None
 
-        # Create model from node
-        ramp_model = RampModel(ramp)
         return ramp_model
 
 
 class RampFitOutputModel(_RomanDataModel):
+    from roman_datamodels._stnode import RampFitOutput
+
     __slots__ = ()
-    _node_type = stnode.RampFitOutput  # type: ignore[attr-defined]
+    _node_type = RampFitOutput
 
 
 class L1FaceGuidewindowModel(_RomanDataModel):
+    from roman_datamodels._stnode import L1FaceGuidewindow
+
     __slots__ = ()
-    _node_type = stnode.L1FaceGuidewindow  # type: ignore[attr-defined]
+    _node_type = L1FaceGuidewindow
 
 
 class GuidewindowModel(_RomanDataModel):
+    from roman_datamodels._stnode import Guidewindow
+
     __slots__ = ()
-    _node_type = stnode.Guidewindow  # type: ignore[attr-defined]
+    _node_type = Guidewindow
 
 
 class L1DetectorGuidewindowModel(_RomanDataModel):
+    from roman_datamodels._stnode import L1DetectorGuidewindow
+
     __slots__ = ()
-    _node_type = stnode.L1DetectorGuidewindow  # type: ignore[attr-defined]
+    _node_type = L1DetectorGuidewindow
 
 
 class FlatRefModel(DataModel):
+    from roman_datamodels._stnode import FlatRef
+
     __slots__ = ()
-    _node_type = stnode.FlatRef  # type: ignore[attr-defined]
+    _node_type = FlatRef
 
 
 class AbvegaoffsetRefModel(DataModel):
+    from roman_datamodels._stnode import AbvegaoffsetRef
+
     __slots__ = ()
-    _node_type = stnode.AbvegaoffsetRef  # type: ignore[attr-defined]
+    _node_type = AbvegaoffsetRef
 
 
 class ApcorrRefModel(DataModel):
+    from roman_datamodels._stnode import ApcorrRef
+
     __slots__ = ()
-    _node_type = stnode.ApcorrRef  # type: ignore[attr-defined]
+    _node_type = ApcorrRef
 
 
 class DarkRefModel(DataModel):
+    from roman_datamodels._stnode import DarkRef
+
     __slots__ = ()
-    _node_type = stnode.DarkRef  # type: ignore[attr-defined]
+    _node_type = DarkRef
 
 
 class DetectorstatusRefModel(DataModel):
+    from roman_datamodels._stnode import DetectorstatusRef
+
     __slots__ = ()
-    _node_type = stnode.DetectorstatusRef  # type: ignore[attr-defined]
+    _node_type = DetectorstatusRef
 
 
 class DarkdecaysignalRefModel(DataModel):
+    from roman_datamodels._stnode import DarkdecaysignalRef
+
     __slots__ = ()
-    _node_type = stnode.DarkdecaysignalRef  # type: ignore[attr-defined]
+    _node_type = DarkdecaysignalRef
 
 
 class DistortionRefModel(DataModel):
+    from roman_datamodels._stnode import DistortionRef
+
     __slots__ = ()
-    _node_type = stnode.DistortionRef  # type: ignore[attr-defined]
+    _node_type = DistortionRef
 
 
 class EpsfRefModel(DataModel):
+    from roman_datamodels._stnode import EpsfRef
+
     __slots__ = ()
-    _node_type = stnode.EpsfRef  # type: ignore[attr-defined]
+    _node_type = EpsfRef
 
 
 class GainRefModel(DataModel):
+    from roman_datamodels._stnode import GainRef
+
     __slots__ = ()
-    _node_type = stnode.GainRef  # type: ignore[attr-defined]
+    _node_type = GainRef
 
 
 class IpcRefModel(DataModel):
+    from roman_datamodels._stnode import IpcRef
+
     __slots__ = ()
-    _node_type = stnode.IpcRef  # type: ignore[attr-defined]
+    _node_type = IpcRef
 
 
 class LinearityRefModel(DataModel):
+    from roman_datamodels._stnode import LinearityRef
+
     __slots__ = ()
-    _node_type = stnode.LinearityRef  # type: ignore[attr-defined]
+    _node_type = LinearityRef
 
     def get_primary_array_name(self):
         """
@@ -491,8 +528,10 @@ class LinearityRefModel(DataModel):
 
 
 class IntegralnonlinearityRefModel(DataModel):
+    from roman_datamodels._stnode import IntegralnonlinearityRef
+
     __slots__ = ()
-    _node_type = stnode.IntegralnonlinearityRef  # type: ignore[attr-defined]
+    _node_type = IntegralnonlinearityRef
 
     def get_primary_array_name(self):
         """
@@ -505,8 +544,10 @@ class IntegralnonlinearityRefModel(DataModel):
 
 
 class InverselinearityRefModel(DataModel):
+    from roman_datamodels._stnode import InverselinearityRef
+
     __slots__ = ()
-    _node_type = stnode.InverselinearityRef  # type: ignore[attr-defined]
+    _node_type = InverselinearityRef
 
     def get_primary_array_name(self):
         """
@@ -519,8 +560,10 @@ class InverselinearityRefModel(DataModel):
 
 
 class MaskRefModel(DataModel):
+    from roman_datamodels._stnode import MaskRef
+
     __slots__ = ()
-    _node_type = stnode.MaskRef  # type: ignore[attr-defined]
+    _node_type = MaskRef
 
     def get_primary_array_name(self):
         """
@@ -533,98 +576,136 @@ class MaskRefModel(DataModel):
 
 
 class MATableRefModel(DataModel):
+    from roman_datamodels._stnode import MatableRef
+
     __slots__ = ()
-    _node_type = stnode.MatableRef  # type: ignore[attr-defined]
+    _node_type = MatableRef
 
 
 class PixelareaRefModel(DataModel):
+    from roman_datamodels._stnode import PixelareaRef
+
     __slots__ = ()
-    _node_type = stnode.PixelareaRef  # type: ignore[attr-defined]
+    _node_type = PixelareaRef
 
 
 class ReadnoiseRefModel(DataModel):
+    from roman_datamodels._stnode import ReadnoiseRef
+
     __slots__ = ()
-    _node_type = stnode.ReadnoiseRef  # type: ignore[attr-defined]
+    _node_type = ReadnoiseRef
 
 
 class SkycellsRefModel(DataModel):
+    from roman_datamodels._stnode import SkycellsRef
+
     __slots__ = ()
-    _node_type = stnode.SkycellsRef  # type: ignore[attr-defined]
+    _node_type = SkycellsRef
 
 
 class SuperbiasRefModel(DataModel):
+    from roman_datamodels._stnode import SuperbiasRef
+
     __slots__ = ()
-    _node_type = stnode.SuperbiasRef  # type: ignore[attr-defined]
+    _node_type = SuperbiasRef
 
 
 class SaturationRefModel(DataModel):
+    from roman_datamodels._stnode import SaturationRef
+
     __slots__ = ()
-    _node_type = stnode.SaturationRef  # type: ignore[attr-defined]
+    _node_type = SaturationRef
 
 
 class WfiImgPhotomRefModel(DataModel):
+    from roman_datamodels._stnode import WfiImgPhotomRef
+
     __slots__ = ()
-    _node_type = stnode.WfiImgPhotomRef  # type: ignore[attr-defined]
+    _node_type = WfiImgPhotomRef
 
 
 class RefpixRefModel(DataModel):
+    from roman_datamodels._stnode import RefpixRef
+
     __slots__ = ()
-    _node_type = stnode.RefpixRef  # type: ignore[attr-defined]
+    _node_type = RefpixRef
 
 
 class FpsModel(DataModel):
+    from roman_datamodels._stnode import Fps
+
     __slots__ = ()
-    _node_type = stnode.Fps  # type: ignore[attr-defined]
+    _node_type = Fps
 
 
 class TvacModel(DataModel):
+    from roman_datamodels._stnode import Tvac
+
     __slots__ = ()
-    _node_type = stnode.Tvac  # type: ignore[attr-defined]
+    _node_type = Tvac
 
 
 class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    from roman_datamodels._stnode import MosaicSourceCatalog
+
     __slots__ = ()
-    _node_type = stnode.MosaicSourceCatalog  # type: ignore[attr-defined]
+    _node_type = MosaicSourceCatalog
 
 
 class MultibandSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    from roman_datamodels._stnode import MultibandSourceCatalog
+
     __slots__ = ()
-    _node_type = stnode.MultibandSourceCatalog  # type: ignore[attr-defined]
+    _node_type = MultibandSourceCatalog
 
 
 class ForcedImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    from roman_datamodels._stnode import ForcedImageSourceCatalog
+
     __slots__ = ()
-    _node_type = stnode.ForcedImageSourceCatalog  # type: ignore[attr-defined]
+    _node_type = ForcedImageSourceCatalog
 
 
 class ForcedMosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    from roman_datamodels._stnode import ForcedMosaicSourceCatalog
+
     __slots__ = ()
-    _node_type = stnode.ForcedMosaicSourceCatalog  # type: ignore[attr-defined]
+    _node_type = ForcedMosaicSourceCatalog
 
 
 class MosaicSegmentationMapModel(_RomanDataModel):
+    from roman_datamodels._stnode import MosaicSegmentationMap
+
     __slots__ = ()
-    _node_type = stnode.MosaicSegmentationMap  # type: ignore[attr-defined]
+    _node_type = MosaicSegmentationMap
 
 
 class MultibandSegmentationMapModel(_RomanDataModel):
+    from roman_datamodels._stnode import MultibandSegmentationMap
+
     __slots__ = ()
-    _node_type = stnode.MultibandSegmentationMap  # type: ignore[attr-defined]
+    _node_type = MultibandSegmentationMap
 
 
 class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    from roman_datamodels._stnode import ImageSourceCatalog
+
     __slots__ = ()
-    _node_type = stnode.ImageSourceCatalog  # type: ignore[attr-defined]
+    _node_type = ImageSourceCatalog
 
 
 class SegmentationMapModel(_RomanDataModel):
+    from roman_datamodels._stnode import SegmentationMap
+
     __slots__ = ()
-    _node_type = stnode.SegmentationMap  # type: ignore[attr-defined]
+    _node_type = SegmentationMap
 
 
 class WfiWcsModel(_RomanDataModel):
+    from roman_datamodels._stnode import WfiWcs
+
     __slots__ = ()
-    _node_type = stnode.WfiWcs  # type: ignore[attr-defined]
+    _node_type = WfiWcs
 
     @classmethod
     def from_model_with_wcs(cls, model, l1_border=4):

@@ -16,7 +16,7 @@ from ._tagged import _get_schema_from_tag
 
 # This is a workaround for MyPy to understand the Mixin classes
 if TYPE_CHECKING:
-    from typing import Any, ClassVar, TypeAlias
+    from typing import ClassVar, TypeAlias
 
     from astropy.time import Time
 
@@ -235,7 +235,7 @@ class WfiImgPhotomRefMixin(_ObjectBase):
                 "DARK",
                 "NOT_CONFIGURED",
             ):
-                table_entry: dict[str, Any] = {
+                table_entry = {
                     "photmjsr": None,
                     "uncertainty": None,
                     "pixelareasr": None,
