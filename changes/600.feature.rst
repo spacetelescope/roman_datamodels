@@ -1,1 +1,0 @@
-Improve error messages when attempting to open non-roman files with rdm.open.

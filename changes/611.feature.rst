@@ -1,1 +1,0 @@
-Added a datamodel for the Detector Status reference file.
