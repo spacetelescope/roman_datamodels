@@ -1,0 +1,1 @@
+Add a new group DQ flag ("WFI18_TRANSIENT", value 2**7) for pixels affected by the WFI18 transient anomaly.
