@@ -1,10 +1,32 @@
+from importlib.resources import files
 from math import log10
 
 import numpy as np
 import pytest
+from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
+from rad import resources
+from semantic_version import Version
+from yaml import safe_load
 
 from roman_datamodels import datamodels as rdm
 from roman_datamodels import dqflags
+
+
+@pytest.fixture(scope="module")
+def ramp_schema():
+    """The latest ramp schema"""
+
+    ramp_schema = None
+    for schema in (files(resources) / "schemas").glob("ramp-*.yaml"):
+        if ramp_schema is None:
+            ramp_schema = schema
+        else:
+            current_version = Version(ramp_schema.name.rsplit("-", 1)[1].rsplit(".", 1)[0])
+            next_version = Version(schema.name.rsplit("-", 1)[1].rsplit(".", 1)[0])
+            if next_version > current_version:
+                ramp_schema = schema
+
+    return safe_load(ramp_schema.read_text())
 
 
 def _is_power_of_two(x):
@@ -24,10 +46,15 @@ def test_pixel_uniqueness():
 
 
 @pytest.mark.parametrize("flag", dqflags.pixel)
-def test_pixel_flags(flag):
+def test_pixel_flags(flag, ramp_schema):
     """Test that each pixel flag follows the defined rules"""
+    pixel_dq_type = ramp_schema["properties"]["pixeldq"]["datatype"]
+
     # Test that the pixel flags are dqflags.pixel instances
     assert isinstance(flag, dqflags.pixel)
+
+    # Test that the pixel flags are of the correct dtype
+    assert flag.dtype == asdf_datatype_to_numpy_dtype(pixel_dq_type)
 
     # Test that the pixel flags are ints
     assert isinstance(flag, np.uint32)
@@ -72,10 +99,15 @@ def test_group_uniqueness():
 
 
 @pytest.mark.parametrize("flag", dqflags.group)
-def test_group_flags(flag):
+def test_group_flags(flag, ramp_schema):
     """Test that each group flag follows the defined rules"""
+    group_dq_type = ramp_schema["properties"]["groupdq"]["datatype"]
+
     # Test that the group flags are dqflags.group instances
     assert isinstance(flag, dqflags.group)
+
+    # Test that the group flags are of the correct dtype
+    assert flag.dtype == asdf_datatype_to_numpy_dtype(group_dq_type)
 
     # Test that the group flags are ints
     assert isinstance(flag, np.uint32)
