@@ -110,7 +110,7 @@ def test_group_flags(flag, ramp_schema):
     assert flag.dtype == asdf_datatype_to_numpy_dtype(group_dq_type)
 
     # Test that the group flags are ints
-    assert isinstance(flag, np.uint32)
+    assert isinstance(flag, np.uint8)
 
     # Test that the group flags are dict accessible
     assert dqflags.group[flag.name] is flag
