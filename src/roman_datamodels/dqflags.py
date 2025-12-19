@@ -66,7 +66,7 @@ class pixel(np.uint32, Enum):
 
 
 @unique
-class group(np.uint32, Enum):
+class group(np.uint8, Enum):
     """Group-specific data quality flags
         Once groups are combined, these flags are equivalent to the pixel-specific flags.
     """
