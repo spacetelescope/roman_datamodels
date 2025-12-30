@@ -8,7 +8,6 @@ import re
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-import numpy as np
 from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
 
 from ._schema import Builder, _get_keyword, _get_properties
@@ -50,7 +49,6 @@ __all__ = [
     "SdfSoftwareVersionMixin",
     "TelescopeMixin",
     "TvacFileDateMixin",
-    "WfiImgPhotomRefMixin",
     "WfiModeMixin",
 ]
 
@@ -208,61 +206,6 @@ class L2CalStepMixin(_ObjectBase):
 
 class L3CalStepMixin(L2CalStepMixin):  # same as L2CalStepMixin
     __slots__ = ()
-
-
-class WfiImgPhotomRefMixin(_ObjectBase):
-    __slots__ = ()
-
-    @classmethod
-    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
-        defaults = defaults or {}
-        _shape = shape or (0,)
-        _shape = _shape[:1]
-        if "phot_table" not in defaults:
-            phot_table = {}
-            for entry in (
-                "F062",
-                "F087",
-                "F106",
-                "F129",
-                "F146",
-                "F158",
-                "F184",
-                "F213",
-                "GRISM",
-                "GRISM_0",
-                "PRISM",
-                "DARK",
-                "NOT_CONFIGURED",
-            ):
-                table_entry = {
-                    "photmjsr": None,
-                    "uncertainty": None,
-                    "pixelareasr": None,
-                    "collecting_area": None,
-                    "wavelength": None,
-                    "effective_area": None,
-                }
-                if entry not in ("DARK", "NOT_CONFIGURED"):
-                    table_entry.update(
-                        {
-                            "collecting_area": 1.0,
-                            "wavelength": np.zeros(_shape, dtype=np.float32),
-                            "effective_area": np.zeros(_shape, dtype=np.float32),
-                        }
-                    )
-                    if entry not in ("GRISM", "GRISM_0", "PRISM"):
-                        table_entry.update(
-                            {
-                                "photmjsr": 1e-15,
-                                "uncertainty": 1e-16,
-                                "pixelareasr": 1e-13,
-                            }
-                        )
-                phot_table[entry] = table_entry
-
-            defaults["phot_table"] = phot_table
-        return super()._create_fake_data(defaults, shape, builder, tag=tag)
 
 
 class ImageSourceCatalogMixin(_ObjectBase):
