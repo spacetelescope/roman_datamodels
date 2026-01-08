@@ -14,7 +14,7 @@ dependencies = [
   "lz4 >= 4.3.0",
   "asdf-astropy >=0.8.0",
   "gwcs >=0.19.0",
-  "numpy >=1.24",
+  "numpy >=1.25",
   "astropy >=6.0.0",
   # "rad >=0.29.0",
   "rad @ git+https://github.com/spacetelescope/rad.git",
