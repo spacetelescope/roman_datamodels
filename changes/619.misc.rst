@@ -1,0 +1,1 @@
+Update numpy and asdf-astropy dependency versions.
