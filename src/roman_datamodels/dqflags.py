@@ -76,5 +76,6 @@ class group(np.uint8, Enum):
     JUMP_DET   = pixel.JUMP_DET
     DROPOUT    = pixel.DROPOUT
     AD_FLOOR   = pixel.AD_FLOOR
+    WFI18_TRANSIENT = 2**7  # Affected by the WFI18 transient anomaly
 
 # fmt: on

@@ -116,7 +116,9 @@ def test_group_flags(flag, ramp_schema):
     assert dqflags.group[flag.name] is flag
 
     # Test that each group flag matches a pixel flag of the same name
-    assert dqflags.pixel[flag.name] == flag
+    # except for the WFI18_TRANSIENT flag
+    if flag.name != "WFI18_TRANSIENT":
+        assert dqflags.pixel[flag.name] == flag
 
 
 @pytest.mark.parametrize("flag", dqflags.group)
