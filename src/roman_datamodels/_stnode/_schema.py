@@ -7,6 +7,7 @@ from __future__ import annotations
 import copy
 import enum
 import functools
+import re
 from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING
 
@@ -151,6 +152,34 @@ def _get_properties(schema):
         yield from schema["properties"].items()
 
 
+def _get_pattern_properties(schema, name):
+    """
+    Get a patternProperties subschema for name.
+
+    Parameters
+    ----------
+    schema : dict
+       Schema to search.
+
+    name : str
+       Property name to check the pattern against.
+
+    Yields
+    ------
+    dict
+        Subschema matching the property (empty if None).
+    """
+    if patterns := schema.get("patternProperties"):
+        for pattern, subschema in patterns.items():
+            if re.match(pattern, name):
+                yield subschema
+    if "allOf" in schema:
+        for subschema in schema["allOf"]:
+            yield from _get_pattern_properties(subschema, name)
+    elif "anyOf" in schema:
+        yield from _get_properties(schema["anyOf"][0])
+
+
 def _get_required(schema):
     """
     Search a schema for required property names.
@@ -284,6 +313,16 @@ class Builder:
                 obj[name] |= value
             else:
                 obj[name] = value
+        for name in required:
+            subdefaults = defaults.get(name, _NO_VALUE)
+            for subschema in _get_pattern_properties(schema, name):
+                if (value := self.build_node(subschema, subdefaults)) is _NO_VALUE:
+                    continue
+                if name in obj and isinstance(value, dict):
+                    # blend the 2 dictionaries
+                    obj[name] |= value
+                else:
+                    obj[name] = value
         return obj
 
     def from_array(self, schema, defaults):
@@ -558,7 +597,10 @@ class NodeBuilder(Builder):
 
         subschemas = dict(_get_properties(schema))
         for name, subdefaults in defaults.items():
-            subschema = subschemas.get(name, {})
+            if name in subschemas:
+                subschema = subschemas[name]
+            else:
+                subschema = next(_get_pattern_properties(schema, name), {})
             obj[name] = self.build_node(subschema, subdefaults)
         return obj
 
