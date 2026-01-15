@@ -394,7 +394,6 @@ class RampModel(_RomanDataModel):
         ramp_model.pixeldq = np.zeros(shape[1:], dtype=np.uint32)
         ramp_model.groupdq = np.zeros(shape, dtype=np.uint8)
         ramp_model.data = model.data.astype(np.float32)
-        ramp_model.err = np.zeros_like(ramp_model.data)
         ramp_model.amp33 = model.amp33.copy()
 
         # check if the input model has a resultantdq from SDF
