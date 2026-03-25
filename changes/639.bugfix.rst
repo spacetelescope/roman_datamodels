@@ -1,0 +1,4 @@
+Separate the ``datamodels`` and ``static`` manifest extensions so the the ``"history"``
+section of the ASDF file records the "correct" extension in so far as the ``static``
+manifests are separate from the ``datamodels`` manifests, the extension makes
+no distinction between individual versions of the manifests.
