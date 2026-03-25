@@ -14,11 +14,13 @@ from rad import resources
 
 from ._factories import stnode_factory
 from ._registry import (
+    DATAMODEL_PATTERNS,
     LIST_NODE_CLASSES_BY_PATTERN,
     NODE_CLASSES_BY_TAG,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
     SCHEMA_URIS_BY_TAG,
+    STATIC_PATTERNS,
 )
 
 __all__ = ["NODE_CLASSES"]
@@ -30,11 +32,11 @@ __all__ = ["NODE_CLASSES"]
 _MANIFEST_DIR = Path(str(importlib.resources.files(resources) / "manifests"))
 # sort manifests by version (newest first)
 _STATIC_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*static-*.yaml")], reverse=True)
-_STATIC_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _STATIC_MANIFEST_PATHS]
+STATIC_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _STATIC_MANIFEST_PATHS]
 _DATAMODEL_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*datamodels-*.yaml")], reverse=True)
-_DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL_MANIFEST_PATHS]
+DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL_MANIFEST_PATHS]
 # Notice that the static manifests are first so that we defer to them
-_MANIFESTS = _STATIC_MANIFESTS + _DATAMODEL_MANIFESTS
+_MANIFESTS = STATIC_MANIFESTS + DATAMODEL_MANIFESTS
 
 
 def _factory(pattern, latest_manifest, tag_def):
@@ -53,17 +55,32 @@ def _factory(pattern, latest_manifest, tag_def):
 # Main dynamic class creation loop
 #   Reads each tag entry from the manifest and creates a class for it
 _generated = {}
-for manifest in _MANIFESTS:
+
+
+def _process_manifest(manifest):
     manifest_uri = manifest["id"]
+    nodes_by_pattern = {}
     for tag_def in manifest["tags"]:
         SCHEMA_URIS_BY_TAG[tag_def["tag_uri"]] = tag_def["schema_uri"]
-        base, version = tag_def["tag_uri"].rsplit("-", maxsplit=1)
+        base, _ = tag_def["tag_uri"].rsplit("-", maxsplit=1)
 
         # make pattern from tag
         pattern = f"{base}-*"
         if pattern not in _generated:
             _generated[pattern] = _factory(pattern, manifest_uri, tag_def)
+            nodes_by_pattern[pattern] = _generated[pattern]
+
         NODE_CLASSES_BY_TAG[tag_def["tag_uri"]] = _generated[pattern]
+
+    return nodes_by_pattern
+
+
+for manifest in STATIC_MANIFESTS:
+    STATIC_PATTERNS.update(_process_manifest(manifest))
+
+
+for manifest in DATAMODEL_MANIFESTS:
+    DATAMODEL_PATTERNS.update(_process_manifest(manifest))
 
 
 # List of node classes made available by this library.

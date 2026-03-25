@@ -18,3 +18,5 @@ SCALAR_NODE_CLASSES_BY_PATTERN: dict[str, type[TaggedScalarNode]] = {}
 NODE_CONVERTERS: dict[str, type[_RomanConverter]] = {}
 NODE_CLASSES_BY_TAG: dict[str, tagged_type] = {}
 SCHEMA_URIS_BY_TAG: dict[str, str] = {}
+STATIC_PATTERNS: dict[str, tagged_type] = {}
+DATAMODEL_PATTERNS: dict[str, tagged_type] = {}
