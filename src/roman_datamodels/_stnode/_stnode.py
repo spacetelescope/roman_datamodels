@@ -6,36 +6,22 @@ Dynamic creation of STNode classes from the RAD manifest.
     used by the user.
 """
 
-import importlib.resources
-from pathlib import Path
-
-import yaml
-from rad import resources
-
 from ._factories import stnode_factory
 from ._registry import (
+    DATAMODEL_MANIFESTS,
     DATAMODEL_PATTERNS,
     LIST_NODE_CLASSES_BY_PATTERN,
     NODE_CLASSES_BY_TAG,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
     SCHEMA_URIS_BY_TAG,
+    STATIC_MANIFESTS,
     STATIC_PATTERNS,
 )
 
-__all__ = ["NODE_CLASSES"]
+__all__ = ["DATAMODEL_MANIFESTS", "NODE_CLASSES", "STATIC_MANIFESTS"]
 
 
-# Load the manifest directly from the rad resources and not from ASDF.
-#   This is because the ASDF extensions have to be created before they can be registered
-#   and this module creates the classes used by the ASDF extension.
-_MANIFEST_DIR = Path(str(importlib.resources.files(resources) / "manifests"))
-# sort manifests by version (newest first)
-_STATIC_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*static-*.yaml")], reverse=True)
-STATIC_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _STATIC_MANIFEST_PATHS]
-_DATAMODEL_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*datamodels-*.yaml")], reverse=True)
-DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL_MANIFEST_PATHS]
-# Notice that the static manifests are first so that we defer to them
 _MANIFESTS = STATIC_MANIFESTS + DATAMODEL_MANIFESTS
 
 

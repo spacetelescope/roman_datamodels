@@ -2,17 +2,28 @@
 The ASDF Converters to handle the serialization/deseialization of the STNode classes to ASDF.
 """
 
+from __future__ import annotations
+
+from typing import ClassVar, Generic, TypeVar
+
 from asdf.extension import Converter, ManifestExtension
 from astropy.time import Time
 
 from ._registry import (
+    DATAMODEL_CONVERTERS,
+    DATAMODEL_MANIFESTS,
+    DATAMODEL_PATTERNS,
     LIST_NODE_CLASSES_BY_PATTERN,
     NODE_CLASSES_BY_TAG,
-    NODE_CONVERTERS,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
+    STATIC_CONVERTERS,
+    STATIC_MANIFESTS,
+    STATIC_PATTERNS,
 )
-from ._stnode import _MANIFESTS
+from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, tagged_type
+
+_T = TypeVar("_T")
 
 __all__ = [
     "NODE_EXTENSIONS",
@@ -22,12 +33,14 @@ __all__ = [
 ]
 
 
-class _RomanConverter(Converter):
+class _RomanConverter(Converter, Generic[_T]):
     """
     Base class for the roman_datamodels converters.
     """
 
     lazy = True
+
+    _node_registry: ClassVar[dict[str, _T]]
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -36,10 +49,28 @@ class _RomanConverter(Converter):
         super().__init_subclass__(**kwargs)
 
         if not cls.__name__.startswith("_"):
-            if cls.__name__ in NODE_CONVERTERS:
-                raise ValueError(f"Duplicate converter for {cls.__name__}")
+            if (static_name := f"static_{cls.__name__}") in STATIC_CONVERTERS:
+                raise ValueError(f"Duplicate converter for {static_name}")
 
-            NODE_CONVERTERS[cls.__name__] = cls()
+            STATIC_CONVERTERS[static_name] = cls(STATIC_PATTERNS)
+
+            if (datamodel_name := f"datamodel_{cls.__name__}") in DATAMODEL_CONVERTERS:
+                raise ValueError(f"Duplicate converter for {datamodel_name}")
+
+            DATAMODEL_CONVERTERS[datamodel_name] = cls(DATAMODEL_PATTERNS)
+
+    def __init__(self, patterns: dict[str, tagged_type]):
+        super().__init__()
+
+        self._patterns = patterns
+
+    @property
+    def tags(self) -> tuple[str, ...]:
+        return tuple(pattern for pattern in self._node_registry if pattern in self._patterns)
+
+    @property
+    def types(self) -> tuple[_T, ...]:
+        return tuple(type_ for pattern, type_ in self._node_registry.items() if pattern in self._patterns)
 
     def select_tag(self, obj, tags, ctx):
         return obj.tag
@@ -50,52 +81,34 @@ class _RomanConverter(Converter):
         return obj
 
 
-class TaggedObjectNodeConverter(_RomanConverter):
+class TaggedObjectNodeConverter(_RomanConverter[type[TaggedObjectNode]]):
     """
     Converter for all subclasses of TaggedObjectNode.
     """
 
-    @property
-    def tags(self):
-        return list(OBJECT_NODE_CLASSES_BY_PATTERN.keys())
-
-    @property
-    def types(self):
-        return list(OBJECT_NODE_CLASSES_BY_PATTERN.values())
+    _node_registry = OBJECT_NODE_CLASSES_BY_PATTERN
 
     def to_yaml_tree(self, obj, tag, ctx):
         return dict(obj._data)
 
 
-class TaggedListNodeConverter(_RomanConverter):
+class TaggedListNodeConverter(_RomanConverter[type[TaggedListNode]]):
     """
     Converter for all subclasses of TaggedListNode.
     """
 
-    @property
-    def tags(self):
-        return list(LIST_NODE_CLASSES_BY_PATTERN.keys())
-
-    @property
-    def types(self):
-        return list(LIST_NODE_CLASSES_BY_PATTERN.values())
+    _node_registry = LIST_NODE_CLASSES_BY_PATTERN
 
     def to_yaml_tree(self, obj, tag, ctx):
         return list(obj)
 
 
-class TaggedScalarNodeConverter(_RomanConverter):
+class TaggedScalarNodeConverter(_RomanConverter[type[TaggedScalarNode]]):
     """
     Converter for all subclasses of TaggedScalarNode.
     """
 
-    @property
-    def tags(self):
-        return list(SCALAR_NODE_CLASSES_BY_PATTERN.keys())
-
-    @property
-    def types(self):
-        return list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
+    _node_registry = SCALAR_NODE_CLASSES_BY_PATTERN
 
     def to_yaml_tree(self, obj, tag, ctx):
         node = obj.__class__.__bases__[0](obj)
@@ -115,5 +128,12 @@ class TaggedScalarNodeConverter(_RomanConverter):
 
 # Create the ASDF extension for the STNode classes.
 NODE_EXTENSIONS = {
-    manifest["id"]: ManifestExtension.from_uri(manifest["id"], converters=NODE_CONVERTERS.values()) for manifest in _MANIFESTS
+    **{
+        manifest["id"]: ManifestExtension.from_uri(manifest["id"], converters=STATIC_CONVERTERS.values())
+        for manifest in STATIC_MANIFESTS
+    },
+    **{
+        manifest["id"]: ManifestExtension.from_uri(manifest["id"], converters=DATAMODEL_CONVERTERS.values())
+        for manifest in DATAMODEL_MANIFESTS
+    },
 }

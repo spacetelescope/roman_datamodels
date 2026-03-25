@@ -63,7 +63,7 @@ def test_node_uris(node_tag, node_cls, request):
         raise ValueError(f"{node_cls._pattern} for {type(node_cls)} is not in a manifest")
 
 
-def test_history(tmp_path, node_instance):
+def test_history(tmp_path, node_tag, node_instance, request):
     filename = tmp_path / "history_test.asdf"
     prefix = "asdf://stsci.edu/datamodels/roman/extensions/"
 
@@ -91,3 +91,10 @@ def test_history(tmp_path, node_instance):
 
     datamodels_uri = extension_uri.replace("extensions", "manifests")
     assert datamodels_uri.startswith(prefix.replace("extensions", "manifests"))
+
+    # Place the xfail mark here because any failure above will result in a test fail
+    #    rather than an xfail. The RAD bug expresses itself here
+    if node_tag in _X_FAIL_TAGS:
+        request.node.add_marker(pytest.mark.xfail(reason=f"RAD has a manifest bug for {node_tag}"))
+
+    assert datamodels_uri == node_instance._latest_manifest
