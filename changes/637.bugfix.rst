@@ -1,0 +1,2 @@
+Bugfix for the recorded ``extension_uri`` for roman_datamodels in the ``history``
+section of an asdf file.
