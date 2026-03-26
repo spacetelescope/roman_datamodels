@@ -63,7 +63,7 @@ for manifest in _MANIFESTS:
     manifest_uri = manifest["id"]
     MANIFEST_TAG_REGISTRY[manifest_uri] = []
     for tag_def in manifest["tags"]:
-        SCHEMA_URIS_BY_TAG[tag_uri := tag_def["tag_uri"]] = tag_def["schema_uri"]
+        SCHEMA_URIS_BY_TAG[(tag_uri := tag_def["tag_uri"])] = tag_def["schema_uri"]
         base, _ = tag_uri.rsplit("-", maxsplit=1)
 
         # make pattern from tag

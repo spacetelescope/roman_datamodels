@@ -6,27 +6,6 @@ from roman_datamodels._stnode._registry import MANIFEST_TAG_REGISTRY, NODE_CLASS
 _TAG_MANIFEST_MAP = {tag_uri: manifest_uri for manifest_uri, tags in MANIFEST_TAG_REGISTRY.items() for tag_uri in tags}
 
 
-XFAIL_CREATE_FAKE_DATA = (
-    "asdf://stsci.edu/datamodels/roman/tags/image_source_catalog-1.5.0",
-    "asdf://stsci.edu/datamodels/roman/tags/mosaic_source_catalog-1.6.0",
-    "asdf://stsci.edu/datamodels/roman/tags/multiband_source_catalog-1.2.0",
-    "asdf://stsci.edu/datamodels/roman/tags/forced_image_source_catalog-1.2.0",
-    "asdf://stsci.edu/datamodels/roman/tags/forced_mosaic_source_catalog-1.3.0",
-    "asdf://stsci.edu/datamodels/roman/tags/image_source_catalog-1.4.0",
-    "asdf://stsci.edu/datamodels/roman/tags/mosaic_source_catalog-1.5.0",
-    "asdf://stsci.edu/datamodels/roman/tags/multiband_source_catalog-1.1.0",
-    "asdf://stsci.edu/datamodels/roman/tags/forced_image_source_catalog-1.1.0",
-    "asdf://stsci.edu/datamodels/roman/tags/forced_mosaic_source_catalog-1.2.0",
-    "asdf://stsci.edu/datamodels/roman/tags/mosaic_source_catalog-1.4.0",
-    "asdf://stsci.edu/datamodels/roman/tags/forced_mosaic_source_catalog-1.1.0",
-    "asdf://stsci.edu/datamodels/roman/tags/image_source_catalog-1.3.0",
-    "asdf://stsci.edu/datamodels/roman/tags/mosaic_source_catalog-1.3.0",
-    "asdf://stsci.edu/datamodels/roman/tags/multiband_source_catalog-1.0.0",
-    "asdf://stsci.edu/datamodels/roman/tags/forced_image_source_catalog-1.0.0",
-    "asdf://stsci.edu/datamodels/roman/tags/forced_mosaic_source_catalog-1.0.0",
-)
-
-
 @pytest.fixture(scope="session", params=NODE_CLASSES_BY_TAG)
 def node_tag(request):
     return request.param
@@ -60,16 +39,12 @@ def test_all_tags_in_manifest_tag_registry():
     assert len(_TAG_MANIFEST_MAP) == len(NODE_CLASSES_BY_TAG)
 
 
-def test_history(tmp_path, node_tag, node_instance, request):
+def test_history(tmp_path, node_tag, node_instance):
     filename = tmp_path / "history_test.asdf"
     prefix = "asdf://stsci.edu/datamodels/roman/extensions/"
 
     # Sanity check
     assert node_instance.tag == node_tag
-
-    # These ones are broken due to a bug
-    if node_tag in XFAIL_CREATE_FAKE_DATA:
-        request.node.add_marker(pytest.mark.xfail(reason="Create_fake_data is broken for this model"))
 
     # Save asdf file
     asdf.AsdfFile(tree={"roman": node_instance}).write_to(filename)
