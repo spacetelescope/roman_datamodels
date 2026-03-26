@@ -7,12 +7,12 @@ from roman_datamodels import _stnode as stnode
 from roman_datamodels import datamodels
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
-from .conftest import MANIFESTS
 
-
-@pytest.mark.parametrize("tag_def", [tag_def for manifest in MANIFESTS for tag_def in manifest["tags"]])
+@pytest.mark.parametrize(
+    "tag_def", [tag_def for manifest in stnode.REGISTRY.manifest.schema.values() for tag_def in manifest["tags"]]
+)
 def test_tag_has_node_class(tag_def):
-    class_name = stnode._factories.class_name_from_tag_uri(tag_def["tag_uri"])
+    class_name = stnode._tagged.class_name_from_tag_uri(tag_def["tag_uri"])
     node_class = getattr(stnode, class_name)
 
     assert asdf.util.uri_match(node_class._pattern, tag_def["tag_uri"])
@@ -25,14 +25,14 @@ def test_tag_has_node_class(tag_def):
         assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.parametrize("node_class", stnode.REGISTRY.nodes)
 def test_node_classes_available_via_stnode(node_class):
     assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
     assert node_class.__module__ == stnode.__name__
     assert hasattr(stnode, node_class.__name__)
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.parametrize("node_class", stnode.REGISTRY.nodes)
 def test_copy(node_class):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
     node = node_class.create_fake_data()
@@ -86,7 +86,7 @@ def test_wfi_mode():
     assert isinstance(node, stnode._mixins.WfiModeMixin)
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.parametrize("node_class", stnode.REGISTRY.nodes)
 def test_serialization(node_class, tmp_path):
     file_path = tmp_path / "test.asdf"
 
@@ -99,14 +99,14 @@ def test_serialization(node_class, tmp_path):
         assert_node_equal(af["node"], node)
 
 
-@pytest.mark.parametrize("node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedObjectNode)])
+@pytest.mark.parametrize("node_class", tuple(stnode.REGISTRY.object_nodes))
 def test_no_hidden(node_class):
     node = node_class.create_fake_data()
     with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
         node._foo = "bar"  # Add a hidden attribute
 
 
-@pytest.mark.parametrize("node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedListNode)])
+@pytest.mark.parametrize("node_class", tuple(stnode.REGISTRY.list_nodes))
 def test_list_node_no_new_attributes(node_class):
     """Test that no new attributes can be added to a list node."""
     node = node_class.create_fake_data()
@@ -117,9 +117,7 @@ def test_list_node_no_new_attributes(node_class):
         node._foo = "bar"
 
 
-@pytest.mark.parametrize(
-    "node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedObjectNode | stnode.TaggedListNode)]
-)
+@pytest.mark.parametrize("node_class", tuple(stnode.REGISTRY.object_nodes) + tuple(stnode.REGISTRY.list_nodes))
 def test_slotted(node_class):
     """
     Test that slotted nodes do not allow new attributes to be added.

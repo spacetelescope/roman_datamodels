@@ -25,11 +25,9 @@ from roman_datamodels._stnode import (
     WfiImage,
     WfiWcs,
 )
-from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
+from roman_datamodels._stnode._registry import REGISTRY
 from roman_datamodels._stnode._tagged import _NO_VALUE
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
-
-from .conftest import MANIFESTS
 
 # Nodes for metadata schema that do not contain any archive_catalog keywords
 NODES_LACKING_ARCHIVE_CATALOG = [
@@ -48,7 +46,7 @@ def datamodel_names():
     names = []
 
     extension_manager = asdf.AsdfFile().extension_manager
-    for manifest in MANIFESTS:
+    for manifest in REGISTRY.manifest.schema.values():
         for tag in manifest["tags"]:
             schema_uri = extension_manager.get_tag_definition(tag["tag_uri"]).schema_uris[0]
             schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
@@ -787,7 +785,7 @@ def test_create_fake_data(model):
     assert m.validate() is None
 
 
-@pytest.mark.parametrize("tag, node_class", NODE_CLASSES_BY_TAG.items())
+@pytest.mark.parametrize("tag, node_class", REGISTRY.tag.node.items())
 def test_create_tag(tag, node_class):
     """Test that we can create a node for every registered tag"""
 

@@ -15,7 +15,7 @@ import asdf
 import asdf.schema
 from semantic_version import Version
 
-from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
+from ._registry import REGISTRY
 
 if TYPE_CHECKING:
     from typing import Any
@@ -65,9 +65,7 @@ def _get_schema_from_tag(tag):
     tag : str
         The tag_uri of the schema to load.
     """
-    schema_uri = SCHEMA_URIS_BY_TAG[tag]
-
-    return asdf.schema.load_schema(schema_uri, resolve_references=True)
+    return asdf.schema.load_schema(REGISTRY.tag.schema[tag], resolve_references=True)
 
 
 class _MissingKeywordType:
@@ -388,7 +386,7 @@ class Builder:
 
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+        if property_class := REGISTRY.tag.node.get(tag):
             return property_class._create_minimal(defaults, builder=self, tag=tag)
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
@@ -493,7 +491,7 @@ class FakeDataBuilder(Builder):
                 tag = "tag:stsci.edu:asdf/core/ndarray-1.*"
             else:
                 return _NO_VALUE
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+        if property_class := REGISTRY.tag.node.get(tag):
             # Pass control to the class for create_fake_data overrides
             return property_class._create_fake_data(defaults, builder=self, tag=tag)
         if defaults is not _NO_VALUE:
@@ -648,7 +646,7 @@ class NodeBuilder(Builder):
 
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+        if property_class := REGISTRY.tag.node.get(tag):
             try:
                 return property_class._create_from_node(defaults, builder=self)
             except ValueError:

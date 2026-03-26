@@ -119,7 +119,7 @@ def test_default_is_copied(subschema, data):
         ("tag:stsci.edu:asdf/unit/quantity-1.*", _NoValueType),
         # unknown tag
         ("abc", _NoValueType),
-        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
+        # test one rad tag to not make this test dependent on REGISTRY.tag.node
         ("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0", SkyBackground),
     ),
 )
@@ -142,7 +142,7 @@ def test_tag(tag, expected_type):
         ("tag:stsci.edu:asdf/unit/quantity-1.*", Quantity),
         # unknown tag
         ("abc", _NoValueType),
-        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
+        # test one rad tag to not make this test dependent on REGISTRY.tag.node
         ("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0", SkyBackground),
     ),
 )
@@ -188,7 +188,7 @@ def _make_old_observation():
 @pytest.mark.parametrize(
     "tag, value",
     (
-        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
+        # test one rad tag to not make this test dependent on REGISTRY.tag.node
         ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", Observation.create_fake_data()),
         ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", {"program": 1}),
         ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", _make_old_observation()),

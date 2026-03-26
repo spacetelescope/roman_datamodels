@@ -9,19 +9,10 @@ from typing import TYPE_CHECKING
 from asdf.extension import Converter
 from astropy.time import Time
 
-from ._registry import (
-    LIST_NODE_CLASSES_BY_PATTERN,
-    MANIFEST_TAG_REGISTRY,
-    NODE_CLASSES_BY_TAG,
-    NODE_CONVERTERS,
-    OBJECT_NODE_CLASSES_BY_PATTERN,
-    SCALAR_NODE_CLASSES_BY_PATTERN,
-    SERIALIZATION_BY_MANIFEST,
-    TAG_MANIFEST_REGISTRY,
-)
+from ._registry import REGISTRY
 
 if TYPE_CHECKING:
-    from ._tagged import SerializationNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
+    from ._tagged import ManifestNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 __all__ = [
     "TaggedListNodeConverter",
@@ -38,27 +29,27 @@ class _RomanConverter(Converter):
     lazy = True
 
 
-class SerializationNodeConverter(_RomanConverter):
+class ManifestNodeConverter(_RomanConverter):
     """
-    Converter that tags are deferred to so that the correct
-    extension can be applied
+    Converter for the ManifestNode objects so that tags can be deferred to
+        this converter so that the correct extension will be recorded.
     """
 
     def __init__(self, manifest_uri: str):
         self._manifest_uri = manifest_uri
 
-    def select_tag(self, obj: SerializationNode, tags, ctx) -> str:
+    def select_tag(self, obj: ManifestNode, tags, ctx) -> str:
         return obj.tag
 
     @property
     def tags(self) -> tuple[str, ...]:
-        return tuple(MANIFEST_TAG_REGISTRY[self._manifest_uri])
+        return tuple(REGISTRY.manifest.tag[self._manifest_uri])
 
     @property
-    def types(self) -> tuple[type[SerializationNode], ...]:
-        return (SERIALIZATION_BY_MANIFEST[self._manifest_uri],)
+    def types(self) -> tuple[type[ManifestNode], ...]:
+        return (REGISTRY.manifest.node[self._manifest_uri],)
 
-    def to_yaml_tree(self, obj: SerializationNode, tag, ctx):
+    def to_yaml_tree(self, obj: ManifestNode, tag, ctx):
         return obj.data
 
     def from_yaml_tree(self, node, tag, ctx) -> TaggedObjectNode | TaggedListNode | TaggedScalarNode:
@@ -67,12 +58,16 @@ class SerializationNodeConverter(_RomanConverter):
             node = converter.from_yaml_tree(node, tag, ctx)
 
         # TODO: Add method for setting read_tag with some checks
-        obj = NODE_CLASSES_BY_TAG[tag](node)
+        obj = REGISTRY.tag.node[tag](node)
         obj._read_tag = tag
         return obj
 
 
 class _TaggedNodeConverter(_RomanConverter):
+    """
+    Base converter for all of the node types.
+    """
+
     def __init_subclass__(cls, **kwargs) -> None:
         """
         Automatically create the converter objects.
@@ -80,20 +75,22 @@ class _TaggedNodeConverter(_RomanConverter):
         super().__init_subclass__(**kwargs)
 
         if not cls.__name__.startswith("_"):
-            if cls.__name__ in NODE_CONVERTERS:
+            if cls.__name__ in REGISTRY.converters:
                 raise ValueError(f"Duplicate converter for {cls.__name__}")
 
-            NODE_CONVERTERS[cls.__name__] = cls()
+            REGISTRY.converters[cls.__name__] = cls()
 
+    # This is what triggers the converter deferral
     def select_tag(self, obj, tags, ctx):
         return None
 
+    #  If select tag is None, then we cannot have tags
     @property
     def tags(self) -> tuple:
         return ()
 
     def to_yaml_tree(self, obj, tag, ctx):
-        return SERIALIZATION_BY_MANIFEST[TAG_MANIFEST_REGISTRY[tag]](obj, tag)
+        return REGISTRY[tag](obj, tag)
 
     def from_yaml_tree(self, node, tag, ctx):
         raise NotImplementedError("Converter deserialization deferred")
@@ -102,11 +99,12 @@ class _TaggedNodeConverter(_RomanConverter):
 class TaggedObjectNodeConverter(_TaggedNodeConverter):
     """
     Converter for all subclasses of TaggedObjectNode.
+        -> defers serialization of node to the ManifestNodeConverter
     """
 
     @property
     def types(self):
-        return tuple(OBJECT_NODE_CLASSES_BY_PATTERN.values())
+        return tuple(REGISTRY.pattern.object.values())
 
     def to_yaml_tree(self, obj: TaggedObjectNode, tag, ctx):
         return super().to_yaml_tree(dict(obj._data), obj.tag, ctx)
@@ -115,11 +113,12 @@ class TaggedObjectNodeConverter(_TaggedNodeConverter):
 class TaggedListNodeConverter(_TaggedNodeConverter):
     """
     Converter for all subclasses of TaggedListNode.
+        -> defers serialization of node to the ManifestNodeConverter
     """
 
     @property
     def types(self):
-        return tuple(LIST_NODE_CLASSES_BY_PATTERN.values())
+        return tuple(REGISTRY.pattern.list.values())
 
     def to_yaml_tree(self, obj, tag, ctx):
         return super().to_yaml_tree(list(obj), obj.tag, ctx)
@@ -128,11 +127,12 @@ class TaggedListNodeConverter(_TaggedNodeConverter):
 class TaggedScalarNodeConverter(_TaggedNodeConverter):
     """
     Converter for all subclasses of TaggedScalarNode.
+        -> defers serialization of node to the ManifestNodeConverter
     """
 
     @property
     def types(self):
-        return list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
+        return tuple(REGISTRY.pattern.scalar.values())
 
     def to_yaml_tree(self, obj, tag, ctx):
         node = type(obj).__bases__[0](obj)
