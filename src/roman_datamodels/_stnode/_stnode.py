@@ -13,7 +13,7 @@ import yaml
 from asdf.extension import ManifestExtension
 from rad import resources
 
-from ._converters import SerializationTaggedNodeConverter
+from ._converters import SerializationNodeConverter
 from ._factories import stnode_factory
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
@@ -23,9 +23,9 @@ from ._registry import (
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
     SCHEMA_URIS_BY_TAG,
-    SERIALIZATION_BY_TAG,
+    TAG_MANIFEST_REGISTRY,
 )
-from ._tagged import SerializationTaggedNode
+from ._tagged import SerializationNode
 
 __all__ = ["NODE_CLASSES", "NODE_EXTENSIONS"]
 
@@ -60,7 +60,8 @@ def _factory(pattern, latest_manifest, tag_def):
 #   Reads each tag entry from the manifest and creates a class for it
 _generated = {}
 for manifest in _MANIFESTS:
-    manifest_uri = manifest["id"]
+    _add_cls(SerializationNode._factory(manifest_uri := manifest["id"]))
+
     MANIFEST_TAG_REGISTRY[manifest_uri] = []
     for tag_def in manifest["tags"]:
         SCHEMA_URIS_BY_TAG[(tag_uri := tag_def["tag_uri"])] = tag_def["schema_uri"]
@@ -73,8 +74,8 @@ for manifest in _MANIFESTS:
         NODE_CLASSES_BY_TAG[tag_uri] = _generated[pattern]
 
         # Make serialization intermediate
-        if tag_uri not in SERIALIZATION_BY_TAG:
-            _add_cls(SerializationTaggedNode._factory(tag_uri))
+        if tag_uri not in TAG_MANIFEST_REGISTRY:
+            TAG_MANIFEST_REGISTRY[tag_uri] = manifest_uri
             MANIFEST_TAG_REGISTRY[manifest_uri].append(tag_uri)
 
 
@@ -82,9 +83,9 @@ for manifest in _MANIFESTS:
 #    ASDF extension is setup here so that it is after the dynamic object creation
 NODE_EXTENSIONS = {
     manifest_uri: ManifestExtension.from_uri(
-        manifest_uri, converters=(SerializationTaggedNodeConverter(manifest_uri, tags), *tuple(NODE_CONVERTERS.values()))
+        manifest_uri, converters=(SerializationNodeConverter(manifest_uri), *tuple(NODE_CONVERTERS.values()))
     )
-    for manifest_uri, tags in MANIFEST_TAG_REGISTRY.items()
+    for manifest_uri in MANIFEST_TAG_REGISTRY
 }
 
 

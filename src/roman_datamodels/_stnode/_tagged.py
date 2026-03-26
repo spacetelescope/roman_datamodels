@@ -14,7 +14,7 @@ from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
-    SERIALIZATION_BY_TAG,
+    SERIALIZATION_BY_MANIFEST,
 )
 from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
 
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ["SerializationTaggedNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
+__all__ = ["SerializationNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
 
 
 def name_from_tag_uri(tag_uri: str) -> str:
@@ -280,13 +280,13 @@ class TaggedScalarNode(_TaggedNodeMixin):
 _T = TypeVar("_T", bound=TaggedObjectNode | TaggedListNode | TaggedScalarNode)
 
 
-class SerializationTaggedNode(Generic[_T]):
+class SerializationNode(Generic[_T]):
     """
     Intermediate class used to assist in serialization of Tagged objects
     so that the extension is correctly written.
     """
 
-    _tag: ClassVar[str]
+    _manifest: ClassVar[str]
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -294,12 +294,13 @@ class SerializationTaggedNode(Generic[_T]):
         """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "SerializationTaggedNode":
-            if cls._tag in SERIALIZATION_BY_TAG:
-                raise RuntimeError(f"SerializationTaggedNode class for tag '{cls._tag}' has been defined twice")
-            SERIALIZATION_BY_TAG[cls._tag] = cls
+            if cls._manifest in SERIALIZATION_BY_MANIFEST:
+                raise RuntimeError(f"SerializationNode class for '{cls._manifest}' has been defined twice")
+            SERIALIZATION_BY_MANIFEST[cls._manifest] = cls
 
-    def __init__(self, data: _T):
+    def __init__(self, data: _T, tag: str):
         self._data = data
+        self._tag = tag
 
     @property
     def tag(self) -> str:
@@ -310,15 +311,16 @@ class SerializationTaggedNode(Generic[_T]):
         return self._data
 
     @classmethod
-    def _factory(cls, tag: str) -> type[SerializationTaggedNode]:
+    def _factory(cls, manifest: str) -> type[SerializationNode]:
         """Create a subclass of this for the given tag"""
-        tag_uri, version = tag.rsplit("-", maxsplit=1)
+        tag_uri, version = manifest.rsplit("-", maxsplit=1)
 
         return type(
             f"SerializationNode_{class_name_from_tag_uri(tag_uri)}__{version.replace('.', '_')}",
-            (SerializationTaggedNode,),
+            (SerializationNode,),
             {
-                "_tag": tag,
+                "_manifest": manifest,
+                "__module__": "roman_datamodels._stnode",
             },
         )
 

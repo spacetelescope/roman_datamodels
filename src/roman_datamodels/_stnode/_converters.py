@@ -11,15 +11,17 @@ from astropy.time import Time
 
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
+    MANIFEST_TAG_REGISTRY,
     NODE_CLASSES_BY_TAG,
     NODE_CONVERTERS,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
-    SERIALIZATION_BY_TAG,
+    SERIALIZATION_BY_MANIFEST,
+    TAG_MANIFEST_REGISTRY,
 )
 
 if TYPE_CHECKING:
-    from ._tagged import SerializationTaggedNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
+    from ._tagged import SerializationNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 __all__ = [
     "TaggedListNodeConverter",
@@ -36,28 +38,27 @@ class _RomanConverter(Converter):
     lazy = True
 
 
-class SerializationTaggedNodeConverter(_RomanConverter):
+class SerializationNodeConverter(_RomanConverter):
     """
     Converter that tags are deferred to so that the correct
     extension can be applied
     """
 
-    def __init__(self, manifest_uri: str, tags: list[str]):
-        self._tags = tags
+    def __init__(self, manifest_uri: str):
         self._manifest_uri = manifest_uri
 
-    def select_tag(self, obj: SerializationTaggedNode, tags, ctx) -> str:
+    def select_tag(self, obj: SerializationNode, tags, ctx) -> str:
         return obj.tag
 
     @property
     def tags(self) -> tuple[str, ...]:
-        return tuple(self._tags)
+        return tuple(MANIFEST_TAG_REGISTRY[self._manifest_uri])
 
     @property
-    def types(self) -> tuple[type[SerializationTaggedNode], ...]:
-        return tuple(type_ for tag, type_ in SERIALIZATION_BY_TAG.items() if tag in self._tags)
+    def types(self) -> tuple[type[SerializationNode], ...]:
+        return (SERIALIZATION_BY_MANIFEST[self._manifest_uri],)
 
-    def to_yaml_tree(self, obj: SerializationTaggedNode, tag, ctx):
+    def to_yaml_tree(self, obj: SerializationNode, tag, ctx):
         return obj.data
 
     def from_yaml_tree(self, node, tag, ctx) -> TaggedObjectNode | TaggedListNode | TaggedScalarNode:
@@ -92,7 +93,7 @@ class _TaggedNodeConverter(_RomanConverter):
         return ()
 
     def to_yaml_tree(self, obj, tag, ctx):
-        return SERIALIZATION_BY_TAG[tag](obj)
+        return SERIALIZATION_BY_MANIFEST[TAG_MANIFEST_REGISTRY[tag]](obj, tag)
 
     def from_yaml_tree(self, node, tag, ctx):
         raise NotImplementedError("Converter deserialization deferred")
