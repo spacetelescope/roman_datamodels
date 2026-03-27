@@ -108,7 +108,7 @@ def get_schema_from_tag(tag):
     tag : str
         The tag_uri of the schema to load.
     """
-    return schema.load_schema(REGISTRY.tag.schema[tag], resolve_references=True)
+    return schema.load_schema(REGISTRY.tag_uri.schema_uri[tag], resolve_references=True)
 
 
 class _MissingKeywordType:

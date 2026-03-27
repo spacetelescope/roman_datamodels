@@ -40,5 +40,5 @@ NODE_EXTENSIONS = {
     manifest_uri: ManifestExtension.from_uri(
         manifest_uri, converters=(ManifestNodeConverter(manifest_uri), *tuple(REGISTRY.converters.values()))
     )
-    for manifest_uri in REGISTRY.manifest
+    for manifest_uri in REGISTRY.manifest_uri
 }

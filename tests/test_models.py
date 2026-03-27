@@ -46,7 +46,7 @@ def datamodel_names():
     names = []
 
     extension_manager = asdf.AsdfFile().extension_manager
-    for manifest in REGISTRY.manifest.schema.values():
+    for manifest in REGISTRY.manifest_uri.asdf_schema.values():
         for tag in manifest["tags"]:
             schema_uri = extension_manager.get_tag_definition(tag["tag_uri"]).schema_uris[0]
             schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
@@ -785,7 +785,7 @@ def test_create_fake_data(model):
     assert m.validate() is None
 
 
-@pytest.mark.parametrize("tag, node_class", REGISTRY.tag.node.items())
+@pytest.mark.parametrize("tag, node_class", REGISTRY.tag_uri.node.items())
 def test_create_tag(tag, node_class):
     """Test that we can create a node for every registered tag"""
 

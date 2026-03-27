@@ -43,11 +43,11 @@ class ManifestNodeConverter(_RomanConverter):
 
     @property
     def tags(self) -> tuple[str, ...]:
-        return tuple(REGISTRY.manifest.tag[self._manifest_uri])
+        return tuple(REGISTRY.manifest_uri.tag_uri[self._manifest_uri])
 
     @property
     def types(self) -> tuple[type[ManifestNode], ...]:
-        return (REGISTRY.manifest.node[self._manifest_uri],)
+        return (REGISTRY.manifest_uri.node[self._manifest_uri],)
 
     def to_yaml_tree(self, obj: ManifestNode, tag, ctx):
         return obj.data
@@ -58,7 +58,7 @@ class ManifestNodeConverter(_RomanConverter):
             node = converter.from_yaml_tree(node, tag, ctx)
 
         # TODO: Add method for setting read_tag with some checks
-        obj = REGISTRY.tag.node[tag](node)
+        obj = REGISTRY.tag_uri.node[tag](node)
         obj._read_tag = tag
         return obj
 
@@ -104,7 +104,7 @@ class TaggedObjectNodeConverter(_TaggedNodeConverter):
 
     @property
     def types(self):
-        return tuple(REGISTRY.pattern.object.values())
+        return tuple(REGISTRY.tag_pattern.object.values())
 
     def to_yaml_tree(self, obj: TaggedObjectNode, tag, ctx):
         return super().to_yaml_tree(dict(obj._data), obj.tag, ctx)
@@ -118,7 +118,7 @@ class TaggedListNodeConverter(_TaggedNodeConverter):
 
     @property
     def types(self):
-        return tuple(REGISTRY.pattern.list.values())
+        return tuple(REGISTRY.tag_pattern.list.values())
 
     def to_yaml_tree(self, obj, tag, ctx):
         return super().to_yaml_tree(list(obj), obj.tag, ctx)
@@ -132,7 +132,7 @@ class TaggedScalarNodeConverter(_TaggedNodeConverter):
 
     @property
     def types(self):
-        return tuple(REGISTRY.pattern.scalar.values())
+        return tuple(REGISTRY.tag_pattern.scalar.values())
 
     def to_yaml_tree(self, obj, tag, ctx):
         node = type(obj).__bases__[0](obj)

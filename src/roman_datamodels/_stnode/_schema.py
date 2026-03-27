@@ -202,7 +202,7 @@ class Builder:
 
     def from_tagged(self, schema, defaults):
         tag = get_keyword(schema, "tag")
-        if property_class := REGISTRY.tag.node.get(tag):
+        if property_class := REGISTRY.tag_uri.node.get(tag):
             return property_class._create_minimal(defaults, builder=self, tag=tag)
         if defaults is not NO_VALUE:
             return copy.deepcopy(defaults)
@@ -307,7 +307,7 @@ class FakeDataBuilder(Builder):
                 tag = "tag:stsci.edu:asdf/core/ndarray-1.*"
             else:
                 return NO_VALUE
-        if property_class := REGISTRY.tag.node.get(tag):
+        if property_class := REGISTRY.tag_uri.node.get(tag):
             # Pass control to the class for create_fake_data overrides
             return property_class._create_fake_data(defaults, builder=self, tag=tag)
         if defaults is not NO_VALUE:
@@ -462,7 +462,7 @@ class NodeBuilder(Builder):
 
     def from_tagged(self, schema, defaults):
         tag = get_keyword(schema, "tag")
-        if property_class := REGISTRY.tag.node.get(tag):
+        if property_class := REGISTRY.tag_uri.node.get(tag):
             try:
                 return property_class._create_from_node(defaults, builder=self)
             except ValueError:

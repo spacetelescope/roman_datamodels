@@ -4,19 +4,19 @@ import pytest
 from roman_datamodels._stnode import REGISTRY, TaggedObjectNode
 
 
-@pytest.fixture(scope="session", params=REGISTRY.manifest)
+@pytest.fixture(scope="session", params=REGISTRY.manifest_uri)
 def manifest(request):
     return request.param
 
 
-@pytest.fixture(scope="session", params=list(REGISTRY.pattern.object.values()))
+@pytest.fixture(scope="session", params=list(REGISTRY.tag_pattern.object.values()))
 def object_node(request) -> type[TaggedObjectNode]:
     return request.param
 
 
 @pytest.fixture(scope="session")
 def object_node_default_uri(object_node) -> str:
-    return REGISTRY.tag.schema[object_node._default_tag]
+    return REGISTRY.tag_uri.schema_uri[object_node._default_tag]
 
 
 @pytest.fixture(scope="session")

@@ -6,17 +6,19 @@ Hold all the registry information for the STNode classes.
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections.abc import MutableMapping, MutableSet
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, NotRequired, TypeAlias, TypedDict
+from typing import TYPE_CHECKING, ClassVar, NotRequired, TypeAlias, TypedDict, TypeVar
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Iterable
+    from collections.abc import Generator, Iterator
 
     from ._converters import _RomanConverter
     from ._tagged import ManifestNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
     tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]
+
+_T = TypeVar("_T")
 
 
 class ManifestTagEntry(TypedDict):
@@ -33,11 +35,88 @@ class ManifestSchema(TypedDict):
 __all__ = ["REGISTRY", "ManifestSchema", "ManifestTagEntry"]
 
 
-@dataclass
-class PatternRegistry:
-    object: dict[str, type[TaggedObjectNode]] = field(default_factory=dict)
-    list: dict[str, type[TaggedListNode]] = field(default_factory=dict)
-    scalar: dict[str, type[TaggedScalarNode]] = field(default_factory=dict)
+@dataclass(frozen=True, slots=True)
+class RegistryMap(MutableMapping[str, _T]):
+    _registry: dict[str, _T] = field(default_factory=dict)
+
+    def __getitem__(self, key: str) -> _T:
+        return self._registry[key]
+
+    def __setitem__(self, key: str, value: _T):
+        if key in self._registry:
+            raise KeyError(f"Cannot overwrite an existing item in the registry for {key}")
+
+        self._registry[key] = value
+
+    def __delitem__(self, key: str):
+        raise NotImplementedError("Cannot delete item from the registry")
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._registry)
+
+    def __len__(self) -> int:
+        return len(self._registry)
+
+
+@dataclass(frozen=True, slots=True)
+class RegistrySet(MutableSet[_T]):
+    _registry: set[_T] = field(default_factory=set)
+
+    def __contains__(self, value) -> bool:
+        return value in self._registry
+
+    def __iter__(self) -> Iterator[_T]:
+        return iter(self._registry)
+
+    def __len__(self) -> int:
+        return len(self._registry)
+
+    def add(self, value: _T):
+        if value in self._registry:
+            raise ValueError(f"Cannot add existing value {value} to the registry")
+
+        self._registry.add(value)
+
+    def discard(self, value: _T):
+        raise NotImplementedError("Cannot discard values from the registry")
+
+
+@dataclass(frozen=True, slots=True)
+class RegistryMapSet(RegistryMap[RegistrySet[_T]]):
+    def __getitem__(self, key: str) -> RegistrySet[_T]:
+        if key not in self._registry:
+            self._registry[key] = RegistrySet()
+
+        return self._registry[key]
+
+    def __setitem__(self, key: str, value: RegistrySet[_T]):
+        raise NotImplementedError("Cannot directly add item to registry")
+
+
+@dataclass(frozen=True, slots=True)
+class TagPatternRegistry:
+    """
+    Class to hold lookup Registries of Nodes based on tag-patterns
+
+        Note: a tag-pattern can only exist in one of the three maps
+            in this registry so we can treat it like a categorized
+            map for general access purposes
+
+    Parameters
+    ----------
+    object:
+        The map from tag-pattern to corresponding object Node
+
+    list:
+        The map from tag-pattern to corresponding list Node
+
+    scalar:
+        The map from tag-pattern to corresponding scalar Node
+    """
+
+    object: RegistryMap[type[TaggedObjectNode]] = field(default_factory=RegistryMap)
+    list: RegistryMap[type[TaggedListNode]] = field(default_factory=RegistryMap)
+    scalar: RegistryMap[type[TaggedScalarNode]] = field(default_factory=RegistryMap)
 
     def __contains__(self, pattern: str) -> bool:
         return (pattern in self.object) or (pattern in self.list) or (pattern in self.scalar)
@@ -78,11 +157,28 @@ class PatternRegistry:
         yield from self.scalar_nodes
 
 
-@dataclass
-class TagRegistry:
-    node: dict[str, tagged_type] = field(default_factory=dict)
-    schema: dict[str, str] = field(default_factory=dict)
-    manifest: dict[str, str] = field(default_factory=dict)
+@dataclass(frozen=True, slots=True)
+class TagUriRegistry:
+    """
+    Class to hold Registries to look up information using the tag_uris
+
+        Note: Every tag_uri will have an entry in every map of this registry
+
+    Parameters
+    ----------
+    node:
+        The map from tag_uri to Node class
+
+    schema_uri:
+        The map from tag_uri to schema_uri
+
+    manifest_uri:
+        The map from tag_uri to manifest_uri
+    """
+
+    node: RegistryMap[tagged_type] = field(default_factory=RegistryMap)
+    schema_uri: RegistryMap[str] = field(default_factory=RegistryMap)
+    manifest_uri: RegistryMap[str] = field(default_factory=RegistryMap)
 
     def __contains__(self, tag_uri: str) -> bool:
         return tag_uri in self.node
@@ -92,51 +188,97 @@ class TagRegistry:
             raise KeyError(f"tag_uri: {tag_uri} has already been registered")
 
         self.node[tag_uri] = entry[0]
-        self.schema[tag_uri] = entry[1]
-        self.manifest[tag_uri] = entry[2]
+        self.schema_uri[tag_uri] = entry[1]
+        self.manifest_uri[tag_uri] = entry[2]
 
-    def __iter__(self) -> Iterable[str]:
-        return iter(self.node.keys())
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.node)
 
     def __len__(self) -> int:
         return len(self.node)
 
 
-@dataclass
-class ManifestRegistry:
-    node: dict[str, type[ManifestNode]] = field(default_factory=dict)
-    tag: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list))
-    schema: dict[str, ManifestSchema] = field(default_factory=dict)
+@dataclass(frozen=True, slots=True)
+class ManifestUriRegistry:
+    """
+    Class to hold Registries to look up information using the manifest_uris
 
-    def __iter__(self) -> Iterable[str]:
-        return iter(self.node.keys())
+        Note: Once stnode fully initializes there will be an entry in each
+            map corresponding to each manifest_uri
+
+    Parameters
+    ----------
+    node:
+        The map from manifest_uri to the ManifestNode type handling that node
+
+    tag_uri:
+        The map from manifest_uri to the list of tag_uris that are associated with it
+
+    asdf_schema:
+        The map from manifest_uri to the parsed contents of the manfest's schema
+    """
+
+    node: RegistryMap[type[ManifestNode]] = field(default_factory=RegistryMap)
+    tag_uri: RegistryMapSet[str] = field(default_factory=RegistryMapSet)
+    asdf_schema: RegistryMap[ManifestSchema] = field(default_factory=RegistryMap)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.node)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Registry:
-    pattern: PatternRegistry = field(default_factory=PatternRegistry)
-    tag: TagRegistry = field(default_factory=TagRegistry)
-    manifest: ManifestRegistry = field(default_factory=ManifestRegistry)
-    converters: dict[str, _RomanConverter] = field(default_factory=dict)
+    """
+    Class to hold all the Registries used by stnode
+        Note: This class is a singleton so it will always be the same object
+
+    Parameters
+    ----------
+    tag_pattern:
+        The tag_pattern registry
+
+    tag_uri:
+        The tag_uri registry
+
+    manifest_uri:
+        The manifest_uri registry
+
+    converters:
+        The asdf_converter registry
+    """
+
+    tag_pattern: TagPatternRegistry = field(default_factory=TagPatternRegistry)
+    tag_uri: TagUriRegistry = field(default_factory=TagUriRegistry)
+    manifest_uri: ManifestUriRegistry = field(default_factory=ManifestUriRegistry)
+    converters: RegistryMap[_RomanConverter] = field(default_factory=RegistryMap)
+
+    _instance: ClassVar[Registry | None] = None
+
+    # Turn this object into a singleton
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls, *args, **kwargs)
+
+        return cls._instance
 
     def __getitem__(self, tag_uri) -> type[ManifestNode]:
-        return self.manifest.node[self.tag.manifest[tag_uri]]
+        return self.manifest_uri.node[self.tag_uri.manifest_uri[tag_uri]]
 
     @property
     def object_nodes(self) -> Generator[type[TaggedObjectNode], None, None]:
-        yield from self.pattern.object_nodes
+        yield from self.tag_pattern.object_nodes
 
     @property
     def list_nodes(self) -> Generator[type[TaggedListNode], None, None]:
-        yield from self.pattern.list_nodes
+        yield from self.tag_pattern.list_nodes
 
     @property
     def scalar_nodes(self) -> Generator[type[TaggedScalarNode], None, None]:
-        yield from self.pattern.scalar_nodes
+        yield from self.tag_pattern.scalar_nodes
 
     @property
     def nodes(self) -> Generator[tagged_type, None, None]:
-        yield from self.pattern.nodes
+        yield from self.tag_pattern.nodes
 
 
 REGISTRY = Registry()

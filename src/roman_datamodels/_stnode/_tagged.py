@@ -205,10 +205,8 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
         Register any subclasses of this class in the REGISTRY
         """
         super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedObjectNode":
-            if cls._pattern in REGISTRY.pattern.object:
-                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._pattern}' has been defined twice")
-            REGISTRY.pattern.object[cls._pattern] = cls
+        if cls is not TaggedObjectNode:
+            REGISTRY.tag_pattern.object[cls._pattern] = cls
 
 
 class TaggedListNode(LNode, _TaggedNodeMixin):
@@ -225,10 +223,8 @@ class TaggedListNode(LNode, _TaggedNodeMixin):
         Register any subclasses of this class in the registry
         """
         super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedListNode":
-            if cls._pattern in REGISTRY.pattern.list:
-                raise RuntimeError(f"TaggedListNode class for tag '{cls._pattern}' has been defined twice")
-            REGISTRY.pattern.list[cls._pattern] = cls
+        if cls is not TaggedListNode:
+            REGISTRY.tag_pattern.list[cls._pattern] = cls
 
 
 class TaggedScalarNode(_TaggedNodeMixin):
@@ -244,10 +240,8 @@ class TaggedScalarNode(_TaggedNodeMixin):
         Register any subclasses of this class in the registry.
         """
         super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedScalarNode":
-            if cls._pattern in REGISTRY.pattern.scalar:
-                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._pattern}' has been defined twice")
-            REGISTRY.pattern.scalar[cls._pattern] = cls
+        if cls is not TaggedScalarNode:
+            REGISTRY.tag_pattern.scalar[cls._pattern] = cls
 
     def __asdf_traverse__(self):
         return self
@@ -320,6 +314,8 @@ class ManifestNode(Generic[_T]):
     a given manifest
     """
 
+    __slots__ = ("_data", "_tag")
+
     _manifest_uri: ClassVar[str]
 
     def __init_subclass__(cls, **kwargs) -> None:
@@ -327,11 +323,8 @@ class ManifestNode(Generic[_T]):
         Register any subclasses of this class in the registry.
         """
         super().__init_subclass__(**kwargs)
-        if cls.__name__ != "SerializationTaggedNode":
-            if cls._manifest_uri in REGISTRY.manifest.node:
-                raise RuntimeError(f"SerializationNode class for '{cls._manifest_uri}' has been defined twice")
-
-            REGISTRY.manifest.node[cls._manifest_uri] = cls
+        if cls is not ManifestNode:
+            REGISTRY.manifest_uri.node[cls._manifest_uri] = cls
 
     def __init__(self, data: _T, tag: str):
         self._data = data
@@ -348,14 +341,17 @@ class ManifestNode(Generic[_T]):
     @classmethod
     def _factory(cls, manifest_uri: str) -> type[ManifestNode]:
         """Create a subclass of this for the given tag"""
-        tag_uri, version = manifest_uri.rsplit("-", maxsplit=1)
+        if cls is not ManifestNode:
+            raise TypeError("This class does not support the node factory")
 
+        tag_uri, version = manifest_uri.rsplit("-", maxsplit=1)
         return type(
             f"SerializationNode_{class_name_from_tag_uri(tag_uri)}__{version.replace('.', '_')}",
             (ManifestNode,),
             {
                 "_manifest_uri": manifest_uri,
                 "__module__": "roman_datamodels._stnode",
+                "__slots__": (),
             },
         )
 
@@ -379,23 +375,23 @@ class ManifestNode(Generic[_T]):
         nodes: list[type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode] | type[ManifestNode]] = [
             cls._factory(manifest_uri := manifest["id"])
         ]
-        REGISTRY.manifest.schema[manifest_uri] = manifest
+        REGISTRY.manifest_uri.asdf_schema[manifest_uri] = manifest
 
         for tag_entry in manifest["tags"]:
             tag_uri = tag_entry["tag_uri"]
             pattern = f"{tag_uri.rsplit('-', maxsplit=1)[0]}-*"
 
             # Create a new node for the pattern if it does note exist
-            if pattern not in REGISTRY.pattern:
+            if pattern not in REGISTRY.tag_pattern:
                 nodes.append(cls._node_factory(pattern, manifest_uri, tag_entry))
 
             # Register the node for the given tag
-            if tag_uri not in REGISTRY.tag:
-                REGISTRY.tag[tag_uri] = (
-                    REGISTRY.pattern[pattern],
+            if tag_uri not in REGISTRY.tag_uri:
+                REGISTRY.tag_uri[tag_uri] = (
+                    REGISTRY.tag_pattern[pattern],
                     tag_entry["schema_uri"],
                     manifest_uri,
                 )
-                REGISTRY.manifest.tag[manifest_uri].append(tag_uri)
+                REGISTRY.manifest_uri.tag_uri[manifest_uri].add(tag_uri)
 
         return nodes

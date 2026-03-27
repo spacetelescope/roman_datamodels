@@ -9,7 +9,7 @@ from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wra
 
 
 @pytest.mark.parametrize(
-    "tag_def", [tag_def for manifest in stnode.REGISTRY.manifest.schema.values() for tag_def in manifest["tags"]]
+    "tag_def", [tag_def for manifest in stnode.REGISTRY.manifest_uri.asdf_schema.values() for tag_def in manifest["tags"]]
 )
 def test_tag_has_node_class(tag_def):
     class_name = stnode._tagged.class_name_from_tag_uri(tag_def["tag_uri"])
