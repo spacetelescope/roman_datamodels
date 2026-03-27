@@ -30,7 +30,7 @@ class ManifestSchema(TypedDict):
     tags: list[ManifestTagEntry]
 
 
-__all__ = ["REGISTRY", "ManifestSchema"]
+__all__ = ["REGISTRY", "ManifestSchema", "ManifestTagEntry"]
 
 
 @dataclass

@@ -6,7 +6,8 @@ from astropy.time import Time
 from astropy.units import Quantity
 
 from roman_datamodels._stnode import Observation, SkyBackground
-from roman_datamodels._stnode._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, SchemaType, _NoValueType
+from roman_datamodels._stnode._schema import Builder, FakeDataBuilder, NodeBuilder, SchemaType
+from roman_datamodels._stnode._utils import NO_VALUE, _NoValueType
 
 
 @pytest.mark.parametrize(
@@ -38,14 +39,14 @@ def test_type(schema, type_):
 @pytest.mark.parametrize(
     "schema, defaults, expected",
     (
-        ({}, None, _NO_VALUE),
+        ({}, None, NO_VALUE),
         ({"enum": [0]}, None, 0),
         ({"type": "string", "enum": ["a"]}, None, "a"),
         ({"type": "integer", "enum": [0]}, None, 0),
         ({"type": "number", "enum": [3.14]}, None, 3.14),
         ({"type": "boolean", "enum": [False]}, None, False),
         ({"type": "null"}, None, None),
-        ({"enum": [0, 1]}, None, _NO_VALUE),
+        ({"enum": [0, 1]}, None, NO_VALUE),
         ({"properties": {"a": {"enum": [0]}}}, None, {}),
         ({"properties": {"a": {"enum": [0]}}, "required": ["a"]}, None, {"a": 0}),
         ({"properties": {"a": {"type": "string"}}, "required": ["a"]}, None, {}),

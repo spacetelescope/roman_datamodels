@@ -210,7 +210,7 @@ def test_get_latest_schema(object_node, object_node_default_uri, object_node_uri
         latest_uri, schema = stnode.get_latest_schema(uri)
         assert latest_uri == object_node_default_uri
 
-        assert stnode._schema._get_schema_from_tag(object_node._default_tag) == schema
+        assert stnode._utils.get_schema_from_tag(object_node._default_tag) == schema
 
 
 @pytest.mark.parametrize(

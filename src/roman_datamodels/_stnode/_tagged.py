@@ -14,7 +14,8 @@ from astropy.time import Time
 from . import _mixins
 from ._node import DNode, LNode
 from ._registry import REGISTRY, ManifestSchema, ManifestTagEntry
-from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
+from ._schema import Builder, FakeDataBuilder, NodeBuilder
+from ._utils import NO_VALUE, class_name_from_tag_uri, docstring_from_tag, get_schema_from_tag
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
@@ -36,63 +37,6 @@ _SCALAR_TYPE_BY_PATTERN = {
 }
 # Map of node types by pattern (TaggedObjectNode is default)
 _LIST_NODE_PATTERN = ("asdf://stsci.edu/datamodels/roman/tags/cal_logs-*",)
-
-
-def name_from_tag_uri(tag_uri: str) -> str:
-    """
-    Compute the name of the schema from the tag_uri.
-
-    Parameters
-    ----------
-    tag_uri : str
-        The tag_uri to find the name from
-    """
-    tag_uri_split = tag_uri.split("/")[-1].split("-")[0]
-    if "/tvac/" in tag_uri and "tvac" not in tag_uri_split:
-        tag_uri_split = "tvac_" + tag_uri.split("/")[-1].split("-")[0]
-    elif "/fps/" in tag_uri and "fps" not in tag_uri_split:
-        tag_uri_split = "fps_" + tag_uri.split("/")[-1].split("-")[0]
-    return tag_uri_split
-
-
-def class_name_from_tag_uri(tag_uri: str) -> str:
-    """
-    Construct the class name for the STNode class from the tag_uri
-
-    Parameters
-    ----------
-    tag_uri : str
-        The tag_uri found in the RAD manifest
-
-    Returns
-    -------
-    string name for the class
-    """
-    tag_name = name_from_tag_uri(tag_uri)
-    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
-    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
-        class_name += "Ref"
-
-    return class_name
-
-
-def docstring_from_tag(entry: ManifestTagEntry) -> str:
-    """
-    Read the docstring (if it exists) from the RAD manifest and generate a docstring
-        for the dynamically generated class.
-
-    Parameters
-    ----------
-    tag_def: dict
-        A tag entry from the RAD manifest
-
-    Returns
-    -------
-    A docstring for the class based on the tag
-    """
-    docstring = f"{entry['description']}\n\n" if "description" in entry else ""
-
-    return docstring + f"Class generated from tag '{entry['tag_uri']}'"
 
 
 class _TaggedNodeMixin(NodeMixin):
@@ -119,7 +63,7 @@ class _TaggedNodeMixin(NodeMixin):
         cls, defaults: Mapping[str, Any] | None = None, builder: Builder | None = None, *, tag: str | None = None
     ) -> Self:
         builder = builder or Builder()
-        new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
+        new = cls(builder.build(get_schema_from_tag(tag or cls._default_tag), defaults))
 
         if tag:
             new._read_tag = tag
@@ -217,7 +161,7 @@ class _TaggedNodeMixin(NodeMixin):
 
     def get_schema(self):
         """Retrieve the schema associated with this tag"""
-        return _get_schema_from_tag(self.tag)
+        return get_schema_from_tag(self.tag)
 
     @classmethod
     def _node_factory(cls, pattern: str, manifest_uri: str, tag_entry: ManifestTagEntry) -> type[Self]:
@@ -311,8 +255,8 @@ class TaggedScalarNode(_TaggedNodeMixin):
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         builder = builder or Builder()
-        value = builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults)
-        if value is _NO_VALUE:
+        value = builder.build(get_schema_from_tag(tag or cls._default_tag), defaults)
+        if value is NO_VALUE:
             return value
 
         new = cls(value)

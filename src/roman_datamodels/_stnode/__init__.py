@@ -12,3 +12,4 @@ from ._registry import *  # noqa: F403
 from ._schema import *  # noqa: F403
 from ._stnode import *  # noqa: F403
 from ._tagged import *  # noqa: F403
+from ._utils import *  # noqa: F403

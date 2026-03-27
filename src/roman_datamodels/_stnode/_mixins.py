@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING
 
 from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
 
-from ._schema import Builder, _get_keyword, _get_properties
-from ._tagged import _get_schema_from_tag
+from ._schema import Builder
+from ._utils import get_keyword, get_properties, get_schema_from_tag
 
 # This is a workaround for MyPy to understand the Mixin classes
 if TYPE_CHECKING:
@@ -173,7 +173,7 @@ class RefFileMixin(_ObjectBase):
             defaults = deepcopy(defaults)
         else:
             defaults = {}
-        schema = _get_schema_from_tag(tag or cls._default_tag)
+        schema = get_schema_from_tag(tag or cls._default_tag)
         for k, v in schema["properties"].items():
             if v["type"] != "string":
                 continue
@@ -196,7 +196,7 @@ class L2CalStepMixin(_ObjectBase):
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         defaults = defaults or {}
-        schema = _get_schema_from_tag(tag or cls._default_tag)
+        schema = get_schema_from_tag(tag or cls._default_tag)
         new = cls({k: defaults.get(k, "INCOMPLETE") for k in schema["properties"]})
         if tag:
             new._read_tag = tag
@@ -232,7 +232,7 @@ class ImageSourceCatalogMixin(_ObjectBase):
         """
         if name.startswith("forced_"):
             _, name = name.split("forced_", maxsplit=1)
-        definitions = _get_keyword(self.get_schema()["properties"]["source_catalog"], "definitions")
+        definitions = get_keyword(self.get_schema()["properties"]["source_catalog"], "definitions")
         for def_name, definition in definitions.items():
             if "~radius~" in def_name:
                 def_name = def_name.replace("~radius~", r"[0-9]{2}")
@@ -256,16 +256,16 @@ class ImageSourceCatalogMixin(_ObjectBase):
         aperture_radii = aperture_radii or ["00"]
         filters = filters or ["f184"]
 
-        columns_schema = dict(_get_properties(_get_schema_from_tag(tag or cls._default_tag)["properties"]["source_catalog"]))
+        columns_schema = dict(get_properties(get_schema_from_tag(tag or cls._default_tag)["properties"]["source_catalog"]))
         columns = []
 
         if "columns" in columns_schema:
             for raw_col_def in columns_schema["columns"]["allOf"]:
                 col_def = raw_col_def["not"]["items"]["not"]
-                properties = dict(_get_properties(col_def))
+                properties = dict(get_properties(col_def))
                 name_regex = properties["name"]["pattern"]
-                unit = _get_keyword(col_def, "unit")
-                description = _get_keyword(col_def, "description")
+                unit = get_keyword(col_def, "unit")
+                description = get_keyword(col_def, "description")
                 dtype = asdf_datatype_to_numpy_dtype(properties["data"]["properties"]["datatype"]["enum"][0])
 
                 name_queue = [name_regex[1:-1]]

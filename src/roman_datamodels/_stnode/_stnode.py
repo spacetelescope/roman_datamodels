@@ -27,7 +27,6 @@ _MANIFEST_DIR = Path(str(importlib.resources.files(resources) / "manifests"))
 # TODO: We should make this use semantic versioning to sort to ensure we don't get something strange
 _DATAMODEL_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*datamodels-*.yaml")], reverse=True)
 DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL_MANIFEST_PATHS]
-# Notice that the static manifests are first so that we defer to them
 
 
 for manifest in DATAMODEL_MANIFESTS:
