@@ -1,32 +1,25 @@
-from importlib.resources import files
 from math import log10
 
 import numpy as np
 import pytest
+from asdf import get_config
+from asdf.schema import load_schema
 from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
-from rad import resources
-from semantic_version import Version
-from yaml import safe_load
 
 from roman_datamodels import datamodels as rdm
 from roman_datamodels import dqflags
+from roman_datamodels._stnode._utils import get_version
+
+_RAMP_SCHEMA_PREFIX = "asdf://stsci.edu/datamodels/roman/schemas/ramp-"
 
 
 @pytest.fixture(scope="module")
 def ramp_schema():
     """The latest ramp schema"""
+    ramp_uris = {get_version(uri): uri for uri in get_config().resource_manager if uri.startswith(_RAMP_SCHEMA_PREFIX)}
 
-    ramp_schema = None
-    for schema in (files(resources) / "schemas").glob("ramp-*.yaml"):
-        if ramp_schema is None:
-            ramp_schema = schema
-        else:
-            current_version = Version(ramp_schema.name.rsplit("-", 1)[1].rsplit(".", 1)[0])
-            next_version = Version(schema.name.rsplit("-", 1)[1].rsplit(".", 1)[0])
-            if next_version > current_version:
-                ramp_schema = schema
-
-    return safe_load(ramp_schema.read_text())
+    # Latest one will be the first under a reverse sort
+    return load_schema(ramp_uris[sorted(ramp_uris, reverse=True)[0]])
 
 
 def _is_power_of_two(x):

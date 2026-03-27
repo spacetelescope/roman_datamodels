@@ -9,7 +9,21 @@ from semantic_version import Version
 
 from ._registry import REGISTRY, ManifestTagEntry
 
-__all__ = ["class_name_from_tag_uri", "docstring_from_tag", "get_latest_schema", "get_schema_from_tag"]
+__all__ = ["class_name_from_tag_uri", "docstring_from_tag", "get_latest_schema", "get_schema_from_tag", "get_version"]
+
+
+def get_version(asdf_uri: str) -> Version:
+    """Get the version of the of the schema from the ASDF URI"""
+    # Pluck the version out of the URI if it has one, otherwise we assume it is
+    #    0.0.0
+    version = asdf_uri.rsplit("-", maxsplit=1)[-1] if "-" in asdf_uri else "0.0.0"
+
+    # Fix the issue with the first datamodel manifest being 1.0 instead of 1.0.0
+    #     which causes issues with semantic_version
+    if version == "1.0":
+        version = "1.0.0"
+
+    return Version(version)
 
 
 def _name_from_tag_uri(tag_uri: str) -> str:
@@ -76,26 +90,15 @@ def get_latest_schema(uri: str) -> tuple[str, dict[str, Any]]:
     """
     Get the latest version of a schema by URI (or partial URI).
     """
+    uri_prefix = f"{uri.rsplit('-', maxsplit=1)[0] if '-' in uri else uri}-"
+    schema_uris = {get_version(uri): uri for uri in get_config().resource_manager if uri.startswith(uri_prefix)}
 
-    if "-" in uri:
-        uri_prefix, version = uri.rsplit("-", 1)
-        latest_uri = uri
-    else:
-        uri_prefix = uri
-        version = "0.0.0"
-        latest_uri = None
-
-    uri_prefix += "-"
-    current_version = Version(version)
-    for schema_uri in get_config().resource_manager:
-        if schema_uri.startswith(uri_prefix) and (new_version := Version(schema_uri.rsplit("-", 1)[-1])) > current_version:
-            current_version = new_version
-            latest_uri = schema_uri
-
-    if latest_uri is None:
+    if not schema_uris:
         raise ValueError(f"No schema found for {uri}")
 
-    return latest_uri, schema.load_schema(latest_uri, resolve_references=True)
+    return (latest_uri := schema_uris[sorted(schema_uris, reverse=True)[0]]), schema.load_schema(
+        latest_uri, resolve_references=True
+    )
 
 
 @cache
