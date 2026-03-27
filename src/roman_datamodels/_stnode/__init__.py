@@ -5,11 +5,51 @@ The STNode classes and supporting objects generated dynamically at import time
 
 from __future__ import annotations
 
-from ._converters import *  # noqa: F403
-from ._mixins import *  # noqa: F403
-from ._node import *  # noqa: F403
-from ._registry import *  # noqa: F403
-from ._schema import *  # noqa: F403
-from ._stnode import *  # noqa: F403
-from ._tagged import *  # noqa: F403
-from ._utils import *  # noqa: F403
+import importlib.resources
+from pathlib import Path
+
+import yaml
+from asdf.extension import ManifestExtension
+from rad import resources
+
+from ._converters import ManifestNodeConverter
+from ._mixins import ImageSourceCatalogMixin
+from ._node import DNode, LNode
+from ._registry import REGISTRY
+from ._tagged import ManifestNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
+from ._utils import get_latest_schema
+
+__all__ = (
+    "REGISTRY",
+    "DNode",
+    "ImageSourceCatalogMixin",
+    "LNode",
+    "TaggedListNode",
+    "TaggedObjectNode",
+    "TaggedScalarNode",
+    "get_latest_schema",
+)
+
+# Load the manifest directly from the rad resources and not from ASDF.
+#   This is because the ASDF extensions have to be created before they can be registered
+#   and this module creates the classes used by the ASDF extension.
+_MANIFEST_DIR = Path(str(importlib.resources.files(resources) / "manifests"))
+# TODO: We should make this use semantic versioning to sort to ensure we don't get something strange
+_DATAMODEL_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*datamodels-*.yaml")], reverse=True)
+_DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL_MANIFEST_PATHS]
+
+
+all_nodes: list[str] = []
+for manifest in _DATAMODEL_MANIFESTS:
+    for node in ManifestNode.factory(manifest):
+        globals()[node.__name__] = node
+        all_nodes.append(node.__name__)
+
+# Create the ASDF extension for the STNode classes.
+#    ASDF extension is setup here so that it is after the dynamic object creation
+for manifest_uri in REGISTRY.manifest_uri:
+    REGISTRY.manifest_uri.asdf_extension[manifest_uri] = ManifestExtension.from_uri(
+        manifest_uri, converters=(ManifestNodeConverter(manifest_uri), *tuple(REGISTRY.asdf_converter.values()))
+    )
+
+__all__ += tuple(all_nodes)

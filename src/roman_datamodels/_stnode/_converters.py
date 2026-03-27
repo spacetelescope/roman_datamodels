@@ -14,11 +14,7 @@ from ._registry import REGISTRY
 if TYPE_CHECKING:
     from ._tagged import ManifestNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
-__all__ = [
-    "TaggedListNodeConverter",
-    "TaggedObjectNodeConverter",
-    "TaggedScalarNodeConverter",
-]
+__all__ = ("TaggedListNodeConverter", "TaggedObjectNodeConverter", "TaggedScalarNodeConverter")
 
 
 class _RomanConverter(Converter):

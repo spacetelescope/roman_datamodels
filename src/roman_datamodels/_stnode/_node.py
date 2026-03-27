@@ -14,7 +14,7 @@ from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
 from astropy.time import Time
 
-__all__ = ["DNode", "LNode"]
+__all__ = ("DNode", "LNode", "NodeMixin")
 
 
 def _wrap(value):
@@ -45,7 +45,7 @@ def _unwrap(value):
     return value
 
 
-class _NodeMixin:
+class NodeMixin:
     """
     Mixin class to provide the common API for all Node objects
     """
@@ -65,7 +65,7 @@ class _NodeMixin:
         self._read_tag = None
 
 
-class DNode(MutableMapping, _NodeMixin):
+class DNode(MutableMapping, NodeMixin):
     """
     Base class describing all "object" (dict-like) data nodes for STNode classes.
     """
@@ -215,7 +215,7 @@ class DNode(MutableMapping, _NodeMixin):
         return instance
 
 
-class LNode(MutableSequence, _NodeMixin):
+class LNode(MutableSequence, NodeMixin):
     """
     Base class describing all "array" (list-like) data nodes for STNode classes.
     """

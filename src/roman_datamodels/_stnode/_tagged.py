@@ -23,12 +23,12 @@ if TYPE_CHECKING:
     from typing import Any, ClassVar, Self, TypeAlias
 
     from ._mixins import _BaseForNodeMixin
-    from ._node import _NodeMixin as NodeMixin
+    from ._node import NodeMixin
 
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ["ManifestNode", "TagPatternNodeMixin", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
+__all__ = ("ManifestNode", "TagPatternNodeMixin", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode")
 
 
 # Map of scalar types by pattern (str is default)

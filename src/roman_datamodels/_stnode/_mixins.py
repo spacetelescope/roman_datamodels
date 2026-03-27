@@ -34,7 +34,7 @@ else:
     _ScalarBase: TypeAlias = object
     _TimeBase: TypeAlias = object
 
-__all__ = [
+__all__ = (
     "CalibrationSoftwareNameMixin",
     "FileDateMixin",
     "ForcedImageSourceCatalogMixin",
@@ -57,7 +57,7 @@ __all__ = [
     "TvacSdfSoftwareVersionMixin",
     "TvacWfiModeMixin",
     "WfiModeMixin",
-]
+)
 
 
 class _BaseForNodeMixin(TagPatternNodeMixin):
