@@ -75,10 +75,10 @@ class _TaggedNodeConverter(_RomanConverter):
         super().__init_subclass__(**kwargs)
 
         if not cls.__name__.startswith("_"):
-            if cls.__name__ in REGISTRY.converters:
+            if cls.__name__ in REGISTRY.asdf_converter:
                 raise ValueError(f"Duplicate converter for {cls.__name__}")
 
-            REGISTRY.converters[cls.__name__] = cls()
+            REGISTRY.asdf_converter[cls.__name__] = cls()
 
     # This is what triggers the converter deferral
     def select_tag(self, obj, tags, ctx):

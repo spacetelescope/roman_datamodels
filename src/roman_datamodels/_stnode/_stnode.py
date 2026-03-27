@@ -17,7 +17,7 @@ from ._converters import ManifestNodeConverter
 from ._registry import REGISTRY
 from ._tagged import ManifestNode
 
-__all__ = ["NODE_EXTENSIONS"]
+__all__ = []
 
 
 # Load the manifest directly from the rad resources and not from ASDF.
@@ -36,9 +36,9 @@ for manifest in DATAMODEL_MANIFESTS:
 
 # Create the ASDF extension for the STNode classes.
 #    ASDF extension is setup here so that it is after the dynamic object creation
-NODE_EXTENSIONS = {
-    manifest_uri: ManifestExtension.from_uri(
-        manifest_uri, converters=(ManifestNodeConverter(manifest_uri), *tuple(REGISTRY.converters.values()))
+for manifest_uri in REGISTRY.manifest_uri:
+    REGISTRY.manifest_uri.asdf_extension[manifest_uri] = ManifestExtension.from_uri(
+        manifest_uri, converters=(ManifestNodeConverter(manifest_uri), *tuple(REGISTRY.asdf_converter.values()))
     )
-    for manifest_uri in REGISTRY.manifest_uri
-}
+
+__all__ = tuple(__all__)

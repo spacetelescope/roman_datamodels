@@ -13,7 +13,10 @@ from typing import TYPE_CHECKING, ClassVar, NotRequired, TypeAlias, TypedDict, T
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterator
 
+    from asdf.extension import ManifestExtension
+
     from ._converters import _RomanConverter
+    from ._mixins import _BaseForNodeMixin
     from ._tagged import ManifestNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
     tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]
@@ -220,7 +223,7 @@ class ManifestUriRegistry:
 
     node: RegistryMap[type[ManifestNode]] = field(default_factory=RegistryMap)
     tag_uri: RegistryMapSet[str] = field(default_factory=RegistryMapSet)
-    asdf_schema: RegistryMap[ManifestSchema] = field(default_factory=RegistryMap)
+    asdf_extension: RegistryMap[ManifestExtension] = field(default_factory=RegistryMap)
 
     def __iter__(self) -> Iterator[str]:
         return iter(self.node)
@@ -252,7 +255,8 @@ class Registry:
     tag_pattern: TagPatternRegistry = field(default_factory=TagPatternRegistry)
     tag_uri: TagUriRegistry = field(default_factory=TagUriRegistry)
     manifest_uri: ManifestUriRegistry = field(default_factory=ManifestUriRegistry)
-    converters: RegistryMap[_RomanConverter] = field(default_factory=RegistryMap)
+    mixins: RegistryMap[type[_BaseForNodeMixin]] = field(default_factory=RegistryMap)
+    asdf_converter: RegistryMap[_RomanConverter] = field(default_factory=RegistryMap)
 
     # Turn this object into a singleton
     def __new__(cls, *args, **kwargs):
@@ -279,6 +283,10 @@ class Registry:
     @property
     def nodes(self) -> Generator[tagged_type, None, None]:
         yield from self.tag_pattern.nodes
+
+    @property
+    def asdf_extensions(self) -> list[ManifestExtension]:
+        return list(self.manifest_uri.asdf_extension.values())
 
 
 REGISTRY = Registry()

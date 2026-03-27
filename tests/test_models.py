@@ -45,10 +45,9 @@ NODES_LACKING_ARCHIVE_CATALOG = [
 def datamodel_names():
     names = []
 
-    extension_manager = asdf.AsdfFile().extension_manager
-    for manifest in REGISTRY.manifest_uri.asdf_schema.values():
-        for tag in manifest["tags"]:
-            schema_uri = extension_manager.get_tag_definition(tag["tag_uri"]).schema_uris[0]
+    for extension in REGISTRY.asdf_extensions:
+        for tag in extension.tags:
+            schema_uri = tag.schema_uris[0]
             schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
 
             if not (datamodel_name := schema.get("datamodel_name")):

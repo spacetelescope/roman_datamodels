@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Generic, TypeVar
 from astropy.time import Time
 from astropy.utils import classproperty
 
-from . import _mixins
 from ._node import DNode, LNode
 from ._registry import REGISTRY, ManifestSchema, ManifestTagEntry
 from ._schema import Builder, FakeDataBuilder, NodeBuilder
@@ -23,12 +22,13 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
     from typing import Any, ClassVar, Self, TypeAlias
 
+    from ._mixins import _BaseForNodeMixin
     from ._node import _NodeMixin as NodeMixin
 
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ["ManifestNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
+__all__ = ["ManifestNode", "TagPatternNodeMixin", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
 
 
 # Map of scalar types by pattern (str is default)
@@ -41,7 +41,18 @@ _SCALAR_TYPE_BY_PATTERN = {
 _LIST_NODE_PATTERN = ("asdf://stsci.edu/datamodels/roman/tags/cal_logs-*",)
 
 
-class _TaggedNodeMixin(abc.ABC, NodeMixin):
+class TagPatternNodeMixin(abc.ABC):
+    """Base class for nodes that include a tag pattern"""
+
+    __slots__ = ()
+
+    @classproperty
+    @abc.abstractmethod
+    def _tag_pattern(cls) -> str:
+        """The tag pattern for a node"""
+
+
+class _TaggedNodeMixin(TagPatternNodeMixin, NodeMixin):
     """
     Mixin class to provide the common API for all tagged objects.
 
@@ -57,11 +68,6 @@ class _TaggedNodeMixin(abc.ABC, NodeMixin):
 
     _latest_manifest_uri: ClassVar[str]
     _default_tag: ClassVar[str]
-
-    @classproperty
-    @abc.abstractmethod
-    def _tag_pattern(cls) -> str:
-        """The tag pattern for a node"""
 
     @classmethod
     def _create_minimal(
@@ -169,16 +175,16 @@ class _TaggedNodeMixin(abc.ABC, NodeMixin):
         return get_schema_from_tag(self.tag)
 
     @classmethod
-    def _node_factory(cls, pattern: str, manifest_uri: str, tag_entry: ManifestTagEntry) -> type[Self]:
+    def _node_factory(cls, tag_pattern: str, manifest_uri: str, tag_entry: ManifestTagEntry) -> type[Self]:
         """Factory method for dynamically creating a node"""
         if cls not in (TaggedObjectNode, TaggedListNode, TaggedScalarNode):
             raise TypeError("This class does not support the node factory")
 
-        class_name = class_name_from_tag_uri(pattern)
+        class_name = class_name_from_tag_uri(tag_pattern)
 
-        class_type: tuple[type, type[Self]] | tuple[type[Self]]
-        if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-            class_type = (getattr(_mixins, mixin), cls)
+        class_type: tuple[type[_BaseForNodeMixin], type[Self]] | tuple[type[Self]]
+        if tag_pattern in REGISTRY.mixins:
+            class_type = (REGISTRY.mixins[tag_pattern], cls)
         else:
             class_type = (cls,)
 
@@ -186,7 +192,7 @@ class _TaggedNodeMixin(abc.ABC, NodeMixin):
             class_name,
             class_type,
             {
-                "_tag_pattern": pattern,
+                "_tag_pattern": tag_pattern,
                 "_latest_manifest_uri": manifest_uri,
                 "_default_tag": tag_entry["tag_uri"],
                 "__module__": "roman_datamodels._stnode",
@@ -273,11 +279,11 @@ class TaggedScalarNode(_TaggedNodeMixin):
         return copy.copy(self)
 
     @classmethod
-    def _node_factory(cls, pattern: str, manifest_uri: str, tag_entry: ManifestTagEntry) -> type[TaggedScalarNode]:
+    def _node_factory(cls, tag_pattern: str, manifest_uri: str, tag_entry: ManifestTagEntry) -> type[TaggedScalarNode]:
         if cls is not TaggedScalarNode:
             raise TypeError("This class does not support the node factory")
 
-        class_name = class_name_from_tag_uri(pattern)
+        class_name = class_name_from_tag_uri(tag_pattern)
 
         # TaggedScalarNode subclasses are really subclasses of the type of the scalar,
         #   with the TaggedScalarNode as a mixin.  This is because the TaggedScalarNode
@@ -286,21 +292,25 @@ class TaggedScalarNode(_TaggedNodeMixin):
         # _SCALAR_TYPE_BY_PATTERN will need to be updated as new wrappers of scalar types are added
         #   to the RAD manifest.
         # assume everything is a string if not otherwise defined
-        class_type = _SCALAR_TYPE_BY_PATTERN.get(pattern, str)
+        base_type: type[Time] | type[str] = _SCALAR_TYPE_BY_PATTERN.get(tag_pattern, str)
 
         # In special cases one may need to add additional features to a tagged node class.
         #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
         #   Here we mixin the mixin class if it exists.
-        if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-            class_type = (class_type, getattr(_mixins, mixin), cls)
+        class_type: (
+            tuple[type[Time] | type[str], type[_BaseForNodeMixin], type[TaggedScalarNode]]
+            | tuple[type[Time] | type[str], type[TaggedScalarNode]]
+        )
+        if tag_pattern in REGISTRY.mixins:
+            class_type = (base_type, REGISTRY.mixins[tag_pattern], TaggedScalarNode)
         else:
-            class_type = (class_type, cls)
+            class_type = (base_type, TaggedScalarNode)
 
         return type(
             class_name,
             class_type,
             {
-                "_tag_pattern": pattern,
+                "_tag_pattern": tag_pattern,
                 "_latest_manifest_uri": manifest_uri,
                 "_default_tag": tag_entry["tag_uri"],
                 "__module__": "roman_datamodels._stnode",
@@ -362,15 +372,15 @@ class ManifestNode(Generic[_T]):
 
     @classmethod
     def _node_factory(
-        cls, pattern: str, manifest_uri: str, tag_entry: ManifestTagEntry
+        cls, tag_pattern: str, manifest_uri: str, tag_entry: ManifestTagEntry
     ) -> type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]:
         if "tagged_scalar" in tag_entry["schema_uri"]:
-            return TaggedScalarNode._node_factory(pattern, manifest_uri, tag_entry)
+            return TaggedScalarNode._node_factory(tag_pattern, manifest_uri, tag_entry)
 
-        if pattern in _LIST_NODE_PATTERN:
-            return TaggedListNode._node_factory(pattern, manifest_uri, tag_entry)
+        if tag_pattern in _LIST_NODE_PATTERN:
+            return TaggedListNode._node_factory(tag_pattern, manifest_uri, tag_entry)
 
-        return TaggedObjectNode._node_factory(pattern, manifest_uri, tag_entry)
+        return TaggedObjectNode._node_factory(tag_pattern, manifest_uri, tag_entry)
 
     @classmethod
     def factory(
@@ -380,20 +390,19 @@ class ManifestNode(Generic[_T]):
         nodes: list[type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode] | type[ManifestNode]] = [
             cls._factory(manifest_uri := manifest["id"])
         ]
-        REGISTRY.manifest_uri.asdf_schema[manifest_uri] = manifest
 
         for tag_entry in manifest["tags"]:
             tag_uri = tag_entry["tag_uri"]
-            pattern = f"{tag_uri.rsplit('-', maxsplit=1)[0]}-*"
+            tag_pattern = f"{tag_uri.rsplit('-', maxsplit=1)[0]}-*"
 
             # Create a new node for the pattern if it does note exist
-            if pattern not in REGISTRY.tag_pattern:
-                nodes.append(cls._node_factory(pattern, manifest_uri, tag_entry))
+            if tag_pattern not in REGISTRY.tag_pattern:
+                nodes.append(cls._node_factory(tag_pattern, manifest_uri, tag_entry))
 
             # Register the node for the given tag
             if tag_uri not in REGISTRY.tag_uri:
                 REGISTRY.tag_uri[tag_uri] = (
-                    REGISTRY.tag_pattern[pattern],
+                    REGISTRY.tag_pattern[tag_pattern],
                     tag_entry["schema_uri"],
                     manifest_uri,
                 )
