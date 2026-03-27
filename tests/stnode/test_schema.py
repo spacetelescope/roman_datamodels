@@ -182,7 +182,7 @@ def test_node_builder(schema, value):
 def _make_old_observation():
     """Helper to make a 1.0.0 Observation"""
     obj = Observation.create_fake_data()
-    obj._read_tag = "asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"
+    obj.set_current_tag("asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0")
     return obj
 
 

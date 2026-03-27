@@ -129,7 +129,7 @@ class FileDateMixin(_BaseForNodeMixin, _TimeBase):
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls.now()
         if tag:
-            new._read_tag = tag
+            new._current_tag = tag
 
         return new
 
@@ -137,7 +137,7 @@ class FileDateMixin(_BaseForNodeMixin, _TimeBase):
     def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
         if tag:
-            new._read_tag = tag
+            new._current_tag = tag
 
         return new
 
@@ -157,7 +157,7 @@ class CalibrationSoftwareNameMixin(_BaseForNodeMixin, _ScalarBase):
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("RomanCAL")
         if tag:
-            new._read_tag = tag
+            new._current_tag = tag
 
         return new
 
@@ -169,7 +169,7 @@ class PrdVersionMixin(_BaseForNodeMixin, _ScalarBase):
     def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("8.8.8")
         if tag:
-            new._read_tag = tag
+            new._current_tag = tag
 
         return new
 
@@ -181,7 +181,7 @@ class SdfSoftwareVersionMixin(_BaseForNodeMixin, _ScalarBase):
     def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("7.7.7")
         if tag:
-            new._read_tag = tag
+            new._current_tag = tag
 
         return new
 
@@ -203,7 +203,7 @@ class OriginMixin(_BaseForNodeMixin, _ScalarBase):
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls(cls._default)
         if tag:
-            new._read_tag = tag
+            new._current_tag = tag
 
         return new
 
@@ -232,7 +232,7 @@ class RefFileMixin(_BaseForNodeMixin, _ObjectBase):
         data = builder.from_object(schema, defaults)
         new = cls(data)
         if tag:
-            new._read_tag = tag
+            new._current_tag = tag
 
         return new
 
@@ -260,7 +260,7 @@ class L2CalStepMixin(_BaseForNodeMixin, _ObjectBase):
         schema = get_schema_from_tag(tag or cls._default_tag)
         new = cls({k: defaults.get(k, "INCOMPLETE") for k in schema["properties"]})
         if tag:
-            new._read_tag = tag
+            new._current_tag = tag
 
         return new
 

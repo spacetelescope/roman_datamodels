@@ -790,11 +790,11 @@ def test_create_tag(tag, node_class):
 
     node = node_class.create_minimal(tag=tag)
     if node is not NO_VALUE:
-        assert node._read_tag == tag
+        assert node._current_tag == tag
 
     node = node_class.create_fake_data(tag=tag)
     if node is not NO_VALUE:
-        assert node._read_tag == tag
+        assert node._current_tag == tag
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
@@ -915,8 +915,8 @@ def test_create_from_model_old_tags():
     assert old_observation_tag != new_observation_tag
 
     old_model = datamodels.ImageModel.create_fake_data(tag=old_model_tag)
-    assert old_model._instance._read_tag == old_model_tag
-    assert old_model.meta.observation._read_tag == old_observation_tag
+    assert old_model._instance._current_tag == old_model_tag
+    assert old_model.meta.observation._current_tag == old_observation_tag
 
     converted = datamodels.ImageModel.create_from_model(old_model)
     assert converted.tag == new_model_tag

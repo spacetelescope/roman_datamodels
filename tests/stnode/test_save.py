@@ -48,6 +48,7 @@ def test_history(tmp_path, node_tag, node_instance):
 
     # Sanity check
     assert node_instance.tag == node_tag
+    assert node_instance._current_tag == node_tag
 
     # Save asdf file
     asdf.AsdfFile(tree={"roman": node_instance}).write_to(filename)

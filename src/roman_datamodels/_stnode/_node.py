@@ -50,19 +50,19 @@ class NodeMixin:
     Mixin class to provide the common API for all Node objects
     """
 
-    # This is a hack to avoid mypy and __slots__ inheritance issues concerning `_read_tag`
-    #    ideally we would just define `_read_tag` like we did below, but mypy gets upset because
+    # This is a hack to avoid mypy and __slots__ inheritance issues concerning `_current_tag`
+    #    ideally we would just define `_current_tag` like we did below, but mypy gets upset because
     #    __slots__ is defined so that the subclasses will be fully slotted. You can't have the
     #    same slot attributed defined in both parent classes when they are mixed together.
     if TYPE_CHECKING:
-        __slots__ = ("_read_tag",)
+        __slots__ = ("_current_tag",)
     else:
         __slots__ = ()
 
-    _read_tag: str | None
+    _current_tag: str | None
 
     def __init__(self, *args, **kwargs):
-        self._read_tag = None
+        self._current_tag = None
 
 
 class DNode(MutableMapping, NodeMixin):
@@ -70,7 +70,7 @@ class DNode(MutableMapping, NodeMixin):
     Base class describing all "object" (dict-like) data nodes for STNode classes.
     """
 
-    __slots__ = ("_data", "_read_tag")
+    __slots__ = ("_current_tag", "_data")
 
     def __init__(self, node=None):
         super().__init__(node)
@@ -209,7 +209,7 @@ class DNode(MutableMapping, NodeMixin):
         """Handle copying of the node"""
         instance = self.__class__.__new__(self.__class__)
 
-        instance._read_tag = self._read_tag
+        instance._current_tag = self._current_tag
         instance._data = self._data.copy()
 
         return instance
@@ -220,7 +220,7 @@ class LNode(MutableSequence, NodeMixin):
     Base class describing all "array" (list-like) data nodes for STNode classes.
     """
 
-    __slots__ = ("_read_tag", "data")
+    __slots__ = ("_current_tag", "data")
 
     def __init__(self, node=None):
         super().__init__(node=node)
@@ -271,5 +271,5 @@ class LNode(MutableSequence, NodeMixin):
         instance = self.__class__.__new__(self.__class__)
 
         instance.data = self.data.copy()
-        instance._read_tag = self._read_tag
+        instance._current_tag = self._current_tag
         return instance

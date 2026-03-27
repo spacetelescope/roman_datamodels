@@ -53,9 +53,9 @@ class ManifestNodeConverter(_RomanConverter):
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
 
-        # TODO: Add method for setting read_tag with some checks
         obj = REGISTRY.tag_uri.node[tag](node)
-        obj._read_tag = tag
+        obj.set_current_tag(tag)
+
         return obj
 
 
