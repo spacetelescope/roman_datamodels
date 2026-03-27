@@ -215,7 +215,7 @@ class ManifestUriRegistry:
         The map from manifest_uri to the list of tag_uris that are associated with it
 
     asdf_schema:
-        The map from manifest_uri to the parsed contents of the manfest's schema
+        The map from manifest_uri to the parsed contents of the manifest's schema
     """
 
     node: RegistryMap[type[ManifestNode]] = field(default_factory=RegistryMap)
@@ -226,7 +226,7 @@ class ManifestUriRegistry:
         return iter(self.node)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Registry:
     """
     Class to hold all the Registries used by stnode
@@ -247,17 +247,17 @@ class Registry:
         The asdf_converter registry
     """
 
+    _instance: ClassVar[Registry | None] = None
+
     tag_pattern: TagPatternRegistry = field(default_factory=TagPatternRegistry)
     tag_uri: TagUriRegistry = field(default_factory=TagUriRegistry)
     manifest_uri: ManifestUriRegistry = field(default_factory=ManifestUriRegistry)
     converters: RegistryMap[_RomanConverter] = field(default_factory=RegistryMap)
 
-    _instance: ClassVar[Registry | None] = None
-
     # Turn this object into a singleton
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super().__new__(cls, *args, **kwargs)
+            cls._instance = super(Registry, cls).__new__(cls, *args, **kwargs)
 
         return cls._instance
 

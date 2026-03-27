@@ -229,7 +229,7 @@ class DataModel(abc.ABC):
 
     @property
     def _latest_manifest_uri(self):
-        return self._node_type._latest_manifest
+        return self._node_type._latest_manifest_uri
 
     @property
     def schema_uri(self):

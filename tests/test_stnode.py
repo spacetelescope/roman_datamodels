@@ -15,7 +15,7 @@ def test_tag_has_node_class(tag_def):
     class_name = stnode._tagged.class_name_from_tag_uri(tag_def["tag_uri"])
     node_class = getattr(stnode, class_name)
 
-    assert asdf.util.uri_match(node_class._pattern, tag_def["tag_uri"])
+    assert asdf.util.uri_match(node_class._tag_pattern, tag_def["tag_uri"])
     if node_class._default_tag == tag_def["tag_uri"]:
         assert tag_def["description"] in node_class.__doc__
         assert tag_def["tag_uri"] in node_class.__doc__

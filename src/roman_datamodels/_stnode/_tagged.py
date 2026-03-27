@@ -6,10 +6,12 @@ Base classes for all the tagged objects defined by RAD.
 
 from __future__ import annotations
 
+import abc
 import copy
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from astropy.time import Time
+from astropy.utils import classproperty
 
 from . import _mixins
 from ._node import DNode, LNode
@@ -39,7 +41,7 @@ _SCALAR_TYPE_BY_PATTERN = {
 _LIST_NODE_PATTERN = ("asdf://stsci.edu/datamodels/roman/tags/cal_logs-*",)
 
 
-class _TaggedNodeMixin(NodeMixin):
+class _TaggedNodeMixin(abc.ABC, NodeMixin):
     """
     Mixin class to provide the common API for all tagged objects.
 
@@ -53,10 +55,13 @@ class _TaggedNodeMixin(NodeMixin):
 
     __slots__ = ()
 
-    _pattern: ClassVar[str]
-    _latest_manifest: ClassVar[str]
-
+    _latest_manifest_uri: ClassVar[str]
     _default_tag: ClassVar[str]
+
+    @classproperty
+    @abc.abstractmethod
+    def _tag_pattern(cls) -> str:
+        """The tag pattern for a node"""
 
     @classmethod
     def _create_minimal(
@@ -181,8 +186,8 @@ class _TaggedNodeMixin(NodeMixin):
             class_name,
             class_type,
             {
-                "_pattern": pattern,
-                "_latest_manifest": manifest_uri,
+                "_tag_pattern": pattern,
+                "_latest_manifest_uri": manifest_uri,
                 "_default_tag": tag_entry["tag_uri"],
                 "__module__": "roman_datamodels._stnode",
                 "__doc__": docstring_from_tag(tag_entry),
@@ -206,7 +211,7 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
         """
         super().__init_subclass__(**kwargs)
         if cls is not TaggedObjectNode:
-            REGISTRY.tag_pattern.object[cls._pattern] = cls
+            REGISTRY.tag_pattern.object[cls._tag_pattern] = cls
 
 
 class TaggedListNode(LNode, _TaggedNodeMixin):
@@ -224,7 +229,7 @@ class TaggedListNode(LNode, _TaggedNodeMixin):
         """
         super().__init_subclass__(**kwargs)
         if cls is not TaggedListNode:
-            REGISTRY.tag_pattern.list[cls._pattern] = cls
+            REGISTRY.tag_pattern.list[cls._tag_pattern] = cls
 
 
 class TaggedScalarNode(_TaggedNodeMixin):
@@ -241,7 +246,7 @@ class TaggedScalarNode(_TaggedNodeMixin):
         """
         super().__init_subclass__(**kwargs)
         if cls is not TaggedScalarNode:
-            REGISTRY.tag_pattern.scalar[cls._pattern] = cls
+            REGISTRY.tag_pattern.scalar[cls._tag_pattern] = cls
 
     def __asdf_traverse__(self):
         return self
@@ -295,8 +300,8 @@ class TaggedScalarNode(_TaggedNodeMixin):
             class_name,
             class_type,
             {
-                "_pattern": pattern,
-                "_latest_manifest": manifest_uri,
+                "_tag_pattern": pattern,
+                "_latest_manifest_uri": manifest_uri,
                 "_default_tag": tag_entry["tag_uri"],
                 "__module__": "roman_datamodels._stnode",
                 "__doc__": docstring_from_tag(tag_entry),
