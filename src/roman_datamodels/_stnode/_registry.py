@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections.abc import MutableMapping, MutableSet
 from dataclasses import dataclass, field
+from threading import RLock
 from typing import TYPE_CHECKING, ClassVar, NotRequired, TypeAlias, TypedDict, TypeVar
 
 if TYPE_CHECKING:
@@ -257,6 +258,8 @@ class Registry:
     manifest_uri: ManifestUriRegistry = field(default_factory=ManifestUriRegistry)
     mixins: RegistryMap[type[_BaseForNodeMixin]] = field(default_factory=RegistryMap)
     asdf_converter: RegistryMap[_RomanConverter] = field(default_factory=RegistryMap)
+
+    lock: RLock = field(default_factory=RLock)
 
     # Turn this object into a singleton
     def __new__(cls, *args, **kwargs):
