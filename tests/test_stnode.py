@@ -23,17 +23,14 @@ def test_tag_has_node_class(tag_def):
         assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
 
 
-@pytest.mark.parametrize("node_class", stnode.REGISTRY.nodes)
-def test_node_classes_available_via_stnode(node_class):
-    assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
-    assert node_class.__module__ == stnode.__name__
-    assert hasattr(stnode, node_class.__name__)
+def test_node_classes_available_via_stnode(node_type):
+    assert issubclass(node_type, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
+    assert node_type.__module__ == stnode.__name__
+    assert hasattr(stnode, node_type.__name__)
 
 
-@pytest.mark.parametrize("node_class", stnode.REGISTRY.nodes)
-def test_copy(node_class):
+def test_copy(node):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
-    node = node_class.create_fake_data()
     node_copy = node.copy()
 
     # Assert the copy is shallow:
@@ -46,9 +43,8 @@ def test_copy(node_class):
         assert_node_is_copy(node, node_copy, deepcopy=True)
 
 
-@pytest.mark.parametrize("model_class", datamodels.MODEL_REGISTRY.values())
-def test_deepcopy_model(model_class):
-    model = model_class.create_fake_data(shape=(8, 8, 8))
+def test_deepcopy_model(model_type):
+    model = model_type.create_fake_data(shape=(8, 8, 8))
     model_copy = model.copy()
 
     # There is no assert equal for models, but the data inside is what we care about.
@@ -84,11 +80,9 @@ def test_wfi_mode():
     assert isinstance(node, stnode._mixins.WfiModeMixin)
 
 
-@pytest.mark.parametrize("node_class", stnode.REGISTRY.nodes)
-def test_serialization(node_class, tmp_path):
+def test_serialization(node, tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    node = node_class.create_fake_data()
     with asdf.AsdfFile() as af:
         af["node"] = node
         af.write_to(file_path)
@@ -97,17 +91,15 @@ def test_serialization(node_class, tmp_path):
         assert_node_equal(af["node"], node)
 
 
-@pytest.mark.parametrize("node_class", tuple(stnode.REGISTRY.object_nodes))
-def test_no_hidden(node_class):
-    node = node_class.create_fake_data()
+def test_no_hidden(object_node_type):
+    node = object_node_type.create_fake_data()
     with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
         node._foo = "bar"  # Add a hidden attribute
 
 
-@pytest.mark.parametrize("node_class", tuple(stnode.REGISTRY.list_nodes))
-def test_list_node_no_new_attributes(node_class):
+def test_list_node_no_new_attributes(list_node_type):
     """Test that no new attributes can be added to a list node."""
-    node = node_class.create_fake_data()
+    node = list_node_type.create_fake_data()
     with pytest.raises(AttributeError, match=r"Cannot set attribute .*, only allowed are .*"):
         node.foo = "bar"
 
@@ -115,12 +107,11 @@ def test_list_node_no_new_attributes(node_class):
         node._foo = "bar"
 
 
-@pytest.mark.parametrize("node_class", tuple(stnode.REGISTRY.object_nodes) + tuple(stnode.REGISTRY.list_nodes))
-def test_slotted(node_class):
+def test_slotted(container_node_type):
     """
     Test that slotted nodes do not allow new attributes to be added.
     """
-    node = node_class.create_fake_data()
+    node = container_node_type.create_fake_data()
     with pytest.raises(AttributeError, match=r".* attribute .*__dict__.*"):
         # Attempt to access __dict__ directly, slotted classes do not have __dict__
         node.__dict__  # noqa: B018
@@ -201,14 +192,14 @@ def test_node_representation():
     )
 
 
-def test_get_latest_schema(object_node, object_node_default_uri, object_node_uris):
+def test_get_latest_schema(object_node_type, object_node_default_schema_uri, object_node_uris):
     assert len(object_node_uris) > 0, "This test requires at lest one URI available."
 
-    for uri in [object_node_default_uri.rsplit("-", 1)[0], *object_node_uris]:
+    for uri in [object_node_default_schema_uri.rsplit("-", 1)[0], *object_node_uris]:
         latest_uri, schema = stnode.get_latest_schema(uri)
-        assert latest_uri == object_node_default_uri
+        assert latest_uri == object_node_default_schema_uri
 
-        assert stnode._utils.get_schema_from_tag(object_node._default_tag) == schema
+        assert stnode._utils.get_schema_from_tag(object_node_type._default_tag) == schema
 
 
 @pytest.mark.parametrize(

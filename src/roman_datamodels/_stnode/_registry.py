@@ -16,12 +16,18 @@ if TYPE_CHECKING:
 
     from asdf.extension import ManifestExtension
 
+    from roman_datamodels.datamodels import DataModel
+
     from ._converters import _RomanConverter
     from ._mixins import _BaseForNodeMixin
     from ._tagged import ManifestNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
     tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]
 
+
+__all__ = ("REGISTRY", "ManifestSchema", "ManifestTagEntry")
+
+_K = TypeVar("_K")
 _T = TypeVar("_T")
 
 
@@ -36,26 +42,23 @@ class ManifestSchema(TypedDict):
     tags: list[ManifestTagEntry]
 
 
-__all__ = ("REGISTRY", "ManifestSchema", "ManifestTagEntry")
-
-
 @dataclass(frozen=True, slots=True)
-class RegistryMap(MutableMapping[str, _T]):
-    _registry: dict[str, _T] = field(default_factory=dict)
+class RegistryMap(MutableMapping[_K, _T]):
+    _registry: dict[_K, _T] = field(default_factory=dict)
 
-    def __getitem__(self, key: str) -> _T:
+    def __getitem__(self, key: _K) -> _T:
         return self._registry[key]
 
-    def __setitem__(self, key: str, value: _T):
+    def __setitem__(self, key: _K, value: _T):
         if key in self._registry:
             raise KeyError(f"Cannot overwrite an existing item in the registry for {key}")
 
         self._registry[key] = value
 
-    def __delitem__(self, key: str):
+    def __delitem__(self, key: _K):
         raise NotImplementedError("Cannot delete item from the registry")
 
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) -> Iterator[_K]:
         return iter(self._registry)
 
     def __len__(self) -> int:
@@ -86,14 +89,14 @@ class RegistrySet(MutableSet[_T]):
 
 
 @dataclass(frozen=True, slots=True)
-class RegistryMapSet(RegistryMap[RegistrySet[_T]]):
-    def __getitem__(self, key: str) -> RegistrySet[_T]:
+class RegistryMapSet(RegistryMap[_K, RegistrySet[_T]]):
+    def __getitem__(self, key: _K) -> RegistrySet[_T]:
         if key not in self._registry:
             self._registry[key] = RegistrySet()
 
         return self._registry[key]
 
-    def __setitem__(self, key: str, value: RegistrySet[_T]):
+    def __setitem__(self, key: _K, value: RegistrySet[_T]):
         raise NotImplementedError("Cannot directly add item to registry")
 
 
@@ -118,9 +121,9 @@ class TagPatternRegistry:
         The map from tag-pattern to corresponding scalar Node
     """
 
-    object: RegistryMap[type[TaggedObjectNode]] = field(default_factory=RegistryMap)
-    list: RegistryMap[type[TaggedListNode]] = field(default_factory=RegistryMap)
-    scalar: RegistryMap[type[TaggedScalarNode]] = field(default_factory=RegistryMap)
+    object: RegistryMap[str, type[TaggedObjectNode]] = field(default_factory=RegistryMap)
+    list: RegistryMap[str, type[TaggedListNode]] = field(default_factory=RegistryMap)
+    scalar: RegistryMap[str, type[TaggedScalarNode]] = field(default_factory=RegistryMap)
 
     def __contains__(self, pattern: str) -> bool:
         return (pattern in self.object) or (pattern in self.list) or (pattern in self.scalar)
@@ -180,9 +183,9 @@ class TagUriRegistry:
         The map from tag_uri to manifest_uri
     """
 
-    node: RegistryMap[tagged_type] = field(default_factory=RegistryMap)
-    schema_uri: RegistryMap[str] = field(default_factory=RegistryMap)
-    manifest_uri: RegistryMap[str] = field(default_factory=RegistryMap)
+    node: RegistryMap[str, tagged_type] = field(default_factory=RegistryMap)
+    schema_uri: RegistryMap[str, str] = field(default_factory=RegistryMap)
+    manifest_uri: RegistryMap[str, str] = field(default_factory=RegistryMap)
 
     def __contains__(self, tag_uri: str) -> bool:
         return tag_uri in self.node
@@ -222,9 +225,9 @@ class ManifestUriRegistry:
         The map from manifest_uri to the parsed contents of the manifest's schema
     """
 
-    node: RegistryMap[type[ManifestNode]] = field(default_factory=RegistryMap)
-    tag_uri: RegistryMapSet[str] = field(default_factory=RegistryMapSet)
-    asdf_extension: RegistryMap[ManifestExtension] = field(default_factory=RegistryMap)
+    node: RegistryMap[str, type[ManifestNode]] = field(default_factory=RegistryMap)
+    tag_uri: RegistryMapSet[str, str] = field(default_factory=RegistryMapSet)
+    asdf_extension: RegistryMap[str, ManifestExtension] = field(default_factory=RegistryMap)
 
     def __iter__(self) -> Iterator[str]:
         return iter(self.node)
@@ -256,8 +259,11 @@ class Registry:
     tag_pattern: TagPatternRegistry = field(default_factory=TagPatternRegistry)
     tag_uri: TagUriRegistry = field(default_factory=TagUriRegistry)
     manifest_uri: ManifestUriRegistry = field(default_factory=ManifestUriRegistry)
-    mixins: RegistryMap[type[_BaseForNodeMixin]] = field(default_factory=RegistryMap)
-    asdf_converter: RegistryMap[_RomanConverter] = field(default_factory=RegistryMap)
+
+    mixins: RegistryMap[str, type[_BaseForNodeMixin]] = field(default_factory=RegistryMap)
+    asdf_converter: RegistryMap[str, _RomanConverter] = field(default_factory=RegistryMap)
+
+    datamodels: RegistryMap[type[TaggedObjectNode], type[DataModel]] = field(default_factory=RegistryMap)
 
     lock: RLock = field(default_factory=RLock)
 

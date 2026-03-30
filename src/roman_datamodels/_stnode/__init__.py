@@ -58,4 +58,8 @@ with REGISTRY.lock:
             _manifest_uri, converters=(ManifestNodeConverter(_manifest_uri), *tuple(REGISTRY.asdf_converter.values()))
         )
 
+    # Force an import of the datamodels subpackage so that all of the datamodels
+    #   are registered with the registry inside the thread lock.
+    from roman_datamodels import datamodels  # noqa: F401
+
     __all__ += tuple(_all_nodes)

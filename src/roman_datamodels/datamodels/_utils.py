@@ -15,9 +15,9 @@ import asdf
 import numpy as np
 from astropy import time
 
-from roman_datamodels._stnode import TaggedScalarNode
+from roman_datamodels._stnode import REGISTRY, TaggedScalarNode
 
-from ._core import MODEL_REGISTRY, DataModel
+from ._core import DataModel
 
 if TYPE_CHECKING:
     from roman_datamodels._stnode import DNode, LNode
@@ -296,8 +296,8 @@ def rdm_open(init, memmap=False, **kwargs):
             asdf_file.close()
         raise ValueError(f"'{init}' is not a roman file, please use asdf.open")
 
-    if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
-        return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
+    if (model_type := type(asdf_file.tree["roman"])) in REGISTRY.datamodels:
+        return REGISTRY.datamodels[model_type](asdf_file, **kwargs)
 
     if not isinstance(init, asdf.AsdfFile):
         asdf_file.close()

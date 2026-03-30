@@ -30,9 +30,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from typing import Any, Self
 
-__all__ = ["MODEL_REGISTRY", "DataModel"]
-
-MODEL_REGISTRY: dict[str, type[DataModel]] = {}
+__all__ = ["DataModel"]
 
 
 def _set_default_asdf(func):
@@ -61,7 +59,7 @@ class DataModel(abc.ABC):
     _node_type: type[TaggedObjectNode]
 
     def __init_subclass__(cls, **kwargs):
-        """Register each subclass in the MODEL_REGISTRY"""
+        """Register each subclass with the REGISTRY"""
         super().__init_subclass__(**kwargs)
 
         # Allow for sub-registry classes to be defined
@@ -72,12 +70,8 @@ class DataModel(abc.ABC):
         if not issubclass(cls._node_type, TaggedObjectNode):
             raise ValueError("Subclass must be a TaggedObjectNode subclass")
 
-        # Check for duplicates
-        if cls._node_type in MODEL_REGISTRY:
-            raise ValueError(f"Duplicate model type {cls._node_type}")
-
         # Add to registry
-        MODEL_REGISTRY[cls._node_type] = cls
+        REGISTRY.datamodels[cls._node_type] = cls
 
     def __new__(cls, init=None, **kwargs):
         """
@@ -185,8 +179,8 @@ class DataModel(abc.ABC):
         self._files_to_close = None
 
         if isinstance(init, TaggedObjectNode):
-            if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
-                expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
+            if not isinstance(self, REGISTRY.datamodels.get(init.__class__)):
+                expected = {mdl: node for node, mdl in REGISTRY.datamodels.items()}[self.__class__].__name__
                 raise ValidationError(
                     f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
                 )
@@ -225,7 +219,7 @@ class DataModel(abc.ABC):
         if "roman" not in asdf_file.tree:
             raise ValueError('ASDF file does not have expected "roman" attribute')
 
-        return MODEL_REGISTRY[asdf_file.tree["roman"].__class__] == self.__class__
+        return REGISTRY.datamodels[type(asdf_file.tree["roman"])] == self.__class__
 
     @property
     def _latest_manifest_uri(self):
