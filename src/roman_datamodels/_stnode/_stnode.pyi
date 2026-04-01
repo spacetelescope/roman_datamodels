@@ -1,5 +1,7 @@
 from typing import Any
 
+from asdf.extension import ManifestExtension
+
 from ._tagged import TaggedObjectNode
 
 class AbvegaoffsetRef(TaggedObjectNode): ...
@@ -46,3 +48,4 @@ class WfiScienceRaw(TaggedObjectNode): ...
 class WfiWcs(TaggedObjectNode): ...
 
 _MANIFESTS: list[dict[str, Any]]
+NODE_EXTENSIONS: dict[str, ManifestExtension]
