@@ -267,7 +267,6 @@ def test_datamodel_schema_info_values():
                     "datatype": "float",
                     "destination": [
                         "WFIExposure.ra_v1",
-                        "GuideWindow.ra_v1",
                     ],
                 },
                 dm.meta.pointing.ra_v1,
@@ -279,7 +278,6 @@ def test_datamodel_schema_info_values():
                     "datatype": "float",
                     "destination": [
                         "WFIExposure.dec_v1",
-                        "GuideWindow.dec_v1",
                     ],
                 },
                 dm.meta.pointing.dec_v1,
@@ -291,7 +289,6 @@ def test_datamodel_schema_info_values():
                     "datatype": "float",
                     "destination": [
                         "WFIExposure.pa_v3",
-                        "GuideWindow.pa_v3",
                     ],
                 },
                 dm.meta.pointing.pa_v3,
@@ -303,7 +300,6 @@ def test_datamodel_schema_info_values():
                     "datatype": "nvarchar(100)",
                     "destination": [
                         "WFIExposure.target_aperture",
-                        "GuideWindow.target_aperture",
                     ],
                 },
                 dm.meta.pointing.target_aperture,
@@ -315,7 +311,6 @@ def test_datamodel_schema_info_values():
                     "datatype": "float",
                     "destination": [
                         "WFIExposure.target_ra",
-                        "GuideWindow.target_ra",
                     ],
                 },
                 dm.meta.pointing.target_ra,
@@ -327,7 +322,6 @@ def test_datamodel_schema_info_values():
                     "datatype": "float",
                     "destination": [
                         "WFIExposure.target_dec",
-                        "GuideWindow.target_dec",
                     ],
                 },
                 dm.meta.pointing.target_dec,
@@ -339,7 +333,6 @@ def test_datamodel_schema_info_values():
                     "datatype": "nvarchar(10)",
                     "destination": [
                         "WFIExposure.pointing_engineering_source",
-                        "GuideWindow.pointing_engineering_source",
                     ],
                 },
                 dm.meta.pointing.pointing_engineering_source,
@@ -351,7 +344,6 @@ def test_datamodel_schema_info_values():
                     "datatype": "float",
                     "destination": [
                         "WFIExposure.pa_aperture",
-                        "GuideWindow.pa_aperture",
                     ],
                 },
                 dm.meta.pointing.pa_aperture,
