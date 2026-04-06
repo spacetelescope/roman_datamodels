@@ -6,7 +6,8 @@ from astropy.time import Time
 from astropy.units import Quantity
 
 from roman_datamodels._stnode import Observation, SkyBackground
-from roman_datamodels._stnode._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, SchemaType, _NoValueType
+from roman_datamodels._stnode._schema import Builder, FakeDataBuilder, NodeBuilder, SchemaType
+from roman_datamodels._stnode._utils import NO_VALUE, _NoValueType
 
 
 @pytest.mark.parametrize(
@@ -38,14 +39,14 @@ def test_type(schema, type_):
 @pytest.mark.parametrize(
     "schema, defaults, expected",
     (
-        ({}, None, _NO_VALUE),
+        ({}, None, NO_VALUE),
         ({"enum": [0]}, None, 0),
         ({"type": "string", "enum": ["a"]}, None, "a"),
         ({"type": "integer", "enum": [0]}, None, 0),
         ({"type": "number", "enum": [3.14]}, None, 3.14),
         ({"type": "boolean", "enum": [False]}, None, False),
         ({"type": "null"}, None, None),
-        ({"enum": [0, 1]}, None, _NO_VALUE),
+        ({"enum": [0, 1]}, None, NO_VALUE),
         ({"properties": {"a": {"enum": [0]}}}, None, {}),
         ({"properties": {"a": {"enum": [0]}}, "required": ["a"]}, None, {"a": 0}),
         ({"properties": {"a": {"type": "string"}}, "required": ["a"]}, None, {}),
@@ -119,7 +120,7 @@ def test_default_is_copied(subschema, data):
         ("tag:stsci.edu:asdf/unit/quantity-1.*", _NoValueType),
         # unknown tag
         ("abc", _NoValueType),
-        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
+        # test one rad tag to not make this test dependent on REGISTRY.tag.node
         ("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0", SkyBackground),
     ),
 )
@@ -142,7 +143,7 @@ def test_tag(tag, expected_type):
         ("tag:stsci.edu:asdf/unit/quantity-1.*", Quantity),
         # unknown tag
         ("abc", _NoValueType),
-        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
+        # test one rad tag to not make this test dependent on REGISTRY.tag.node
         ("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0", SkyBackground),
     ),
 )
@@ -181,14 +182,14 @@ def test_node_builder(schema, value):
 def _make_old_observation():
     """Helper to make a 1.0.0 Observation"""
     obj = Observation.create_fake_data()
-    obj._read_tag = "asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"
+    obj.set_current_tag("asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0")
     return obj
 
 
 @pytest.mark.parametrize(
     "tag, value",
     (
-        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
+        # test one rad tag to not make this test dependent on REGISTRY.tag.node
         ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", Observation.create_fake_data()),
         ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", {"program": 1}),
         ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", _make_old_observation()),

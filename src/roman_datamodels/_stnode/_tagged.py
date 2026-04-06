@@ -6,68 +6,54 @@ Base classes for all the tagged objects defined by RAD.
 
 from __future__ import annotations
 
+import abc
 import copy
+from re import match
 from typing import TYPE_CHECKING, Generic, TypeVar
 
+from astropy.time import Time
+from astropy.utils import classproperty
+
 from ._node import DNode, LNode
-from ._registry import (
-    LIST_NODE_CLASSES_BY_PATTERN,
-    OBJECT_NODE_CLASSES_BY_PATTERN,
-    SCALAR_NODE_CLASSES_BY_PATTERN,
-    SERIALIZATION_BY_MANIFEST,
-)
-from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
+from ._registry import REGISTRY, ManifestSchema, ManifestTagEntry
+from ._schema import Builder, FakeDataBuilder, NodeBuilder
+from ._utils import NO_VALUE, class_name_from_tag_uri, docstring_from_tag, get_schema_from_tag
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
     from typing import Any, ClassVar, Self, TypeAlias
 
-    from ._node import _NodeMixin as NodeMixin
+    from ._mixins import _BaseForNodeMixin
+    from ._node import NodeMixin
+
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ["SerializationNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
+__all__ = ("ManifestNode", "TagPatternNodeMixin", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode")
 
 
-def name_from_tag_uri(tag_uri: str) -> str:
-    """
-    Compute the name of the schema from the tag_uri.
-
-    Parameters
-    ----------
-    tag_uri : str
-        The tag_uri to find the name from
-    """
-    tag_uri_split = tag_uri.split("/")[-1].split("-")[0]
-    if "/tvac/" in tag_uri and "tvac" not in tag_uri_split:
-        tag_uri_split = "tvac_" + tag_uri.split("/")[-1].split("-")[0]
-    elif "/fps/" in tag_uri and "fps" not in tag_uri_split:
-        tag_uri_split = "fps_" + tag_uri.split("/")[-1].split("-")[0]
-    return tag_uri_split
+# Map of scalar types by pattern (str is default)
+_SCALAR_TYPE_BY_PATTERN = {
+    "asdf://stsci.edu/datamodels/roman/tags/file_date-*": Time,
+    "asdf://stsci.edu/datamodels/roman/tags/fps/file_date-*": Time,
+    "asdf://stsci.edu/datamodels/roman/tags/tvac/file_date-*": Time,
+}
+# Map of node types by pattern (TaggedObjectNode is default)
+_LIST_NODE_PATTERN = ("asdf://stsci.edu/datamodels/roman/tags/cal_logs-*",)
 
 
-def class_name_from_tag_uri(tag_uri: str) -> str:
-    """
-    Construct the class name for the STNode class from the tag_uri
+class TagPatternNodeMixin(abc.ABC):
+    """Base class for nodes that include a tag pattern"""
 
-    Parameters
-    ----------
-    tag_uri : str
-        The tag_uri found in the RAD manifest
+    __slots__ = ()
 
-    Returns
-    -------
-    string name for the class
-    """
-    tag_name = name_from_tag_uri(tag_uri)
-    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
-    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
-        class_name += "Ref"
-
-    return class_name
+    @classproperty
+    @abc.abstractmethod
+    def _tag_pattern(cls) -> str:
+        """The tag pattern for a node"""
 
 
-class _TaggedNodeMixin(NodeMixin):
+class _TaggedNodeMixin(TagPatternNodeMixin, NodeMixin):
     """
     Mixin class to provide the common API for all tagged objects.
 
@@ -81,20 +67,54 @@ class _TaggedNodeMixin(NodeMixin):
 
     __slots__ = ()
 
-    _pattern: ClassVar[str]
-    _latest_manifest: ClassVar[str]
-
+    _latest_manifest_uri: ClassVar[str]
     _default_tag: ClassVar[str]
+
+    @property
+    def _read_tag(self) -> str | None:
+        # TODO: enable this warning after RCAL has been fixed
+        # warnings.warn(
+        #     "`_read_tag` has been deprecated in favor of `_current_tag`",
+        #     DeprecationWarning,
+        #     stacklevel=2,
+        # )
+        return self._current_tag
+
+    @_read_tag.setter
+    def _read_tag(self, value: str | None) -> None:
+        # TODO: enable this warning after RCAL has been fixed
+        # warnings.warn(
+        #     "Setting `_read_tag` has been deprecated in favor of `_current_tag`.\n"
+        #     "Please use `set_current_tag` or `reset_current_tag` instead.",
+        #     DeprecationWarning,
+        #     stacklevel=2,
+        # )
+        if value is None:
+            self.reset_current_tag()
+        else:
+            self.set_current_tag(value)
+
+    def set_current_tag(self, tag: str) -> None:
+        """
+        Set the current_tag to something matching the node's pattern
+        """
+        if match(self._tag_pattern.replace("*", ".*"), tag) is None:
+            raise ValueError(f"Tag {tag} does not match the tag pattern {self._tag_pattern}")
+
+        self._current_tag = tag
+
+    def reset_current_tag(self) -> None:
+        self._current_tag = None
 
     @classmethod
     def _create_minimal(
         cls, defaults: Mapping[str, Any] | None = None, builder: Builder | None = None, *, tag: str | None = None
     ) -> Self:
         builder = builder or Builder()
-        new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
+        new = cls(builder.build(get_schema_from_tag(tag or cls._default_tag), defaults))
 
         if tag:
-            new._read_tag = tag
+            new._current_tag = tag
 
         return new
 
@@ -178,10 +198,10 @@ class _TaggedNodeMixin(NodeMixin):
 
     @property
     def _tag(self):
-        if self._read_tag is None:
+        if self._current_tag is None:
             return self._default_tag
 
-        return self._read_tag
+        return self._current_tag
 
     @property
     def tag(self):
@@ -189,7 +209,34 @@ class _TaggedNodeMixin(NodeMixin):
 
     def get_schema(self):
         """Retrieve the schema associated with this tag"""
-        return _get_schema_from_tag(self.tag)
+        return get_schema_from_tag(self.tag)
+
+    @classmethod
+    def _node_factory(cls, tag_pattern: str, manifest_uri: str, tag_entry: ManifestTagEntry) -> type[Self]:
+        """Factory method for dynamically creating a node"""
+        if cls not in (TaggedObjectNode, TaggedListNode, TaggedScalarNode):
+            raise TypeError("This class does not support the node factory")
+
+        class_name = class_name_from_tag_uri(tag_pattern)
+
+        class_type: tuple[type[_BaseForNodeMixin], type[Self]] | tuple[type[Self]]
+        if tag_pattern in REGISTRY.mixins:
+            class_type = (REGISTRY.mixins[tag_pattern], cls)
+        else:
+            class_type = (cls,)
+
+        return type(
+            class_name,
+            class_type,
+            {
+                "_tag_pattern": tag_pattern,
+                "_latest_manifest_uri": manifest_uri,
+                "_default_tag": tag_entry["tag_uri"],
+                "__module__": "roman_datamodels._stnode",
+                "__doc__": docstring_from_tag(tag_entry),
+                "__slots__": (),
+            },
+        )
 
 
 class TaggedObjectNode(DNode, _TaggedNodeMixin):
@@ -203,14 +250,11 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
-        Register any subclasses of this class in the OBJECT_NODE_CLASSES_BY_PATTERN
-        registry.
+        Register any subclasses of this class in the REGISTRY
         """
         super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedObjectNode":
-            if cls._pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._pattern}' has been defined twice")
-            OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+        if cls is not TaggedObjectNode:
+            REGISTRY.tag_pattern.object[cls._tag_pattern] = cls
 
 
 class TaggedListNode(LNode, _TaggedNodeMixin):
@@ -224,14 +268,11 @@ class TaggedListNode(LNode, _TaggedNodeMixin):
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
-        Register any subclasses of this class in the LIST_NODE_CLASSES_BY_PATTERN
-        registry.
+        Register any subclasses of this class in the registry
         """
         super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedListNode":
-            if cls._pattern in LIST_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedListNode class for tag '{cls._pattern}' has been defined twice")
-            LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+        if cls is not TaggedListNode:
+            REGISTRY.tag_pattern.list[cls._tag_pattern] = cls
 
 
 class TaggedScalarNode(_TaggedNodeMixin):
@@ -244,13 +285,11 @@ class TaggedScalarNode(_TaggedNodeMixin):
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
-        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
+        Register any subclasses of this class in the registry.
         """
         super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedScalarNode":
-            if cls._pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._pattern}' has been defined twice")
-            SCALAR_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+        if cls is not TaggedScalarNode:
+            REGISTRY.tag_pattern.scalar[cls._tag_pattern] = cls
 
     def __asdf_traverse__(self):
         return self
@@ -258,45 +297,86 @@ class TaggedScalarNode(_TaggedNodeMixin):
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         builder = builder or Builder()
-        value = builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults)
-        if value is _NO_VALUE:
+        value = builder.build(get_schema_from_tag(tag or cls._default_tag), defaults)
+        if value is NO_VALUE:
             return value
 
         new = cls(value)
         if tag:
-            new._read_tag = tag
+            new._current_tag = tag
 
         return new
 
     @property
     def _tag(self):
         # _tag is required by asdf to allow __asdf_traverse__
-        return getattr(self, "_read_tag", self._default_tag)
+        return getattr(self, "_current_tag", self._default_tag)
 
     def copy(self):
         return copy.copy(self)
 
+    @classmethod
+    def _node_factory(cls, tag_pattern: str, manifest_uri: str, tag_entry: ManifestTagEntry) -> type[TaggedScalarNode]:
+        if cls is not TaggedScalarNode:
+            raise TypeError("This class does not support the node factory")
+
+        class_name = class_name_from_tag_uri(tag_pattern)
+
+        # TaggedScalarNode subclasses are really subclasses of the type of the scalar,
+        #   with the TaggedScalarNode as a mixin.  This is because the TaggedScalarNode
+        #   is supposed to be the scalar, but it needs to be serializable under a specific
+        #   ASDF tag.
+        # _SCALAR_TYPE_BY_PATTERN will need to be updated as new wrappers of scalar types are added
+        #   to the RAD manifest.
+        # assume everything is a string if not otherwise defined
+        base_type: type[Time] | type[str] = _SCALAR_TYPE_BY_PATTERN.get(tag_pattern, str)
+
+        # In special cases one may need to add additional features to a tagged node class.
+        #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
+        #   Here we mixin the mixin class if it exists.
+        class_type: (
+            tuple[type[Time] | type[str], type[_BaseForNodeMixin], type[TaggedScalarNode]]
+            | tuple[type[Time] | type[str], type[TaggedScalarNode]]
+        )
+        if tag_pattern in REGISTRY.mixins:
+            class_type = (base_type, REGISTRY.mixins[tag_pattern], TaggedScalarNode)
+        else:
+            class_type = (base_type, TaggedScalarNode)
+
+        return type(
+            class_name,
+            class_type,
+            {
+                "_tag_pattern": tag_pattern,
+                "_latest_manifest_uri": manifest_uri,
+                "_default_tag": tag_entry["tag_uri"],
+                "__module__": "roman_datamodels._stnode",
+                "__doc__": docstring_from_tag(tag_entry),
+            },
+        )
+
 
 _T = TypeVar("_T", bound=TaggedObjectNode | TaggedListNode | TaggedScalarNode)
+tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]
 
 
-class SerializationNode(Generic[_T]):
+class ManifestNode(Generic[_T]):
     """
-    Intermediate class used to assist in serialization of Tagged objects
-    so that the extension is correctly written.
+    Intermediate class used to assist in serialization of Tagged objects under
+    a given manifest
     """
 
-    _manifest: ClassVar[str]
+    __slots__ = ("_data", "_tag")
+
+    _manifest_uri: ClassVar[str]
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
-        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
+        Register any subclasses of this class in the registry.
         """
         super().__init_subclass__(**kwargs)
-        if cls.__name__ != "SerializationTaggedNode":
-            if cls._manifest in SERIALIZATION_BY_MANIFEST:
-                raise RuntimeError(f"SerializationNode class for '{cls._manifest}' has been defined twice")
-            SERIALIZATION_BY_MANIFEST[cls._manifest] = cls
+        if cls is not ManifestNode:
+            REGISTRY.manifest_uri.node[cls._manifest_uri] = cls
 
     def __init__(self, data: _T, tag: str):
         self._data = data
@@ -311,18 +391,58 @@ class SerializationNode(Generic[_T]):
         return self._data
 
     @classmethod
-    def _factory(cls, manifest: str) -> type[SerializationNode]:
+    def _factory(cls, manifest_uri: str) -> type[ManifestNode]:
         """Create a subclass of this for the given tag"""
-        tag_uri, version = manifest.rsplit("-", maxsplit=1)
+        if cls is not ManifestNode:
+            raise TypeError("This class does not support the node factory")
 
+        tag_uri, version = manifest_uri.rsplit("-", maxsplit=1)
         return type(
             f"SerializationNode_{class_name_from_tag_uri(tag_uri)}__{version.replace('.', '_')}",
-            (SerializationNode,),
+            (ManifestNode,),
             {
-                "_manifest": manifest,
+                "_manifest_uri": manifest_uri,
                 "__module__": "roman_datamodels._stnode",
+                "__slots__": (),
             },
         )
 
+    @classmethod
+    def _node_factory(
+        cls, tag_pattern: str, manifest_uri: str, tag_entry: ManifestTagEntry
+    ) -> type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]:
+        if "tagged_scalar" in tag_entry["schema_uri"]:
+            return TaggedScalarNode._node_factory(tag_pattern, manifest_uri, tag_entry)
 
-tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]
+        if tag_pattern in _LIST_NODE_PATTERN:
+            return TaggedListNode._node_factory(tag_pattern, manifest_uri, tag_entry)
+
+        return TaggedObjectNode._node_factory(tag_pattern, manifest_uri, tag_entry)
+
+    @classmethod
+    def factory(
+        cls, manifest: ManifestSchema
+    ) -> list[type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode] | type[ManifestNode]]:
+        """Factory for all objects that should be created from a manifest"""
+        nodes: list[type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode] | type[ManifestNode]] = [
+            cls._factory(manifest_uri := manifest["id"])
+        ]
+
+        for tag_entry in manifest["tags"]:
+            tag_uri = tag_entry["tag_uri"]
+            tag_pattern = f"{tag_uri.rsplit('-', maxsplit=1)[0]}-*"
+
+            # Create a new node for the pattern if it does note exist
+            if tag_pattern not in REGISTRY.tag_pattern:
+                nodes.append(cls._node_factory(tag_pattern, manifest_uri, tag_entry))
+
+            # Register the node for the given tag
+            if tag_uri not in REGISTRY.tag_uri:
+                REGISTRY.tag_uri[tag_uri] = (
+                    REGISTRY.tag_pattern[tag_pattern],
+                    tag_entry["schema_uri"],
+                    manifest_uri,
+                )
+                REGISTRY.manifest_uri.tag_uri[manifest_uri].add(tag_uri)
+
+        return nodes

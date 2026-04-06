@@ -1,0 +1,20 @@
+Refactor ``stnode`` subpackage with a variety of improvements:
+
+    1. Implement a proper registry system instead of a collection of
+        poorly documented module variables that can be corrupted which
+        would break RDM fundamentally.
+
+    2. Pull utility functions into their own module rather than having them
+        scattered throughout ``stnode``.
+
+    3. Update variable names in ``stnode`` to be better descriptive of what
+        they are actually trying to accomplish.
+
+    4. Move the dynamic object creation from a separate module into the
+        ``__init__.py`` so that we can have a defined ``__all__`` for
+        ``stnode``.
+
+    5. Bind the dynamic type factories to their base types as class methods
+        so that they are directly associated with their base types.
+
+Other minor improvements have been made in addition to these.

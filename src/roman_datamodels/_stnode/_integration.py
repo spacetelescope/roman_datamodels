@@ -8,8 +8,8 @@ def get_extensions():
     -------
     List[`asdf.extension.Extension`]
     """
-    # Importing from ._stnode itself so that all the dynamically created
-    #   objects are in fact created
-    from ._stnode import NODE_EXTENSIONS
+    # Importing from the _stnode subpackage itself as that subpackage
+    #   forces the creation of all of the dynamically generated objects
+    from roman_datamodels._stnode import REGISTRY
 
-    return list(NODE_EXTENSIONS.values())
+    return REGISTRY.asdf_extensions
