@@ -496,6 +496,13 @@ class EpsfRefModel(DataModel):
     _node_type = EpsfRef
 
 
+class EtcRefModel(DataModel):
+    from roman_datamodels._stnode import EtcRef
+
+    __slots__ = ()
+    _node_type = EtcRef
+
+
 class GainRefModel(DataModel):
     from roman_datamodels._stnode import GainRef
 
