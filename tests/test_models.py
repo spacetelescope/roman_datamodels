@@ -25,8 +25,7 @@ from roman_datamodels._stnode import (
     WfiImage,
     WfiWcs,
 )
-from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
-from roman_datamodels._stnode._tagged import _NO_VALUE
+from roman_datamodels._stnode._tagged import _NO_VALUE, SerializationNode
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 from .conftest import MANIFESTS
@@ -797,7 +796,10 @@ def test_create_fake_data(model):
     assert m.validate() is None
 
 
-@pytest.mark.parametrize("tag, node_class", NODE_CLASSES_BY_TAG.items())
+@pytest.mark.parametrize(
+    "tag, node_class",
+    [(tag_uri, tag_info.type) for cls in SerializationNode.__subclasses__() for tag_uri, tag_info in cls.tag_uris.items()],
+)
 def test_create_tag(tag, node_class):
     """Test that we can create a node for every registered tag"""
 

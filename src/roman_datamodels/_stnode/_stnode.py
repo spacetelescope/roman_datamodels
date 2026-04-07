@@ -8,26 +8,15 @@ Dynamic creation of STNode classes from the RAD manifest.
 
 import importlib.resources
 from pathlib import Path
+from types import MappingProxyType
 
 import yaml
-from asdf.extension import ManifestExtension
 from rad import resources
 
-from ._converters import SerializationNodeConverter
 from ._factories import stnode_factory
-from ._registry import (
-    LIST_NODE_CLASSES_BY_PATTERN,
-    MANIFEST_TAG_REGISTRY,
-    NODE_CLASSES_BY_TAG,
-    NODE_CONVERTERS,
-    OBJECT_NODE_CLASSES_BY_PATTERN,
-    SCALAR_NODE_CLASSES_BY_PATTERN,
-    SCHEMA_URIS_BY_TAG,
-    TAG_MANIFEST_REGISTRY,
-)
-from ._tagged import SerializationNode
+from ._tagged import SerializationNode, TagUriInfo
 
-__all__ = ["NODE_CLASSES", "NODE_EXTENSIONS"]
+__all__ = []
 
 
 # Load the manifest directly from the rad resources and not from ASDF.
@@ -58,41 +47,21 @@ def _factory(pattern, latest_manifest, tag_def):
 
 # Main dynamic class creation loop
 #   Reads each tag entry from the manifest and creates a class for it
-_generated = {}
-for manifest in _MANIFESTS:
-    _add_cls(SerializationNode._factory(manifest_uri := manifest["id"]))
+for _manifest in _MANIFESTS:
+    _manifest_uri = _manifest["id"]
 
-    MANIFEST_TAG_REGISTRY[manifest_uri] = []
-    for tag_def in manifest["tags"]:
-        SCHEMA_URIS_BY_TAG[(tag_uri := tag_def["tag_uri"])] = tag_def["schema_uri"]
-        base, _ = tag_uri.rsplit("-", maxsplit=1)
+    _tag_uris = {}
+    tag_patterns = []
+    for tag_def in _manifest["tags"]:
+        tag_uri = tag_def["tag_uri"]
+        tag_pattern = f"{tag_uri.rsplit('-', maxsplit=1)[0]}-*"
 
-        # make pattern from tag
-        pattern = f"{base}-*"
-        if pattern not in _generated:
-            _generated[pattern] = _factory(pattern, manifest_uri, tag_def)
-        NODE_CLASSES_BY_TAG[tag_uri] = _generated[pattern]
+        if (node_type := SerializationNode.tag_pattern_type(tag_pattern)) is None:
+            tag_patterns.append(tag_pattern)
+            node_type = _factory(tag_pattern, _manifest_uri, tag_def)
 
-        # Make serialization intermediate
-        if tag_uri not in TAG_MANIFEST_REGISTRY:
-            TAG_MANIFEST_REGISTRY[tag_uri] = manifest_uri
-            MANIFEST_TAG_REGISTRY[manifest_uri].append(tag_uri)
+        if not SerializationNode.serialization_type(tag_uri):
+            _tag_uris[tag_uri] = TagUriInfo(schema_uri=tag_def["schema_uri"], type=node_type)
 
-
-# Create the ASDF extension for the STNode classes.
-#    ASDF extension is setup here so that it is after the dynamic object creation
-NODE_EXTENSIONS = {
-    manifest_uri: ManifestExtension.from_uri(
-        manifest_uri, converters=(SerializationNodeConverter(manifest_uri), *tuple(NODE_CONVERTERS.values()))
-    )
-    for manifest_uri in MANIFEST_TAG_REGISTRY
-}
-
-
-# List of node classes made available by this library.
-#   This is part of the public API.
-NODE_CLASSES = (
-    list(OBJECT_NODE_CLASSES_BY_PATTERN.values())
-    + list(LIST_NODE_CLASSES_BY_PATTERN.values())
-    + list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
-)
+    # Make serialization intermediate
+    _add_cls(SerializationNode._factory(_manifest_uri, tuple(tag_patterns), MappingProxyType(_tag_uris)))

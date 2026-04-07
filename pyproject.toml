@@ -20,6 +20,7 @@ dependencies = [
   "asdf-standard >=1.1.0",
   "pyarrow >= 10.0.1",
   "semantic_version>=2.10",
+  "conditional-cache>=1.4",
 ]
 license-files = ["LICENSE"]
 dynamic = ["version"]

@@ -15,8 +15,6 @@ import asdf
 import asdf.schema
 from semantic_version import Version
 
-from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
-
 if TYPE_CHECKING:
     from typing import Any
 
@@ -65,9 +63,9 @@ def _get_schema_from_tag(tag):
     tag : str
         The tag_uri of the schema to load.
     """
-    schema_uri = SCHEMA_URIS_BY_TAG[tag]
+    from ._tagged import SerializationNode
 
-    return asdf.schema.load_schema(schema_uri, resolve_references=True)
+    return asdf.schema.load_schema(SerializationNode.schema_uri(tag), resolve_references=True)
 
 
 class _MissingKeywordType:
@@ -387,9 +385,11 @@ class Builder:
         return None
 
     def from_tagged(self, schema, defaults):
+        from ._tagged import SerializationNode
+
         tag = _get_keyword(schema, "tag")
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
-            return property_class._create_minimal(defaults, builder=self, tag=tag)
+        if SerializationNode.serialization_type(tag) is not None:
+            return SerializationNode.tag_type(tag)._create_minimal(defaults, builder=self, tag=tag)
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         return _NO_VALUE
@@ -486,6 +486,8 @@ class FakeDataBuilder(Builder):
         return obj
 
     def from_tagged(self, schema, defaults):
+        from ._tagged import SerializationNode
+
         tag = _get_keyword(schema, "tag")
         if tag is _MISSING_KEYWORD:
             # FIXME a guidewindow array is missing a tag
@@ -493,9 +495,9 @@ class FakeDataBuilder(Builder):
                 tag = "tag:stsci.edu:asdf/core/ndarray-1.*"
             else:
                 return _NO_VALUE
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+        if SerializationNode.serialization_type(tag) is not None:
             # Pass control to the class for create_fake_data overrides
-            return property_class._create_fake_data(defaults, builder=self, tag=tag)
+            return SerializationNode.tag_type(tag)._create_fake_data(defaults, builder=self, tag=tag)
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         if tag == "tag:stsci.edu:asdf/time/time-1.*":
@@ -647,10 +649,12 @@ class NodeBuilder(Builder):
         return self._copy_default(defaults)
 
     def from_tagged(self, schema, defaults):
+        from ._tagged import SerializationNode
+
         tag = _get_keyword(schema, "tag")
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+        if SerializationNode.serialization_type(tag) is not None:
             try:
-                return property_class._create_from_node(defaults, builder=self)
+                return SerializationNode.tag_type(tag)._create_from_node(defaults, builder=self)
             except ValueError:
                 # Providing an incompatible value (list to a dict expecting class)
                 # will result in a ValueError. Don't let this stop the conversion
