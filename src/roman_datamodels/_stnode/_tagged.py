@@ -7,15 +7,13 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING, Generic, TypeVar
+from abc import abstractmethod
+from types import MappingProxyType
+from typing import TYPE_CHECKING, NamedTuple
+
+from conditional_cache import lru_cache as cache
 
 from ._node import DNode, LNode
-from ._registry import (
-    LIST_NODE_CLASSES_BY_PATTERN,
-    OBJECT_NODE_CLASSES_BY_PATTERN,
-    SCALAR_NODE_CLASSES_BY_PATTERN,
-    SERIALIZATION_BY_MANIFEST,
-)
 from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
 
 if TYPE_CHECKING:
@@ -191,6 +189,36 @@ class _TaggedNodeMixin(NodeMixin):
         """Retrieve the schema associated with this tag"""
         return _get_schema_from_tag(self.tag)
 
+    @abstractmethod
+    def _serialize_data(self, ctx):
+        """
+        Turn the data stored in this node into the untagged object
+        that ASDF will tag and write
+        """
+
+    def _serialize(self, ctx) -> SerializationNode:
+        """
+        Create the SerializationNode instance which handles the deferred ASDF
+        serialization
+
+        Parameters
+        ----------
+        ctx :
+            The ASDF serialization context
+
+        Return
+        ------
+
+            An instance of a serialization node that ASDF will then defer to in
+            order to tag it properly
+        """
+
+        cls: type[SerializationNode] | None = SerializationNode.serialization_type(self.tag)
+        if cls:
+            return cls(self._serialize_data(ctx), self.tag)
+
+        raise RuntimeError(f"No node found to serialize tag: {self.tag}")
+
 
 class TaggedObjectNode(DNode, _TaggedNodeMixin):
     """
@@ -201,16 +229,8 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
 
     __slots__ = ()
 
-    def __init_subclass__(cls, **kwargs) -> None:
-        """
-        Register any subclasses of this class in the OBJECT_NODE_CLASSES_BY_PATTERN
-        registry.
-        """
-        super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedObjectNode":
-            if cls._pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._pattern}' has been defined twice")
-            OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+    def _serialize_data(self, ctx):
+        return dict(self._data)
 
 
 class TaggedListNode(LNode, _TaggedNodeMixin):
@@ -222,16 +242,8 @@ class TaggedListNode(LNode, _TaggedNodeMixin):
 
     __slots__ = ()
 
-    def __init_subclass__(cls, **kwargs) -> None:
-        """
-        Register any subclasses of this class in the LIST_NODE_CLASSES_BY_PATTERN
-        registry.
-        """
-        super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedListNode":
-            if cls._pattern in LIST_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedListNode class for tag '{cls._pattern}' has been defined twice")
-            LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+    def _serialize_data(self, ctx):
+        return list(self)
 
 
 class TaggedScalarNode(_TaggedNodeMixin):
@@ -241,16 +253,6 @@ class TaggedScalarNode(_TaggedNodeMixin):
         a scalar base type, or wraps a scalar base type.
         These will all be in the tagged_scalars directory.
     """
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        """
-        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
-        """
-        super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedScalarNode":
-            if cls._pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._pattern}' has been defined twice")
-            SCALAR_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
     def __asdf_traverse__(self):
         return self
@@ -276,29 +278,37 @@ class TaggedScalarNode(_TaggedNodeMixin):
     def copy(self):
         return copy.copy(self)
 
+    def _serialize_data(self, ctx):
+        data = type(self).__bases__[0](self)
 
-_T = TypeVar("_T", bound=TaggedObjectNode | TaggedListNode | TaggedScalarNode)
+        if "file_date" in self.tag:
+            converter = ctx.extension_manager.get_converter_for_type(type(data))
+            return converter.to_yaml_tree(data, self.tag, ctx)
+
+        return data
 
 
-class SerializationNode(Generic[_T]):
+tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]
+
+
+class TagUriInfo(NamedTuple):
+    schema_uri: str
+    type: tagged_type
+
+
+class SerializationNode:
     """
     Intermediate class used to assist in serialization of Tagged objects
     so that the extension is correctly written.
     """
 
-    _manifest: ClassVar[str]
+    __slots__ = ("_data", "_tag")
 
-    def __init_subclass__(cls, **kwargs) -> None:
-        """
-        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
-        """
-        super().__init_subclass__(**kwargs)
-        if cls.__name__ != "SerializationTaggedNode":
-            if cls._manifest in SERIALIZATION_BY_MANIFEST:
-                raise RuntimeError(f"SerializationNode class for '{cls._manifest}' has been defined twice")
-            SERIALIZATION_BY_MANIFEST[cls._manifest] = cls
+    manifest_uri: ClassVar[str]
+    tag_patterns: ClassVar[tuple[str, ...]]
+    tag_uris: ClassVar[MappingProxyType[str, TagUriInfo]]
 
-    def __init__(self, data: _T, tag: str):
+    def __init__(self, data: Any, tag: str):
         self._data = data
         self._tag = tag
 
@@ -307,22 +317,137 @@ class SerializationNode(Generic[_T]):
         return self._tag
 
     @property
-    def data(self) -> _T:
+    def data(self) -> Any:
         return self._data
 
-    @classmethod
-    def _factory(cls, manifest: str) -> type[SerializationNode]:
+    @staticmethod
+    @cache(condition=lambda result: result is not None)
+    def serialization_type(tag_uri: str) -> type[SerializationNode] | None:
+        """
+        Get the SerializationNode class associated with the given tag, if any
+
+            Note this returns a None value so that we can use it to check
+            if a tag is already handled by a SerializationNode
+
+        Parameters
+        ----------
+        tag_uri :
+            The tag_uri in question
+
+        Returns
+        -------
+
+            The actual SerializationNode subclass that handles the tag
+            or None if that node does not exist yet
+        """
+        subclass: type[SerializationNode]
+
+        for subclass in SerializationNode.__subclasses__():
+            if tag_uri in subclass.tag_uris:
+                return subclass
+
+        return None
+
+    @staticmethod
+    def tag_type(tag_uri: str) -> tagged_type:
+        """
+        Get the node type that handles a given tag
+
+        Parameters
+        ----------
+        tag_uri :
+            The tag_uri in question
+
+        Returns
+        -------
+        type
+            The Node type that handles the given tag_uri
+
+        Raises
+        ------
+        RuntimeError
+            if no node handles this type
+        """
+        subclass: type[SerializationNode] | None = SerializationNode.serialization_type(tag_uri)
+
+        if subclass:
+            return subclass.tag_uris[tag_uri].type
+
+        raise RuntimeError(f"No SerializationNode class found for tag: {tag_uri}")
+
+    @staticmethod
+    @cache(condition=lambda result: result is not None)
+    def tag_pattern_type(tag_pattern: str) -> tagged_type | None:
+        """
+        Get the Node type for the given tag pattern
+
+            Note this returns None if a tag_pattern is not currently being
+            handled for purposes of dynamic code generation
+
+        Parameters
+        ----------
+        tag_pattern :
+            <tag_uri_prefix>-* style string
+
+        Returns
+        -------
+        type | None
+            The Node type handling the pattern or None
+        """
+        subclass: type[SerializationNode]
+
+        for subclass in SerializationNode.__subclasses__():
+            if tag_pattern in subclass.tag_patterns:
+                return next(
+                    uri_info.type
+                    for tag_uri, uri_info in subclass.tag_uris.items()
+                    if tag_uri.startswith(tag_pattern.rsplit("-", maxsplit=1)[0])
+                )
+
+        return None
+
+    @staticmethod
+    def schema_uri(tag_uri: str) -> str:
+        """
+        Get the schema_uri associated with the given tag
+
+            Note this makes it so you don't have to feed tag_uri into this twice
+
+        Parameters
+        ----------
+        tag_uri :
+            The tag_uri in question
+
+        Returns
+        -------
+        str
+            The schema_uri associated with the tag in RAD
+
+        Raises
+        ------
+        RuntimeError
+            if no node handles this type
+        """
+        subclass: type[SerializationNode] | None = SerializationNode.serialization_type(tag_uri)
+
+        if subclass:
+            return subclass.tag_uris[tag_uri].schema_uri
+
+        raise RuntimeError(f"No SerializationNode class found for tag: {tag_uri}")
+
+    @staticmethod
+    def _factory(manifest_uri: str, tag_patterns: tuple[str, ...], tag_uris: tuple[str, ...]) -> type[SerializationNode]:
         """Create a subclass of this for the given tag"""
-        tag_uri, version = manifest.rsplit("-", maxsplit=1)
+        tag_uri, version = manifest_uri.rsplit("-", maxsplit=1)
 
         return type(
             f"SerializationNode_{class_name_from_tag_uri(tag_uri)}__{version.replace('.', '_')}",
             (SerializationNode,),
             {
-                "_manifest": manifest,
+                "manifest_uri": manifest_uri,
+                "tag_patterns": tag_patterns,
+                "tag_uris": tag_uris,
                 "__module__": "roman_datamodels._stnode",
+                "__slots__": (),
             },
         )
-
-
-tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]

@@ -196,6 +196,8 @@ def _make_old_observation():
 )
 def test_node_builder_tagged(tag, value):
     result = NodeBuilder().build({"tag": tag}, value)
+    print(id(type(result)))
+    print(id(Observation))
     assert isinstance(result, Observation)
     assert result is not value
     assert result.tag == tag

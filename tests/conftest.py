@@ -1,8 +1,8 @@
 import asdf
 import pytest
 
-from roman_datamodels._stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN, SCHEMA_URIS_BY_TAG
 from roman_datamodels._stnode._stnode import _MANIFESTS as MANIFESTS
+from roman_datamodels._stnode._tagged import SerializationNode, TaggedObjectNode
 
 
 @pytest.fixture(scope="session", params=MANIFESTS)
@@ -10,14 +10,14 @@ def manifest(request):
     return request.param
 
 
-@pytest.fixture(scope="session", params=list(OBJECT_NODE_CLASSES_BY_PATTERN.values()))
+@pytest.fixture(scope="session", params=TaggedObjectNode.__subclasses__())
 def object_node(request):
     return request.param
 
 
 @pytest.fixture(scope="session")
 def object_node_default_uri(object_node):
-    return SCHEMA_URIS_BY_TAG[object_node._default_tag]
+    return SerializationNode.schema_uri(object_node._default_tag)
 
 
 @pytest.fixture(scope="session")
