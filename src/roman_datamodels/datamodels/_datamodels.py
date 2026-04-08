@@ -16,13 +16,17 @@ import pathlib
 from collections import abc
 from typing import TYPE_CHECKING
 
-import astropy.table.meta
 import numpy as np
 from astropy import time as _time
 from astropy.modeling import models
 
 from ._core import DataModel
-from ._utils import node_update, temporary_update_filedate, temporary_update_filename
+from ._utils import (
+    create_synchronized_table,
+    node_update,
+    temporary_update_filedate,
+    temporary_update_filename,
+)
 
 if TYPE_CHECKING:
     from typing import Any
@@ -84,16 +88,28 @@ class _ParquetMixin:
 
     __slots__ = ()
 
-    def to_parquet(self, filepath):
+    def to_parquet(self, filepath, ivoa_compliant: bool = False):
         """
-        Save catalog in parquet format.
+        Save the catalog to a Parquet file preserving metadata.
 
-        Defers import of parquet to minimize import overhead for all other models.
+        Parameters
+        ----------
+        filepath : str or Path
+            Path to the output Parquet file.
+        ivoa_compliant : bool, optional
+            If True, ensures units and metadata are formatted according to IVOA standards.
+
+        Notes
+        -----
+        - Validates the catalog before writing, as Parquet does not provide schema validation.
+        - Metadata is flattened and merged with table-level metadata for compatibility.
+        - Imports Parquet dependencies only when needed to minimize overhead.
+        - Optionally, column units and types can be synchronized for IVOA compliance.
         """
         from roman_datamodels._stnode import DNode
 
         # parquet does not provide validation so validate first with asdf
-        self.validate()
+        self.validate()  # type: ignore[attr-defined]
 
         global DTYPE_MAP
         import pyarrow as pa
@@ -117,13 +133,14 @@ class _ParquetMixin:
                 }
             )
 
-        with temporary_update_filename(self, pathlib.Path(filepath).name), temporary_update_filedate(self, _time.Time.now()):
+        with temporary_update_filename(self, pathlib.Path(filepath).name), temporary_update_filedate(self, _time.Time.now()):  # type: ignore[arg-type]
             # Construct flat metadata dict
-            flat_meta = self.to_flat_dict()
+            flat_meta = self.to_flat_dict()  # type: ignore[attr-defined]
+
         # select only meta items
         flat_meta = {k: str(v) for (k, v) in flat_meta.items() if k.startswith("roman.meta")}
         # Extract table metadata
-        source_cat = self.source_catalog
+        source_cat = self.source_catalog  # type: ignore[attr-defined]
         scmeta = source_cat.meta
         # Wrap it as a DNode so it can be flattened
         dn_scmeta = DNode(scmeta)
@@ -136,14 +153,18 @@ class _ParquetMixin:
         keys = list(source_cat.columns.keys())
         arrs = [np.array(source_cat[key]) for key in keys]
         units = [str(source_cat[key].unit) for key in keys]
+        descriptions = [getattr(source_cat[key], "description", "") for key in keys]
         dtypes = [DTYPE_MAP[np.array(source_cat[key]).dtype.name] for key in keys]
-        fields = [
-            pa.field(key, type=dtype, metadata={"unit": unit}) for (key, dtype, unit) in zip(keys, dtypes, units, strict=False)
-        ]
-        extra_astropy_metadata = astropy.table.meta.get_yaml_from_table(source_cat)
-        flat_meta["table_meta_yaml"] = "\n".join(extra_astropy_metadata)
-        schema = pa.schema(fields, metadata=flat_meta)
-        table = pa.Table.from_arrays(arrs, schema=schema)
+        table = create_synchronized_table(
+            arrs,
+            keys,
+            units,
+            dtypes=dtypes,
+            global_meta=flat_meta,
+            ivoa_compliant=ivoa_compliant,
+            descriptions=descriptions,
+            table_meta=scmeta,
+        )
         pq.write_table(table, filepath, compression=None)
 
 
