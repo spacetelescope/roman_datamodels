@@ -10,6 +10,7 @@ from collections.abc import Generator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+from urllib.parse import urlparse
 
 import asdf
 import numpy as np
@@ -198,6 +199,57 @@ def node_update(
             to_node["extras"] = extras_node
 
 
+def _patch_meta_filename(init, asdf_file):
+    """
+    Modify meta.filename to match init if needed.
+
+    meta.filename will not be updated if:
+        - init is not a str or Path
+        - init is a URL
+        - asdf_file does not have a meta.filename
+        - meta.filename already matches init
+
+    Parameters
+    ----------
+    init : str, ``Path`` or file-like
+        An object that can be opened by `asdf.open`
+    asdf_file : `asdf.AsdfFile`
+        Instance that may be patched if init does not match meta.filename
+
+    Returns
+    -------
+    `asdf.AsdfFile`
+    """
+    if isinstance(init, str):
+        # is init string is a url, don't patch
+        parts = urlparse(init)
+        if parts.scheme and parts.netloc:
+            return asdf_file
+        # if not, convert to Path
+        path = Path(init)
+    elif isinstance(init, Path):
+        path = init
+    else:
+        return asdf_file
+
+    tree = asdf_file.tree
+    if not isinstance((tree := tree.get("roman")), Mapping):
+        return asdf_file
+    if not isinstance((tree := tree.get("meta")), Mapping):
+        return asdf_file
+    if (filename := tree.get("filename", path.name)) == path.name:
+        return asdf_file
+
+    warnings.warn(
+        f"meta.filename: {filename} does not match filename: {path.name}, updating the filename in memory!",
+        FilenameMismatchWarning,
+        stacklevel=2,
+    )
+    asdf_file["roman"]["meta"]["filename"] = type(filename)(path.name)
+
+    return asdf_file
+
+
 def _open_asdf(init, lazy_tree=True, **kwargs):
     """
     Open init with `asdf.open`.
@@ -221,34 +273,13 @@ def _open_asdf(init, lazy_tree=True, **kwargs):
     # asdf defaults to lazy_tree=False, this overwrites it to
     # lazy_tree=True for roman_datamodels
     kwargs["lazy_tree"] = lazy_tree
-    if isinstance(init, str):
-        path = Path(init)
-    elif isinstance(init, Path):
-        path = init
-    else:
-        path = None
 
     try:
         asdf_file = asdf.open(init, **kwargs)
     except ValueError as err:
         raise TypeError("Open requires a filepath, file-like object, or Roman datamodel") from err
 
-    if (
-        path is not None
-        and "roman" in asdf_file
-        and isinstance(asdf_file["roman"], Mapping)  # Fix issue for Python 3.10
-        and "meta" in asdf_file["roman"]
-        and "filename" in asdf_file["roman"]["meta"]
-        and asdf_file["roman"]["meta"]["filename"] != path.name
-    ):
-        warnings.warn(
-            f"meta.filename: {asdf_file['roman']['meta']['filename']} does not match filename: {path.name}, updating the filename in memory!",
-            FilenameMismatchWarning,
-            stacklevel=2,
-        )
-        asdf_file["roman"]["meta"]["filename"] = type(asdf_file["roman"]["meta"]["filename"])(path.name)
-
-    return asdf_file
+    return _patch_meta_filename(init, asdf_file)
 
 
 def rdm_open(init, memmap=False, **kwargs):
