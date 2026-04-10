@@ -1,4 +1,5 @@
+from ._stnode import get_latest_schema
 from ._version import version as __version__
 from .datamodels import DataModel, open
 
-__all__ = ["DataModel", "__version__", "open"]
+__all__ = ["DataModel", "__version__", "get_latest_schema", "open"]

@@ -1,5 +1,6 @@
 import json
 import os
+from contextlib import nullcontext
 from pathlib import Path
 
 import asdf
@@ -8,12 +9,14 @@ import pytest
 from astropy.io import fits
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels, stnode
+from roman_datamodels import datamodels
+from roman_datamodels._stnode import WfiImage
+from roman_datamodels.datamodels._utils import _patch_meta_filename
 from roman_datamodels.testing import assert_node_equal
 
 
 def test_asdf_file_input():
-    tree = stnode.WfiImage.create_fake_data()
+    tree = WfiImage.create_fake_data()
     with asdf.AsdfFile() as af:
         af.tree = {"roman": tree}
         model = datamodels.open(af)
@@ -25,7 +28,7 @@ def test_asdf_file_input():
 def test_path_input(tmp_path):
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        tree = stnode.WfiImage.create_fake_data()
+        tree = WfiImage.create_fake_data()
         af.tree = {"roman": tree}
         af.write_to(file_path)
 
@@ -59,7 +62,7 @@ def test_model_input(tmp_path):
     data = np.random.default_rng(42).uniform(size=(4, 4)).astype(np.float32)
 
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": stnode.WfiImage.create_fake_data()}
+        af.tree = {"roman": WfiImage.create_fake_data()}
         af.tree["roman"].meta["bozo"] = "clown"
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -82,7 +85,7 @@ def test_model_input(tmp_path):
 
 def test_file_input(tmp_path):
     file_path = tmp_path / "test.asdf"
-    tree = stnode.WfiImage.create_fake_data()
+    tree = WfiImage.create_fake_data()
     with asdf.AsdfFile() as af:
         af.tree = {"roman": tree}
         af.write_to(file_path)
@@ -110,7 +113,7 @@ def test_memmap(tmp_path):
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": stnode.WfiImage.create_fake_data()}
+        af.tree = {"roman": WfiImage.create_fake_data()}
 
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -161,7 +164,7 @@ def test_no_memmap(tmp_path, kwargs):
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": stnode.WfiImage.create_fake_data()}
+        af.tree = {"roman": WfiImage.create_fake_data()}
 
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -289,3 +292,23 @@ def test_filename_matches_meta(tmp_path, model):
     ):
         assert model.meta.filename == open_path.name
         assert isinstance(model.meta.filename, gn_fn_type)
+
+
+@pytest.mark.parametrize(
+    "filename, original, expected",
+    [
+        ("bar.asdf", "fizz.asdf", "bar.asdf"),
+        ("foo/bar.asdf", "fizz.asdf", "bar.asdf"),
+        ("/foo/bar.asdf", "fizz.asdf", "bar.asdf"),
+        # no patching for urls
+        ("s3://foo/bar.asdf", "fizz.asdf", "fizz.asdf"),
+        ("http://foo/bar.asdf", "fizz.asdf", "fizz.asdf"),
+    ],
+)
+def test_patch_filename(filename, original, expected):
+    asdf_file = asdf.AsdfFile({"roman": WfiImage.create_fake_data()})
+    asdf_file["roman"]["meta"]["filename"] = original
+    ctx = nullcontext() if original == expected else pytest.warns(datamodels.FilenameMismatchWarning)
+    with ctx:
+        _patch_meta_filename(filename, asdf_file)
+    assert asdf_file["roman"]["meta"]["filename"] == expected

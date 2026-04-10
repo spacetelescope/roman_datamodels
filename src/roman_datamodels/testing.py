@@ -5,7 +5,7 @@ from astropy.modeling import Model
 from astropy.table import Table
 from numpy.testing import assert_array_equal
 
-from .stnode import DNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
+from ._stnode import DNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 __all__ = ["assert_node_equal", "assert_node_is_copy", "wraps_hashable"]
 

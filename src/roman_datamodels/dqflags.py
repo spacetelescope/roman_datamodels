@@ -66,7 +66,7 @@ class pixel(np.uint32, Enum):
 
 
 @unique
-class group(np.uint32, Enum):
+class group(np.uint8, Enum):
     """Group-specific data quality flags
         Once groups are combined, these flags are equivalent to the pixel-specific flags.
     """
@@ -76,5 +76,6 @@ class group(np.uint32, Enum):
     JUMP_DET   = pixel.JUMP_DET
     DROPOUT    = pixel.DROPOUT
     AD_FLOOR   = pixel.AD_FLOOR
+    WFI18_TRANSIENT = 2**7  # Affected by the WFI18 transient anomaly
 
 # fmt: on

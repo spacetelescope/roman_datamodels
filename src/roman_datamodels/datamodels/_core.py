@@ -24,7 +24,7 @@ from asdf.exceptions import ValidationError
 from asdf.tags.core.ndarray import NDArrayType
 from astropy.time import Time
 
-from roman_datamodels import stnode
+from roman_datamodels._stnode import NODE_EXTENSIONS, DNode, TaggedObjectNode
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -58,7 +58,7 @@ class DataModel(abc.ABC):
 
     crds_observatory = "roman"
 
-    _node_type: type[stnode.TaggedObjectNode]
+    _node_type: type[TaggedObjectNode]
 
     def __init_subclass__(cls, **kwargs):
         """Register each subclass in the MODEL_REGISTRY"""
@@ -69,7 +69,7 @@ class DataModel(abc.ABC):
             return
 
         # Check the node_type is a tagged object node
-        if not issubclass(cls._node_type, stnode.TaggedObjectNode):
+        if not issubclass(cls._node_type, TaggedObjectNode):
             raise ValueError("Subclass must be a TaggedObjectNode subclass")
 
         # Check for duplicates
@@ -163,7 +163,7 @@ class DataModel(abc.ABC):
     __slots__ = ("_asdf", "_files_to_close", "_instance", "_iscopy", "_shape")
 
     @classmethod
-    def create_from_model(cls, model: DataModel | stnode.DNode) -> Self:
+    def create_from_model(cls, model: DataModel | DNode) -> Self:
         """
         Create a new DataModel from an existing model.
         """
@@ -184,7 +184,7 @@ class DataModel(abc.ABC):
         self._asdf = None
         self._files_to_close = None
 
-        if isinstance(init, stnode.TaggedObjectNode):
+        if isinstance(init, TaggedObjectNode):
             if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
                 expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
                 raise ValidationError(
@@ -234,9 +234,7 @@ class DataModel(abc.ABC):
     @property
     def schema_uri(self):
         # Determine the schema corresponding to this model's tag
-        return next(
-            t for t in stnode.NODE_EXTENSIONS[self._latest_manifest_uri].tags if t.tag_uri == self._instance._tag
-        ).schema_uris[0]
+        return next(t for t in NODE_EXTENSIONS[self._latest_manifest_uri].tags if t.tag_uri == self._instance._tag).schema_uris[0]
 
     def close(self):
         if not (self._iscopy or self._asdf is None):

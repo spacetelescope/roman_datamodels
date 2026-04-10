@@ -8,7 +8,6 @@ import re
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-import numpy as np
 from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
 
 from ._schema import Builder, _get_keyword, _get_properties
@@ -16,7 +15,7 @@ from ._tagged import _get_schema_from_tag
 
 # This is a workaround for MyPy to understand the Mixin classes
 if TYPE_CHECKING:
-    from typing import Any, ClassVar, TypeAlias
+    from typing import ClassVar, TypeAlias
 
     from astropy.time import Time
 
@@ -50,7 +49,6 @@ __all__ = [
     "SdfSoftwareVersionMixin",
     "TelescopeMixin",
     "TvacFileDateMixin",
-    "WfiImgPhotomRefMixin",
     "WfiModeMixin",
 ]
 
@@ -210,61 +208,6 @@ class L3CalStepMixin(L2CalStepMixin):  # same as L2CalStepMixin
     __slots__ = ()
 
 
-class WfiImgPhotomRefMixin(_ObjectBase):
-    __slots__ = ()
-
-    @classmethod
-    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
-        defaults = defaults or {}
-        _shape = shape or (0,)
-        _shape = _shape[:1]
-        if "phot_table" not in defaults:
-            phot_table = {}
-            for entry in (
-                "F062",
-                "F087",
-                "F106",
-                "F129",
-                "F146",
-                "F158",
-                "F184",
-                "F213",
-                "GRISM",
-                "GRISM_0",
-                "PRISM",
-                "DARK",
-                "NOT_CONFIGURED",
-            ):
-                table_entry: dict[str, Any] = {
-                    "photmjsr": None,
-                    "uncertainty": None,
-                    "pixelareasr": None,
-                    "collecting_area": None,
-                    "wavelength": None,
-                    "effective_area": None,
-                }
-                if entry not in ("DARK", "NOT_CONFIGURED"):
-                    table_entry.update(
-                        {
-                            "collecting_area": 1.0,
-                            "wavelength": np.zeros(_shape, dtype=np.float32),
-                            "effective_area": np.zeros(_shape, dtype=np.float32),
-                        }
-                    )
-                    if entry not in ("GRISM", "GRISM_0", "PRISM"):
-                        table_entry.update(
-                            {
-                                "photmjsr": 1e-15,
-                                "uncertainty": 1e-16,
-                                "pixelareasr": 1e-13,
-                            }
-                        )
-                phot_table[entry] = table_entry
-
-            defaults["phot_table"] = phot_table
-        return super()._create_fake_data(defaults, shape, builder, tag=tag)
-
-
 class ImageSourceCatalogMixin(_ObjectBase):
     __slots__ = ()
 
@@ -307,43 +250,46 @@ class ImageSourceCatalogMixin(_ObjectBase):
                 }
 
     @classmethod
-    def _create_empty_catalog(cls, aperture_radii=None, filters=None):
+    def _create_empty_catalog(cls, tag=None, aperture_radii=None, filters=None):
         from astropy.table import Column, Table
 
         aperture_radii = aperture_radii or ["00"]
         filters = filters or ["f184"]
 
-        table_schema = _get_schema_from_tag(cls._default_tag)["properties"]["source_catalog"]
+        columns_schema = dict(_get_properties(_get_schema_from_tag(tag or cls._default_tag)["properties"]["source_catalog"]))
         columns = []
-        for raw_col_def in dict(_get_properties(table_schema))["columns"]["allOf"]:
-            col_def = raw_col_def["not"]["items"]["not"]
-            properties = dict(_get_properties(col_def))
-            name_regex = properties["name"]["pattern"]
-            unit = _get_keyword(col_def, "unit")
-            description = _get_keyword(col_def, "description")
-            dtype = asdf_datatype_to_numpy_dtype(properties["data"]["properties"]["datatype"]["enum"][0])
 
-            name_queue = [name_regex[1:-1]]
+        if "columns" in columns_schema:
+            for raw_col_def in columns_schema["columns"]["allOf"]:
+                col_def = raw_col_def["not"]["items"]["not"]
+                properties = dict(_get_properties(col_def))
+                name_regex = properties["name"]["pattern"]
+                unit = _get_keyword(col_def, "unit")
+                description = _get_keyword(col_def, "description")
+                dtype = asdf_datatype_to_numpy_dtype(properties["data"]["properties"]["datatype"]["enum"][0])
 
-            substitutions = [
-                (r"\[0-9]\{2}", aperture_radii),
-                (r"\(.*\)", filters),
-            ]
-            while name_queue:
-                name = name_queue.pop()
-                for regex, values in substitutions:
-                    if re.search(regex, name):
-                        name_queue.extend(re.sub(regex, value, name) for value in values)
-                        break
-                else:
-                    columns.append(Column([], unit=unit, description=description, dtype=dtype, name=name))
+                name_queue = [name_regex[1:-1]]
+
+                substitutions = [
+                    (r"\[0-9]\{2}", aperture_radii),
+                    (r"\(.*\)", filters),
+                ]
+                while name_queue:
+                    name = name_queue.pop()
+                    for regex, values in substitutions:
+                        if re.search(regex, name):
+                            name_queue.extend(re.sub(regex, value, name) for value in values)
+                            break
+                    else:
+                        columns.append(Column([], unit=unit, description=description, dtype=dtype, name=name))
+
         return Table(columns)
 
     @classmethod
     def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         defaults = defaults or {}
         if "source_catalog" not in defaults:
-            defaults["source_catalog"] = cls._create_empty_catalog()
+            defaults["source_catalog"] = cls._create_empty_catalog(tag=tag)
         return super()._create_fake_data(defaults, shape, builder, tag=tag)
 
 

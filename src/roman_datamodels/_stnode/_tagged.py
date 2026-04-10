@@ -7,13 +7,14 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from ._node import DNode, LNode
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
+    SERIALIZATION_BY_MANIFEST,
 )
 from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
 
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ["TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
+__all__ = ["SerializationNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
 
 
 def name_from_tag_uri(tag_uri: str) -> str:
@@ -43,6 +44,27 @@ def name_from_tag_uri(tag_uri: str) -> str:
     elif "/fps/" in tag_uri and "fps" not in tag_uri_split:
         tag_uri_split = "fps_" + tag_uri.split("/")[-1].split("-")[0]
     return tag_uri_split
+
+
+def class_name_from_tag_uri(tag_uri: str) -> str:
+    """
+    Construct the class name for the STNode class from the tag_uri
+
+    Parameters
+    ----------
+    tag_uri : str
+        The tag_uri found in the RAD manifest
+
+    Returns
+    -------
+    string name for the class
+    """
+    tag_name = name_from_tag_uri(tag_uri)
+    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
+    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
+        class_name += "Ref"
+
+    return class_name
 
 
 class _TaggedNodeMixin(NodeMixin):
@@ -253,6 +275,54 @@ class TaggedScalarNode(_TaggedNodeMixin):
 
     def copy(self):
         return copy.copy(self)
+
+
+_T = TypeVar("_T", bound=TaggedObjectNode | TaggedListNode | TaggedScalarNode)
+
+
+class SerializationNode(Generic[_T]):
+    """
+    Intermediate class used to assist in serialization of Tagged objects
+    so that the extension is correctly written.
+    """
+
+    _manifest: ClassVar[str]
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        """
+        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
+        """
+        super().__init_subclass__(**kwargs)
+        if cls.__name__ != "SerializationTaggedNode":
+            if cls._manifest in SERIALIZATION_BY_MANIFEST:
+                raise RuntimeError(f"SerializationNode class for '{cls._manifest}' has been defined twice")
+            SERIALIZATION_BY_MANIFEST[cls._manifest] = cls
+
+    def __init__(self, data: _T, tag: str):
+        self._data = data
+        self._tag = tag
+
+    @property
+    def tag(self) -> str:
+        return self._tag
+
+    @property
+    def data(self) -> _T:
+        return self._data
+
+    @classmethod
+    def _factory(cls, manifest: str) -> type[SerializationNode]:
+        """Create a subclass of this for the given tag"""
+        tag_uri, version = manifest.rsplit("-", maxsplit=1)
+
+        return type(
+            f"SerializationNode_{class_name_from_tag_uri(tag_uri)}__{version.replace('.', '_')}",
+            (SerializationNode,),
+            {
+                "_manifest": manifest,
+                "__module__": "roman_datamodels._stnode",
+            },
+        )
 
 
 tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]

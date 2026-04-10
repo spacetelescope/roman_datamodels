@@ -1,3 +1,80 @@
+0.30.0 (2026-02-13)
+===================
+
+Deprecations and Removals
+-------------------------
+
+- Remove ``err`` array assignment to output ``RampModel`` in
+  ``from_science_raw``. (`#620
+  <https://github.com/spacetelescope/roman_datamodels/issues/620>`_)
+
+
+0.29.1 (2026-01-21)
+===================
+
+Bug Fixes
+---------
+
+- Fix the integer type of the group DQ flags to be uint8 as indicated by the
+  RAD
+  schemas. (`#616
+  <https://github.com/spacetelescope/roman_datamodels/issues/616>`_)
+
+
+New Features
+------------
+
+- Support patternProperties for create_minimal/fake_data/from_model. (`#591
+  <https://github.com/spacetelescope/roman_datamodels/issues/591>`_)
+- Add a new group DQ flag ("WFI18_TRANSIENT", value 2**7) for pixels affected
+  by the WFI18 transient anomaly. (`#615
+  <https://github.com/spacetelescope/roman_datamodels/issues/615>`_)
+
+
+Misc
+----
+
+- Update numpy and asdf-astropy dependency versions. (`#619
+  <https://github.com/spacetelescope/roman_datamodels/issues/619>`_)
+
+
+0.29.0 (2025-12-18)
+===================
+
+New Features
+------------
+
+- Improve error messages when attempting to open non-roman files with rdm.open.
+  (`#600 <https://github.com/spacetelescope/roman_datamodels/issues/600>`_)
+- Added Integral Non-Linearity reference datamodel. (`#610
+  <https://github.com/spacetelescope/roman_datamodels/issues/610>`_)
+- Added a datamodel for the Detector Status reference file. (`#611
+  <https://github.com/spacetelescope/roman_datamodels/issues/611>`_)
+- Added a datamodel for Dark Decay Signal reference files. (`#612
+  <https://github.com/spacetelescope/roman_datamodels/issues/612>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- Remove deprecated maker_utils. (`#595
+  <https://github.com/spacetelescope/roman_datamodels/issues/595>`_)
+- Remove support for opening files from private package ``roman_gdps``. (`#600
+  <https://github.com/spacetelescope/roman_datamodels/issues/600>`_)
+- Deprecate the use of ``stnode``'s public API in favor of making it private to
+  RDM.
+  This limits the exposure of all the legacy support code that ``stnode`` has,
+  which
+  can cause unintended side effects if used directly. Since the only tagged
+  objects
+  in RDM are now the base nodes for the datamodels, there is no reason to
+  expose them
+  publicly anymore to users as they can just call any of the public API for
+  those nodes
+  on the datamodels directly. (`#614
+  <https://github.com/spacetelescope/roman_datamodels/issues/614>`_)
+
+
 0.28.0 (2025-10-16)
 ===================
 

@@ -1,7 +1,7 @@
 import pytest
 from astropy.time import Time
 
-from roman_datamodels import stnode
+from roman_datamodels import _stnode as stnode
 
 NOW_MJD = int(Time.now().to_value("mjd"))
 TEST_TIME = Time("2000-01-01T00:00:00.0", format="isot", scale="utc")

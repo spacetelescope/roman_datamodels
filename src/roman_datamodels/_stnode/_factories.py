@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 from astropy.time import Time
 
 from . import _mixins
-from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, name_from_tag_uri
+from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, class_name_from_tag_uri
 
 if TYPE_CHECKING:
     from ._tagged import tagged_type
@@ -27,27 +27,6 @@ _SCALAR_TYPE_BY_PATTERN = {
 _NODE_TYPE_BY_PATTERN = {
     "asdf://stsci.edu/datamodels/roman/tags/cal_logs-*": TaggedListNode,
 }
-
-
-def class_name_from_tag_uri(tag_uri: str) -> str:
-    """
-    Construct the class name for the STNode class from the tag_uri
-
-    Parameters
-    ----------
-    tag_uri : str
-        The tag_uri found in the RAD manifest
-
-    Returns
-    -------
-    string name for the class
-    """
-    tag_name = name_from_tag_uri(tag_uri)
-    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
-    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
-        class_name += "Ref"
-
-    return class_name
 
 
 def docstring_from_tag(tag_def: dict[str, Any]) -> str:
@@ -114,7 +93,7 @@ def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) 
             "_pattern": pattern,
             "_latest_manifest": latest_manifest,
             "_default_tag": tag_def["tag_uri"],
-            "__module__": "roman_datamodels.stnode",
+            "__module__": "roman_datamodels._stnode",
             "__doc__": docstring_from_tag(tag_def),
         },
     )
@@ -159,7 +138,7 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
             "_pattern": pattern,
             "_latest_manifest": latest_manifest,
             "_default_tag": tag_def["tag_uri"],
-            "__module__": "roman_datamodels.stnode",
+            "__module__": "roman_datamodels._stnode",
             "__doc__": docstring_from_tag(tag_def),
             "__slots__": (),
         },
