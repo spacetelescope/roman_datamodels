@@ -47,7 +47,7 @@ jobs:
   latest_crds_contexts:
     uses: spacetelescope/crds/.github/workflows/contexts.yml@main
     with:
-      observatory: jwst
+      observatory: roman
   test_downstream:
     needs: [ environment, latest_crds_contexts ]
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e97344095b099e1d729fe97429078c9975921d8a  # v2.6.2
