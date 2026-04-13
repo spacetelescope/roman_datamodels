@@ -28,7 +28,7 @@ from roman_datamodels._stnode import (
 from roman_datamodels._stnode._tagged import _NO_VALUE, SerializationNode
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
-from .conftest import MANIFESTS
+from .conftest import MANIFESTS, datamodel_types
 
 # Nodes for metadata schema that do not contain any archive_catalog keywords
 NODES_LACKING_ARCHIVE_CATALOG = [
@@ -71,7 +71,6 @@ def test_datamodel_exists(name):
     assert hasattr(datamodels, name)
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_node_type_matches_model(model):
     """
     Test that the _node_type listed for each model is what is listed in the schema
@@ -84,13 +83,11 @@ def test_node_type_matches_model(model):
     assert model.__name__ == name
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_model_schemas(model):
     instance = model.create_fake_data()
     asdf.schema.load_schema(instance.schema_uri)
 
 
-@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
 @pytest.mark.parametrize("method", ["info", "search", "schema_info"])
 def test_model_asdf_operations(node, model, method):
     """
@@ -405,17 +402,15 @@ def test_model_validate_without_save():
 
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
-@pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
-@pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
-def test_model_only_init_with_correct_node(node_class, correct, model):
+@pytest.mark.parametrize("node_class", [mdl._node_type for mdl in datamodel_types(datamodels.DataModel)])
+def test_model_only_init_with_correct_node(node_class, node, model):
     """
-    Datamodels should only be initializable with the correct node in the model_registry.
     This checks that it can be initialized with the correct node, and that it cannot be
     with any other node.
     """
-    node = node_class.create_fake_data()
-    with nullcontext() if node_class is correct else pytest.raises(ValidationError):
-        model(node).validate()
+    node_instance = node_class.create_fake_data()
+    with nullcontext() if node_class is node else pytest.raises(ValidationError):
+        model(node_instance).validate()
 
 
 @pytest.mark.parametrize(
@@ -532,8 +527,7 @@ def test_science_raw_from_tvac_raw(mk_tvac):
         assert raw.extras.tvac.meta.statistics == tvac.meta.statistics
 
 
-@pytest.mark.parametrize("model_class", datamodels.MODEL_REGISTRY.values())
-def test_datamodel_construct_like_from_like(model_class):
+def test_datamodel_construct_like_from_like(model):
     """
     This is a regression test for the issue reported issue #51.
 
@@ -546,14 +540,14 @@ def test_datamodel_construct_like_from_like(model_class):
     """
 
     # Create a model
-    model = model_class.create_fake_data()
+    model_instance = model.create_fake_data()
 
     # Modify _iscopy as it will be reset to False by initializer if called incorrectly
-    model._iscopy = "foo"
+    model_instance._iscopy = "foo"
 
     # Pass model instance to model constructor
-    new_model = model_class(model)
-    assert new_model is model
+    new_model = model(model_instance)
+    assert new_model is model_instance
     assert new_model._iscopy == "foo"  # Verify that the constructor didn't override stuff
 
 
@@ -781,14 +775,12 @@ def test_deepcopy_after_use():
     deepcopy(m.meta)
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_create_minimal(model):
     """Test that create_minimal produces a model instance"""
     m = model.create_minimal()
     assert isinstance(m, model)
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_create_fake_data(model):
     """Test that create_fake_data produces a valid model instance"""
     m = model.create_fake_data()
@@ -812,7 +804,6 @@ def test_create_tag(tag, node_class):
         assert node._read_tag == tag
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_no_hidden(model):
     """Test that no hidden attributes are allowed"""
     m = model.create_minimal()
@@ -820,7 +811,6 @@ def test_no_hidden(model):
         m._foo = "bar"  # Add a hidden attribute
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_delattr(model):
     """Test that delattr works as expected"""
     m = model.create_minimal()
@@ -832,7 +822,6 @@ def test_delattr(model):
     assert not hasattr(m, "foo")
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_slotted(model):
     """Test that the model is slotted as expected"""
     m = model.create_minimal()
@@ -842,7 +831,6 @@ def test_slotted(model):
         m.__dict__  # noqa: B018
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_create_minimal_copies(model, tmp_path):
     """Test that create_minimal does not retain references to input"""
     fn = tmp_path / "test.asdf"
