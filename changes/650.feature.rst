@@ -1,0 +1,2 @@
+Refactor ``stnode`` to not use pseudo-global module variables in order to track
+subclasses of nodes in order to build registries for the asdf converters.
