@@ -56,15 +56,14 @@ def test_copy(node_class):
         assert_node_is_copy(node, node_copy, deepcopy=True)
 
 
-@pytest.mark.parametrize("model_class", datamodels.MODEL_REGISTRY.values())
-def test_deepcopy_model(model_class):
-    model = model_class.create_fake_data(shape=(8, 8, 8))
-    model_copy = model.copy()
+def test_deepcopy_model(model):
+    model_instance = model.create_fake_data(shape=(8, 8, 8))
+    model_copy = model_instance.copy()
 
     # There is no assert equal for models, but the data inside is what we care about.
     # this is stored under the _instance attribute. We can assert those instances are
     # deep copies of each other.
-    assert_node_is_copy(model._instance, model_copy._instance, deepcopy=True)
+    assert_node_is_copy(model_instance._instance, model_copy._instance, deepcopy=True)
 
 
 def test_wfi_mode():

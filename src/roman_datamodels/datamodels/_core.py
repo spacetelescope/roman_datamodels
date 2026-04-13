@@ -31,9 +31,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from typing import Any, Self
 
-__all__ = ["MODEL_REGISTRY", "DataModel"]
-
-MODEL_REGISTRY: dict[str, type[DataModel]] = {}
+__all__ = ["DataModel"]
 
 
 def _set_default_asdf(func):
@@ -61,25 +59,6 @@ class DataModel(abc.ABC):
 
     _node_type: type[TaggedObjectNode]
 
-    def __init_subclass__(cls, **kwargs):
-        """Register each subclass in the MODEL_REGISTRY"""
-        super().__init_subclass__(**kwargs)
-
-        # Allow for sub-registry classes to be defined
-        if cls.__name__.startswith("_"):
-            return
-
-        # Check the node_type is a tagged object node
-        if not issubclass(cls._node_type, TaggedObjectNode):
-            raise ValueError("Subclass must be a TaggedObjectNode subclass")
-
-        # Check for duplicates
-        if cls._node_type in MODEL_REGISTRY:
-            raise ValueError(f"Duplicate model type {cls._node_type}")
-
-        # Add to registry
-        MODEL_REGISTRY[cls._node_type] = cls
-
     def __new__(cls, init=None, **kwargs):
         """
         Handle the case where one passes in an already instantiated version
@@ -90,6 +69,22 @@ class DataModel(abc.ABC):
             return init
 
         return super().__new__(cls)
+
+    @classmethod
+    @functools.cache
+    def datamodel_type(cls, node_type: type[TaggedObjectNode]) -> type[DataModel] | None:
+        """Find the datamodel type based on the nde type"""
+        subclass: type[DataModel]
+
+        for subclass in cls.__subclasses__():
+            if hasattr(subclass, "_node_type"):
+                if subclass._node_type is node_type:
+                    return subclass
+            else:
+                if mdl_cls := subclass.datamodel_type(node_type):
+                    return mdl_cls
+
+        return None
 
     @classmethod
     def create_minimal(cls, defaults: Mapping[str, Any] | None = None, *, tag: str | None = None) -> Self:
@@ -186,10 +181,9 @@ class DataModel(abc.ABC):
         self._files_to_close = None
 
         if isinstance(init, TaggedObjectNode):
-            if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
-                expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
+            if not isinstance(self, DataModel.datamodel_type(type(init))):
                 raise ValidationError(
-                    f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
+                    f"TaggedObjectNode: {type(init).__name__} is not of the type expected. Expected {self._node_type}"
                 )
 
             self._instance = init
@@ -226,7 +220,7 @@ class DataModel(abc.ABC):
         if "roman" not in asdf_file.tree:
             raise ValueError('ASDF file does not have expected "roman" attribute')
 
-        return MODEL_REGISTRY[asdf_file.tree["roman"].__class__] == self.__class__
+        return DataModel.datamodel_type(type(asdf_file.tree["roman"])) is type(self)
 
     @property
     def _latest_manifest_uri(self):
