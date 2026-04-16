@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import MutableMapping, MutableSequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
@@ -61,8 +61,8 @@ class _NodeMixin:
 
     _read_tag: str | None
 
-    def __init__(self, *args, **kwargs):
-        self._read_tag = None
+    def __init__(self, *args, read_tag: str | None = None, **kwargs):
+        self._read_tag = read_tag
 
 
 class DNode(MutableMapping, _NodeMixin):
@@ -72,8 +72,10 @@ class DNode(MutableMapping, _NodeMixin):
 
     __slots__ = ("_data", "_read_tag")
 
-    def __init__(self, node=None):
-        super().__init__(node)
+    _data: dict[str, Any]
+
+    def __init__(self, node=None, *, read_tag: str | None = None):
+        super().__init__(node, read_tag=read_tag)
 
         # Handle if we are passed different data types
         if node is None:
@@ -221,9 +223,10 @@ class LNode(MutableSequence, _NodeMixin):
     """
 
     __slots__ = ("_read_tag", "data")
+    data: list[Any]
 
-    def __init__(self, node=None):
-        super().__init__(node=node)
+    def __init__(self, node=None, *, read_tag: str | None = None):
+        super().__init__(node=node, read_tag=read_tag)
 
         if node is None:
             self.data = []

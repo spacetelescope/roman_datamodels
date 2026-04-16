@@ -187,6 +187,10 @@ class _TaggedNodeMixin(NodeMixin):
     def tag(self):
         return self._tag
 
+    @tag.setter
+    def tag(self, value: str) -> None:
+        self._read_tag = value
+
     def get_schema(self):
         """Retrieve the schema associated with this tag"""
         return _get_schema_from_tag(self.tag)
