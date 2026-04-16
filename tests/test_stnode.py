@@ -33,6 +33,7 @@ def test_node_classes_available_via_stnode(node_class):
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_copy(node_class):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
     node = node_class.create_fake_data()
@@ -48,17 +49,21 @@ def test_copy(node_class):
         assert_node_is_copy(node, node_copy, deepcopy=True)
 
 
-@pytest.mark.parametrize("model_class", datamodels.MODEL_REGISTRY.values())
-def test_deepcopy_model(model_class):
-    model = model_class.create_fake_data(shape=(8, 8, 8))
-    model_copy = model.copy()
+def test_deepcopy_model(model, fake_data):
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (model is datamodels.RampFitOutputModel or model is datamodels.GuidewindowModel)
+        else nullcontext()
+    ):
+        model_copy = fake_data.copy()
 
     # There is no assert equal for models, but the data inside is what we care about.
     # this is stored under the _instance attribute. We can assert those instances are
     # deep copies of each other.
-    assert_node_is_copy(model._instance, model_copy._instance, deepcopy=True)
+    assert_node_is_copy(fake_data._instance, model_copy._instance, deepcopy=True)
 
 
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_wfi_mode():
     """
     The WfiMode class includes special properties that map optical_element
@@ -87,6 +92,7 @@ def test_wfi_mode():
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_serialization(node_class, tmp_path):
     file_path = tmp_path / "test.asdf"
 
@@ -100,6 +106,7 @@ def test_serialization(node_class, tmp_path):
 
 
 @pytest.mark.parametrize("node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedObjectNode)])
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_no_hidden(node_class):
     node = node_class.create_fake_data()
     with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
@@ -107,6 +114,7 @@ def test_no_hidden(node_class):
 
 
 @pytest.mark.parametrize("node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedListNode)])
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_list_node_no_new_attributes(node_class):
     """Test that no new attributes can be added to a list node."""
     node = node_class.create_fake_data()
@@ -120,6 +128,7 @@ def test_list_node_no_new_attributes(node_class):
 @pytest.mark.parametrize(
     "node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedObjectNode | stnode.TaggedListNode)]
 )
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_slotted(node_class):
     """
     Test that slotted nodes do not allow new attributes to be added.
@@ -130,6 +139,7 @@ def test_slotted(node_class):
         node.__dict__  # noqa: B018
 
 
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_info(capsys):
     node = stnode.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
     tree = dict(wfimode=node)
@@ -140,6 +150,7 @@ def test_info(capsys):
     assert "GRISM" in captured.out
 
 
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_schema_info():
     node = stnode.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
     tree = dict(wfimode=node)

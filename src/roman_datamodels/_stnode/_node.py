@@ -6,6 +6,7 @@ Base node classes for all STNode classes.
 from __future__ import annotations
 
 import datetime
+import warnings
 from collections.abc import MutableMapping, MutableSequence
 from typing import TYPE_CHECKING, Any
 
@@ -13,6 +14,8 @@ import numpy as np
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
 from astropy.time import Time
+
+from ._schema import get_latest_schema
 
 __all__ = ["DNode", "LNode"]
 
@@ -45,6 +48,9 @@ def _unwrap(value):
     return value
 
 
+_LATEST_MANIFEST = get_latest_schema("asdf://stsci.edu/datamodels/roman/manifests/datamodels")[0]
+
+
 class _NodeMixin:
     """
     Mixin class to provide the common API for all Node objects
@@ -63,6 +69,17 @@ class _NodeMixin:
 
     def __init__(self, *args, read_tag: str | None = None, **kwargs):
         self._read_tag = read_tag
+
+        if (
+            (not any(value in type(self).__name__ for value in ("Fps", "Tvac")))
+            and hasattr(self, "_latest_manifest")
+            and self._latest_manifest != _LATEST_MANIFEST
+        ):
+            warnings.warn(
+                "This node is no longer being maintained or used, support for it will drop in the future",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
 
 class DNode(MutableMapping, _NodeMixin):

@@ -61,6 +61,7 @@ def test_special_fake_str_mixin(type_, expected, method, defaults):
         assert obj == expected
 
 
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_ref_file_mixin():
     defaults = {"flat": "foo.asdf"}
     obj = stnode.RefFile.create_minimal(defaults)
@@ -69,6 +70,7 @@ def test_ref_file_mixin():
 
 
 @pytest.mark.parametrize("type_", (stnode.L2CalStep, stnode.L3CalStep))
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_cal_step_mixin(type_):
     defaults = {"outlier_detection": "COMPLETE"}
     obj = type_.create_minimal(defaults)

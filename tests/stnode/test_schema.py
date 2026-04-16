@@ -123,6 +123,7 @@ def test_default_is_copied(subschema, data):
         ("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0", SkyBackground),
     ),
 )
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_tag(tag, expected_type):
     """Test that a schema with a tag produces the object with that tag"""
     schema = {
@@ -146,6 +147,7 @@ def test_tag(tag, expected_type):
         ("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0", SkyBackground),
     ),
 )
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_fake_tag(tag, expected_type):
     """Test that a schema with a tag produces the object with that tag"""
     schema = {
@@ -185,19 +187,25 @@ def _make_old_observation():
     return obj
 
 
-@pytest.mark.parametrize(
-    "tag, value",
-    (
-        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
-        ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", Observation.create_fake_data()),
-        ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", {"program": 1}),
-        ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", _make_old_observation()),
-    ),
-)
-def test_node_builder_tagged(tag, value):
-    result = NodeBuilder().build({"tag": tag}, value)
+@pytest.fixture(params=[0, 1, 2])
+def node_builder_value(request):
+    match request.param:
+        case 0:
+            return Observation.create_fake_data()
+        case 1:
+            return {"program": 1}
+        case 2:
+            return _make_old_observation()
+        case _:
+            raise ValueError("Invalid param")
+
+
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
+def test_node_builder_tagged(node_builder_value):
+    tag = "asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0"
+    result = NodeBuilder().build({"tag": tag}, node_builder_value)
     assert isinstance(result, Observation)
-    assert result is not value
+    assert result is not node_builder_value
     assert result.tag == tag
 
 
@@ -210,6 +218,7 @@ def test_node_builder_tagged(tag, value):
         ("asdf://stsci.edu/datamodels/roman/tags/cal_logs-1.1.0", {"a": 1}),
     ),
 )
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_node_builder_tag_mismatch(tag, value):
     result = NodeBuilder().build({"tag": tag}, value)
     # the tag is not picked up
