@@ -9,7 +9,7 @@ from __future__ import annotations
 import copy
 from typing import TYPE_CHECKING, Generic, TypeVar
 
-from ._node import DNode, LNode
+from ._node import DNode, LNode, _NodeMixin
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     OBJECT_NODE_CLASSES_BY_PATTERN,
@@ -259,6 +259,9 @@ class TaggedScalarNode(_TaggedNodeMixin):
     def __asdf_traverse__(self):
         return self
 
+    def __init__(self, *args, **kwargs):
+        _NodeMixin.__init__(self, *args, **kwargs)
+
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         builder = builder or Builder()
@@ -274,8 +277,10 @@ class TaggedScalarNode(_TaggedNodeMixin):
 
     @property
     def _tag(self):
-        # _tag is required by asdf to allow __asdf_traverse__
-        return getattr(self, "_read_tag", self._default_tag)
+        if hasattr(self, "_read_tag"):
+            return super()._tag
+
+        return self._default_tag
 
     def copy(self):
         return copy.copy(self)

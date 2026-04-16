@@ -36,7 +36,9 @@ def test_file_date(type_, method, defaults, expected):
 @pytest.mark.parametrize("method", ("create_minimal", "create_fake_data"))
 @pytest.mark.parametrize("defaults", (None, "test"))
 def test_default_str_mixin(type_, expected, method, defaults):
-    obj = getattr(type_, method)(defaults)
+    with pytest.warns(DeprecationWarning, match=r"This node is no longer.*"):
+        obj = getattr(type_, method)(defaults)
+
     assert isinstance(obj, type_)
     if defaults:
         assert obj == defaults
@@ -53,7 +55,9 @@ def test_default_str_mixin(type_, expected, method, defaults):
 )
 @pytest.mark.parametrize("defaults", (None, "test"))
 def test_special_fake_str_mixin(type_, expected, method, defaults):
-    obj = getattr(type_, method)(defaults)
+    with pytest.warns(DeprecationWarning, match=r"This node is no longer.*"):
+        obj = getattr(type_, method)(defaults)
+
     assert isinstance(obj, type_)
     if defaults:
         assert obj == defaults

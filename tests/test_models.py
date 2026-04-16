@@ -427,8 +427,13 @@ def test_model_only_init_with_correct_node(node_class, correct, model):
         else nullcontext()
     ):
         node = node_class.create_fake_data()
-    with nullcontext() if node_class is correct else pytest.raises(ValidationError):
-        model(node).validate()
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (node_class is Guidewindow and correct is Guidewindow)
+        else nullcontext()
+    ):
+        with nullcontext() if node_class is correct else pytest.raises(ValidationError):
+            model(node).validate()
 
 
 @pytest.mark.parametrize(
@@ -561,7 +566,13 @@ def test_datamodel_construct_like_from_like(fake_data, model):
     fake_data._iscopy = "foo"
 
     # Pass model instance to model constructor
-    new_model = model(fake_data)
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (model is datamodels.GuidewindowModel)
+        else nullcontext()
+    ):
+        new_model = model(fake_data)
+
     assert new_model is fake_data
     assert new_model._iscopy == "foo"  # Verify that the constructor didn't override stuff
 
@@ -840,7 +851,12 @@ def test_slotted(minimal):
 def test_create_minimal_copies(fake_data, model, tmp_path):
     """Test that create_minimal does not retain references to input"""
     fn = tmp_path / "test.asdf"
-    fake_data.save(fn)
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (model is datamodels.GuidewindowModel)
+        else nullcontext()
+    ):
+        fake_data.save(fn)
     with (
         pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
         if (model is datamodels.RampFitOutputModel or model is datamodels.GuidewindowModel)
@@ -934,7 +950,9 @@ def test_create_from_model_old_tags():
     assert old_model._instance._read_tag == old_model_tag
     assert old_model.meta.observation._read_tag == old_observation_tag
 
-    converted = datamodels.ImageModel.create_from_model(old_model)
+    with pytest.warns(DeprecationWarning, match=r"This node is no longer.*"):
+        converted = datamodels.ImageModel.create_from_model(old_model)
+
     assert converted.tag == new_model_tag
     # New models should not have a tagged observation node
     assert not isinstance(converted.meta.observation, Observation)
