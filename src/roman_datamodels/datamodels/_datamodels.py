@@ -388,7 +388,7 @@ class RampModel(_RomanDataModel):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base ramp node with dummy values (for validation)
-        ramp_model = cls.create_fake_data()
+        ramp_model = cls.create_minimal()
 
         shape = model.data.shape
         ramp_model.pixeldq = np.zeros(shape[1:], dtype=np.uint32)
