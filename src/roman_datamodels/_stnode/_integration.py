@@ -8,8 +8,19 @@ def get_extensions():
     -------
     List[`asdf.extension.Extension`]
     """
-    # Importing from ._stnode itself so that all the dynamically created
-    #   objects are in fact created
-    from ._stnode import NODE_EXTENSIONS
+    from asdf.extension import ManifestExtension
 
-    return list(NODE_EXTENSIONS.values())
+    from roman_datamodels import _stnode  # noqa: F401
+
+    from ._converters import SerializationNodeConverter, TaggedNodeConverter
+    from ._tagged import SerializationNode
+
+    # assert False, f"{list(node._manifest_uri for node in SerializationNode.__subclasses__())}"
+
+    return [
+        ManifestExtension.from_uri(
+            manifest_uri=node_cls.manifest_uri,
+            converters=(SerializationNodeConverter(node_cls), TaggedNodeConverter()),
+        )
+        for node_cls in SerializationNode.__subclasses__()
+    ]

@@ -14,6 +14,8 @@ from roman_datamodels._stnode import WfiImage
 from roman_datamodels.datamodels._utils import _patch_meta_filename
 from roman_datamodels.testing import assert_node_equal
 
+from .conftest import datamodel_types
+
 
 def test_asdf_file_input():
     tree = WfiImage.create_fake_data()
@@ -194,30 +196,28 @@ def test_no_memmap(tmp_path, kwargs):
         assert (model.data == data).all()
 
 
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-def test_node_round_trip(tmp_path, node_class):
+def test_node_round_trip(tmp_path, node):
     file_path = tmp_path / "test.asdf"
 
     # Create/return a node and write it to disk, then check if the node round trips
-    node = node_class.create_fake_data()
-    asdf.AsdfFile({"roman": node}).write_to(file_path)
+    node_instance = node.create_fake_data()
+    asdf.AsdfFile({"roman": node_instance}).write_to(file_path)
     with asdf.open(file_path) as af:
-        assert_node_equal(af.tree["roman"], node)
+        assert_node_equal(af.tree["roman"], node_instance)
 
 
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-def test_opening_model(tmp_path, node_class):
+def test_opening_model(tmp_path, node):
     file_path = tmp_path / "test.asdf"
 
     # Create a node and write it to disk
-    node = node_class.create_fake_data()
-    if hasattr(node, "meta") and hasattr(node.meta, "filename"):
-        node.meta.filename = type(node.meta.filename)(file_path.name)
-    asdf.AsdfFile({"roman": node}).write_to(file_path)
+    node_instance = node.create_fake_data()
+    if hasattr(node_instance, "meta") and hasattr(node_instance.meta, "filename"):
+        node_instance.meta.filename = type(node_instance.meta.filename)(file_path.name)
+    asdf.AsdfFile({"roman": node_instance}).write_to(file_path)
 
     with datamodels.open(file_path) as model:
         # Check that the model is the correct type
-        assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
+        assert isinstance(model, datamodels.DataModel.datamodel_type(node))
 
 
 def test_read_pattern_properties():
@@ -262,15 +262,19 @@ def test_open_asn(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "model",
-    [mdl for mdl in datamodels.MODEL_REGISTRY.keys() if ("Ref" not in mdl.__name__ and "Associations" not in mdl.__name__)],
+    "node",
+    [
+        model._node_type
+        for model in datamodel_types(datamodels.DataModel)
+        if ("Ref" not in model.__name__ and "Associations" not in model.__name__)
+    ],
 )
-def test_filename_matches_meta(tmp_path, model):
+def test_filename_matches_meta(tmp_path, node):
     save_path = tmp_path / "test_filename.asdf"
     open_path = tmp_path / "test_filename_read.asdf"
 
     # Create a node and write it to disk
-    gen_model = model.create_fake_data()
+    gen_model = node.create_fake_data()
     asdf.AsdfFile({"roman": gen_model}).write_to(save_path)
 
     # Save the filename type

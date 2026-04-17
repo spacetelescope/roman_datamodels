@@ -1,17 +1,19 @@
 import asdf
 import pytest
 
-from roman_datamodels._stnode._registry import MANIFEST_TAG_REGISTRY, NODE_CLASSES_BY_TAG, TAG_MANIFEST_REGISTRY
+from roman_datamodels._stnode._tagged import SerializationNode
+
+_TAG_URIS = tuple(tag_uri for node_cls in SerializationNode.__subclasses__() for tag_uri in node_cls.tag_uris)
 
 
-@pytest.fixture(scope="session", params=NODE_CLASSES_BY_TAG)
+@pytest.fixture(scope="session", params=_TAG_URIS)
 def node_tag(request):
     return request.param
 
 
 @pytest.fixture(scope="session")
 def node_cls(node_tag):
-    return NODE_CLASSES_BY_TAG[node_tag]
+    return SerializationNode.tag_type(node_tag)
 
 
 @pytest.fixture(scope="session")
@@ -19,22 +21,20 @@ def node_instance(node_tag, node_cls):
     return node_cls.create_fake_data(tag=node_tag)
 
 
-@pytest.mark.parametrize("manifest_uri", MANIFEST_TAG_REGISTRY)
-def test_manifest_tag_registry_disjoint(manifest_uri):
+@pytest.mark.parametrize("node_type", SerializationNode.__subclasses__())
+def test_manifest_tag_registry_disjoint(node_type: type[SerializationNode]):
     """Test that the tags registered to each manifest are unique"""
-    for uri, tags in MANIFEST_TAG_REGISTRY.items():
+    manifest_uri = node_type.manifest_uri
+    for node_cls in SerializationNode.__subclasses__():
+        uri = node_cls.manifest_uri
+        tags = node_cls.tag_uris
         if uri != manifest_uri:
-            assert set(tags) & set(MANIFEST_TAG_REGISTRY[manifest_uri]) == set()
+            assert set(tags) & set(node_type.tag_uris) == set()
         else:
-            assert len(set(MANIFEST_TAG_REGISTRY[manifest_uri])) == len(MANIFEST_TAG_REGISTRY[manifest_uri])
+            assert len(set(node_type.tag_uris)) == len(node_type.tag_uris), f"Duplicate tags in manifest {manifest_uri}"
 
         for tag in tags:
-            assert tag in NODE_CLASSES_BY_TAG
-
-
-def test_all_tags_in_manifest_tag_registry():
-    assert sum(len(tags) for tags in MANIFEST_TAG_REGISTRY.values()) == len(NODE_CLASSES_BY_TAG)
-    assert len(TAG_MANIFEST_REGISTRY) == len(NODE_CLASSES_BY_TAG)
+            assert tag in _TAG_URIS
 
 
 def test_history(tmp_path, node_tag, node_instance):
@@ -59,9 +59,9 @@ def test_history(tmp_path, node_tag, node_instance):
 
     datamodel_uris = sorted([extension_uri.replace("extensions", "manifests") for extension_uri in extension_uris])
     # node_tag should be the list of datamodel_uris
-    assert TAG_MANIFEST_REGISTRY[node_tag] in datamodel_uris
+    assert SerializationNode.serialization_type(node_instance.tag).manifest_uri in datamodel_uris
 
     # If a tag is in a given manifest then all of its referenced tags are also in that manifest
     #    so the earliest manifest and extension can be is the latest one for the node_tag.
     #    all other manifests must be the same or newer.
-    assert TAG_MANIFEST_REGISTRY[node_tag] == datamodel_uris[0]
+    assert SerializationNode.serialization_type(node_instance.tag).manifest_uri == datamodel_uris[0]
