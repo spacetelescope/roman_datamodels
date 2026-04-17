@@ -465,6 +465,16 @@ def test_ramp_from_science_raw(mk_raw):
         assert not hasattr(ramp, "resultantdq")
 
 
+def test_science_raw_missing_required():
+    """Test that from_science_raw does not fill in required but missing values"""
+    raw = datamodels.ScienceRawModel.create_fake_data()
+    del raw.meta.exposure._data["hga_move"]
+    ramp = datamodels.RampModel.from_science_raw(raw)
+    assert "hga_move" not in raw.meta.exposure
+    with pytest.raises(ValidationError, match="hga_move"):
+        ramp.validate()
+
+
 def test_science_raw_from_tvac_raw_invalid_input():
     """Test for invalid input"""
     model = datamodels.RampModel.create_fake_data()

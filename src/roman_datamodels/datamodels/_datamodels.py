@@ -388,7 +388,12 @@ class RampModel(_RomanDataModel):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base ramp node with dummy values (for validation)
-        ramp_model = cls.create_fake_data()
+        ramp_model = cls.create_minimal()
+
+        # make cal_step
+        ramp_model.meta.cal_step = {}
+        for step_name in ramp_model.schema_info("required")["roman"]["meta"]["cal_step"]["required"].info:
+            ramp_model.meta.cal_step[step_name] = "INCOMPLETE"
 
         shape = model.data.shape
         ramp_model.pixeldq = np.zeros(shape[1:], dtype=np.uint32)
