@@ -1,3 +1,44 @@
+0.31.0 (2026-04-17)
+===================
+
+Bug Fixes
+---------
+
+- Bump the version of ``semantic-version`` required to stay in line with
+  ``RAD``. (`#638
+  <https://github.com/spacetelescope/roman_datamodels/issues/638>`_)
+- Bugfix for recording the correct extension used for a node in the history
+  section
+  of an ASDF file when writing that node to the file. This should fix the issue
+  for any version of any node. (`#640
+  <https://github.com/spacetelescope/roman_datamodels/issues/640>`_)
+- Don't attempt to update meta.filename for URLs. (`#648
+  <https://github.com/spacetelescope/roman_datamodels/issues/648>`_)
+- Update ``RampModel.from_science_raw`` to not create fake data. (`#653
+  <https://github.com/spacetelescope/roman_datamodels/issues/653>`_)
+
+
+New Features
+------------
+
+- Added support for the Exposure Time Calculator reference datamodel. (`#644
+  <https://github.com/spacetelescope/roman_datamodels/issues/644>`_)
+
+
+Misc
+----
+
+- updates test data used in the tests. (`#643
+  <https://github.com/spacetelescope/roman_datamodels/issues/643>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- Remove deprecated ``roman_datamodels.stnode``. (`#646
+  <https://github.com/spacetelescope/roman_datamodels/issues/646>`_)
+
+
 0.30.0 (2026-02-13)
 ===================
 

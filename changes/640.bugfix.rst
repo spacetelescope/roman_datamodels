@@ -1,3 +1,0 @@
-Bugfix for recording the correct extension used for a node in the history section
-of an ASDF file when writing that node to the file. This should fix the issue
-for any version of any node.

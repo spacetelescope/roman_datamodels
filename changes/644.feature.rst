@@ -1,1 +1,0 @@
-Added support for the Exposure Time Calculator reference datamodel.
