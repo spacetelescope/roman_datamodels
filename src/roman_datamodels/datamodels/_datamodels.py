@@ -390,6 +390,11 @@ class RampModel(_RomanDataModel):
         # Create base ramp node with dummy values (for validation)
         ramp_model = cls.create_minimal()
 
+        # make cal_step
+        ramp_model.meta.cal_step = {}
+        for step_name in ramp_model.schema_info("required")["roman"]["meta"]["cal_step"]["required"].info:
+            ramp_model.meta.cal_step[step_name] = "INCOMPLETE"
+
         shape = model.data.shape
         ramp_model.pixeldq = np.zeros(shape[1:], dtype=np.uint32)
         ramp_model.groupdq = np.zeros(shape, dtype=np.uint8)
