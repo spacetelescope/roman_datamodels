@@ -1,0 +1,2 @@
+Add deprecation warnings for nodes that correspond to tag linages which are no
+longer part of the latest RAD datamodels manifest.
