@@ -25,7 +25,7 @@ from asdf.tags.core.ndarray import NDArrayType
 from astropy.time import Time
 
 from roman_datamodels._stnode import DNode, TaggedObjectNode
-from roman_datamodels._stnode._registry import SCHEMA_URIS_BY_TAG
+from roman_datamodels._stnode._manifest import SCHEMA_URIS_BY_TAG
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

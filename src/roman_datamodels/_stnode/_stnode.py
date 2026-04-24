@@ -6,32 +6,13 @@ Dynamic creation of STNode classes from the RAD manifest.
     used by the user.
 """
 
-import importlib.resources
-from pathlib import Path
-
-import yaml
-from rad import resources
-
 from ._factories import stnode_factory
+from ._manifest import MANIFESTS
 from ._registry import (
-    MANIFEST_TAG_REGISTRY,
     NODE_CLASSES_BY_TAG,
-    SCHEMA_URIS_BY_TAG,
-    TAG_MANIFEST_REGISTRY,
 )
 
 __all__ = ["NODE_CLASSES"]
-
-
-# Load the manifest directly from the rad resources and not from ASDF.
-#   This is because the ASDF extensions have to be created before they can be registered
-#   and this module creates the classes used by the ASDF extension.
-_MANIFEST_DIR = Path(str(importlib.resources.files(resources) / "manifests"))
-# TODO: We should make this use semantic versioning to sort to ensure we don't get something strange
-_DATAMODEL_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*datamodels-*.yaml")], reverse=True)
-DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL_MANIFEST_PATHS]
-# Notice that the static manifests are first so that we defer to them
-_MANIFESTS = DATAMODEL_MANIFESTS
 
 
 def _add_cls(cls):
@@ -52,12 +33,11 @@ def _factory(pattern, latest_manifest, tag_def):
 # Main dynamic class creation loop
 #   Reads each tag entry from the manifest and creates a class for it
 _generated = {}
-for manifest in _MANIFESTS:
+for manifest in MANIFESTS:
     manifest_uri = manifest["id"]
 
-    MANIFEST_TAG_REGISTRY[manifest_uri] = []
     for tag_def in manifest["tags"]:
-        SCHEMA_URIS_BY_TAG[(tag_uri := tag_def["tag_uri"])] = tag_def["schema_uri"]
+        tag_uri = tag_def["tag_uri"]
         base, _ = tag_uri.rsplit("-", maxsplit=1)
 
         # make pattern from tag
@@ -65,11 +45,6 @@ for manifest in _MANIFESTS:
         if pattern not in _generated:
             _generated[pattern] = _factory(pattern, manifest_uri, tag_def)
         NODE_CLASSES_BY_TAG[tag_uri] = _generated[pattern]
-
-        # make mapping of tags and manifests
-        if tag_uri not in TAG_MANIFEST_REGISTRY:
-            TAG_MANIFEST_REGISTRY[tag_uri] = manifest_uri
-            MANIFEST_TAG_REGISTRY[manifest_uri].append(tag_uri)
 
 
 # List of node classes made available by this library.

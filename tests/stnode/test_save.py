@@ -1,7 +1,8 @@
 import asdf
 import pytest
 
-from roman_datamodels._stnode._registry import MANIFEST_TAG_REGISTRY, NODE_CLASSES_BY_TAG, TAG_MANIFEST_REGISTRY
+from roman_datamodels._stnode._manifest import MANIFEST_TAG_REGISTRY, TAG_MANIFEST_REGISTRY
+from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
 
 
 @pytest.fixture(scope="session", params=NODE_CLASSES_BY_TAG)

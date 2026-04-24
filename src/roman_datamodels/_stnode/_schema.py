@@ -15,7 +15,8 @@ import asdf
 import asdf.schema
 from semantic_version import Version
 
-from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
+from ._manifest import SCHEMA_URIS_BY_TAG
+from ._registry import NODE_CLASSES_BY_TAG
 
 if TYPE_CHECKING:
     from typing import Any

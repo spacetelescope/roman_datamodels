@@ -9,10 +9,8 @@ from typing import TYPE_CHECKING
 from asdf.extension import Converter
 from astropy.time import Time
 
-from ._registry import (
-    NODE_CLASSES_BY_TAG,
-    TAG_MANIFEST_REGISTRY,
-)
+from ._manifest import TAG_MANIFEST_REGISTRY
+from ._registry import NODE_CLASSES_BY_TAG
 
 if TYPE_CHECKING:
     from ._tagged import SerializationNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode

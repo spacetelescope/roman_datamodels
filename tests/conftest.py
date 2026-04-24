@@ -1,8 +1,7 @@
 import asdf
 import pytest
 
-from roman_datamodels._stnode._registry import SCHEMA_URIS_BY_TAG
-from roman_datamodels._stnode._stnode import _MANIFESTS as MANIFESTS
+from roman_datamodels._stnode._manifest import MANIFESTS, SCHEMA_URIS_BY_TAG
 from roman_datamodels._stnode._stnode import NODE_CLASSES
 from roman_datamodels._stnode._tagged import TaggedObjectNode
 

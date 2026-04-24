@@ -1,7 +1,7 @@
 from asdf.extension import ManifestExtension
 
 from ._converters import SerializationNodeConverter, TaggedNodeConverter
-from ._registry import MANIFEST_TAG_REGISTRY
+from ._manifest import MANIFEST_TAG_REGISTRY
 from ._tagged import SerializationNode
 
 
