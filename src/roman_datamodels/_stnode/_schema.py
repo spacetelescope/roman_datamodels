@@ -70,18 +70,13 @@ def _get_schema_from_tag(tag):
     return asdf.schema.load_schema(schema_uri, resolve_references=True)
 
 
-@functools.cache
 def _get_node_class_for_tag(tag):
     # this local import is needed to avoid a circular import
     # once tags (old datamodels) that contain tags (TaggedScalarNode, TaggedListNode, etc) are
     # removed this can be moved out of this module to avoid the circular import
-    from ._stnode import NODE_CLASSES
+    from ._stnode import NODE_CLASSES_BY_TAG
 
-    for node_class in NODE_CLASSES:
-        if asdf.util.uri_match(node_class._pattern, tag):
-            return node_class
-
-    return None
+    return NODE_CLASSES_BY_TAG.get(tag)
 
 
 class _MissingKeywordType:

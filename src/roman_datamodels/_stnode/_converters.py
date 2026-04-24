@@ -10,7 +10,6 @@ from asdf.extension import Converter
 from astropy.time import Time
 
 from ._manifest import TAG_MANIFEST_REGISTRY
-from ._schema import _get_node_class_for_tag
 
 if TYPE_CHECKING:
     from ._tagged import SerializationNode
@@ -57,8 +56,11 @@ class SerializationNodeConverter(_RomanConverter):
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
 
+        # this local import is only to appease mypy, it works at the top of this file
+        from ._stnode import NODE_CLASSES_BY_TAG
+
         # TODO: Add method for setting read_tag with some checks
-        obj = _get_node_class_for_tag(tag)(node)
+        obj = NODE_CLASSES_BY_TAG[tag](node)
         obj._read_tag = tag
         return obj
 

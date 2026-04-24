@@ -2,7 +2,7 @@ import asdf
 import pytest
 
 from roman_datamodels._stnode._manifest import MANIFEST_TAG_REGISTRY, TAG_MANIFEST_REGISTRY
-from roman_datamodels._stnode._schema import _get_node_class_for_tag
+from roman_datamodels._stnode._stnode import NODE_CLASSES_BY_TAG
 
 
 @pytest.fixture(scope="session", params=TAG_MANIFEST_REGISTRY.keys())
@@ -12,7 +12,7 @@ def node_tag(request):
 
 @pytest.fixture(scope="session")
 def node_cls(node_tag):
-    return _get_node_class_for_tag(node_tag)
+    return NODE_CLASSES_BY_TAG[node_tag]
 
 
 @pytest.fixture(scope="session")
