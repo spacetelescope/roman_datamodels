@@ -1,11 +1,3 @@
-"""
-Dynamic creation of STNode classes from the RAD manifest.
-    This module will create all the STNode based classes used by roman_datamodels.
-    Unfortunately, this is a dynamic process which occurs at first import time because
-    roman_datamodels cannot predict what STNode objects will be in the version of RAD
-    used by the user.
-"""
-
 from __future__ import annotations
 
 import importlib.resources
