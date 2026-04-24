@@ -14,11 +14,8 @@ from rad import resources
 
 from ._factories import stnode_factory
 from ._registry import (
-    LIST_NODE_CLASSES_BY_PATTERN,
     MANIFEST_TAG_REGISTRY,
     NODE_CLASSES_BY_TAG,
-    OBJECT_NODE_CLASSES_BY_PATTERN,
-    SCALAR_NODE_CLASSES_BY_PATTERN,
     SCHEMA_URIS_BY_TAG,
     TAG_MANIFEST_REGISTRY,
 )
@@ -69,16 +66,11 @@ for manifest in _MANIFESTS:
             _generated[pattern] = _factory(pattern, manifest_uri, tag_def)
         NODE_CLASSES_BY_TAG[tag_uri] = _generated[pattern]
 
-        # Make serialization intermediate
+        # make mapping of tags and manifests
         if tag_uri not in TAG_MANIFEST_REGISTRY:
             TAG_MANIFEST_REGISTRY[tag_uri] = manifest_uri
             MANIFEST_TAG_REGISTRY[manifest_uri].append(tag_uri)
 
 
 # List of node classes made available by this library.
-#   This is part of the public API.
-NODE_CLASSES = (
-    list(OBJECT_NODE_CLASSES_BY_PATTERN.values())
-    + list(LIST_NODE_CLASSES_BY_PATTERN.values())
-    + list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
-)
+NODE_CLASSES = tuple(_generated.values())
