@@ -29,6 +29,14 @@ def test_manifest_tag_registry_disjoint(manifest_uri):
         else:
             assert len(set(MANIFEST_TAG_REGISTRY[manifest_uri])) == len(MANIFEST_TAG_REGISTRY[manifest_uri])
 
+        for tag in tags:
+            assert tag in NODE_CLASSES_BY_TAG
+
+
+def test_all_tags_in_manifest_tag_registry():
+    assert sum(len(tags) for tags in MANIFEST_TAG_REGISTRY.values()) == len(NODE_CLASSES_BY_TAG)
+    assert len(TAG_MANIFEST_REGISTRY) == len(NODE_CLASSES_BY_TAG)
+
 
 def test_history(tmp_path, node_tag, node_instance):
     filename = tmp_path / "history_test.asdf"
