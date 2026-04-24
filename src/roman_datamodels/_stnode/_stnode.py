@@ -22,7 +22,6 @@ from ._registry import (
     SCHEMA_URIS_BY_TAG,
     TAG_MANIFEST_REGISTRY,
 )
-from ._tagged import SerializationNode
 
 __all__ = ["NODE_CLASSES"]
 
@@ -57,7 +56,7 @@ def _factory(pattern, latest_manifest, tag_def):
 #   Reads each tag entry from the manifest and creates a class for it
 _generated = {}
 for manifest in _MANIFESTS:
-    _add_cls(SerializationNode._factory(manifest_uri := manifest["id"]))
+    manifest_uri = manifest["id"]
 
     MANIFEST_TAG_REGISTRY[manifest_uri] = []
     for tag_def in manifest["tags"]:

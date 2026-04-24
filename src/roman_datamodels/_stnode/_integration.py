@@ -2,6 +2,7 @@ from asdf.extension import ManifestExtension
 
 from ._converters import SerializationNodeConverter, TaggedNodeConverter
 from ._registry import MANIFEST_TAG_REGISTRY
+from ._tagged import SerializationNode
 
 
 def get_extensions():
@@ -14,7 +15,18 @@ def get_extensions():
     -------
     List[`asdf.extension.Extension`]
     """
-    return [
-        ManifestExtension.from_uri(manifest_uri, converters=(SerializationNodeConverter(manifest_uri), TaggedNodeConverter()))
-        for manifest_uri in MANIFEST_TAG_REGISTRY
-    ]
+    serialization_node_by_manifest = {}
+    extensions = []
+    for manifest_uri, tags in MANIFEST_TAG_REGISTRY.items():
+        serialization_node = SerializationNode._factory(manifest_uri)
+        serialization_node_by_manifest[manifest_uri] = serialization_node
+        extensions.append(
+            ManifestExtension.from_uri(
+                manifest_uri,
+                converters=(
+                    SerializationNodeConverter(serialization_node, tags),
+                    TaggedNodeConverter(serialization_node_by_manifest),
+                ),
+            )
+        )
+    return extensions

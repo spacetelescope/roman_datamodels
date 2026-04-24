@@ -16,7 +16,6 @@ from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
-    SERIALIZATION_BY_MANIFEST,
 )
 from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
 
@@ -288,18 +287,6 @@ class SerializationNode(Generic[_T]):
     so that the extension is correctly written.
     """
 
-    _manifest: ClassVar[str]
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        """
-        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
-        """
-        super().__init_subclass__(**kwargs)
-        if cls.__name__ != "SerializationTaggedNode":
-            if cls._manifest in SERIALIZATION_BY_MANIFEST:
-                raise RuntimeError(f"SerializationNode class for '{cls._manifest}' has been defined twice")
-            SERIALIZATION_BY_MANIFEST[cls._manifest] = cls
-
     def __init__(self, data: _T):
         self._data = data
 
@@ -332,7 +319,6 @@ class SerializationNode(Generic[_T]):
             f"SerializationNode__{version.replace('.', '_')}",
             (SerializationNode,),
             {
-                "_manifest": manifest,
                 "__module__": "roman_datamodels._stnode",
             },
         )

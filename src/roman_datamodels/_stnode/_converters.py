@@ -10,9 +10,7 @@ from asdf.extension import Converter
 from astropy.time import Time
 
 from ._registry import (
-    MANIFEST_TAG_REGISTRY,
     NODE_CLASSES_BY_TAG,
-    SERIALIZATION_BY_MANIFEST,
     TAG_MANIFEST_REGISTRY,
 )
 
@@ -38,19 +36,20 @@ class SerializationNodeConverter(_RomanConverter):
     extension can be applied
     """
 
-    def __init__(self, manifest_uri: str):
-        self._manifest_uri = manifest_uri
+    def __init__(self, serialization_node: type[SerializationNode], tags: tuple[str, ...]):
+        self._serialization_node = serialization_node
+        self._tags = tags
 
     def select_tag(self, obj: SerializationNode, tags, ctx):
         return obj.tag
 
     @property
     def tags(self) -> tuple[str, ...]:
-        return tuple(MANIFEST_TAG_REGISTRY[self._manifest_uri])
+        return self._tags
 
     @property
     def types(self) -> tuple[type[SerializationNode], ...]:
-        return (SERIALIZATION_BY_MANIFEST[self._manifest_uri],)
+        return (self._serialization_node,)
 
     def to_yaml_tree(self, obj: SerializationNode, tag, ctx):
         return obj.serialize_data(ctx)
@@ -67,6 +66,9 @@ class SerializationNodeConverter(_RomanConverter):
 
 
 class TaggedNodeConverter(_RomanConverter):
+    def __init__(self, serialization_node_by_manifest):
+        self._serialization_node_by_manifest = serialization_node_by_manifest
+
     def select_tag(self, obj, tags, ctx):
         return None
 
@@ -79,7 +81,7 @@ class TaggedNodeConverter(_RomanConverter):
         return tuple(NODE_CLASSES_BY_TAG.values())
 
     def to_yaml_tree(self, obj, tag, ctx):
-        return SERIALIZATION_BY_MANIFEST[TAG_MANIFEST_REGISTRY[obj.tag]](obj)
+        return self._serialization_node_by_manifest[TAG_MANIFEST_REGISTRY[obj.tag]](obj)
 
     def from_yaml_tree(self, node, tag, ctx):
         raise NotImplementedError("Converter deserialization deferred")
