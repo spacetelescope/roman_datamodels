@@ -78,7 +78,7 @@ class TaggedNodeConverter(_RomanConverter):
 
     @property
     def types(self):
-        return tuple(NODE_CLASSES_BY_TAG.values())
+        return tuple(set(NODE_CLASSES_BY_TAG.values()))
 
     def to_yaml_tree(self, obj, tag, ctx):
         return self._serialization_node_by_manifest[TAG_MANIFEST_REGISTRY[obj.tag]](obj)
