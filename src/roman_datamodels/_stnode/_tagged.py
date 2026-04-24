@@ -9,6 +9,8 @@ from __future__ import annotations
 import copy
 from typing import TYPE_CHECKING, Generic, TypeVar
 
+from astropy.time import Time
+
 from ._node import DNode, LNode
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
@@ -298,17 +300,28 @@ class SerializationNode(Generic[_T]):
                 raise RuntimeError(f"SerializationNode class for '{cls._manifest}' has been defined twice")
             SERIALIZATION_BY_MANIFEST[cls._manifest] = cls
 
-    def __init__(self, data: _T, tag: str):
+    def __init__(self, data: _T):
         self._data = data
-        self._tag = tag
 
     @property
-    def tag(self) -> str:
-        return self._tag
+    def tag(self):
+        return self._data.tag
 
     @property
     def data(self) -> _T:
         return self._data
+
+    def serialize_data(self, ctx):
+        match self._data:
+            case TaggedObjectNode():
+                return dict(self._data._data)
+            case TaggedListNode():
+                return list(self._data)
+            case TaggedScalarNode():
+                if "file_date" in self.tag:
+                    converter = ctx.extension_manager.get_converter_for_type(Time)
+                    return converter.to_yaml_tree(self._data, self.tag, ctx)
+                return str(self._data)
 
     @classmethod
     def _factory(cls, manifest: str) -> type[SerializationNode]:
