@@ -16,7 +16,6 @@ import asdf.schema
 from semantic_version import Version
 
 from ._manifest import SCHEMA_URIS_BY_TAG
-from ._registry import NODE_CLASSES_BY_TAG
 
 if TYPE_CHECKING:
     from typing import Any
@@ -69,6 +68,20 @@ def _get_schema_from_tag(tag):
     schema_uri = SCHEMA_URIS_BY_TAG[tag]
 
     return asdf.schema.load_schema(schema_uri, resolve_references=True)
+
+
+@functools.cache
+def _get_node_class_for_tag(tag):
+    # this local import is needed to avoid a circular import
+    # once tags (old datamodels) that contain tags (TaggedScalarNode, TaggedListNode, etc) are
+    # removed this can be moved out of this module to avoid the circular import
+    from ._stnode import NODE_CLASSES
+
+    for node_class in NODE_CLASSES:
+        if asdf.util.uri_match(node_class._pattern, tag):
+            return node_class
+
+    return None
 
 
 class _MissingKeywordType:
@@ -389,7 +402,7 @@ class Builder:
 
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+        if property_class := _get_node_class_for_tag(tag):
             return property_class._create_minimal(defaults, builder=self, tag=tag)
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
@@ -494,7 +507,7 @@ class FakeDataBuilder(Builder):
                 tag = "tag:stsci.edu:asdf/core/ndarray-1.*"
             else:
                 return _NO_VALUE
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+        if property_class := _get_node_class_for_tag(tag):
             # Pass control to the class for create_fake_data overrides
             return property_class._create_fake_data(defaults, builder=self, tag=tag)
         if defaults is not _NO_VALUE:
@@ -649,7 +662,7 @@ class NodeBuilder(Builder):
 
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+        if property_class := _get_node_class_for_tag(tag):
             try:
                 return property_class._create_from_node(defaults, builder=self)
             except ValueError:

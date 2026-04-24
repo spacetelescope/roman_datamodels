@@ -25,7 +25,8 @@ from roman_datamodels._stnode import (
     WfiImage,
     WfiWcs,
 )
-from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
+from roman_datamodels._stnode._manifest import TAG_MANIFEST_REGISTRY
+from roman_datamodels._stnode._schema import _get_node_class_for_tag
 from roman_datamodels._stnode._tagged import _NO_VALUE
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
@@ -797,9 +798,10 @@ def test_create_fake_data(model):
     assert m.validate() is None
 
 
-@pytest.mark.parametrize("tag, node_class", NODE_CLASSES_BY_TAG.items())
-def test_create_tag(tag, node_class):
+@pytest.mark.parametrize("tag", TAG_MANIFEST_REGISTRY.keys())
+def test_create_tag(tag):
     """Test that we can create a node for every registered tag"""
+    node_class = _get_node_class_for_tag(tag)
 
     node = node_class.create_minimal(tag=tag)
     if node is not _NO_VALUE:

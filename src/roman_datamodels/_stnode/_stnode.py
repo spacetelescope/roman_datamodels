@@ -8,9 +8,6 @@ Dynamic creation of STNode classes from the RAD manifest.
 
 from ._factories import stnode_factory
 from ._manifest import MANIFESTS
-from ._registry import (
-    NODE_CLASSES_BY_TAG,
-)
 
 __all__ = ["NODE_CLASSES"]
 
@@ -44,8 +41,6 @@ for manifest in MANIFESTS:
         pattern = f"{base}-*"
         if pattern not in _generated:
             _generated[pattern] = _factory(pattern, manifest_uri, tag_def)
-        NODE_CLASSES_BY_TAG[tag_uri] = _generated[pattern]
-
 
 # List of node classes made available by this library.
 NODE_CLASSES = tuple(_generated.values())

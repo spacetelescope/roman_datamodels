@@ -2,17 +2,17 @@ import asdf
 import pytest
 
 from roman_datamodels._stnode._manifest import MANIFEST_TAG_REGISTRY, TAG_MANIFEST_REGISTRY
-from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
+from roman_datamodels._stnode._schema import _get_node_class_for_tag
 
 
-@pytest.fixture(scope="session", params=NODE_CLASSES_BY_TAG)
+@pytest.fixture(scope="session", params=TAG_MANIFEST_REGISTRY.keys())
 def node_tag(request):
     return request.param
 
 
 @pytest.fixture(scope="session")
 def node_cls(node_tag):
-    return NODE_CLASSES_BY_TAG[node_tag]
+    return _get_node_class_for_tag(node_tag)
 
 
 @pytest.fixture(scope="session")
@@ -28,14 +28,6 @@ def test_manifest_tag_registry_disjoint(manifest_uri):
             assert set(tags) & set(MANIFEST_TAG_REGISTRY[manifest_uri]) == set()
         else:
             assert len(set(MANIFEST_TAG_REGISTRY[manifest_uri])) == len(MANIFEST_TAG_REGISTRY[manifest_uri])
-
-        for tag in tags:
-            assert tag in NODE_CLASSES_BY_TAG
-
-
-def test_all_tags_in_manifest_tag_registry():
-    assert sum(len(tags) for tags in MANIFEST_TAG_REGISTRY.values()) == len(NODE_CLASSES_BY_TAG)
-    assert len(TAG_MANIFEST_REGISTRY) == len(NODE_CLASSES_BY_TAG)
 
 
 def test_history(tmp_path, node_tag, node_instance):

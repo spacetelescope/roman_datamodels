@@ -10,10 +10,10 @@ from asdf.extension import Converter
 from astropy.time import Time
 
 from ._manifest import TAG_MANIFEST_REGISTRY
-from ._registry import NODE_CLASSES_BY_TAG
+from ._schema import _get_node_class_for_tag
 
 if TYPE_CHECKING:
-    from ._tagged import SerializationNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
+    from ._tagged import SerializationNode
 
 __all__ = [
     "TaggedNodeConverter",
@@ -52,13 +52,13 @@ class SerializationNodeConverter(_RomanConverter):
     def to_yaml_tree(self, obj: SerializationNode, tag, ctx):
         return obj.serialize_data(ctx)
 
-    def from_yaml_tree(self, node, tag, ctx) -> TaggedObjectNode | TaggedListNode | TaggedScalarNode:
+    def from_yaml_tree(self, node, tag, ctx):
         if "file_date" in tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
 
         # TODO: Add method for setting read_tag with some checks
-        obj = NODE_CLASSES_BY_TAG[tag](node)
+        obj = _get_node_class_for_tag(tag)(node)
         obj._read_tag = tag
         return obj
 
@@ -76,7 +76,10 @@ class TaggedNodeConverter(_RomanConverter):
 
     @property
     def types(self):
-        return tuple(set(NODE_CLASSES_BY_TAG.values()))
+        # this local import is only to appease mypy, it works at the top of this file
+        from ._stnode import NODE_CLASSES
+
+        return NODE_CLASSES
 
     def to_yaml_tree(self, obj, tag, ctx):
         return self._serialization_node_by_manifest[TAG_MANIFEST_REGISTRY[obj.tag]](obj)
