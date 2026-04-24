@@ -326,10 +326,10 @@ class SerializationNode(Generic[_T]):
     @classmethod
     def _factory(cls, manifest: str) -> type[SerializationNode]:
         """Create a subclass of this for the given tag"""
-        tag_uri, version = manifest.rsplit("-", maxsplit=1)
+        _, version = manifest.rsplit("-", maxsplit=1)
 
         return type(
-            f"SerializationNode_{class_name_from_tag_uri(tag_uri)}__{version.replace('.', '_')}",
+            f"SerializationNode__{version.replace('.', '_')}",
             (SerializationNode,),
             {
                 "_manifest": manifest,
