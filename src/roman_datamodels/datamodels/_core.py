@@ -24,7 +24,8 @@ from asdf.exceptions import ValidationError
 from asdf.tags.core.ndarray import NDArrayType
 from astropy.time import Time
 
-from roman_datamodels._stnode import NODE_EXTENSIONS, DNode, TaggedObjectNode
+from roman_datamodels._stnode import DNode, TaggedObjectNode
+from roman_datamodels._stnode._registry import SCHEMA_URIS_BY_TAG
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -228,13 +229,9 @@ class DataModel(abc.ABC):
         return MODEL_REGISTRY[asdf_file.tree["roman"].__class__] == self.__class__
 
     @property
-    def _latest_manifest_uri(self):
-        return self._node_type._latest_manifest
-
-    @property
     def schema_uri(self):
         # Determine the schema corresponding to this model's tag
-        return next(t for t in NODE_EXTENSIONS[self._latest_manifest_uri].tags if t.tag_uri == self._instance._tag).schema_uris[0]
+        return SCHEMA_URIS_BY_TAG[self._instance._tag]
 
     def close(self):
         if not (self._iscopy or self._asdf is None):

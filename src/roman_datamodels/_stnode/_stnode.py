@@ -10,16 +10,13 @@ import importlib.resources
 from pathlib import Path
 
 import yaml
-from asdf.extension import ManifestExtension
 from rad import resources
 
-from ._converters import SerializationNodeConverter
 from ._factories import stnode_factory
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     MANIFEST_TAG_REGISTRY,
     NODE_CLASSES_BY_TAG,
-    NODE_CONVERTERS,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
     SCHEMA_URIS_BY_TAG,
@@ -27,7 +24,7 @@ from ._registry import (
 )
 from ._tagged import SerializationNode
 
-__all__ = ["NODE_CLASSES", "NODE_EXTENSIONS"]
+__all__ = ["NODE_CLASSES"]
 
 
 # Load the manifest directly from the rad resources and not from ASDF.
@@ -77,16 +74,6 @@ for manifest in _MANIFESTS:
         if tag_uri not in TAG_MANIFEST_REGISTRY:
             TAG_MANIFEST_REGISTRY[tag_uri] = manifest_uri
             MANIFEST_TAG_REGISTRY[manifest_uri].append(tag_uri)
-
-
-# Create the ASDF extension for the STNode classes.
-#    ASDF extension is setup here so that it is after the dynamic object creation
-NODE_EXTENSIONS = {
-    manifest_uri: ManifestExtension.from_uri(
-        manifest_uri, converters=(SerializationNodeConverter(manifest_uri), *tuple(NODE_CONVERTERS.values()))
-    )
-    for manifest_uri in MANIFEST_TAG_REGISTRY
-}
 
 
 # List of node classes made available by this library.
