@@ -2,28 +2,36 @@ Stnode Functionality
 ====================
 
 As seen throughout :ref:`using-datamodels`, "node" objects are used to actually
-handle and store the data for a datamodel. Indeed, if one opens an ASDF file
+handle and store the data for a data model. Indeed, if one opens an ASDF file
 with a roman datamodel directly with `asdf.open` instead of
 `roman_datamodels.datamodels.open`, the resulting object stored under the
-``roman`` attribute will be a specialized `~roman_datamodels._stnode.DNode` object rather
-than a `~roman_datamodels.datamodels.DataModel` object. Thus the stnode, "node"
-objects form the data storage and manipulation backbone of the roman datamodels.
+``roman`` attribute will be a specialized `~roman_datamodels._stnode.DNode` object
+rather than a `~roman_datamodels.datamodels.DataModel` object. Thus the stnode,
+"node" objects form the data storage and manipulation backbone of the roman data
+models.
 
 
-Node Types
-**********
+Node Structure
+**************
 
-There are two main container node types `~roman_datamodels._stnode.DNode` and
-`~roman_datamodels._stnode.LNode` which correspond to "dictionary" and
-"list"-like data structures, respectively.
+Stnode organizes the in the form of a tree structure. Where the
+`roman_datamodels._stnode.DNode` "Node" objects act as keyword-value containers,
+which branch to either other `~roman_datamodels._stnode.DNode` objects or to
+the actual "leaf" data values (e.g. strings, numbers, arrays, etc.). These
+`~roman_datamodels._stnode.DNode` objects are the core of stnode. Everything else
+in stnode is built on top of these objects.
 
-Currently, these two objects are implemented so that they follow the
-dictionary or list interface; meaning that, they can be accessed via the ``[]``
-operator (``node["keyword"]`` or ``node[0]``). However, for the case of the
-`~roman_datamodels._stnode.DNode` objects, keys can also be used to directly
-access the data attributes of the object via the Python ``.`` operator
-(``node.keyword``). This is so that the `~roman_datamodels._stnode.DNode`
-objects "look" like they are nice Python derived types.
+The `roman_datamodels._stnode.DNode` object itself is effectively a wrapper around
+a python dictionary, which enriches the way one can interact with the data stored
+within the node, and how RDM can handle the entire data-tree structure for things
+like validation, serialization, etc. To end users, `~roman_datamodels._stnode.DNode`
+implements the entire ``MutableMapping`` protocol interface, so users can interact
+with it exactly as if they were interacting with any normal python dictionary.
+So things like ``node["keyword"]``, ``node.keys()``, ``node.values()``, etc. all
+work as one would expect with a normal python dictionary. For end users, the interface
+has been enriched so that one can use the ``.`` operator to access the data attributes,
+e.g. ``node.keyword`` works the same as ``node["keyword"]``. This is done to make
+the stnode objects feel more "Pythonic" and act as though they were Python classes.
 
 
 Dynamic Node Construction
@@ -35,16 +43,13 @@ to a corresponding schema name, will be created and registered by
 get this treatment are the "tagged" schemas defined within the ``datamodels-*``
 manifest in the RAD package. Any "un-tagged" schemas in RAD will not have a
 corresponding stnode object. Instead, the information they contain will be
-stored in a `~roman_datamodels._stnode.DNode` or `~roman_datamodels._stnode.LNode`
-object, depending on the schema in question.
+stored in a `~roman_datamodels._stnode.DNode` object or standard python list.
 
-The specific stnode objects will be subclasses of the
-`~roman_datamodels._stnode.TaggedObjectNode` or
-`~roman_datamodels._stnode.TaggedListNode` classes. These classes are extensions
-of the `~roman_datamodels._stnode.DNode` and `~roman_datamodels._stnode.LNode`
-classes which have extensions to handle looking up the schema information.
-In particular, they will track the ``tag`` information
-contained within the manifest from RAD.
+These dynamically created "node" classes are subclasses of the
+`~roman_datamodels._stnode.DNode` and contain additional functionally to handle
+tagging information for ASDF functionally and referencing information stored within
+the corresponding RAD schema. Most importantly, these "tagged-nodes" will keep
+track of the ``tag`` information about the data.
 
 These "tagged-nodes" are then turned into specific stnode objects via the
 factories in `roman_datamodels._stnode._factories`. The way these factories work

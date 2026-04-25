@@ -6,7 +6,7 @@ Base node classes for all STNode classes.
 from __future__ import annotations
 
 import datetime
-from collections.abc import MutableMapping, MutableSequence
+from collections.abc import MutableMapping
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -14,35 +14,7 @@ from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
 from asdf.tags.core import ndarray
 from astropy.time import Time
 
-__all__ = ["DNode", "LNode"]
-
-
-def _wrap(value):
-    """
-    Convert dict to DNode and list to LNode
-    """
-    # Return objects as node classes, if applicable
-    if isinstance(value, dict | AsdfDictNode):
-        return DNode(value)
-
-    if isinstance(value, list | AsdfListNode):
-        return LNode(value)
-
-    return value
-
-
-def _unwrap(value):
-    """
-    Convert DNode to dict and LNode to list
-    """
-    # use "type(...) is" so that we don't unwrap subclasses
-    if type(value) is DNode:
-        return value._data
-
-    if type(value) is LNode:
-        return value.data
-
-    return value
+__all__ = ("DNode",)
 
 
 class _NodeMixin:
@@ -96,7 +68,7 @@ class DNode(MutableMapping, _NodeMixin):
         # If the key is in the schema, then we can return the value
         if key in self._data:
             # Return objects as node classes, if applicable
-            return _wrap(self._data[key])
+            return DNode(value) if isinstance(value := self._data[key], dict | AsdfDictNode) else value
 
         # Raise the correct error for the attribute not being found
         raise AttributeError(f"No such attribute ({key}) found in node: {type(self)}")
@@ -109,7 +81,7 @@ class DNode(MutableMapping, _NodeMixin):
         # Private keys should just be in the normal __dict__
         if key[0] != "_":
             # Finally set the value
-            self._data[key] = _unwrap(value)
+            self._data[key] = value._data if type(value) is DNode else value
         else:
             if key in DNode.__slots__:
                 DNode.__dict__[key].__set__(self, value)
@@ -132,7 +104,7 @@ class DNode(MutableMapping, _NodeMixin):
             if isinstance(tree, DNode | dict | AsdfDictNode):
                 for key, val in tree.items():
                     yield from recurse(val, [*path, key])
-            elif isinstance(tree, LNode | list | tuple | AsdfListNode):
+            elif isinstance(tree, list | tuple | AsdfListNode):
                 for i, val in enumerate(tree):
                     yield from recurse(val, [*path, i])
             elif tree is not None:
@@ -212,64 +184,4 @@ class DNode(MutableMapping, _NodeMixin):
         instance._read_tag = self._read_tag
         instance._data = self._data.copy()
 
-        return instance
-
-
-class LNode(MutableSequence, _NodeMixin):
-    """
-    Base class describing all "array" (list-like) data nodes for STNode classes.
-    """
-
-    __slots__ = ("_read_tag", "data")
-
-    def __init__(self, node=None):
-        super().__init__(node=node)
-
-        if node is None:
-            self.data = []
-        elif isinstance(node, list | AsdfListNode):
-            self.data = node
-        elif isinstance(node, self.__class__):
-            self.data = node.data
-        else:
-            raise ValueError("Initializer only accepts lists")
-
-    def __getitem__(self, index):
-        return _wrap(self.data[index])
-
-    def __setitem__(self, index, value):
-        self.data[index] = _unwrap(value)
-
-    def __delitem__(self, index):
-        del self.data[index]
-
-    def __len__(self):
-        return len(self.data)
-
-    def insert(self, index, value):
-        self.data.insert(index, value)
-
-    def __asdf_traverse__(self):
-        return list(self)
-
-    def __setattr__(self, key, value):
-        if key in LNode.__slots__:
-            LNode.__dict__[key].__set__(self, value)
-        else:
-            raise AttributeError(f"Cannot set attribute {key}, only allowed are {LNode.__slots__}")
-
-    def __eq__(self, other):
-        if isinstance(other, LNode):
-            return self.data == other.data
-        elif isinstance(other, list | AsdfListNode):
-            return self.data == other
-        else:
-            return False
-
-    def copy(self):
-        """Handle copying of the node"""
-        instance = self.__class__.__new__(self.__class__)
-
-        instance.data = self.data.copy()
-        instance._read_tag = self._read_tag
         return instance

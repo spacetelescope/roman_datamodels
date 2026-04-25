@@ -21,7 +21,7 @@ from roman_datamodels._stnode import TaggedScalarNode
 from ._core import MODEL_REGISTRY, DataModel
 
 if TYPE_CHECKING:
-    from roman_datamodels._stnode import DNode, LNode
+    from roman_datamodels._stnode import DNode, TaggedListNode
 
 
 __all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filedate", "temporary_update_filename"]
@@ -96,8 +96,8 @@ def temporary_update_filedate(datamodel: DataModel, file_date: time.Time) -> Gen
 
 
 def node_update(
-    to_node: DNode | LNode | TaggedScalarNode,
-    from_node: DNode | LNode | TaggedScalarNode | DataModel,
+    to_node: DNode | TaggedListNode | TaggedScalarNode,
+    from_node: DNode | TaggedListNode | TaggedScalarNode | DataModel,
     extras: list[str] | tuple[str, ...] | None = None,
     extras_key: str | None = None,
     ignore: list[str] | tuple[str, ...] | None = None,
@@ -122,10 +122,10 @@ def node_update(
 
     Parameters
     ----------
-    to_node : DNode, LNode or TaggedScalarNode
+    to_node : DNode, TaggedListNode or TaggedScalarNode
         Node to receive the contents.
 
-    from_node : DNode, LNode, TaggedScalarNode or DataModel
+    from_node : DNode, TaggedListNode, TaggedScalarNode or DataModel
         Node to copy from
 
     extras : list[str], tuple[str, ...] or None
@@ -173,7 +173,7 @@ def node_update(
                         new_extras[key] = returned_extras
                 else:
                     if isinstance(to_node[key], list):
-                        value = getattr(from_node, key).data
+                        value = list(getattr(from_node, key))
                     elif isinstance(to_node[key], np.ndarray):
                         value = getattr(from_node, key).astype(to_node[key].dtype)
                         value = getattr(value, "value", value)

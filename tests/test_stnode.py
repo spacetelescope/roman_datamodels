@@ -222,10 +222,6 @@ def test_get_latest_schema(object_node, object_node_default_uri, object_node_uri
         ("__setattr__", stnode.DNode({}), stnode.DNode, dict),
         ("__setitem__", {}, stnode.DNode, dict),
         ("__setitem__", stnode.DNode({}), stnode.DNode, stnode.DNode),
-        ("__setattr__", [], stnode.LNode, list),
-        ("__setattr__", stnode.LNode([]), stnode.LNode, list),
-        ("__setitem__", [], stnode.LNode, list),
-        ("__setitem__", stnode.LNode([]), stnode.LNode, stnode.LNode),
     ],
 )
 def test_dnode_unwrapping(set_method, value, getattr_type, getitem_type):
@@ -237,24 +233,5 @@ def test_dnode_unwrapping(set_method, value, getattr_type, getitem_type):
     getattr(node, set_method)(key, value)
     assert type(getattr(node, key)) is getattr_type
     assert type(node[key]) is getitem_type
-    if set_method == "__setattr__":
+    if set_method == "__setattr__" and getattr_type is stnode.DNode:
         assert getattr(node, key) is not value
-
-
-@pytest.mark.parametrize(
-    "value, return_type",
-    [
-        ({}, stnode.DNode),
-        (stnode.DNode({}), stnode.DNode),
-        ([], stnode.LNode),
-        (stnode.LNode([]), stnode.LNode),
-    ],
-)
-def test_lnode_unwrapping(value, return_type):
-    """
-    Test LNode wraps and unwraps for set/getitem
-    """
-    node = stnode.LNode([0])
-    node[0] = value
-    assert type(node[0]) is return_type
-    assert node[0] is not value

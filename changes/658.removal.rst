@@ -1,0 +1,1 @@
+Remove the ``LNode`` class and refactor its functionality into the ``TaggedListNode`` class.

@@ -15,13 +15,13 @@ from roman_datamodels._stnode import (
     CalLogs,
     DNode,
     IndividualImageMeta,
-    LNode,
     MosaicAssociations,
     Observation,
     OutlierDetection,
     Resample,
     SkyBackground,
     SourceCatalog,
+    TaggedListNode,
     WfiImage,
     WfiWcs,
 )
@@ -213,10 +213,10 @@ def test_node_assignment():
     wfi_image.meta.exposure = exposure
     assert isinstance(wfi_image.meta.exposure, DNode)
 
-    # The following tests that supplying a LNode passes validation.
+    # The following tests that supplying list-like values passes validation.
     rampmodel = datamodels.RampModel.create_fake_data()
     rampmodel.meta.exposure.read_pattern = [1, 2, 3]
-    assert isinstance(rampmodel.meta.exposure.read_pattern[1:], LNode)
+    assert isinstance(rampmodel.meta.exposure.read_pattern[1:], list)
 
     # Test that supplying a DNode passes validation
     darkmodel = datamodels.DarkRefModel.create_fake_data()
@@ -362,8 +362,8 @@ def test_datamodel_schema_info_existence(name):
         model = model_class.create_fake_data()
         info = model.schema_info("archive_catalog")
         for keyword in model.meta.keys():
-            # Only DNodes or LNodes need to be canvassed
-            if isinstance(model.meta[keyword], DNode | LNode):
+            # Only DNodes or TaggedListNodes need to be canvassed
+            if isinstance(model.meta[keyword], DNode | TaggedListNode):
                 # Ignore metadata schemas that lack archive_catalog entries
                 if type(model.meta[keyword]) not in NODES_LACKING_ARCHIVE_CATALOG:
                     assert keyword in info["roman"]["meta"]

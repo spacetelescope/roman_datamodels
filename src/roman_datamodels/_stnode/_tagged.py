@@ -7,9 +7,12 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
+from collections import UserList
 from typing import TYPE_CHECKING, Generic, TypeVar
 
-from ._node import DNode, LNode
+from asdf.lazy_nodes import AsdfListNode
+
+from ._node import DNode
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     OBJECT_NODE_CLASSES_BY_PATTERN,
@@ -213,14 +216,14 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
 
-class TaggedListNode(LNode, _TaggedNodeMixin):
+class TaggedListNode(UserList, _TaggedNodeMixin):
     """
     Base class for all tagged list defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
         base type: array.
     """
 
-    __slots__ = ()
+    __slots__ = ("_read_tag",)
 
     def __init_subclass__(cls, **kwargs) -> None:
         """
@@ -232,6 +235,48 @@ class TaggedListNode(LNode, _TaggedNodeMixin):
             if cls._pattern in LIST_NODE_CLASSES_BY_PATTERN:
                 raise RuntimeError(f"TaggedListNode class for tag '{cls._pattern}' has been defined twice")
             LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+
+    def __init__(self, node=None):
+        self._read_tag = None
+
+        if node is None:
+            data = []
+        elif isinstance(node, list | AsdfListNode):
+            data = node
+        elif isinstance(node, self.__class__):
+            data = node.data
+        else:
+            raise ValueError("Initializer only accepts lists")
+
+        super().__init__(data)
+
+    def __asdf_traverse__(self):
+        return list(self)
+
+    def __setattr__(self, key, value):
+        if key in {"_read_tag", "data"}:
+            object.__setattr__(self, key, value)
+        else:
+            raise AttributeError(f"Cannot set attribute {key}, only allowed are ('_read_tag', 'data')")
+
+    def __getattribute__(self, key):
+        if key == "__dict__":
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '__dict__'")
+        return super().__getattribute__(key)
+
+    def __eq__(self, other):
+        if isinstance(other, TaggedListNode):
+            return self.data == other.data
+        if isinstance(other, list | AsdfListNode):
+            return self.data == other
+        return False
+
+    def copy(self):
+        """Handle copying of the node"""
+        instance = self.__class__.__new__(self.__class__)
+        instance.data = self.data.copy()
+        instance._read_tag = self._read_tag
+        return instance
 
 
 class TaggedScalarNode(_TaggedNodeMixin):
