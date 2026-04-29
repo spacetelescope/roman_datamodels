@@ -488,7 +488,8 @@ class FakeDataBuilder(Builder):
     def from_array(self, schema, defaults):
         obj = super().from_array(schema, defaults)
         if not obj and defaults:
-            # TODO merge defaults and obj?
+            # only use the defaults wholesale if obj is empty
+            # attempting to merge a produced obj with defaults would be overly complicated
             return copy.deepcopy(defaults)
         return obj
 
