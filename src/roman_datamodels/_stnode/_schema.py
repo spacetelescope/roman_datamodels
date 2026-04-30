@@ -477,14 +477,6 @@ class FakeDataBuilder(Builder):
                 return "WFI_IMAGE|"
         return NOSTR
 
-    def from_unknown(self, schema, defaults):
-        if (value := super().from_unknown(schema, defaults)) is not _NO_VALUE:
-            return value
-        if "ndim" in schema:
-            # FIXME guidewindow is missing a tag for an array
-            return self.from_tagged(schema, defaults)
-        return _NO_VALUE
-
     def from_integer(self, schema, defaults):
         if (value := super().from_integer(schema, defaults)) is not _NO_VALUE:
             return value
@@ -520,17 +512,10 @@ class FakeDataBuilder(Builder):
         return cls._create_fake_data(defaults=defaults, builder=self, tag=tag)
 
     def from_tagged(self, schema, defaults):
-        tag = _get_keyword(schema, "tag")
-        if tag is _MISSING_KEYWORD:
-            # FIXME a guidewindow array is missing a tag
-            if _get_keyword(schema, "ndim"):
-                tag = "tag:stsci.edu:asdf/core/ndarray-1.*"
-            else:
-                return _NO_VALUE
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
-            # Pass control to the class for create_fake_data overrides
-            return self._from_tagged_node(property_class, tag, defaults)
+        if (value := super().from_tagged(schema, defaults)) is not _NO_VALUE:
+            return value
 
+        tag = _get_keyword(schema, "tag")
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         if tag == "tag:stsci.edu:asdf/time/time-1.*":
