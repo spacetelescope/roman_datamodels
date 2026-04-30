@@ -49,7 +49,7 @@ log.setLevel(logging.DEBUG)
 
 
 class _SourceCatalogMixin:
-    from roman_datamodels._stnode import ImageSourceCatalogMixin
+    from roman_datamodels._stnode import ImageSourceCatalog
 
     __slots__ = ()
 
@@ -74,7 +74,9 @@ class _SourceCatalogMixin:
 
         return self._instance._create_empty_catalog(aperture_radii, filters)
 
-    @functools.wraps(ImageSourceCatalogMixin.get_column_definition)
+    # This MyPy error will go away when the tag_pattern DataModels PR is merged
+    #    and the type stubs are removed
+    @functools.wraps(ImageSourceCatalog.get_column_definition)  # type: ignore[attr-defined]
     def get_column_definition(self, name):
         return self._instance.get_column_definition(name)
 

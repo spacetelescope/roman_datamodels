@@ -1,0 +1,2 @@
+Make all the ``._stnode._mixin`` objects the actual class used by stnode rather than
+a mixin into a dynamic class.
