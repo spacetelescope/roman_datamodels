@@ -6,12 +6,10 @@ Dynamic creation of STNode classes from the RAD manifest.
     used by the user.
 """
 
-import importlib.resources
-from pathlib import Path
+from types import MappingProxyType
 
-import yaml
+from asdf import get_config
 from asdf.extension import ManifestExtension
-from rad import resources
 
 from ._converters import SerializationNodeConverter
 from ._factories import stnode_factory
@@ -26,22 +24,19 @@ from ._registry import (
     TAG_MANIFEST_REGISTRY,
 )
 from ._tagged import SerializationNode
+from ._uri import UriInfo
 
 __all__ = ["NODE_CLASSES", "NODE_EXTENSIONS"]
 
 
-# Load the manifest directly from the rad resources and not from ASDF.
-#   This is because the ASDF extensions have to be created before they can be registered
-#   and this module creates the classes used by the ASDF extension.
-_MANIFEST_DIR = Path(str(importlib.resources.files(resources) / "manifests"))
-_DATAMODEL_MANIFEST_PATHS = sorted(
-    [path for path in _MANIFEST_DIR.glob("*datamodels-*.yaml")],
-    reverse=True,
-    key=lambda v: tuple(int(i) for i in v.stem.rsplit("-")[-1].split(".")),
+MANIFEST_PREFIX = "asdf://stsci.edu/datamodels/roman/manifests/datamodels"
+_manifest_version_uri = MappingProxyType(
+    {
+        (uri_info := UriInfo(uri, "asdf_resource")).version: uri_info
+        for uri in get_config().resource_manager
+        if uri.startswith(MANIFEST_PREFIX)
+    }
 )
-DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL_MANIFEST_PATHS]
-# Notice that the static manifests are first so that we defer to them
-_MANIFESTS = DATAMODEL_MANIFESTS
 
 
 def _add_cls(cls):
@@ -51,35 +46,37 @@ def _add_cls(cls):
     return cls
 
 
-def _factory(pattern, latest_manifest, tag_def):
+def _factory(tag_info, latest_manifest, tag_def):
     """
     Wrap the __all__ append and class creation in a function to avoid the linter
         getting upset
     """
-    return _add_cls(stnode_factory(pattern, latest_manifest, tag_def))
+    return _add_cls(stnode_factory(tag_info, latest_manifest, tag_def))
 
 
 # Main dynamic class creation loop
 #   Reads each tag entry from the manifest and creates a class for it
 _generated = {}
-for manifest in _MANIFESTS:
+_MANIFESTS = []
+for version in sorted(_manifest_version_uri, reverse=True):
+    manifest = _manifest_version_uri[version].schema
+    _MANIFESTS.append(manifest)
+
     _add_cls(SerializationNode._factory(manifest_uri := manifest["id"]))
 
     MANIFEST_TAG_REGISTRY[manifest_uri] = []
     for tag_def in manifest["tags"]:
-        SCHEMA_URIS_BY_TAG[(tag_uri := tag_def["tag_uri"])] = tag_def["schema_uri"]
-        base, _ = tag_uri.rsplit("-", maxsplit=1)
+        tag_info = UriInfo(tag_def["tag_uri"], "asdf_tag")
 
-        # make pattern from tag
-        pattern = f"{base}-*"
-        if pattern not in _generated:
-            _generated[pattern] = _factory(pattern, manifest_uri, tag_def)
-        NODE_CLASSES_BY_TAG[tag_uri] = _generated[pattern]
+        SCHEMA_URIS_BY_TAG[tag_info.uri] = tag_def["schema_uri"]
+        if tag_info.pattern not in _generated:
+            _generated[tag_info.pattern] = _factory(tag_info, manifest_uri, tag_def)
+        NODE_CLASSES_BY_TAG[tag_info.uri] = _generated[tag_info.pattern]
 
         # Make serialization intermediate
-        if tag_uri not in TAG_MANIFEST_REGISTRY:
-            TAG_MANIFEST_REGISTRY[tag_uri] = manifest_uri
-            MANIFEST_TAG_REGISTRY[manifest_uri].append(tag_uri)
+        if tag_info.uri not in TAG_MANIFEST_REGISTRY:
+            TAG_MANIFEST_REGISTRY[tag_info.uri] = manifest_uri
+            MANIFEST_TAG_REGISTRY[manifest_uri].append(tag_info.uri)
 
 
 # Create the ASDF extension for the STNode classes.

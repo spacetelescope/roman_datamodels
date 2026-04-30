@@ -1,6 +1,5 @@
 from typing import Any
 
-import asdf
 import pytest
 from asdf.schema import load_schema
 
@@ -109,17 +108,3 @@ def list_node_class(request) -> type[TaggedListNode]:
 def container_node_class(request) -> type[TaggedObjectNode] | type[TaggedListNode]:
     """Fixture for providing all of the container node classes for testing"""
     return request.param
-
-
-@pytest.fixture(scope="module")
-def object_node_default_schema_uri(object_node_class: type[TaggedObjectNode]) -> str:
-    """Fixture for providing the default schema URI for an object node class."""
-    return SCHEMA_URIS_BY_TAG[object_node_class._default_tag]
-
-
-@pytest.fixture(scope="module")
-def object_node_schema_uris(object_node_default_schema_uri: str) -> tuple[str, ...]:
-    """Fixture for providing all of the schema URIs for an object node class."""
-    prefix_uri = f"{object_node_default_schema_uri.rsplit('-', 1)[0]}-"
-
-    return tuple(schema_uri for schema_uri in asdf.get_config().resource_manager if schema_uri.startswith(prefix_uri))

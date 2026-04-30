@@ -84,6 +84,27 @@ class UriInfo:
     in `UriInfo.uri`.
     """
 
+    pattern: str = field(init=False)
+    """
+    The generalized regex pattern for this URI:
+        ``<prefix>-*``
+    """
+
+    search_prefix: str = field(init=False)
+    """
+    The prefix for searching for related URIs in ASDF
+    """
+
+    snake_case: str = field(init=False)
+    """
+    A snake_case version of the URI prefix for use in class names and attributes.
+    """
+
+    camel_case: str = field(init=False)
+    """
+    A CamelCase version of the URI prefix for use in class names.
+    """
+
     is_tag_uri: bool = field(init=False)
     """
     If the URI is registered as a tag URI in ASDF.
@@ -102,6 +123,10 @@ class UriInfo:
         object.__setattr__(self, "uri", uri)
         object.__setattr__(self, "prefix", prefix)
         object.__setattr__(self, "version", Version(version))
+        object.__setattr__(self, "pattern", f"{prefix}-*")
+        object.__setattr__(self, "search_prefix", f"{prefix}-")
+        object.__setattr__(self, "snake_case", self._snake_case())
+        object.__setattr__(self, "camel_case", self._camel_case())
 
         match uri_type:
             case "asdf_tag":
@@ -173,6 +198,26 @@ class UriInfo:
 
         return version
 
+    def _snake_case(self) -> str:
+        """Get a snake_case representation of this URI"""
+        name = self.prefix.split("/")[-1]
+
+        # Update the name for the FPS/TVAC cases
+        if "/fps/" in self.prefix and "fps" not in name:
+            name = f"fps_{name}"
+        if "/tvac/" in self.prefix and "tvac" not in name:
+            name = f"tvac_{name}"
+
+        # Update the name for reference files
+        if "/reference_files/" in self.prefix:
+            name = f"{name}_ref"
+
+        return name
+
+    def _camel_case(self) -> str:
+        """Get a CamelCase representation of this URI"""
+        return "".join([p.capitalize() for p in self.snake_case.split("_")])
+
     @staticmethod
     @contextmanager
     def _extension_manager() -> Generator[ExtensionManager, None, None]:
@@ -206,10 +251,9 @@ class UriInfo:
                 if manager.handles_tag(uri_option):
                     return True
 
-            prefix = self._search_prefix
             # Fall back on manually searching through the tags
             for tag_def in self._tag_def_generator(manager):
-                if tag_def.tag_uri.startswith(prefix):
+                if tag_def.tag_uri.startswith(self.search_prefix):
                     return True
 
         return False
@@ -223,39 +267,11 @@ class UriInfo:
                 This is determining if a URI corresponds to some resource file
                 (e.g., schema, manifest, ...) that has been registered with ASDF
         """
-        search_prefix = self._search_prefix
         for resource_uri in get_config().resource_manager:
-            if resource_uri.startswith(search_prefix):
+            if resource_uri.startswith(self.search_prefix):
                 return True
 
         return False
-
-    @property
-    def pattern(self) -> str:
-        """Return the uri pattern string for this URI"""
-        return f"{self.prefix}-*"
-
-    @property
-    def snake_case(self) -> str:
-        """Get a snake_case representation of this URI"""
-        name = self.prefix.split("/")[-1]
-
-        # Update the name for the FPS/TVAC cases
-        if "/fps/" in self.prefix and "fps" not in name:
-            name = f"fps_{name}"
-        if "/tvac/" in self.prefix and "tvac" not in name:
-            name = f"tvac_{name}"
-
-        # Update the name for reference files
-        if "/reference_files/" in self.prefix:
-            name = f"{name}_ref"
-
-        return name
-
-    @property
-    def camel_case(self) -> str:
-        """Get a CamelCase representation of this URI"""
-        return "".join([p.capitalize() for p in self.snake_case.split("_")])
 
     @property
     def is_asdf_uri(self) -> bool:
@@ -314,17 +330,10 @@ class UriInfo:
             return load_schema(self.resource_uri.exact_uri, resolve_references=True)
 
     @property
-    def _search_prefix(self) -> str:
-        """The prefix for searching for related URIs in ASDf"""
-        return f"{self.prefix}-"
-
-    @property
     def _latest_tag_uri(self) -> UriInfo:
         """
         Find the latest tag URI for this URI
         """
-        search_prefix = self._search_prefix
-
         latest_tag_uri: UriInfo = self
 
         with AsdfFile() as af:
@@ -335,7 +344,7 @@ class UriInfo:
                 tag_def: TagDefinition
                 for tag_def in extension.tags:
                     if (
-                        tag_def.tag_uri.startswith(search_prefix)
+                        tag_def.tag_uri.startswith(self.search_prefix)
                         and (new_tag_uri := UriInfo(tag_def.tag_uri, "asdf_tag")).version > latest_tag_uri.version
                     ):
                         latest_tag_uri = new_tag_uri
@@ -347,12 +356,10 @@ class UriInfo:
         """
         Find the latest resource URI for this URI
         """
-        search_prefix = self._search_prefix
-
         latest_resource_uri: UriInfo = self
         for resource_uri in get_config().resource_manager:
             if (
-                resource_uri.startswith(search_prefix)
+                resource_uri.startswith(self.search_prefix)
                 and (new_resource_uri := UriInfo(resource_uri, "asdf_resource")).version > latest_resource_uri.version
             ):
                 latest_resource_uri = new_resource_uri

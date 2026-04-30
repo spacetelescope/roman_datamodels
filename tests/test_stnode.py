@@ -12,7 +12,7 @@ from .conftest import MANIFESTS
 
 @pytest.mark.parametrize("tag_def", [tag_def for manifest in MANIFESTS for tag_def in manifest["tags"]])
 def test_tag_has_node_class(tag_def):
-    class_name = stnode._factories.class_name_from_tag_uri(tag_def["tag_uri"])
+    class_name = stnode.UriInfo(tag_def["tag_uri"]).camel_case
     node_class = getattr(stnode, class_name)
 
     assert asdf.util.uri_match(node_class._pattern, tag_def["tag_uri"])
@@ -194,20 +194,6 @@ def test_node_representation():
             "optical_element": mdl.meta.instrument.optical_element,
         }
     )
-
-
-def test_get_latest_schema(
-    object_node_class: type[stnode.TaggedObjectNode],
-    object_node_default_schema_uri: str,
-    object_node_schema_uris: tuple[str, ...],
-):
-    assert len(object_node_schema_uris) > 0, "This test requires at lest one URI available."
-
-    for uri in [object_node_default_schema_uri.rsplit("-", 1)[0], *object_node_schema_uris]:
-        latest_uri, schema = stnode.get_latest_schema(uri)
-        assert latest_uri == object_node_default_schema_uri
-
-        assert stnode._schema._get_schema_from_tag(object_node_class._default_tag) == schema
 
 
 @pytest.mark.parametrize(
