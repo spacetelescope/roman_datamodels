@@ -938,6 +938,20 @@ def test_create_from_model_old_tags():
     assert isinstance(converted.meta.observation, DNode)
 
 
+def test_create_nested_list_default():
+    """
+    Test that a read_pattern provided to create_fake_data is copied to the produced model.
+
+    read_pattern is used here since the nested list form is different than other metadata.
+    """
+    read_pattern = [[1], [2], [3]]
+    mdl = datamodels.ImageModel.create_fake_data(defaults={"meta": {"exposure": {"read_pattern": read_pattern}}})
+    model_value = mdl["meta"]["exposure"]["read_pattern"]
+    assert model_value is not read_pattern
+    assert not any((a is b for a, b in zip(read_pattern, model_value, strict=True)))
+    assert model_value == read_pattern
+
+
 @pytest.mark.parametrize("method", ["create_minimal", "create_fake_data"])
 class TestRomanDatamodelCreatorDefaults:
     """

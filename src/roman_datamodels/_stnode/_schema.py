@@ -485,6 +485,14 @@ class FakeDataBuilder(Builder):
                     obj[k] = copy.deepcopy(v)
         return obj
 
+    def from_array(self, schema, defaults):
+        obj = super().from_array(schema, defaults)
+        if not obj and defaults:
+            # only use the defaults wholesale if obj is empty
+            # attempting to merge a produced obj with defaults would be overly complicated
+            return copy.deepcopy(defaults)
+        return obj
+
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
         if tag is _MISSING_KEYWORD:
