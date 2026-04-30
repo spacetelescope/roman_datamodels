@@ -66,10 +66,7 @@ class SerializationNodeConverter(_RomanConverter):
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
 
-        # TODO: Add method for setting read_tag with some checks
-        obj = NODE_CLASSES_BY_TAG[tag](node)
-        obj._read_tag = tag
-        return obj
+        return NODE_CLASSES_BY_TAG[tag].from_tag(node=node, tag=tag)
 
 
 class _TaggedNodeConverter(_RomanConverter):
