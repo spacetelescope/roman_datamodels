@@ -1,8 +1,12 @@
+from typing import Any
+
 import asdf
 import pytest
+from asdf.schema import load_schema
 
 from roman_datamodels._stnode._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
+    MANIFEST_TAG_REGISTRY,
     NODE_CLASSES_BY_TAG,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCHEMA_URIS_BY_TAG,
@@ -17,6 +21,24 @@ def manifest(request):
     return request.param
 
 
+@pytest.fixture(scope="session", params=MANIFEST_TAG_REGISTRY)
+def manifest_uri(request):
+    """Fixture to provide all manifest URIs for testing"""
+    return request.param
+
+
+@pytest.fixture(scope="session")
+def manifest_schema(manifest_uri: str) -> Any:
+    """Fixture to provide the schema corresponding to a given manifest URI for testing."""
+    return load_schema(manifest_uri, resolve_references=True)
+
+
+@pytest.fixture(scope="session")
+def latest_manifest_uri() -> str:
+    """Fixture to provide the latest manifest URI for testing"""
+    return MANIFESTS[0]["id"]
+
+
 @pytest.fixture(scope="module", params=NODE_CLASSES_BY_TAG)
 def tag_uri(request) -> str:
     """Fixture for providing all tag URIs to test against."""
@@ -24,9 +46,33 @@ def tag_uri(request) -> str:
 
 
 @pytest.fixture(scope="module")
+def schema_uri(tag_uri: str) -> str:
+    """Fixture to provide the schema URI corresponding to a given tag URI for testing"""
+    return SCHEMA_URIS_BY_TAG[tag_uri]
+
+
+@pytest.fixture(scope="module")
 def node_class(tag_uri: str) -> tagged_type:
     """Fixture for providing the node class corresponding to a given tag URI for testing."""
     return NODE_CLASSES_BY_TAG[tag_uri]
+
+
+@pytest.fixture(scope="module")
+def latest_tag_uri(node_class: tagged_type) -> str:
+    """Fixture for providing the latest tag URI corresponding to a given node class for testing."""
+    return node_class._default_tag
+
+
+@pytest.fixture(scope="module")
+def latest_schema_uri(latest_tag_uri: str) -> str:
+    """Fixture for providing the latest schema URI corresponding to a given tag URI for testing."""
+    return SCHEMA_URIS_BY_TAG[latest_tag_uri]
+
+
+@pytest.fixture(scope="module")
+def schema(schema_uri: str) -> Any:
+    """Fixture for providing the schema corresponding to a given schema URI for testing."""
+    return load_schema(schema_uri, resolve_references=True)
 
 
 @pytest.fixture(scope="module", params=MODEL_REGISTRY)
