@@ -45,9 +45,14 @@ def get_latest_schema(uri: str) -> tuple[str, dict[str, Any]]:
     uri_prefix += "-"
     current_version = Version(version)
     for schema_uri in asdf.get_config().resource_manager:
-        if schema_uri.startswith(uri_prefix) and (new_version := Version(schema_uri.rsplit("-", 1)[-1])) > current_version:
-            current_version = new_version
-            latest_uri = schema_uri
+        if schema_uri.startswith(uri_prefix):
+            version_string = schema_uri.rsplit("-", 1)[-1]
+            if version_string == "1.0":
+                version_string = "1.0.0"
+
+            if (new_version := Version(version_string)) > current_version:
+                current_version = new_version
+                latest_uri = schema_uri
 
     if latest_uri is None:
         raise ValueError(f"No schema found for {uri}")

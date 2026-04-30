@@ -14,11 +14,13 @@ from roman_datamodels import datamodels
 from roman_datamodels._stnode import (
     CalLogs,
     DNode,
+    Guidewindow,
     IndividualImageMeta,
     LNode,
     MosaicAssociations,
     Observation,
     OutlierDetection,
+    RampFitOutput,
     Resample,
     SkyBackground,
     SourceCatalog,
@@ -72,38 +74,37 @@ def test_datamodel_exists(name):
     assert hasattr(datamodels, name)
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_node_type_matches_model(model):
+def test_node_type_matches_model(model, node_fake_data):
     """
     Test that the _node_type listed for each model is what is listed in the schema
     """
-    node_type = model._node_type
-    node = node_type.create_fake_data()
-    schema = node.get_schema()
+    schema = node_fake_data.get_schema()
     name = schema["datamodel_name"]
 
     assert model.__name__ == name
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_model_schemas(model):
-    instance = model.create_fake_data()
-    asdf.schema.load_schema(instance.schema_uri)
+def test_model_schemas(fake_data):
+    asdf.schema.load_schema(fake_data.schema_uri)
 
 
-@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
 @pytest.mark.parametrize("method", ["info", "search", "schema_info"])
-def test_model_asdf_operations(node, model, method):
+def test_model_asdf_operations(node, node_fake_data, model, method):
     """
     Test the decorator for asdf operations on models when an empty initial model
     which is then filled.
     """
     # Create an empty model
-    mdl = model()
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (model is datamodels.RampFitOutputModel or model is datamodels.GuidewindowModel)
+        else nullcontext()
+    ):
+        mdl = model()
     assert isinstance(mdl._instance, node)
 
     # Fill the model with data, but no asdf file is present
-    mdl._instance = node.create_fake_data()
+    mdl._instance = node_fake_data
     assert mdl._asdf is None
 
     # Run the method we wish to test (it should fail with warning or error
@@ -359,7 +360,13 @@ def test_datamodel_schema_info_existence(name):
     # Loop over datamodels that have archive_catalog entries
     if not name.endswith("RefModel"):
         model_class = getattr(datamodels, name)
-        model = model_class.create_fake_data()
+        with (
+            pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+            if (model_class is datamodels.RampFitOutputModel or model_class is datamodels.GuidewindowModel)
+            else nullcontext()
+        ):
+            model = model_class.create_fake_data()
+
         info = model.schema_info("archive_catalog")
         for keyword in model.meta.keys():
             # Only DNodes or LNodes need to be canvassed
@@ -414,9 +421,19 @@ def test_model_only_init_with_correct_node(node_class, correct, model):
     This checks that it can be initialized with the correct node, and that it cannot be
     with any other node.
     """
-    node = node_class.create_fake_data()
-    with nullcontext() if node_class is correct else pytest.raises(ValidationError):
-        model(node).validate()
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (node_class is RampFitOutput or node_class is Guidewindow)
+        else nullcontext()
+    ):
+        node = node_class.create_fake_data()
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (node_class is Guidewindow and correct is Guidewindow)
+        else nullcontext()
+    ):
+        with nullcontext() if node_class is correct else pytest.raises(ValidationError):
+            model(node).validate()
 
 
 @pytest.mark.parametrize(
@@ -533,8 +550,7 @@ def test_science_raw_from_tvac_raw(mk_tvac):
         assert raw.extras.tvac.meta.statistics == tvac.meta.statistics
 
 
-@pytest.mark.parametrize("model_class", datamodels.MODEL_REGISTRY.values())
-def test_datamodel_construct_like_from_like(model_class):
+def test_datamodel_construct_like_from_like(fake_data, model):
     """
     This is a regression test for the issue reported issue #51.
 
@@ -546,15 +562,18 @@ def test_datamodel_construct_like_from_like(model_class):
     that was passed to the constructor. i.e. it should not return a copy of the instance.
     """
 
-    # Create a model
-    model = model_class.create_fake_data()
-
     # Modify _iscopy as it will be reset to False by initializer if called incorrectly
-    model._iscopy = "foo"
+    fake_data._iscopy = "foo"
 
     # Pass model instance to model constructor
-    new_model = model_class(model)
-    assert new_model is model
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (model is datamodels.GuidewindowModel)
+        else nullcontext()
+    ):
+        new_model = model(fake_data)
+
+    assert new_model is fake_data
     assert new_model._iscopy == "foo"  # Verify that the constructor didn't override stuff
 
 
@@ -782,21 +801,18 @@ def test_deepcopy_after_use():
     deepcopy(m.meta)
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_create_minimal(model):
+def test_create_minimal(model, minimal):
     """Test that create_minimal produces a model instance"""
-    m = model.create_minimal()
-    assert isinstance(m, model)
+    assert isinstance(minimal, model)
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_create_fake_data(model):
+def test_create_fake_data(model, fake_data):
     """Test that create_fake_data produces a valid model instance"""
-    m = model.create_fake_data()
-    assert isinstance(m, model)
-    assert m.validate() is None
+    assert isinstance(fake_data, model)
+    assert fake_data.validate() is None
 
 
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 @pytest.mark.parametrize("tag, node_class", NODE_CLASSES_BY_TAG.items())
 def test_create_tag(tag, node_class):
     """Test that we can create a node for every registered tag"""
@@ -810,44 +826,45 @@ def test_create_tag(tag, node_class):
         assert node._read_tag == tag
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_no_hidden(model):
+def test_no_hidden(minimal):
     """Test that no hidden attributes are allowed"""
-    m = model.create_minimal()
     with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
-        m._foo = "bar"  # Add a hidden attribute
+        minimal._foo = "bar"  # Add a hidden attribute
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_delattr(model):
+def test_delattr(minimal):
     """Test that delattr works as expected"""
-    m = model.create_minimal()
+    minimal.foo = "bar"
+    assert hasattr(minimal, "foo")
 
-    m.foo = "bar"
-    assert hasattr(m, "foo")
-
-    del m.foo
-    assert not hasattr(m, "foo")
+    del minimal.foo
+    assert not hasattr(minimal, "foo")
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_slotted(model):
+def test_slotted(minimal):
     """Test that the model is slotted as expected"""
-    m = model.create_minimal()
-
     with pytest.raises(AttributeError, match=r"No attribute .*"):
         # slotted object instances do not have a __dict__
-        m.__dict__  # noqa: B018
+        minimal.__dict__  # noqa: B018
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_create_minimal_copies(model, tmp_path):
+def test_create_minimal_copies(fake_data, model, tmp_path):
     """Test that create_minimal does not retain references to input"""
     fn = tmp_path / "test.asdf"
-    fake = model.create_fake_data()
-    fake.save(fn)
-    with datamodels.open(fn) as opened_model:
-        new_model = model.create_minimal(opened_model)
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (model is datamodels.GuidewindowModel)
+        else nullcontext()
+    ):
+        fake_data.save(fn)
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (model is datamodels.RampFitOutputModel or model is datamodels.GuidewindowModel)
+        else nullcontext()
+    ):
+        with datamodels.open(fn) as opened_model:
+            new_model = model.create_minimal(opened_model)
+
     del opened_model
     gc.collect(2)
     assert new_model.validate() is None
@@ -927,11 +944,15 @@ def test_create_from_model_old_tags():
     assert old_model_tag != new_model_tag
     assert old_observation_tag != new_observation_tag
 
-    old_model = datamodels.ImageModel.create_fake_data(tag=old_model_tag)
+    with pytest.warns(DeprecationWarning, match=r"This node is no longer.*"):
+        old_model = datamodels.ImageModel.create_fake_data(tag=old_model_tag)
+
     assert old_model._instance._read_tag == old_model_tag
     assert old_model.meta.observation._read_tag == old_observation_tag
 
-    converted = datamodels.ImageModel.create_from_model(old_model)
+    with pytest.warns(DeprecationWarning, match=r"This node is no longer.*"):
+        converted = datamodels.ImageModel.create_from_model(old_model)
+
     assert converted.tag == new_model_tag
     # New models should not have a tagged observation node
     assert not isinstance(converted.meta.observation, Observation)

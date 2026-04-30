@@ -37,6 +37,7 @@ def test_all_tags_in_manifest_tag_registry():
     assert len(TAG_MANIFEST_REGISTRY) == len(NODE_CLASSES_BY_TAG)
 
 
+@pytest.mark.filterwarnings("ignore:This node is no longer.*:DeprecationWarning")
 def test_history(tmp_path, node_tag, node_instance):
     filename = tmp_path / "history_test.asdf"
     prefix = "asdf://stsci.edu/datamodels/roman/extensions/"

@@ -10,7 +10,7 @@ from astropy.io import fits
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
-from roman_datamodels._stnode import WfiImage
+from roman_datamodels._stnode import Guidewindow, RampFitOutput, WfiImage
 from roman_datamodels.datamodels._utils import _patch_meta_filename
 from roman_datamodels.testing import assert_node_equal
 
@@ -199,9 +199,21 @@ def test_node_round_trip(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"
 
     # Create/return a node and write it to disk, then check if the node round trips
-    node = node_class.create_fake_data()
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (node_class is RampFitOutput or node_class is Guidewindow)
+        else nullcontext()
+    ):
+        node = node_class.create_fake_data()
     asdf.AsdfFile({"roman": node}).write_to(file_path)
-    with asdf.open(file_path) as af:
+    with (
+        (
+            pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+            if (node_class is RampFitOutput or node_class is Guidewindow)
+            else nullcontext()
+        ),
+        asdf.open(file_path) as af,
+    ):
         assert_node_equal(af.tree["roman"], node)
 
 
@@ -210,12 +222,27 @@ def test_opening_model(tmp_path, node_class):
     file_path = tmp_path / "test.asdf"
 
     # Create a node and write it to disk
-    node = node_class.create_fake_data()
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (node_class is RampFitOutput or node_class is Guidewindow)
+        else nullcontext()
+    ):
+        node = node_class.create_fake_data()
     if hasattr(node, "meta") and hasattr(node.meta, "filename"):
-        node.meta.filename = type(node.meta.filename)(file_path.name)
+        with (
+            pytest.warns(DeprecationWarning, match=r"This node is no longer.*") if (node_class is Guidewindow) else nullcontext()
+        ):
+            node.meta.filename = type(node.meta.filename)(file_path.name)
     asdf.AsdfFile({"roman": node}).write_to(file_path)
 
-    with datamodels.open(file_path) as model:
+    with (
+        (
+            pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+            if (node_class is RampFitOutput or node_class is Guidewindow)
+            else nullcontext()
+        ),
+        datamodels.open(file_path) as model,
+    ):
         # Check that the model is the correct type
         assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
 
@@ -270,7 +297,13 @@ def test_filename_matches_meta(tmp_path, model):
     open_path = tmp_path / "test_filename_read.asdf"
 
     # Create a node and write it to disk
-    gen_model = model.create_fake_data()
+    with (
+        pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+        if (model is RampFitOutput or model is Guidewindow)
+        else nullcontext()
+    ):
+        gen_model = model.create_fake_data()
+
     asdf.AsdfFile({"roman": gen_model}).write_to(save_path)
 
     # Save the filename type
@@ -280,11 +313,23 @@ def test_filename_matches_meta(tmp_path, model):
     os.rename(save_path, open_path)
 
     # Prove filename is different from meta.filename without using datamodels.open
-    with asdf.open(open_path) as af:
+    with (
+        (
+            pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+            if (model is RampFitOutput or model is Guidewindow)
+            else nullcontext()
+        ),
+        asdf.open(open_path) as af,
+    ):
         assert af["roman"]["meta"]["filename"] != open_path.name
 
     # Show datamodels.open will update the filename in memory
     with (
+        (
+            pytest.warns(DeprecationWarning, match=r"This node is no longer.*")
+            if (model is RampFitOutput or model is Guidewindow)
+            else nullcontext()
+        ),
         pytest.warns(
             match="meta.filename: \\? does not match filename: test_filename_read.asdf, updating the filename in memory!"
         ),
