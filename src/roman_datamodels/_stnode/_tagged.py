@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ["SerializationNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
+__all__ = ["SerializationNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode", "tagged_type"]
 
 
 def name_from_tag_uri(tag_uri: str) -> str:
