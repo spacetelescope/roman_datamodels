@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import re
 from copy import deepcopy
+from functools import cache
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
@@ -33,6 +35,7 @@ else:
     _TimeBase: TypeAlias = object
 
 __all__ = [
+    "BaseForMixin",
     "CalibrationSoftwareNameMixin",
     "FileDateMixin",
     "ForcedImageSourceCatalogMixin",
@@ -53,13 +56,37 @@ __all__ = [
 ]
 
 
-class WfiModeMixin:
+class BaseForMixin:
+    """
+    Base class for mixins that provides common functionality.
+        This is not meant to be used directly, but to be subclassed by the mixins below.
+    """
+
+    __slots__ = ()
+    _tag_pattern: ClassVar[str]
+
+    @staticmethod
+    @cache
+    def tag_pattern_map() -> MappingProxyType[str, type[BaseForMixin]]:
+        """
+        A map from the _tag_pattern of a given DataModel subclass to the subclass itself.
+
+        Note: For this to work correctly, anything in RDM that we want to be recognized as
+            a DataModel must be a direct subclass of DataModel, and must define the _tag_pattern
+            class variable.
+        """
+        return MappingProxyType({cls._tag_pattern: cls for cls in BaseForMixin.__subclasses__()})
+
+
+class WfiModeMixin(BaseForMixin):
     """
     Extensions to the WfiMode class.
         Adds to indication properties
     """
 
     __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-*"
 
     # Every optical element is a grating or a filter
     #   There are less gratings than filters so its easier to list out the
@@ -87,7 +114,7 @@ class WfiModeMixin:
             return None
 
 
-class FileDateMixin(_TimeBase):
+class _FileDate(_TimeBase):
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls.now()
@@ -105,15 +132,29 @@ class FileDateMixin(_TimeBase):
         return new
 
 
-class FpsFileDateMixin(FileDateMixin):
-    pass
+class FileDateMixin(_FileDate, BaseForMixin):
+    __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/file_date-*"
 
 
-class TvacFileDateMixin(FileDateMixin):
-    pass
+class FpsFileDateMixin(_FileDate, BaseForMixin):
+    __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/fps/file_date-*"
 
 
-class CalibrationSoftwareNameMixin(_ScalarBase):
+class TvacFileDateMixin(_FileDate, BaseForMixin):
+    __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/tvac/file_date-*"
+
+
+class CalibrationSoftwareNameMixin(BaseForMixin, _ScalarBase):
+    __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/calibration_software_name-*"
+
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("RomanCAL")
@@ -123,7 +164,11 @@ class CalibrationSoftwareNameMixin(_ScalarBase):
         return new
 
 
-class PrdVersionMixin(_ScalarBase):
+class PrdVersionMixin(BaseForMixin, _ScalarBase):
+    __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/prd_version-*"
+
     @classmethod
     def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("8.8.8")
@@ -133,7 +178,11 @@ class PrdVersionMixin(_ScalarBase):
         return new
 
 
-class SdfSoftwareVersionMixin(_ScalarBase):
+class SdfSoftwareVersionMixin(BaseForMixin, _ScalarBase):
+    __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/sdf_software_version-*"
+
     @classmethod
     def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("7.7.7")
@@ -143,7 +192,11 @@ class SdfSoftwareVersionMixin(_ScalarBase):
         return new
 
 
-class OriginMixin(_ScalarBase):
+class OriginMixin(BaseForMixin, _ScalarBase):
+    __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/origin-*"
+
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("STSCI/SOC")
@@ -153,7 +206,11 @@ class OriginMixin(_ScalarBase):
         return new
 
 
-class TelescopeMixin(_ScalarBase):
+class TelescopeMixin(BaseForMixin, _ScalarBase):
+    __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/telescope-*"
+
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("ROMAN")
@@ -163,8 +220,10 @@ class TelescopeMixin(_ScalarBase):
         return new
 
 
-class RefFileMixin(_ObjectBase):
+class RefFileMixin(BaseForMixin, _ObjectBase):
     __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/ref_file-*"
 
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
@@ -190,7 +249,7 @@ class RefFileMixin(_ObjectBase):
         return new
 
 
-class L2CalStepMixin(_ObjectBase):
+class _CalStep(_ObjectBase):
     __slots__ = ()
 
     @classmethod
@@ -204,11 +263,19 @@ class L2CalStepMixin(_ObjectBase):
         return new
 
 
-class L3CalStepMixin(L2CalStepMixin):  # same as L2CalStepMixin
+class L2CalStepMixin(_CalStep, BaseForMixin):
     __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/l2_cal_step-*"
 
 
-class ImageSourceCatalogMixin(_ObjectBase):
+class L3CalStepMixin(_CalStep, BaseForMixin):
+    __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/l3_cal_step-*"
+
+
+class _SourceCatalog(_ObjectBase):
     __slots__ = ()
 
     def get_column_definition(self, name):
@@ -293,17 +360,31 @@ class ImageSourceCatalogMixin(_ObjectBase):
         return super()._create_fake_data(defaults, shape, builder, tag=tag)
 
 
-class ForcedImageSourceCatalogMixin(ImageSourceCatalogMixin):
+class ImageSourceCatalogMixin(_SourceCatalog, BaseForMixin):
     __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/image_source_catalog-*"
 
 
-class MosaicSourceCatalogMixin(ImageSourceCatalogMixin):
+class ForcedImageSourceCatalogMixin(_SourceCatalog, BaseForMixin):
     __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/forced_image_source_catalog-*"
 
 
-class ForcedMosaicSourceCatalogMixin(ImageSourceCatalogMixin):
+class MosaicSourceCatalogMixin(_SourceCatalog, BaseForMixin):
     __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/mosaic_source_catalog-*"
 
 
-class MultibandSourceCatalogMixin(ImageSourceCatalogMixin):
+class ForcedMosaicSourceCatalogMixin(_SourceCatalog, BaseForMixin):
     __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/forced_mosaic_source_catalog-*"
+
+
+class MultibandSourceCatalogMixin(_SourceCatalog, BaseForMixin):
+    __slots__ = ()
+    __module__ = "roman_datamodels._stnode"
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/multiband_source_catalog-*"
