@@ -1,9 +1,9 @@
 """
 This module provides all the specific datamodels used by the Roman pipeline.
     These models are what will be read and written by the pipeline to ASDF files.
-    Note that we require each model to specify a _node_type, which corresponds to
-    the top-level STNode type that the datamodel wraps. This STNode type is derived
-    from the schema manifest defined by RAD.
+    Note that we require each model to specify a _tag_pattern that corresponds to
+    the ASDF tag pattern for the top-level STNode type that the datamodel wraps.
+    This tag pattern is derived from the schema manifest defined by RAD.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ import itertools
 import logging
 import pathlib
 from collections import abc
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import astropy.table.meta
 import numpy as np
@@ -26,6 +26,11 @@ from ._utils import node_update, temporary_update_filedate, temporary_update_fil
 
 if TYPE_CHECKING:
     from typing import Any
+
+    _DataModel = DataModel
+else:
+    _DataModel = object
+
 
 # NOTE: this module does not have the typical `__all__`` present like most of the other
 #    modules in `roman_datamodels``. The presence of the `__all__` variable causes is
@@ -147,7 +152,7 @@ class _ParquetMixin:
         pq.write_table(table, filepath, compression=None)
 
 
-class _RomanDataModel(DataModel):
+class _RomanDataModel(_DataModel):
     __slots__ = ()
 
     def __init__(self, init=None, **kwargs):
@@ -271,25 +276,19 @@ class _RomanDataModel(DataModel):
         )
 
 
-class MosaicModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiMosaic
-
+class MosaicModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = WfiMosaic
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/wfi_mosaic-*"
 
 
-class ImageModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiImage
-
+class ImageModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = WfiImage
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/wfi_image-*"
 
 
-class ScienceRawModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiScienceRaw
-
+class ScienceRawModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = WfiScienceRaw
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/wfi_science_raw-*"
 
     @classmethod
     def from_tvac_raw(cls, model):
@@ -341,18 +340,14 @@ class ScienceRawModel(_RomanDataModel):
         return raw_model
 
 
-class MsosStackModel(_RomanDataModel):
-    from roman_datamodels._stnode import MsosStack
-
+class MsosStackModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = MsosStack
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/msos_stack-*"
 
 
-class RampModel(_RomanDataModel):
-    from roman_datamodels._stnode import Ramp
-
+class RampModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = Ramp
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/ramp-*"
 
     @classmethod
     def from_science_raw(cls, model):
@@ -417,116 +412,84 @@ class RampModel(_RomanDataModel):
         return ramp_model
 
 
-class RampFitOutputModel(_RomanDataModel):
-    from roman_datamodels._stnode import RampFitOutput
-
+class RampFitOutputModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = RampFitOutput
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/ramp_fit_output-*"
 
 
-class L1FaceGuidewindowModel(_RomanDataModel):
-    from roman_datamodels._stnode import L1FaceGuidewindow
-
+class L1FaceGuidewindowModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = L1FaceGuidewindow
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/l1_face_guidewindow-*"
 
 
-class GuidewindowModel(_RomanDataModel):
-    from roman_datamodels._stnode import Guidewindow
-
+class GuidewindowModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = Guidewindow
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/guidewindow-*"
 
 
-class L1DetectorGuidewindowModel(_RomanDataModel):
-    from roman_datamodels._stnode import L1DetectorGuidewindow
-
+class L1DetectorGuidewindowModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = L1DetectorGuidewindow
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/l1_detector_guidewindow-*"
 
 
 class FlatRefModel(DataModel):
-    from roman_datamodels._stnode import FlatRef
-
     __slots__ = ()
-    _node_type = FlatRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/flat-*"
 
 
 class AbvegaoffsetRefModel(DataModel):
-    from roman_datamodels._stnode import AbvegaoffsetRef
-
     __slots__ = ()
-    _node_type = AbvegaoffsetRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/abvegaoffset-*"
 
 
 class ApcorrRefModel(DataModel):
-    from roman_datamodels._stnode import ApcorrRef
-
     __slots__ = ()
-    _node_type = ApcorrRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/apcorr-*"
 
 
 class DarkRefModel(DataModel):
-    from roman_datamodels._stnode import DarkRef
-
     __slots__ = ()
-    _node_type = DarkRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/dark-*"
 
 
 class DetectorstatusRefModel(DataModel):
-    from roman_datamodels._stnode import DetectorstatusRef
-
     __slots__ = ()
-    _node_type = DetectorstatusRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/detectorstatus-*"
 
 
 class DarkdecaysignalRefModel(DataModel):
-    from roman_datamodels._stnode import DarkdecaysignalRef
-
     __slots__ = ()
-    _node_type = DarkdecaysignalRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/darkdecaysignal-*"
 
 
 class DistortionRefModel(DataModel):
-    from roman_datamodels._stnode import DistortionRef
-
     __slots__ = ()
-    _node_type = DistortionRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/distortion-*"
 
 
 class EpsfRefModel(DataModel):
-    from roman_datamodels._stnode import EpsfRef
-
     __slots__ = ()
-    _node_type = EpsfRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/epsf-*"
 
 
 class EtcRefModel(DataModel):
-    from roman_datamodels._stnode import EtcRef
-
     __slots__ = ()
-    _node_type = EtcRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/etc-*"
 
 
 class GainRefModel(DataModel):
-    from roman_datamodels._stnode import GainRef
-
     __slots__ = ()
-    _node_type = GainRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/gain-*"
 
 
 class IpcRefModel(DataModel):
-    from roman_datamodels._stnode import IpcRef
-
     __slots__ = ()
-    _node_type = IpcRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/ipc-*"
 
 
 class LinearityRefModel(DataModel):
-    from roman_datamodels._stnode import LinearityRef
-
     __slots__ = ()
-    _node_type = LinearityRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/linearity-*"
 
     def get_primary_array_name(self):
         """
@@ -539,10 +502,8 @@ class LinearityRefModel(DataModel):
 
 
 class IntegralnonlinearityRefModel(DataModel):
-    from roman_datamodels._stnode import IntegralnonlinearityRef
-
     __slots__ = ()
-    _node_type = IntegralnonlinearityRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/integralnonlinearity-*"
 
     def get_primary_array_name(self):
         """
@@ -555,10 +516,8 @@ class IntegralnonlinearityRefModel(DataModel):
 
 
 class InverselinearityRefModel(DataModel):
-    from roman_datamodels._stnode import InverselinearityRef
-
     __slots__ = ()
-    _node_type = InverselinearityRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/inverselinearity-*"
 
     def get_primary_array_name(self):
         """
@@ -571,10 +530,8 @@ class InverselinearityRefModel(DataModel):
 
 
 class MaskRefModel(DataModel):
-    from roman_datamodels._stnode import MaskRef
-
     __slots__ = ()
-    _node_type = MaskRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/mask-*"
 
     def get_primary_array_name(self):
         """
@@ -587,136 +544,98 @@ class MaskRefModel(DataModel):
 
 
 class MATableRefModel(DataModel):
-    from roman_datamodels._stnode import MatableRef
-
     __slots__ = ()
-    _node_type = MatableRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/matable-*"
 
 
 class PixelareaRefModel(DataModel):
-    from roman_datamodels._stnode import PixelareaRef
-
     __slots__ = ()
-    _node_type = PixelareaRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/pixelarea-*"
 
 
 class ReadnoiseRefModel(DataModel):
-    from roman_datamodels._stnode import ReadnoiseRef
-
     __slots__ = ()
-    _node_type = ReadnoiseRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/readnoise-*"
 
 
 class SkycellsRefModel(DataModel):
-    from roman_datamodels._stnode import SkycellsRef
-
     __slots__ = ()
-    _node_type = SkycellsRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/skycells-*"
 
 
 class SuperbiasRefModel(DataModel):
-    from roman_datamodels._stnode import SuperbiasRef
-
     __slots__ = ()
-    _node_type = SuperbiasRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/superbias-*"
 
 
 class SaturationRefModel(DataModel):
-    from roman_datamodels._stnode import SaturationRef
-
     __slots__ = ()
-    _node_type = SaturationRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/saturation-*"
 
 
 class WfiImgPhotomRefModel(DataModel):
-    from roman_datamodels._stnode import WfiImgPhotomRef
-
     __slots__ = ()
-    _node_type = WfiImgPhotomRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/wfi_img_photom-*"
 
 
 class RefpixRefModel(DataModel):
-    from roman_datamodels._stnode import RefpixRef
-
     __slots__ = ()
-    _node_type = RefpixRef
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/reference_files/refpix-*"
 
 
 class FpsModel(DataModel):
-    from roman_datamodels._stnode import Fps
-
     __slots__ = ()
-    _node_type = Fps
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/fps-*"
 
 
 class TvacModel(DataModel):
-    from roman_datamodels._stnode import Tvac
-
     __slots__ = ()
-    _node_type = Tvac
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/tvac-*"
 
 
-class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import MosaicSourceCatalog
-
+class MosaicSourceCatalogModel(_RomanDataModel, DataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
-    _node_type = MosaicSourceCatalog
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/mosaic_source_catalog-*"
 
 
-class MultibandSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import MultibandSourceCatalog
-
+class MultibandSourceCatalogModel(_RomanDataModel, DataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
-    _node_type = MultibandSourceCatalog
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/multiband_source_catalog-*"
 
 
-class ForcedImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import ForcedImageSourceCatalog
-
+class ForcedImageSourceCatalogModel(_RomanDataModel, DataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
-    _node_type = ForcedImageSourceCatalog
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/forced_image_source_catalog-*"
 
 
-class ForcedMosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import ForcedMosaicSourceCatalog
-
+class ForcedMosaicSourceCatalogModel(_RomanDataModel, DataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
-    _node_type = ForcedMosaicSourceCatalog
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/forced_mosaic_source_catalog-*"
 
 
-class MosaicSegmentationMapModel(_RomanDataModel):
-    from roman_datamodels._stnode import MosaicSegmentationMap
-
+class MosaicSegmentationMapModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = MosaicSegmentationMap
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/mosaic_segmentation_map-*"
 
 
-class MultibandSegmentationMapModel(_RomanDataModel):
-    from roman_datamodels._stnode import MultibandSegmentationMap
-
+class MultibandSegmentationMapModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = MultibandSegmentationMap
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/multiband_segmentation_map-*"
 
 
-class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import ImageSourceCatalog
-
+class ImageSourceCatalogModel(_RomanDataModel, DataModel, _ParquetMixin, _SourceCatalogMixin):
     __slots__ = ()
-    _node_type = ImageSourceCatalog
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/image_source_catalog-*"
 
 
-class SegmentationMapModel(_RomanDataModel):
-    from roman_datamodels._stnode import SegmentationMap
-
+class SegmentationMapModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = SegmentationMap
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/segmentation_map-*"
 
 
-class WfiWcsModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiWcs
-
+class WfiWcsModel(_RomanDataModel, DataModel):
     __slots__ = ()
-    _node_type = WfiWcs
+    _tag_pattern: ClassVar[str] = "asdf://stsci.edu/datamodels/roman/tags/wfi_wcs-*"
 
     @classmethod
     def from_model_with_wcs(cls, model, l1_border=4):

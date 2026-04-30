@@ -77,7 +77,8 @@ def test_node_type_matches_model(model):
     """
     Test that the _node_type listed for each model is what is listed in the schema
     """
-    node_type = model._node_type
+    node_type = model.node_class()
+    assert node_type is model._node_type
     node = node_type.create_fake_data()
     schema = node.get_schema()
     name = schema["datamodel_name"]

@@ -1,0 +1,2 @@
+Switch the ``DataModel`` subclasses from directly pointing at the stnode dynamic class
+to instead listing the ``tag_pattern`` for the schema under pinning that dynamic class.
