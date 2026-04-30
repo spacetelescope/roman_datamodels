@@ -1,6 +1,7 @@
 from typing import Any
 
 import pytest
+from asdf import AsdfFile
 from asdf.schema import load_schema
 
 from roman_datamodels._stnode._registry import (
@@ -8,7 +9,6 @@ from roman_datamodels._stnode._registry import (
     MANIFEST_TAG_REGISTRY,
     NODE_CLASSES_BY_TAG,
     OBJECT_NODE_CLASSES_BY_PATTERN,
-    SCHEMA_URIS_BY_TAG,
 )
 from roman_datamodels._stnode._stnode import _MANIFESTS as MANIFESTS
 from roman_datamodels._stnode._tagged import TaggedListNode, TaggedObjectNode, tagged_type
@@ -47,7 +47,8 @@ def tag_uri(request) -> str:
 @pytest.fixture(scope="module")
 def schema_uri(tag_uri: str) -> str:
     """Fixture to provide the schema URI corresponding to a given tag URI for testing"""
-    return SCHEMA_URIS_BY_TAG[tag_uri]
+    with AsdfFile() as af:
+        return af.extension_manager.get_tag_definition(tag_uri).schema_uris[0]
 
 
 @pytest.fixture(scope="module")
@@ -65,7 +66,8 @@ def latest_tag_uri(node_class: tagged_type) -> str:
 @pytest.fixture(scope="module")
 def latest_schema_uri(latest_tag_uri: str) -> str:
     """Fixture for providing the latest schema URI corresponding to a given tag URI for testing."""
-    return SCHEMA_URIS_BY_TAG[latest_tag_uri]
+    with AsdfFile() as af:
+        return af.extension_manager.get_tag_definition(latest_tag_uri).schema_uris[0]
 
 
 @pytest.fixture(scope="module")

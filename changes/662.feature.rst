@@ -1,0 +1,1 @@
+Reactor the URI handling so that all URI handling is centralized and only works via direct calls to ASDF itself to find information about URIs.

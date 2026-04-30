@@ -20,7 +20,6 @@ from ._registry import (
     NODE_CONVERTERS,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
-    SCHEMA_URIS_BY_TAG,
     TAG_MANIFEST_REGISTRY,
 )
 from ._tagged import SerializationNode
@@ -68,7 +67,6 @@ for version in sorted(_manifest_version_uri, reverse=True):
     for tag_def in manifest["tags"]:
         tag_info = UriInfo(tag_def["tag_uri"], "asdf_tag")
 
-        SCHEMA_URIS_BY_TAG[tag_info.uri] = tag_def["schema_uri"]
         if tag_info.pattern not in _generated:
             _generated[tag_info.pattern] = _factory(tag_info, manifest_uri, tag_def)
         NODE_CLASSES_BY_TAG[tag_info.uri] = _generated[tag_info.pattern]
