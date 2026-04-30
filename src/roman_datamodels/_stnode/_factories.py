@@ -5,15 +5,12 @@ Factories for creating Tagged STNode classes from tag_uris.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from astropy.time import Time
 
 from . import _mixins
-from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, class_name_from_tag_uri
-
-if TYPE_CHECKING:
-    from ._tagged import tagged_type
+from ._tagged import TaggedListNode, TaggedNode, TaggedObjectNode, TaggedScalarNode, class_name_from_tag_uri
 
 __all__ = ["stnode_factory"]
 
@@ -125,7 +122,7 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
     # In special cases one may need to add additional features to a tagged node class.
     #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
     #   Here we mixin the mixin class if it exists.
-    class_type: tuple[Any, tagged_type] | tuple[tagged_type]
+    class_type: tuple[Any, type[TaggedObjectNode] | type[TaggedListNode]] | tuple[type[TaggedObjectNode] | type[TaggedListNode]]
     if hasattr(_mixins, mixin := f"{class_name}Mixin"):
         class_type = (getattr(_mixins, mixin), base_class_type)
     else:
@@ -145,9 +142,7 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
     )
 
 
-def stnode_factory(
-    pattern: str, latest_manifest: str, tag_def: dict[str, Any]
-) -> type[TaggedObjectNode | TaggedListNode | TaggedScalarNode]:
+def stnode_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) -> type[TaggedNode]:
     """
     Construct a tagged STNode class from a tag
 

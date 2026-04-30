@@ -21,7 +21,7 @@ from ._registry import (
 )
 
 if TYPE_CHECKING:
-    from ._tagged import SerializationNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
+    from ._tagged import SerializationNode, TaggedNode, TaggedObjectNode
 
 __all__ = [
     "TaggedListNodeConverter",
@@ -61,7 +61,7 @@ class SerializationNodeConverter(_RomanConverter):
     def to_yaml_tree(self, obj: SerializationNode, tag, ctx):
         return obj.data
 
-    def from_yaml_tree(self, node, tag, ctx) -> TaggedObjectNode | TaggedListNode | TaggedScalarNode:
+    def from_yaml_tree(self, node, tag, ctx) -> TaggedNode:
         if "file_date" in tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)

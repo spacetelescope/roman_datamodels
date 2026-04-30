@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ["SerializationNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
+__all__ = ("SerializationNode", "TaggedListNode", "TaggedNode", "TaggedObjectNode", "TaggedScalarNode")
 
 
 def name_from_tag_uri(tag_uri: str) -> str:
@@ -68,7 +68,7 @@ def class_name_from_tag_uri(tag_uri: str) -> str:
     return class_name
 
 
-class _TaggedNodeMixin(ABC, NodeMixin):
+class TaggedNode(ABC, NodeMixin):
     """
     Mixin class to provide the common API for all tagged objects.
 
@@ -253,7 +253,7 @@ class _TaggedNodeMixin(ABC, NodeMixin):
         return _get_schema_from_tag(self.tag)
 
 
-class TaggedObjectNode(DNode, _TaggedNodeMixin):
+class TaggedObjectNode(DNode, TaggedNode):
     """
     Base class for all tagged objects defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -274,7 +274,7 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
 
-class TaggedListNode(LNode, _TaggedNodeMixin):
+class TaggedListNode(LNode, TaggedNode):
     """
     Base class for all tagged list defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -295,7 +295,7 @@ class TaggedListNode(LNode, _TaggedNodeMixin):
             LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
 
-class TaggedScalarNode(_TaggedNodeMixin):
+class TaggedScalarNode(TaggedNode):
     """
     Base class for all tagged scalars defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -342,7 +342,7 @@ class TaggedScalarNode(_TaggedNodeMixin):
         return copy.copy(self)
 
 
-_T = TypeVar("_T", bound=TaggedObjectNode | TaggedListNode | TaggedScalarNode)
+_T = TypeVar("_T", bound=TaggedNode)
 
 
 class SerializationNode(Generic[_T]):
@@ -388,6 +388,3 @@ class SerializationNode(Generic[_T]):
                 "__module__": "roman_datamodels._stnode",
             },
         )
-
-
-tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]
