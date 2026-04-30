@@ -7,22 +7,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from astropy.time import Time
-
-from . import _mixins
 from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, class_name_from_tag_uri
 
 if TYPE_CHECKING:
-    from ._tagged import tagged_type
+    pass
 
 __all__ = ["stnode_factory"]
 
-# Map of scalar types by pattern (str is default)
-_SCALAR_TYPE_BY_PATTERN = {
-    "asdf://stsci.edu/datamodels/roman/tags/file_date-*": Time,
-    "asdf://stsci.edu/datamodels/roman/tags/fps/file_date-*": Time,
-    "asdf://stsci.edu/datamodels/roman/tags/tvac/file_date-*": Time,
-}
 # Map of node types by pattern (TaggedObjectNode is default)
 _NODE_TYPE_BY_PATTERN = {
     "asdf://stsci.edu/datamodels/roman/tags/cal_logs-*": TaggedListNode,
@@ -67,30 +58,17 @@ def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) 
     -------
     A dynamically generated TaggedScalarNode subclass
     """
-    class_name = class_name_from_tag_uri(pattern)
 
-    # TaggedScalarNode subclasses are really subclasses of the type of the scalar,
-    #   with the TaggedScalarNode as a mixin.  This is because the TaggedScalarNode
-    #   is supposed to be the scalar, but it needs to be serializable under a specific
-    #   ASDF tag.
-    # _SCALAR_TYPE_BY_PATTERN will need to be updated as new wrappers of scalar types are added
-    #   to the RAD manifest.
-    # assume everything is a string if not otherwise defined
-    class_type = _SCALAR_TYPE_BY_PATTERN.get(pattern, str)
-
-    # In special cases one may need to add additional features to a tagged node class.
-    #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
-    #   Here we mixin the mixin class if it exists.
-    if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-        class_type = (class_type, getattr(_mixins, mixin), TaggedScalarNode)
-    else:
-        class_type = (class_type, TaggedScalarNode)
+    if pattern in TaggedScalarNode.tag_pattern_map():
+        cls = TaggedScalarNode.tag_pattern_map()[pattern]
+        cls.__doc__ = docstring_from_tag(tag_def)
+        return cls
 
     return type(
-        class_name,
-        class_type,
+        class_name_from_tag_uri(pattern),
+        (str, TaggedScalarNode),
         {
-            "_pattern": pattern,
+            "_tag_pattern": pattern,
             "_latest_manifest": latest_manifest,
             "_default_tag": tag_def["tag_uri"],
             "__module__": "roman_datamodels._stnode",
@@ -118,24 +96,23 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
     -------
     A dynamically generated TaggedObjectNode or TaggedListNode subclass
     """
-    class_name = class_name_from_tag_uri(pattern)
+    if pattern in TaggedObjectNode.tag_pattern_map():
+        cls = TaggedObjectNode.tag_pattern_map()[pattern]
+        cls.__doc__ = docstring_from_tag(tag_def)
 
-    base_class_type = _NODE_TYPE_BY_PATTERN.get(pattern, TaggedObjectNode)
+        # The source catalog nodes are still being updated, so for now
+        #    we just set the default tag on the class dynamically here.
+        if "source_catalog" in pattern:
+            cls._latest_manifest = latest_manifest
+            cls._default_tag = tag_def["tag_uri"]
 
-    # In special cases one may need to add additional features to a tagged node class.
-    #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
-    #   Here we mixin the mixin class if it exists.
-    class_type: tuple[Any, tagged_type] | tuple[tagged_type]
-    if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-        class_type = (getattr(_mixins, mixin), base_class_type)
-    else:
-        class_type = (base_class_type,)
+        return cls
 
     return type(
-        class_name,
-        class_type,
+        class_name_from_tag_uri(pattern),
+        (TaggedListNode,) if "cal_logs" in pattern else (TaggedObjectNode,),
         {
-            "_pattern": pattern,
+            "_tag_pattern": pattern,
             "_latest_manifest": latest_manifest,
             "_default_tag": tag_def["tag_uri"],
             "__module__": "roman_datamodels._stnode",
