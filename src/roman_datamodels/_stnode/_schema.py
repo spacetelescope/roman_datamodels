@@ -18,7 +18,7 @@ from semantic_version import Version
 from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
 
 if TYPE_CHECKING:
-    from ._tagged import tagged_type
+    from ._tagged import TaggedNode
 
 __all__ = ("Builder", "FakeDataBuilder", "NoValueType", "NodeBuilder", "get_latest_schema")
 
@@ -386,7 +386,7 @@ class Builder:
     def from_null(self, schema, defaults):
         return None
 
-    def _create_tagged_node(self, cls: tagged_type, tag, defaults):
+    def _create_tagged_node(self, cls: TaggedNode, tag, defaults):
         # This method exists so that other builders can override it to control
         #    which entry point into the TaggedNode class to use in order to
         #    build it based on the builder's needs.
@@ -397,7 +397,7 @@ class Builder:
         return cls._create_minimal(defaults=defaults, builder=self, tag=tag)
 
     @final
-    def _from_tagged_node(self, cls: tagged_type, tag, defaults):
+    def _from_tagged_node(self, cls: TaggedNode, tag, defaults):
         # The _create_* returns None if it fails to create rather than _NO_VALUE
         #    the outputs of _create_* are exposed as part of the public API, so
         #    one expects something real rather than a semaphore value.
@@ -508,7 +508,7 @@ class FakeDataBuilder(Builder):
             return copy.deepcopy(defaults)
         return obj
 
-    def _create_tagged_node(self, cls: tagged_type, tag, defaults):
+    def _create_tagged_node(self, cls: TaggedNode, tag, defaults):
         return cls._create_fake_data(defaults=defaults, builder=self, tag=tag)
 
     def from_tagged(self, schema, defaults):
@@ -666,7 +666,7 @@ class NodeBuilder(Builder):
     def from_null(self, schema, defaults):
         return self._copy_default(defaults)
 
-    def _create_tagged_node(self, cls: tagged_type, tag, defaults):
+    def _create_tagged_node(self, cls: TaggedNode, tag, defaults):
         return cls._create_from_node(node=defaults, builder=self, tag=tag)
 
     def from_tagged(self, schema, defaults):
