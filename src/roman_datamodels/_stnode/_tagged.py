@@ -81,7 +81,7 @@ class _TaggedNodeMixin(NodeMixin):
 
     __slots__ = ()
 
-    _pattern: ClassVar[str]
+    _tag_pattern: ClassVar[str]
     _latest_manifest: ClassVar[str]
 
     _default_tag: ClassVar[str]
@@ -208,9 +208,9 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
         """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedObjectNode":
-            if cls._pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._pattern}' has been defined twice")
-            OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+            if cls._tag_pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
+                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._tag_pattern}' has been defined twice")
+            OBJECT_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
 
 
 class TaggedListNode(LNode, _TaggedNodeMixin):
@@ -229,9 +229,9 @@ class TaggedListNode(LNode, _TaggedNodeMixin):
         """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedListNode":
-            if cls._pattern in LIST_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedListNode class for tag '{cls._pattern}' has been defined twice")
-            LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+            if cls._tag_pattern in LIST_NODE_CLASSES_BY_PATTERN:
+                raise RuntimeError(f"TaggedListNode class for tag '{cls._tag_pattern}' has been defined twice")
+            LIST_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
 
 
 class TaggedScalarNode(_TaggedNodeMixin):
@@ -248,9 +248,9 @@ class TaggedScalarNode(_TaggedNodeMixin):
         """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedScalarNode":
-            if cls._pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._pattern}' has been defined twice")
-            SCALAR_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+            if cls._tag_pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
+                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._tag_pattern}' has been defined twice")
+            SCALAR_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
 
     def __asdf_traverse__(self):
         return self
