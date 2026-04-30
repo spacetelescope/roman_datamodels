@@ -9,7 +9,7 @@ import enum
 import functools
 import re
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, final
 
 import asdf
 import asdf.schema
@@ -18,9 +18,9 @@ from semantic_version import Version
 from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
 
 if TYPE_CHECKING:
-    from typing import Any
+    from ._tagged import tagged_type
 
-__all__ = ["get_latest_schema"]
+__all__ = ("Builder", "FakeDataBuilder", "NoValueType", "NodeBuilder", "get_latest_schema")
 
 
 NOSTR = "?"
@@ -205,14 +205,14 @@ def _get_required(schema):
     return required
 
 
-class _NoValueType:
+class NoValueType:
     """Special value to indicate a builder built nothing"""
 
     def __bool__(self):
         return False
 
 
-_NO_VALUE = _NoValueType()
+_NO_VALUE = NoValueType()
 
 
 class SchemaType(enum.Enum):
@@ -386,10 +386,33 @@ class Builder:
     def from_null(self, schema, defaults):
         return None
 
+    def _create_tagged_node(self, cls: tagged_type, tag, defaults):
+        # This method exists so that other builders can override it to control
+        #    which entry point into the TaggedNode class to use in order to
+        #    build it based on the builder's needs.
+        # That is:
+        #    Builder -> _create_minimal
+        #    FakeDataBuilder -> _create_fake_data
+        #    NodeBuilder -> _create_from_node
+        return cls._create_minimal(defaults=defaults, builder=self, tag=tag)
+
+    @final
+    def _from_tagged_node(self, cls: tagged_type, tag, defaults):
+        # The _create_* returns None if it fails to create rather than _NO_VALUE
+        #    the outputs of _create_* are exposed as part of the public API, so
+        #    one expects something real rather than a semaphore value.
+        # This specifically wraps this so that we move back to the _NO_VALUE
+        #    semaphore used by the Builder API.
+        if (value := self._create_tagged_node(cls, tag, defaults)) is not None:
+            return value
+
+        return _NO_VALUE
+
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
-            return property_class._create_minimal(defaults, builder=self, tag=tag)
+            return self._from_tagged_node(property_class, tag, defaults)
+
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         return _NO_VALUE
@@ -493,6 +516,9 @@ class FakeDataBuilder(Builder):
             return copy.deepcopy(defaults)
         return obj
 
+    def _create_tagged_node(self, cls: tagged_type, tag, defaults):
+        return cls._create_fake_data(defaults=defaults, builder=self, tag=tag)
+
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
         if tag is _MISSING_KEYWORD:
@@ -503,7 +529,8 @@ class FakeDataBuilder(Builder):
                 return _NO_VALUE
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
             # Pass control to the class for create_fake_data overrides
-            return property_class._create_fake_data(defaults, builder=self, tag=tag)
+            return self._from_tagged_node(property_class, tag, defaults)
+
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         if tag == "tag:stsci.edu:asdf/time/time-1.*":
@@ -654,11 +681,14 @@ class NodeBuilder(Builder):
     def from_null(self, schema, defaults):
         return self._copy_default(defaults)
 
+    def _create_tagged_node(self, cls: tagged_type, tag, defaults):
+        return cls._create_from_node(node=defaults, builder=self, tag=tag)
+
     def from_tagged(self, schema, defaults):
         tag = _get_keyword(schema, "tag")
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
             try:
-                return property_class._create_from_node(defaults, builder=self)
+                return self._create_tagged_node(property_class, tag, defaults)
             except ValueError:
                 # Providing an incompatible value (list to a dict expecting class)
                 # will result in a ValueError. Don't let this stop the conversion

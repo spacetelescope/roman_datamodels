@@ -6,7 +6,7 @@ from astropy.time import Time
 from astropy.units import Quantity
 
 from roman_datamodels._stnode import Observation, SkyBackground
-from roman_datamodels._stnode._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, SchemaType, _NoValueType
+from roman_datamodels._stnode._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, NoValueType, SchemaType
 
 
 @pytest.mark.parametrize(
@@ -112,13 +112,13 @@ def test_default_is_copied(subschema, data):
     "tag, expected_type",
     (
         # non-rad tags
-        ("tag:stsci.edu:asdf/time/time-1.*", _NoValueType),
-        ("tag:stsci.edu:asdf/core/ndarray-1.*", _NoValueType),
-        ("tag:stsci.edu:gwcs/wcs-*", _NoValueType),
-        ("tag:astropy.org:astropy/table/table-1.*", _NoValueType),
-        ("tag:stsci.edu:asdf/unit/quantity-1.*", _NoValueType),
+        ("tag:stsci.edu:asdf/time/time-1.*", NoValueType),
+        ("tag:stsci.edu:asdf/core/ndarray-1.*", NoValueType),
+        ("tag:stsci.edu:gwcs/wcs-*", NoValueType),
+        ("tag:astropy.org:astropy/table/table-1.*", NoValueType),
+        ("tag:stsci.edu:asdf/unit/quantity-1.*", NoValueType),
         # unknown tag
-        ("abc", _NoValueType),
+        ("abc", NoValueType),
         # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
         ("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0", SkyBackground),
     ),
@@ -141,7 +141,7 @@ def test_tag(tag, expected_type):
         ("tag:astropy.org:astropy/table/table-1.*", Table),
         ("tag:stsci.edu:asdf/unit/quantity-1.*", Quantity),
         # unknown tag
-        ("abc", _NoValueType),
+        ("abc", NoValueType),
         # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
         ("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0", SkyBackground),
     ),

@@ -5,8 +5,9 @@ Mixin classes for additional functionality for STNode classes
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from copy import deepcopy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar, Self, TypeAlias
 
 from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
 
@@ -15,8 +16,6 @@ from ._tagged import _get_schema_from_tag
 
 # This is a workaround for MyPy to understand the Mixin classes
 if TYPE_CHECKING:
-    from typing import ClassVar, TypeAlias
-
     from astropy.time import Time
 
     from ._tagged import TaggedObjectNode, TaggedScalarNode
@@ -89,20 +88,31 @@ class WfiModeMixin:
 
 class FileDateMixin(_TimeBase):
     @classmethod
-    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls.now()
-        if tag:
-            new._read_tag = tag
-
-        return new
+    def _create_minimal(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self:
+        return cls.from_tag(
+            node=(defaults if defaults else cls.now()),
+            tag=(tag or cls._default_tag),
+        )
 
     @classmethod
-    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
-        if tag:
-            new._read_tag = tag
-
-        return new
+    def _create_fake_data(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        shape: tuple[int, ...] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self:
+        return cls.from_tag(
+            node=(defaults if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")),
+            tag=(tag or cls._default_tag),
+        )
 
 
 class FpsFileDateMixin(FileDateMixin):
@@ -115,93 +125,127 @@ class TvacFileDateMixin(FileDateMixin):
 
 class CalibrationSoftwareNameMixin(_ScalarBase):
     @classmethod
-    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls("RomanCAL")
-        if tag:
-            new._read_tag = tag
-
-        return new
+    def _create_minimal(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self:
+        return cls.from_tag(
+            node=(defaults if defaults else "RomanCAL"),
+            tag=(tag or cls._default_tag),
+        )
 
 
 class PrdVersionMixin(_ScalarBase):
     @classmethod
-    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls("8.8.8")
-        if tag:
-            new._read_tag = tag
-
-        return new
+    def _create_fake_data(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        shape: tuple[int, ...] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self:
+        return cls.from_tag(
+            node=(defaults if defaults else "8.8.8"),
+            tag=(tag or cls._default_tag),
+        )
 
 
 class SdfSoftwareVersionMixin(_ScalarBase):
     @classmethod
-    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls("7.7.7")
-        if tag:
-            new._read_tag = tag
-
-        return new
+    def _create_fake_data(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        shape: tuple[int, ...] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self:
+        return cls.from_tag(
+            node=(defaults if defaults else "7.7.7"),
+            tag=(tag or cls._default_tag),
+        )
 
 
 class OriginMixin(_ScalarBase):
     @classmethod
-    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls("STSCI/SOC")
-        if tag:
-            new._read_tag = tag
-
-        return new
+    def _create_minimal(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self:
+        return cls.from_tag(
+            node=(defaults if defaults else "STSCI/SOC"),
+            tag=(tag or cls._default_tag),
+        )
 
 
 class TelescopeMixin(_ScalarBase):
     @classmethod
-    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls("ROMAN")
-        if tag:
-            new._read_tag = tag
-
-        return new
+    def _create_minimal(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self:
+        return cls.from_tag(
+            node=(defaults if defaults else "ROMAN"),
+            tag=(tag or cls._default_tag),
+        )
 
 
 class RefFileMixin(_ObjectBase):
     __slots__ = ()
 
     @classmethod
-    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
+    def _create_minimal(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self:
         # copy defaults as we may modify them below
-        if defaults:
-            defaults = deepcopy(defaults)
-        else:
-            defaults = {}
-        schema = _get_schema_from_tag(tag or cls._default_tag)
+        defaults = dict(deepcopy(defaults)) if defaults else {}
+        tag = tag or cls._default_tag
+
+        schema = _get_schema_from_tag(tag)
         for k, v in schema["properties"].items():
             if v["type"] != "string":
                 continue
             if k in defaults:
                 continue
             defaults[k] = "N/A"
-        if not builder:
-            builder = Builder()
-        data = builder.from_object(schema, defaults)
-        new = cls(data)
-        if tag:
-            new._read_tag = tag
 
-        return new
+        return cls.from_tag(
+            node=(builder or Builder()).from_object(schema, defaults),
+            tag=tag,
+        )
 
 
 class L2CalStepMixin(_ObjectBase):
     __slots__ = ()
 
     @classmethod
-    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
+    def _create_minimal(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self:
+        tag = tag or cls._default_tag
         defaults = defaults or {}
-        schema = _get_schema_from_tag(tag or cls._default_tag)
-        new = cls({k: defaults.get(k, "INCOMPLETE") for k in schema["properties"]})
-        if tag:
-            new._read_tag = tag
-
-        return new
+        return cls.from_tag(
+            node=({k: defaults.get(k, "INCOMPLETE") for k in _get_schema_from_tag(tag)["properties"]}),
+            tag=tag,
+        )
 
 
 class L3CalStepMixin(L2CalStepMixin):  # same as L2CalStepMixin
@@ -286,11 +330,18 @@ class ImageSourceCatalogMixin(_ObjectBase):
         return Table(columns)
 
     @classmethod
-    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
-        defaults = defaults or {}
+    def _create_fake_data(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        shape: tuple[int, ...] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self | None:
+        defaults = dict(defaults) if defaults else {}
         if "source_catalog" not in defaults:
             defaults["source_catalog"] = cls._create_empty_catalog(tag=tag)
-        return super()._create_fake_data(defaults, shape, builder, tag=tag)
+        return super()._create_fake_data(defaults=defaults, shape=shape, builder=builder, tag=tag)
 
 
 class ForcedImageSourceCatalogMixin(ImageSourceCatalogMixin):

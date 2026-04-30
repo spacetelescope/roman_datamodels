@@ -26,7 +26,6 @@ from roman_datamodels._stnode import (
     WfiWcs,
 )
 from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
-from roman_datamodels._stnode._tagged import _NO_VALUE
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 from .conftest import MANIFESTS
@@ -802,11 +801,11 @@ def test_create_tag(tag, node_class):
     """Test that we can create a node for every registered tag"""
 
     node = node_class.create_minimal(tag=tag)
-    if node is not _NO_VALUE:
+    if node is not None:
         assert node._read_tag == tag
 
     node = node_class.create_fake_data(tag=tag)
-    if node is not _NO_VALUE:
+    if node is not None:
         assert node._read_tag == tag
 
 
