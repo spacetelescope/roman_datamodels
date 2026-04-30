@@ -34,8 +34,11 @@ __all__ = ["NODE_CLASSES", "NODE_EXTENSIONS"]
 #   This is because the ASDF extensions have to be created before they can be registered
 #   and this module creates the classes used by the ASDF extension.
 _MANIFEST_DIR = Path(str(importlib.resources.files(resources) / "manifests"))
-# TODO: We should make this use semantic versioning to sort to ensure we don't get something strange
-_DATAMODEL_MANIFEST_PATHS = sorted([path for path in _MANIFEST_DIR.glob("*datamodels-*.yaml")], reverse=True)
+_DATAMODEL_MANIFEST_PATHS = sorted(
+    [path for path in _MANIFEST_DIR.glob("*datamodels-*.yaml")],
+    reverse=True,
+    key=lambda v: tuple(int(i) for i in v.stem.rsplit("-")[-1].split(".")),
+)
 DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL_MANIFEST_PATHS]
 # Notice that the static manifests are first so that we defer to them
 _MANIFESTS = DATAMODEL_MANIFESTS
