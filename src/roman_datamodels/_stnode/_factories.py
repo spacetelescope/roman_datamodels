@@ -9,11 +9,11 @@ from typing import TYPE_CHECKING, Any
 
 from astropy.time import Time
 
-from . import _mixins
+from ._mixins import BaseForMixin
 from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, class_name_from_tag_uri
 
 if TYPE_CHECKING:
-    from ._tagged import tagged_type
+    pass
 
 __all__ = ["stnode_factory"]
 
@@ -76,15 +76,18 @@ def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) 
     # _SCALAR_TYPE_BY_PATTERN will need to be updated as new wrappers of scalar types are added
     #   to the RAD manifest.
     # assume everything is a string if not otherwise defined
-    class_type = _SCALAR_TYPE_BY_PATTERN.get(pattern, str)
+    scalar_type = _SCALAR_TYPE_BY_PATTERN.get(pattern, str)
 
     # In special cases one may need to add additional features to a tagged node class.
     #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
     #   Here we mixin the mixin class if it exists.
-    if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-        class_type = (class_type, getattr(_mixins, mixin), TaggedScalarNode)
+    class_type: (
+        tuple[type[str | Time], type[BaseForMixin], type[TaggedScalarNode]] | tuple[type[str | Time], type[TaggedScalarNode]]
+    )
+    if pattern in BaseForMixin.tag_pattern_map():
+        class_type = (scalar_type, BaseForMixin.tag_pattern_map()[pattern], TaggedScalarNode)
     else:
-        class_type = (class_type, TaggedScalarNode)
+        class_type = (scalar_type, TaggedScalarNode)
 
     return type(
         class_name,
@@ -125,9 +128,11 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
     # In special cases one may need to add additional features to a tagged node class.
     #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
     #   Here we mixin the mixin class if it exists.
-    class_type: tuple[Any, tagged_type] | tuple[tagged_type]
-    if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-        class_type = (getattr(_mixins, mixin), base_class_type)
+    class_type: (
+        tuple[type[BaseForMixin], type[TaggedObjectNode | TaggedListNode]] | tuple[type[TaggedObjectNode | TaggedListNode]]
+    )
+    if pattern in BaseForMixin.tag_pattern_map():
+        class_type = (BaseForMixin.tag_pattern_map()[pattern], base_class_type)
     else:
         class_type = (base_class_type,)
 
