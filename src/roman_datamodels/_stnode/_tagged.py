@@ -9,6 +9,8 @@ from __future__ import annotations
 import copy
 from typing import TYPE_CHECKING, Generic, TypeVar
 
+from roman_datamodels._stnode._uri import UriInfo
+
 from ._node import DNode, LNode
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
@@ -16,7 +18,7 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_PATTERN,
     SERIALIZATION_BY_MANIFEST,
 )
-from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
+from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
@@ -26,7 +28,7 @@ if TYPE_CHECKING:
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ["SerializationNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
+__all__ = ["SerializationNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode", "tagged_type"]
 
 
 def name_from_tag_uri(tag_uri: str) -> str:
@@ -91,7 +93,7 @@ class _TaggedNodeMixin(NodeMixin):
         cls, defaults: Mapping[str, Any] | None = None, builder: Builder | None = None, *, tag: str | None = None
     ) -> Self:
         builder = builder or Builder()
-        new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
+        new = cls(builder.build(UriInfo(tag or cls._default_tag).schema, defaults))
 
         if tag:
             new._read_tag = tag
@@ -189,7 +191,7 @@ class _TaggedNodeMixin(NodeMixin):
 
     def get_schema(self):
         """Retrieve the schema associated with this tag"""
-        return _get_schema_from_tag(self.tag)
+        return UriInfo(self.tag).schema
 
 
 class TaggedObjectNode(DNode, _TaggedNodeMixin):
@@ -258,7 +260,7 @@ class TaggedScalarNode(_TaggedNodeMixin):
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         builder = builder or Builder()
-        value = builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults)
+        value = builder.build(UriInfo(tag or cls._default_tag).schema, defaults)
         if value is _NO_VALUE:
             return value
 

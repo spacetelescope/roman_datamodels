@@ -10,10 +10,11 @@ from typing import TYPE_CHECKING, Any
 from astropy.time import Time
 
 from . import _mixins
-from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, class_name_from_tag_uri
+from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 if TYPE_CHECKING:
     from ._tagged import tagged_type
+    from ._uri import UriInfo
 
 __all__ = ["stnode_factory"]
 
@@ -48,14 +49,14 @@ def docstring_from_tag(tag_def: dict[str, Any]) -> str:
     return docstring + f"Class generated from tag '{tag_def['tag_uri']}'"
 
 
-def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) -> type[TaggedScalarNode]:
+def scalar_factory(tag_info: UriInfo, latest_manifest: str, tag_def: dict[str, Any]) -> type[TaggedScalarNode]:
     """
     Factory to create a TaggedScalarNode class from a tag
 
     Parameters
     ----------
-    pattern: str
-        A tag pattern/wildcard
+    tag_info: UriInfo
+        A UriInfo object containing the tag_uri and pattern for the tag
 
     latest_manifest: str
         URI for the latest manifest
@@ -67,8 +68,6 @@ def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) 
     -------
     A dynamically generated TaggedScalarNode subclass
     """
-    class_name = class_name_from_tag_uri(pattern)
-
     # TaggedScalarNode subclasses are really subclasses of the type of the scalar,
     #   with the TaggedScalarNode as a mixin.  This is because the TaggedScalarNode
     #   is supposed to be the scalar, but it needs to be serializable under a specific
@@ -76,37 +75,37 @@ def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) 
     # _SCALAR_TYPE_BY_PATTERN will need to be updated as new wrappers of scalar types are added
     #   to the RAD manifest.
     # assume everything is a string if not otherwise defined
-    class_type = _SCALAR_TYPE_BY_PATTERN.get(pattern, str)
+    class_type = _SCALAR_TYPE_BY_PATTERN.get(tag_info.pattern, str)
 
     # In special cases one may need to add additional features to a tagged node class.
     #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
     #   Here we mixin the mixin class if it exists.
-    if hasattr(_mixins, mixin := f"{class_name}Mixin"):
+    if hasattr(_mixins, mixin := f"{tag_info.camel_case}Mixin"):
         class_type = (class_type, getattr(_mixins, mixin), TaggedScalarNode)
     else:
         class_type = (class_type, TaggedScalarNode)
 
     return type(
-        class_name,
+        tag_info.camel_case,
         class_type,
         {
-            "_pattern": pattern,
+            "_pattern": tag_info.pattern,
             "_latest_manifest": latest_manifest,
-            "_default_tag": tag_def["tag_uri"],
+            "_default_tag": tag_info.uri,
             "__module__": "roman_datamodels._stnode",
             "__doc__": docstring_from_tag(tag_def),
         },
     )
 
 
-def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) -> type[TaggedObjectNode | TaggedListNode]:
+def node_factory(tag_info: UriInfo, latest_manifest: str, tag_def: dict[str, Any]) -> type[TaggedObjectNode | TaggedListNode]:
     """
     Factory to create a TaggedObjectNode or TaggedListNode class from a tag
 
     Parameters
     ----------
-    pattern: str
-        A tag pattern/wildcard
+    tag_info: UriInfo
+        A UriInfo object containing the tag_uri and pattern for the tag
 
     latest_manifest: str
         URI for the latest manifest
@@ -118,26 +117,25 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
     -------
     A dynamically generated TaggedObjectNode or TaggedListNode subclass
     """
-    class_name = class_name_from_tag_uri(pattern)
 
-    base_class_type = _NODE_TYPE_BY_PATTERN.get(pattern, TaggedObjectNode)
+    base_class_type = _NODE_TYPE_BY_PATTERN.get(tag_info.pattern, TaggedObjectNode)
 
     # In special cases one may need to add additional features to a tagged node class.
     #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
     #   Here we mixin the mixin class if it exists.
     class_type: tuple[Any, tagged_type] | tuple[tagged_type]
-    if hasattr(_mixins, mixin := f"{class_name}Mixin"):
+    if hasattr(_mixins, mixin := f"{tag_info.camel_case}Mixin"):
         class_type = (getattr(_mixins, mixin), base_class_type)
     else:
         class_type = (base_class_type,)
 
     return type(
-        class_name,
+        tag_info.camel_case,
         class_type,
         {
-            "_pattern": pattern,
+            "_pattern": tag_info.pattern,
             "_latest_manifest": latest_manifest,
-            "_default_tag": tag_def["tag_uri"],
+            "_default_tag": tag_info.uri,
             "__module__": "roman_datamodels._stnode",
             "__doc__": docstring_from_tag(tag_def),
             "__slots__": (),
@@ -146,15 +144,15 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
 
 
 def stnode_factory(
-    pattern: str, latest_manifest: str, tag_def: dict[str, Any]
+    tag_info: UriInfo, latest_manifest: str, tag_def: dict[str, Any]
 ) -> type[TaggedObjectNode | TaggedListNode | TaggedScalarNode]:
     """
     Construct a tagged STNode class from a tag
 
     Parameters
     ----------
-    pattern: str
-        A tag pattern/wildcard
+    tag_info: UriInfo
+        A UriInfo object containing the tag_uri and pattern for the tag
 
     latest_manifest: str
         URI for the latest manifest
@@ -169,6 +167,6 @@ def stnode_factory(
     # TaggedScalarNodes are a special case because they are not a subclass of a
     #   _node class, but rather a subclass of the type of the scalar.
     if "tagged_scalar" in tag_def["schema_uri"]:
-        return scalar_factory(pattern, latest_manifest, tag_def)
+        return scalar_factory(tag_info, latest_manifest, tag_def)
     else:
-        return node_factory(pattern, latest_manifest, tag_def)
+        return node_factory(tag_info, latest_manifest, tag_def)
