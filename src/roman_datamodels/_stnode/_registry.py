@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 OBJECT_NODE_CLASSES_BY_PATTERN: dict[str, type[TaggedObjectNode]] = {}
 LIST_NODE_CLASSES_BY_PATTERN: dict[str, type[TaggedListNode]] = {}
 SCALAR_NODE_CLASSES_BY_PATTERN: dict[str, type[TaggedScalarNode]] = {}
+NODES_BY_PATTERN: dict[str, tagged_type] = {}
 NODE_CONVERTERS: dict[str, type[_RomanConverter]] = {}
 NODE_CLASSES_BY_TAG: dict[str, tagged_type] = {}
 SCHEMA_URIS_BY_TAG: dict[str, str] = {}

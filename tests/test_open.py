@@ -10,7 +10,7 @@ from astropy.io import fits
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
-from roman_datamodels._stnode import WfiImage
+from roman_datamodels._stnode import TaggedObjectNode, WfiImage
 from roman_datamodels.datamodels._utils import _patch_meta_filename
 from roman_datamodels.testing import assert_node_equal
 
@@ -194,30 +194,28 @@ def test_no_memmap(tmp_path, kwargs):
         assert (model.data == data).all()
 
 
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-def test_node_round_trip(tmp_path, node_class):
+def test_node_round_trip(tmp_path, data_model_node: type[TaggedObjectNode]):
     file_path = tmp_path / "test.asdf"
 
     # Create/return a node and write it to disk, then check if the node round trips
-    node = node_class.create_fake_data()
+    node = data_model_node.create_fake_data()
     asdf.AsdfFile({"roman": node}).write_to(file_path)
     with asdf.open(file_path) as af:
         assert_node_equal(af.tree["roman"], node)
 
 
-@pytest.mark.parametrize("node_class", [node for node in datamodels.MODEL_REGISTRY])
-def test_opening_model(tmp_path, node_class):
+def test_opening_model(tmp_path, data_model_node: type[TaggedObjectNode]):
     file_path = tmp_path / "test.asdf"
 
     # Create a node and write it to disk
-    node = node_class.create_fake_data()
+    node = data_model_node.create_fake_data()
     if hasattr(node, "meta") and hasattr(node.meta, "filename"):
         node.meta.filename = type(node.meta.filename)(file_path.name)
     asdf.AsdfFile({"roman": node}).write_to(file_path)
 
     with datamodels.open(file_path) as model:
         # Check that the model is the correct type
-        assert isinstance(model, datamodels.MODEL_REGISTRY[node_class])
+        assert isinstance(model, datamodels.MODEL_REGISTRY[data_model_node])
 
 
 def test_read_pattern_properties():
@@ -261,16 +259,16 @@ def test_open_asn(tmp_path):
     assert isinstance(lib, romancal.datamodels.ModelLibrary)
 
 
-@pytest.mark.parametrize(
-    "model",
-    [mdl for mdl in datamodels.MODEL_REGISTRY.keys() if ("Ref" not in mdl.__name__ and "Associations" not in mdl.__name__)],
-)
-def test_filename_matches_meta(tmp_path, model):
+def test_filename_matches_meta(tmp_path, data_model_node: type[TaggedObjectNode]):
+    if "Ref" in data_model_node.__name__:
+        # These models don't have a file name
+        return
+
     save_path = tmp_path / "test_filename.asdf"
     open_path = tmp_path / "test_filename_read.asdf"
 
     # Create a node and write it to disk
-    gen_model = model.create_fake_data()
+    gen_model = data_model_node.create_fake_data()
     asdf.AsdfFile({"roman": gen_model}).write_to(save_path)
 
     # Save the filename type
@@ -288,10 +286,10 @@ def test_filename_matches_meta(tmp_path, model):
         pytest.warns(
             match="meta.filename: \\? does not match filename: test_filename_read.asdf, updating the filename in memory!"
         ),
-        datamodels.open(open_path) as model,
+        datamodels.open(open_path) as mdl,
     ):
-        assert model.meta.filename == open_path.name
-        assert isinstance(model.meta.filename, gn_fn_type)
+        assert mdl.meta.filename == open_path.name
+        assert isinstance(mdl.meta.filename, gn_fn_type)
 
 
 @pytest.mark.parametrize(

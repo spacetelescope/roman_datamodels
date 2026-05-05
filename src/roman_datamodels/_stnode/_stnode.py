@@ -20,6 +20,7 @@ from ._registry import (
     MANIFEST_TAG_REGISTRY,
     NODE_CLASSES_BY_TAG,
     NODE_CONVERTERS,
+    NODES_BY_PATTERN,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
     SCHEMA_URIS_BY_TAG,
@@ -61,7 +62,6 @@ def _factory(pattern, latest_manifest, tag_def):
 
 # Main dynamic class creation loop
 #   Reads each tag entry from the manifest and creates a class for it
-_generated = {}
 for manifest in _MANIFESTS:
     _add_cls(SerializationNode._factory(manifest_uri := manifest["id"]))
 
@@ -72,9 +72,9 @@ for manifest in _MANIFESTS:
 
         # make pattern from tag
         pattern = f"{base}-*"
-        if pattern not in _generated:
-            _generated[pattern] = _factory(pattern, manifest_uri, tag_def)
-        NODE_CLASSES_BY_TAG[tag_uri] = _generated[pattern]
+        if pattern not in NODES_BY_PATTERN:
+            NODES_BY_PATTERN[pattern] = _factory(pattern, manifest_uri, tag_def)
+        NODE_CLASSES_BY_TAG[tag_uri] = NODES_BY_PATTERN[pattern]
 
         # Make serialization intermediate
         if tag_uri not in TAG_MANIFEST_REGISTRY:

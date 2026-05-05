@@ -5,9 +5,10 @@ import asdf
 import pytest
 from asdf.schema import load_schema
 
+from roman_datamodels import DataModel, datamodels
 from roman_datamodels import _stnode as stnode
-from roman_datamodels import datamodels
 from roman_datamodels._stnode._registry import MANIFEST_TAG_REGISTRY
+from roman_datamodels._stnode._tagged import _TaggedNodeMixin
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 
@@ -41,15 +42,13 @@ def test_tag_has_node_class(raw_tag_def: dict[str, Any]):
         assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-def test_node_classes_available_via_stnode(node_class):
+def test_node_classes_available_via_stnode(node_class: type[_TaggedNodeMixin]):
     assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
     assert node_class.__module__ == stnode.__name__
     assert hasattr(stnode, node_class.__name__)
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-def test_copy(node_class):
+def test_copy(node_class: type[_TaggedNodeMixin]):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
     node = node_class.create_fake_data()
     node_copy = node.copy()
@@ -64,9 +63,8 @@ def test_copy(node_class):
         assert_node_is_copy(node, node_copy, deepcopy=True)
 
 
-@pytest.mark.parametrize("model_class", datamodels.MODEL_REGISTRY.values())
-def test_deepcopy_model(model_class):
-    model = model_class.create_fake_data(shape=(8, 8, 8))
+def test_deepcopy_model(data_model: type[DataModel]):
+    model = data_model.create_fake_data(shape=(8, 8, 8))
     model_copy = model.copy()
 
     # There is no assert equal for models, but the data inside is what we care about.
@@ -102,8 +100,7 @@ def test_wfi_mode():
     assert isinstance(node, stnode._mixins.WfiModeMixin)
 
 
-@pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
-def test_serialization(node_class, tmp_path):
+def test_serialization(node_class: type[_TaggedNodeMixin], tmp_path):
     file_path = tmp_path / "test.asdf"
 
     node = node_class.create_fake_data()
@@ -115,17 +112,15 @@ def test_serialization(node_class, tmp_path):
         assert_node_equal(af["node"], node)
 
 
-@pytest.mark.parametrize("node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedObjectNode)])
-def test_no_hidden(node_class):
-    node = node_class.create_fake_data()
+def test_no_hidden(object_node_class: type[stnode.TaggedObjectNode]):
+    node = object_node_class.create_fake_data()
     with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
         node._foo = "bar"  # Add a hidden attribute
 
 
-@pytest.mark.parametrize("node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedListNode)])
-def test_list_node_no_new_attributes(node_class):
+def test_list_node_no_new_attributes(list_node_class: type[stnode.TaggedListNode]):
     """Test that no new attributes can be added to a list node."""
-    node = node_class.create_fake_data()
+    node = list_node_class.create_fake_data()
     with pytest.raises(AttributeError, match=r"Cannot set attribute .*, only allowed are .*"):
         node.foo = "bar"
 
@@ -133,14 +128,11 @@ def test_list_node_no_new_attributes(node_class):
         node._foo = "bar"
 
 
-@pytest.mark.parametrize(
-    "node_class", [cls for cls in stnode.NODE_CLASSES if issubclass(cls, stnode.TaggedObjectNode | stnode.TaggedListNode)]
-)
-def test_slotted(node_class):
+def test_slotted(container_node_class: type[stnode.TaggedObjectNode] | type[stnode.TaggedListNode]):
     """
     Test that slotted nodes do not allow new attributes to be added.
     """
-    node = node_class.create_fake_data()
+    node = container_node_class.create_fake_data()
     with pytest.raises(AttributeError, match=r".* attribute .*__dict__.*"):
         # Attempt to access __dict__ directly, slotted classes do not have __dict__
         node.__dict__  # noqa: B018
@@ -221,14 +213,16 @@ def test_node_representation():
     )
 
 
-def test_get_latest_schema(object_node, object_node_default_uri, object_node_uris):
+def test_get_latest_schema(
+    object_node_class: type[stnode.TaggedObjectNode], object_node_default_uri: str, object_node_uris: list[str]
+):
     assert len(object_node_uris) > 0, "This test requires at lest one URI available."
 
     for uri in [object_node_default_uri.rsplit("-", 1)[0], *object_node_uris]:
         latest_uri, schema = stnode.get_latest_schema(uri)
         assert latest_uri == object_node_default_uri
 
-        assert stnode._schema._get_schema_from_tag(object_node._default_tag) == schema
+        assert stnode._schema._get_schema_from_tag(object_node_class._default_tag) == schema
 
 
 @pytest.mark.parametrize(
