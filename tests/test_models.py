@@ -1,75 +1,56 @@
 import gc
 from contextlib import nullcontext
 from copy import deepcopy
+from typing import Any
 
 import asdf
 import numpy as np
 import pytest
 from asdf.exceptions import ValidationError
+from asdf.schema import load_schema
 from astropy import units as u
 from astropy.time import Time
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels
-from roman_datamodels._stnode import (
-    CalLogs,
-    DNode,
-    IndividualImageMeta,
-    LNode,
-    MosaicAssociations,
-    Observation,
-    OutlierDetection,
-    Resample,
-    SkyBackground,
-    SourceCatalog,
-    WfiImage,
-    WfiWcs,
-)
-from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
+from roman_datamodels import DataModel, datamodels
+from roman_datamodels._stnode import DNode, LNode, Observation, WfiImage
+from roman_datamodels._stnode._registry import MANIFEST_TAG_REGISTRY, NODE_CLASSES_BY_TAG
 from roman_datamodels._stnode._tagged import _NO_VALUE
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
-from .conftest import MANIFESTS
 
-# Nodes for metadata schema that do not contain any archive_catalog keywords
-NODES_LACKING_ARCHIVE_CATALOG = [
-    CalLogs,
-    OutlierDetection,
-    MosaicAssociations,
-    IndividualImageMeta,
-    Resample,
-    SkyBackground,
-    SourceCatalog,
-    WfiWcs,
-]
-
-
-def datamodel_names():
-    names = []
-
-    extension_manager = asdf.AsdfFile().extension_manager
-    for manifest in MANIFESTS:
-        for tag in manifest["tags"]:
-            schema_uri = extension_manager.get_tag_definition(tag["tag_uri"]).schema_uris[0]
-            schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
-
-            if not (datamodel_name := schema.get("datamodel_name")):
+def _get_top_level_schemas():
+    visited_schemas: set[str] = set()
+    for manifest_uri in MANIFEST_TAG_REGISTRY:
+        for tag_def in load_schema(manifest_uri)["tags"]:
+            if (schema_uri := tag_def["schema_uri"]) in visited_schemas:
                 continue
 
-            if datamodel_name == "AssociationsModel":
-                continue
-
-            names.append(datamodel_name)
-
-    return names
+            visited_schemas.add(schema_uri)
+            if "datamodel_name" in (schema := load_schema(schema_uri, resolve_references=True)):
+                yield schema
 
 
-@pytest.mark.parametrize("name", datamodel_names())
-def test_datamodel_exists(name):
+@pytest.fixture(scope="session", params=_get_top_level_schemas())
+def top_level_schema(request) -> dict[str, Any]:
     """
-    Confirm that a datamodel exists for every schema indicating that it is a datamodel
+    Fixture to return the top level schemas from the manifest information.
+        This returns all of the top level schemas even if they map to the same data model.
+        This is intentional in case a datamodel_name changes between schemas
     """
-    assert hasattr(datamodels, name)
+    return request.param
+
+
+def test_data_model_exists(top_level_schema: dict[str, Any], request):
+    """
+    Confirm that a DataModel exists with the correct datamodel_name for each top
+    level schema entry listed by RAD
+    """
+    name = top_level_schema["datamodel_name"]
+    # TODO: We should probably add this model back but with a warning instead
+    if name == "AssociationsModel":
+        request.applymarker(pytest.mark.xfail(reason="AssociationsModel was removed by #562"))
+    assert hasattr(datamodels, top_level_schema["datamodel_name"])
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
@@ -352,21 +333,18 @@ def test_datamodel_schema_info_values():
     }
 
 
-@pytest.mark.parametrize(
-    "name", (name for name in datamodel_names() if not name.startswith("Fps") and not name.startswith("Tvac"))
-)
-def test_datamodel_schema_info_existence(name):
-    # Loop over datamodels that have archive_catalog entries
-    if not name.endswith("RefModel"):
-        model_class = getattr(datamodels, name)
-        model = model_class.create_fake_data()
-        info = model.schema_info("archive_catalog")
-        for keyword in model.meta.keys():
-            # Only DNodes or LNodes need to be canvassed
-            if isinstance(model.meta[keyword], DNode | LNode):
-                # Ignore metadata schemas that lack archive_catalog entries
-                if type(model.meta[keyword]) not in NODES_LACKING_ARCHIVE_CATALOG:
-                    assert keyword in info["roman"]["meta"]
+def test_data_model_schema_info_existence(data_model: type[DataModel]):
+    """Test the archive_catalog entries in the schema info"""
+    model = data_model.create_fake_data()
+    info = model.schema_info("archive_catalog")
+    for keyword, value in model.meta.items():
+        # Bug in the TVAC/FPS schemas "ref_file" so we skip it
+        if data_model in (datamodels.TvacModel, datamodels.FpsModel) and keyword == "ref_file":
+            continue
+
+        # Only searches LNodes or DNodes
+        if isinstance(value, DNode | LNode):
+            assert keyword in info["roman"]["meta"]
 
 
 @pytest.mark.parametrize("include_arrays", (True, False))

@@ -1,27 +1,43 @@
 from contextlib import nullcontext
+from typing import Any
 
 import asdf
 import pytest
+from asdf.schema import load_schema
 
 from roman_datamodels import _stnode as stnode
 from roman_datamodels import datamodels
+from roman_datamodels._stnode._registry import MANIFEST_TAG_REGISTRY
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
-from .conftest import MANIFESTS
+
+@pytest.fixture(
+    scope="session",
+    params=(tag_def for manifest_uri in MANIFEST_TAG_REGISTRY for tag_def in load_schema(manifest_uri)["tags"]),
+)
+def raw_tag_def(request) -> dict[str, Any]:
+    """
+    Fixture to return the raw tag definitions from the raw manifest information.
+
+    Note that this will have repeated items as it returns every single definition
+        from every single manifest, but this is intentional to make sure we hit
+        everything in the tests that use this fixture.
+    """
+    return request.param
 
 
-@pytest.mark.parametrize("tag_def", [tag_def for manifest in MANIFESTS for tag_def in manifest["tags"]])
-def test_tag_has_node_class(tag_def):
-    class_name = stnode._factories.class_name_from_tag_uri(tag_def["tag_uri"])
+def test_tag_has_node_class(raw_tag_def: dict[str, Any]):
+
+    class_name = stnode._tagged.class_name_from_tag_uri(raw_tag_def["tag_uri"])
     node_class = getattr(stnode, class_name)
 
-    assert asdf.util.uri_match(node_class._pattern, tag_def["tag_uri"])
-    if node_class._default_tag == tag_def["tag_uri"]:
-        assert tag_def["description"] in node_class.__doc__
-        assert tag_def["tag_uri"] in node_class.__doc__
+    assert asdf.util.uri_match(node_class._pattern, raw_tag_def["tag_uri"])
+    if node_class._default_tag == raw_tag_def["tag_uri"]:
+        assert raw_tag_def["description"] in node_class.__doc__
+        assert raw_tag_def["tag_uri"] in node_class.__doc__
     else:
         default_tag_version = node_class._default_tag.rsplit("-", maxsplit=1)[1]
-        tag_def_version = tag_def["tag_uri"].rsplit("-", maxsplit=1)[1]
+        tag_def_version = raw_tag_def["tag_uri"].rsplit("-", maxsplit=1)[1]
         assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
 
 
