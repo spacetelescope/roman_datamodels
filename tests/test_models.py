@@ -26,7 +26,7 @@ from roman_datamodels._stnode import (
     WfiWcs,
 )
 from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
-from roman_datamodels._stnode._tagged import _NO_VALUE
+from roman_datamodels._stnode._tagged import _NO_VALUE, TaggedObjectNode
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 from .conftest import MANIFESTS
@@ -795,6 +795,35 @@ def test_create_fake_data(model):
     m = model.create_fake_data()
     assert isinstance(m, model)
     assert m.validate() is None
+
+
+@pytest.mark.parametrize("node_class, model", datamodels.MODEL_REGISTRY.items())
+def test_migrate_tag(node_class: type[TaggedObjectNode], model: type[datamodels.DataModel]):
+    """Test that we can migrate the tag to a new version"""
+
+    # Find all the tags that are mapped to the datamodel's node class
+    model_tags = set(tag_uri for tag_uri, node in NODE_CLASSES_BY_TAG.items() if node is node_class)
+
+    for current_tag in model_tags:
+        # Create a model with the current tag
+        current = model.create_fake_data(tag=current_tag)
+        assert current.tag == current_tag
+
+        for new_tag in model_tags:
+            new = current.migrate_tag(new_tag)
+
+            # The tag has been updated
+            assert new.tag == new_tag
+
+            # The tags match then we should get the same object back
+            if new_tag == current_tag:
+                assert new is current
+            else:
+                assert new is not current
+
+        # Check the default is to migrage to the default tag
+        new = current.migrate_tag()
+        assert new.tag == node_class._default_tag
 
 
 @pytest.mark.parametrize("tag, node_class", NODE_CLASSES_BY_TAG.items())
