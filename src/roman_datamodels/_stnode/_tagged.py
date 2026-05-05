@@ -82,7 +82,6 @@ class _TaggedNodeMixin(NodeMixin):
     __slots__ = ()
 
     _pattern: ClassVar[str]
-    _latest_manifest: ClassVar[str]
 
     _default_tag: ClassVar[str]
 
