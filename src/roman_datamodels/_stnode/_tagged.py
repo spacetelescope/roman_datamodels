@@ -7,9 +7,9 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
-from functools import cache
-from types import MappingProxyType
 from typing import TYPE_CHECKING, Generic, TypeVar
+
+from astropy.time import Time
 
 from ._node import DNode, LNode
 from ._registry import (
@@ -28,7 +28,14 @@ if TYPE_CHECKING:
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ["SerializationNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
+__all__ = (
+    "SerializationNode",
+    "TaggedListNode",
+    "TaggedObjectNode",
+    "TaggedScalarNode",
+    "TaggedStrNode",
+    "TaggedTimeNode",
+)
 
 
 def name_from_tag_uri(tag_uri: str) -> str:
@@ -215,21 +222,6 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
 
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
 
-    @staticmethod
-    @cache
-    def tag_pattern_map() -> MappingProxyType[str, type[TaggedObjectNode]]:
-        """
-        A map from the _tag_pattern of a given TaggedObjectNode subclass to the subclass itself.
-
-        Note: For this to work correctly, anything in RDM that we want to be recognized as
-            a TaggedObjectNode must be a direct subclass of TaggedObjectNode, and must define the _tag_pattern
-            class variable.
-        """
-        # Force the import of the explicit nodes to make sure this can be flushed out
-        from . import _explicit  # noqa: F401
-
-        return MappingProxyType({cls._tag_pattern: cls for cls in TaggedObjectNode.__subclasses__()})
-
 
 class TaggedListNode(LNode, _TaggedNodeMixin):
     """
@@ -265,25 +257,10 @@ class TaggedScalarNode(_TaggedNodeMixin):
         Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
         """
         super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedScalarNode":
+        if cls.__name__ not in ("TaggedScalarNode", "TaggedStrNode", "TaggedTimeNode"):
             if cls._tag_pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
                 raise RuntimeError(f"TaggedScalarNode class for tag '{cls._tag_pattern}' has been defined twice")
             SCALAR_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
-
-    @staticmethod
-    @cache
-    def tag_pattern_map() -> MappingProxyType[str, type[TaggedScalarNode]]:
-        """
-        A map from the _tag_pattern of a given TaggedScalarNode subclass to the subclass itself.
-
-        Note: For this to work correctly, anything in RDM that we want to be recognized as
-            a TaggedScalarNode must be a direct subclass of TaggedScalarNode, and must define the _tag_pattern
-            class variable.
-        """
-        # Force the import of the explicit nodes to make sure this can be flushed out
-        from . import _explicit  # noqa: F401
-
-        return MappingProxyType({cls._tag_pattern: cls for cls in TaggedScalarNode.__subclasses__()})
 
     def __asdf_traverse__(self):
         return self
@@ -308,6 +285,29 @@ class TaggedScalarNode(_TaggedNodeMixin):
 
     def copy(self):
         return copy.copy(self)
+
+
+# TODO: MyPy doesn't like the disjoint bases
+class TaggedStrNode(str, TaggedScalarNode):  # type: ignore[misc]
+    pass
+
+
+class TaggedTimeNode(Time, TaggedScalarNode):
+    @classmethod
+    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
+        new = cls(defaults) if defaults else cls.now()
+        if tag:
+            new._read_tag = tag
+
+        return new
+
+    @classmethod
+    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
+        new = cls(defaults) if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
+        if tag:
+            new._read_tag = tag
+
+        return new
 
 
 _T = TypeVar("_T", bound=TaggedObjectNode | TaggedListNode | TaggedScalarNode)

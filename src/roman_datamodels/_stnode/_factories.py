@@ -5,14 +5,19 @@ Factories for creating Tagged STNode classes from tag_uris.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode, class_name_from_tag_uri
+from ._tagged import (
+    TaggedListNode,
+    TaggedObjectNode,
+    TaggedScalarNode,
+    TaggedStrNode,
+    TaggedTimeNode,
+    _TaggedNodeMixin,
+    class_name_from_tag_uri,
+)
 
-if TYPE_CHECKING:
-    pass
-
-__all__ = ["stnode_factory"]
+__all__ = ("stnode_factory",)
 
 # Map of node types by pattern (TaggedObjectNode is default)
 _NODE_TYPE_BY_PATTERN = {
@@ -59,14 +64,9 @@ def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) 
     A dynamically generated TaggedScalarNode subclass
     """
 
-    if pattern in TaggedScalarNode.tag_pattern_map():
-        cls = TaggedScalarNode.tag_pattern_map()[pattern]
-        cls.__doc__ = docstring_from_tag(tag_def)
-        return cls
-
     return type(
         class_name_from_tag_uri(pattern),
-        (str, TaggedScalarNode),
+        (TaggedTimeNode,) if "file_date" in pattern else (TaggedStrNode,),
         {
             "_tag_pattern": pattern,
             "_latest_manifest": latest_manifest,
@@ -96,17 +96,6 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
     -------
     A dynamically generated TaggedObjectNode or TaggedListNode subclass
     """
-    if pattern in TaggedObjectNode.tag_pattern_map():
-        cls = TaggedObjectNode.tag_pattern_map()[pattern]
-        cls.__doc__ = docstring_from_tag(tag_def)
-
-        # The source catalog nodes are still being updated, so for now
-        #    we just set the default tag on the class dynamically here.
-        if "source_catalog" in pattern:
-            cls._latest_manifest = latest_manifest
-            cls._default_tag = tag_def["tag_uri"]
-
-        return cls
 
     return type(
         class_name_from_tag_uri(pattern),
@@ -122,9 +111,7 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
     )
 
 
-def stnode_factory(
-    pattern: str, latest_manifest: str, tag_def: dict[str, Any]
-) -> type[TaggedObjectNode | TaggedListNode | TaggedScalarNode]:
+def stnode_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) -> type[_TaggedNodeMixin]:
     """
     Construct a tagged STNode class from a tag
 

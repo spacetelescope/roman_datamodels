@@ -59,33 +59,6 @@ def test_deepcopy_model(model_class):
     assert_node_is_copy(model._instance, model_copy._instance, deepcopy=True)
 
 
-def test_wfi_mode():
-    """
-    The WfiMode class includes special properties that map optical_element
-    values to grating or filter.
-    """
-    node = stnode.WfiMode({"optical_element": "GRISM"})
-    assert node.optical_element == "GRISM"
-    assert node.grating == "GRISM"
-    assert node.filter is None
-    assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._explicit.WfiMode)
-
-    node = stnode.WfiMode({"optical_element": "PRISM"})
-    assert node.optical_element == "PRISM"
-    assert node.grating == "PRISM"
-    assert node.filter is None
-    assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._explicit.WfiMode)
-
-    node = stnode.WfiMode({"optical_element": "F129"})
-    assert node.optical_element == "F129"
-    assert node.grating is None
-    assert node.filter == "F129"
-    assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._explicit.WfiMode)
-
-
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)
 def test_serialization(node_class, tmp_path):
     file_path = tmp_path / "test.asdf"
