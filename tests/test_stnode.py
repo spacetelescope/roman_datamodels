@@ -69,21 +69,21 @@ def test_wfi_mode():
     assert node.grating == "GRISM"
     assert node.filter is None
     assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._mixins.WfiModeMixin)
+    assert isinstance(node, stnode._explicit.WfiMode)
 
     node = stnode.WfiMode({"optical_element": "PRISM"})
     assert node.optical_element == "PRISM"
     assert node.grating == "PRISM"
     assert node.filter is None
     assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._mixins.WfiModeMixin)
+    assert isinstance(node, stnode._explicit.WfiMode)
 
     node = stnode.WfiMode({"optical_element": "F129"})
     assert node.optical_element == "F129"
     assert node.grating is None
     assert node.filter == "F129"
     assert isinstance(node, stnode.DNode)
-    assert isinstance(node, stnode._mixins.WfiModeMixin)
+    assert isinstance(node, stnode._explicit.WfiMode)
 
 
 @pytest.mark.parametrize("node_class", stnode.NODE_CLASSES)

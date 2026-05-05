@@ -7,6 +7,8 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
+from functools import cache
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from ._node import DNode, LNode
@@ -210,7 +212,23 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
         if cls.__name__ != "TaggedObjectNode":
             if cls._tag_pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
                 raise RuntimeError(f"TaggedObjectNode class for tag '{cls._tag_pattern}' has been defined twice")
+
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
+
+    @staticmethod
+    @cache
+    def tag_pattern_map() -> MappingProxyType[str, type[TaggedObjectNode]]:
+        """
+        A map from the _tag_pattern of a given TaggedObjectNode subclass to the subclass itself.
+
+        Note: For this to work correctly, anything in RDM that we want to be recognized as
+            a TaggedObjectNode must be a direct subclass of TaggedObjectNode, and must define the _tag_pattern
+            class variable.
+        """
+        # Force the import of the explicit nodes to make sure this can be flushed out
+        from . import _explicit  # noqa: F401
+
+        return MappingProxyType({cls._tag_pattern: cls for cls in TaggedObjectNode.__subclasses__()})
 
 
 class TaggedListNode(LNode, _TaggedNodeMixin):
@@ -251,6 +269,21 @@ class TaggedScalarNode(_TaggedNodeMixin):
             if cls._tag_pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
                 raise RuntimeError(f"TaggedScalarNode class for tag '{cls._tag_pattern}' has been defined twice")
             SCALAR_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
+
+    @staticmethod
+    @cache
+    def tag_pattern_map() -> MappingProxyType[str, type[TaggedScalarNode]]:
+        """
+        A map from the _tag_pattern of a given TaggedScalarNode subclass to the subclass itself.
+
+        Note: For this to work correctly, anything in RDM that we want to be recognized as
+            a TaggedScalarNode must be a direct subclass of TaggedScalarNode, and must define the _tag_pattern
+            class variable.
+        """
+        # Force the import of the explicit nodes to make sure this can be flushed out
+        from . import _explicit  # noqa: F401
+
+        return MappingProxyType({cls._tag_pattern: cls for cls in TaggedScalarNode.__subclasses__()})
 
     def __asdf_traverse__(self):
         return self
