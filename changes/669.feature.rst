@@ -1,0 +1,2 @@
+Remove the ``_default_tag`` and ``_latest_manifest`` ClassVars from the TaggedNode classes. These
+have been replaced with dynamic (cached) lookups to the ASDF configuration itself.
