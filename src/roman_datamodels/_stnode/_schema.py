@@ -20,7 +20,7 @@ from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
 if TYPE_CHECKING:
     from typing import Any
 
-__all__ = ("FakeDataBuilder", "get_keyword", "get_latest_schema")
+__all__ = ("get_keyword", "get_latest_schema")
 
 
 NOSTR = "?"

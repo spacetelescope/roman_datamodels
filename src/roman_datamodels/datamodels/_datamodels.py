@@ -67,7 +67,7 @@ class _SourceCatalogMixin:
         -------
         Table
         """
-        from roman_datamodels._stnode import FakeDataBuilder
+        from roman_datamodels._stnode._schema import FakeDataBuilder
 
         if aperture_radii:
             aperture_radii = [f"{i:02}" for i in aperture_radii]
