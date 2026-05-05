@@ -201,7 +201,7 @@ class DataModel(abc.ABC):
             A new version of this model with the tag updated.
         """
         # If no tag is provided, then update to the default tag.
-        tag = tag or self._node_type._default_tag
+        tag = tag or self._node_type.default_tag()
 
         if self.tag == tag:
             return self

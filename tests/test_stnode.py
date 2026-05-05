@@ -16,11 +16,11 @@ def test_tag_has_node_class(tag_def):
     node_class = getattr(stnode, class_name)
 
     assert asdf.util.uri_match(node_class._pattern, tag_def["tag_uri"])
-    if node_class._default_tag == tag_def["tag_uri"]:
+    if node_class.default_tag() == tag_def["tag_uri"]:
         assert tag_def["description"] in node_class.__doc__
         assert tag_def["tag_uri"] in node_class.__doc__
     else:
-        default_tag_version = node_class._default_tag.rsplit("-", maxsplit=1)[1]
+        default_tag_version = node_class.default_tag().rsplit("-", maxsplit=1)[1]
         tag_def_version = tag_def["tag_uri"].rsplit("-", maxsplit=1)[1]
         assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
 
@@ -212,7 +212,7 @@ def test_get_latest_schema(object_node, object_node_default_uri, object_node_uri
         latest_uri, schema = stnode.get_latest_schema(uri)
         assert latest_uri == object_node_default_uri
 
-        assert stnode._schema._get_schema_from_tag(object_node._default_tag) == schema
+        assert stnode._schema._get_schema_from_tag(object_node.default_tag()) == schema
 
 
 @pytest.mark.parametrize(

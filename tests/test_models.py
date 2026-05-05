@@ -823,7 +823,7 @@ def test_migrate_tag(node_class: type[TaggedObjectNode], model: type[datamodels.
 
         # Check the default is to migrage to the default tag
         new = current.migrate_tag()
-        assert new.tag == node_class._default_tag
+        assert new.tag == node_class.default_tag()
 
 
 @pytest.mark.parametrize("tag, node_class", NODE_CLASSES_BY_TAG.items())
@@ -949,8 +949,8 @@ def test_create_from_model_old_tags():
     """
     old_model_tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_image-1.2.0"
     old_observation_tag = "asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"
-    new_model_tag = WfiImage._default_tag
-    new_observation_tag = Observation._default_tag
+    new_model_tag = WfiImage.default_tag()
+    new_observation_tag = Observation.default_tag()
 
     # check tags aren't defaults (which is required for this test)
     assert old_model_tag != new_model_tag
