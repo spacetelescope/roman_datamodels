@@ -1,13 +1,12 @@
 import pytest
 from asdf import get_config
 
-from roman_datamodels._stnode import TaggedListNode, TaggedNode, TaggedObjectNode
+from roman_datamodels._stnode import TaggedListNode, TaggedNode, TaggedObjectNode, get_schema_uri
 from roman_datamodels._stnode._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     NODE_CLASSES_BY_TAG,
     NODES_BY_PATTERN,
     OBJECT_NODE_CLASSES_BY_PATTERN,
-    SCHEMA_URIS_BY_TAG,
 )
 from roman_datamodels.datamodels import (
     MODEL_REGISTRY,
@@ -58,7 +57,7 @@ def container_node_class(request) -> type[TaggedObjectNode] | type[TaggedListNod
 
 @pytest.fixture(scope="module")
 def object_node_default_uri(object_node_class):
-    return SCHEMA_URIS_BY_TAG[object_node_class.default_tag()]
+    return get_schema_uri(object_node_class.default_tag())
 
 
 @pytest.fixture(scope="module")

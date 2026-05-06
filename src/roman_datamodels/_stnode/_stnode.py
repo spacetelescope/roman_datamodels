@@ -22,7 +22,6 @@ from ._registry import (
     NODES_BY_PATTERN,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
-    SCHEMA_URIS_BY_TAG,
     TAG_MANIFEST_REGISTRY,
 )
 
@@ -67,7 +66,7 @@ for manifest in _MANIFESTS:
 
     MANIFEST_TAG_REGISTRY[manifest_uri] = []
     for tag_def in manifest["tags"]:
-        SCHEMA_URIS_BY_TAG[(tag_uri := tag_def["tag_uri"])] = tag_def["schema_uri"]
+        tag_uri = tag_def["tag_uri"]
         base, _ = tag_uri.rsplit("-", maxsplit=1)
 
         # make pattern from tag

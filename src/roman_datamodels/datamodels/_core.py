@@ -26,8 +26,8 @@ from asdf.tags.core.ndarray import NDArrayType
 from astropy.time import Time
 from astropy.utils import classproperty
 
-from roman_datamodels._stnode import DNode, TaggedObjectNode
-from roman_datamodels._stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN, SCHEMA_URIS_BY_TAG
+from roman_datamodels._stnode import DNode, TaggedObjectNode, get_schema_uri
+from roman_datamodels._stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN
 
 __all__ = ["MODEL_REGISTRY", "DataModel"]
 
@@ -281,7 +281,7 @@ class DataModel(abc.ABC):
 
     @property
     def schema_uri(self):
-        return SCHEMA_URIS_BY_TAG[self._instance.tag]
+        return get_schema_uri(self._instance.tag)
 
     def close(self):
         if not (self._iscopy or self._asdf is None):

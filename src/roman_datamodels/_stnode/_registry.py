@@ -17,6 +17,5 @@ LIST_NODE_CLASSES_BY_PATTERN: dict[str, type[TaggedListNode]] = {}
 SCALAR_NODE_CLASSES_BY_PATTERN: dict[str, type[TaggedScalarNode]] = {}
 NODES_BY_PATTERN: dict[str, type[TaggedNode]] = {}
 NODE_CLASSES_BY_TAG: dict[str, type[TaggedNode]] = {}
-SCHEMA_URIS_BY_TAG: dict[str, str] = {}
 MANIFEST_TAG_REGISTRY: dict[str, list[str]] = {}
 TAG_MANIFEST_REGISTRY: dict[str, type[ManifestNode]] = {}
