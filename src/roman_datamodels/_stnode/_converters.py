@@ -87,9 +87,9 @@ class TaggedNodeConverter(_RomanConverter):
 
     @property
     def types(self) -> tuple[type[TaggedNode], ...]:
-        from roman_datamodels import Manager
+        from ._tagged import TaggedListNode, TaggedObjectNode, TaggedStrNode, TaggedTimeNode
 
-        return tuple(Manager().patterns.values())
+        return (TaggedObjectNode, TaggedListNode, TaggedStrNode, TaggedTimeNode)
 
     def to_yaml_tree(self, obj: TaggedNode, tag: str, ctx: SerializationContext) -> ManifestNode:
         return obj.to_asdf_tree(ctx)

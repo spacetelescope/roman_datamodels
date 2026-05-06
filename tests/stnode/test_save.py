@@ -6,8 +6,8 @@ from roman_datamodels._stnode import TaggedNode
 
 
 @pytest.fixture(scope="module")
-def node_instance(tag_uri: str, tagged_node_class: type[TaggedNode]) -> TaggedNode:
-    return tagged_node_class.create_fake_data(tag=tag_uri)
+def node_instance(tag_uri: str, node_class: type[TaggedNode]) -> TaggedNode:
+    return node_class.create_fake_data(tag=tag_uri)
 
 
 @pytest.mark.parametrize("manifest_uri", Manager().manifests)

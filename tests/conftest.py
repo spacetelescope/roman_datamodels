@@ -21,21 +21,15 @@ def tag_uri(request) -> str:
 
 
 @pytest.fixture(scope="module")
-def tagged_node_class(tag_uri: str) -> type[TaggedNode]:
+def node_class(tag_uri: str) -> type[TaggedNode]:
     """Fixture to provide the node class associated with each of the RAD tags"""
     return Manager().get_node_class(tag_uri)
 
 
-@pytest.fixture(scope="module", params=Manager().patterns)
-def node_pattern(request) -> str:
-    """Fixture to provide a tag pattern for each of the RAD tags"""
-    return request.param
-
-
 @pytest.fixture(scope="module")
-def node_class(node_pattern: str) -> type[TaggedNode]:
-    """Fixture to provide all of the node classes"""
-    return Manager().patterns[node_pattern]
+def node_pattern(tag_uri: str) -> str:
+    """Fixture to provide a tag pattern for each of the RAD tags"""
+    return f"{tag_uri.rsplit('-', 1)[0]}-*"
 
 
 @pytest.fixture(scope="module")
@@ -45,17 +39,11 @@ def node_default_tag(node_pattern: str) -> str:
 
 
 @pytest.fixture(
-    scope="session", params=(pattern for pattern, cls in Manager().patterns.items() if issubclass(cls, TaggedObjectNode))
+    scope="session", params=(tag_uri for tag_uri in Manager().tags if Manager().get_node_class(tag_uri) is TaggedObjectNode)
 )
 def object_pattern(request) -> str:
     """Fixture to provide a tag pattern for each of the object node classes"""
-    return request.param
-
-
-@pytest.fixture(scope="module")
-def object_node_class(object_pattern: str) -> type[TaggedObjectNode]:
-    """Fixture to provide all of the object node classes"""
-    return Manager().patterns[object_pattern]
+    return f"{request.param.rsplit('-', 1)[0]}-*"
 
 
 @pytest.fixture(scope="module")
@@ -65,17 +53,11 @@ def object_node_default_tag(object_pattern: str) -> str:
 
 
 @pytest.fixture(
-    scope="module", params=(pattern for pattern, cls in Manager().patterns.items() if issubclass(cls, TaggedListNode))
+    scope="session", params=(tag_uri for tag_uri in Manager().tags if Manager().get_node_class(tag_uri) is TaggedListNode)
 )
 def list_pattern(request) -> str:
     """Fixture to provide a tag pattern for each of the list node classes"""
-    return request.param
-
-
-@pytest.fixture(scope="module")
-def list_node_class(list_pattern: str) -> type[TaggedListNode]:
-    """Fixture to provide all of the list node classes"""
-    return Manager().patterns[list_pattern]
+    return f"{request.param.rsplit('-', 1)[0]}-*"
 
 
 @pytest.fixture(scope="module")
@@ -85,24 +67,24 @@ def list_node_default_tag(list_pattern: str) -> str:
 
 
 @pytest.fixture(
-    scope="module",
-    params=(pattern for pattern, cls in Manager().patterns.items() if issubclass(cls, (TaggedObjectNode, TaggedListNode))),
+    scope="session",
+    params=(tag_uri for tag_uri in Manager().tags if Manager().get_node_class(tag_uri) in (TaggedObjectNode, TaggedListNode)),
 )
-def container_pattern(request) -> str:
+def container_tag_uris(request) -> str:
     """Fixture to provide a tag pattern for each of the container node classes (object and list)"""
     return request.param
 
 
 @pytest.fixture(scope="module")
-def container_node_class(container_pattern: str) -> type[TaggedObjectNode] | type[TaggedListNode]:
+def container_node_class(container_tag_uris: str) -> type[TaggedObjectNode] | type[TaggedListNode]:
     """Fixture to provide all of the container node classes (object and list)"""
-    return Manager().patterns[container_pattern]
+    return Manager().get_node_class(container_tag_uris)
 
 
 @pytest.fixture(scope="module")
-def container_node_default_tag(container_pattern: str) -> str:
+def container_node_default_tag(container_tag_uris: str) -> str:
     """Fixture to provide a container node's default tag for testing"""
-    return get_default_tag(container_pattern)
+    return get_default_tag(container_tag_uris)
 
 
 @pytest.fixture(scope="module")

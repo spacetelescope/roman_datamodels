@@ -791,14 +791,14 @@ def test_migrate_tag(data_model: type[DataModel], data_model_tags: set[str]):
         assert new.tag == data_model.default_tag()
 
 
-def test_create_tag(tag_uri: str, tagged_node_class: type[TaggedNode]):
+def test_create_tag(tag_uri: str, node_class: type[TaggedNode]):
     """Test that we can create a node for every registered tag"""
 
-    node = tagged_node_class.create_minimal(tag=tag_uri)
+    node = node_class.create_minimal(tag=tag_uri)
     if node is not None:
         assert node._read_tag == tag_uri
 
-    node = tagged_node_class.create_fake_data(tag=tag_uri)
+    node = node_class.create_fake_data(tag=tag_uri)
     if node is not None:
         assert node._read_tag == tag_uri
 

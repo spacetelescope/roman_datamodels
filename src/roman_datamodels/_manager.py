@@ -33,63 +33,6 @@ class _ManifestDef(TypedDict):
     tags: list[_TagDef]
 
 
-def _docstring_from_tag(tag_def: _TagDef) -> str:
-    """
-    Read the docstring (if it exists) from the RAD manifest and generate a docstring
-        for the dynamically generated class.
-
-    Parameters
-    ----------
-    tag_def: _TagDef
-        A tag entry from the RAD manifest
-
-    Returns
-    -------
-    A docstring for the class based on the tag
-    """
-    docstring = f"{tag_def['description']}\n\n" if "description" in tag_def else ""
-
-    return docstring + f"Class generated from tag '{tag_def['tag_uri']}'"
-
-
-def _name_from_tag_uri(tag_uri: str) -> str:
-    """
-    Compute the name of the schema from the tag_uri.
-
-    Parameters
-    ----------
-    tag_uri : str
-        The tag_uri to find the name from
-    """
-    tag_uri_split = tag_uri.split("/")[-1].split("-")[0]
-    if "/tvac/" in tag_uri and "tvac" not in tag_uri_split:
-        tag_uri_split = "tvac_" + tag_uri.split("/")[-1].split("-")[0]
-    elif "/fps/" in tag_uri and "fps" not in tag_uri_split:
-        tag_uri_split = "fps_" + tag_uri.split("/")[-1].split("-")[0]
-    return tag_uri_split
-
-
-def _class_name_from_tag_uri(tag_uri: str) -> str:
-    """
-    Construct the class name for the STNode class from the tag_uri
-
-    Parameters
-    ----------
-    tag_uri : str
-        The tag_uri found in the RAD manifest
-
-    Returns
-    -------
-    string name for the class
-    """
-    tag_name = _name_from_tag_uri(tag_uri)
-    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
-    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
-        class_name += "Ref"
-
-    return class_name
-
-
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Manager:
     """
@@ -126,9 +69,6 @@ class Manager:
     tags: MappingProxyType[str, type[ManifestNode]] = field(init=False)
     """A mapping between the tag URI and the ManifestNode class that manages it"""
 
-    patterns: MappingProxyType[str, type[TaggedNode]] = field(init=False)
-    """A mapping between the tag URI pattern and the TaggedNode class that manages it"""
-
     data_models: MappingProxyType[str, type[DataModel]] = field(init=False)
     """A mapping between tag patterns and the DataModel class that wraps nodes following those patterns"""
 
@@ -145,7 +85,6 @@ class Manager:
         # Set of mutable maps
         manifests: dict[str, type[ManifestNode]] = {}
         tags: dict[str, type[ManifestNode]] = {}
-        patterns: dict[str, type[TaggedNode]] = {}
 
         # Start computing the maps from the resources that RAD has registered
         #   with ASDF.
@@ -164,14 +103,10 @@ class Manager:
             tag_uris: dict[str, type[TaggedNode]] = {}
 
             for tag_def in manifest["tags"]:
-                pattern = f"{tag_def['tag_uri'].rsplit('-', 1)[0]}-*"
-                if pattern not in patterns:
-                    patterns[pattern] = self._select_tagged_type(tag_def["tag_uri"], tag_def["schema_uri"])
-
                 # Only add a tag to the ones managed by this manifest if it hasn't already been
                 #    assigned to an earlier manifest.
                 if (tag_uri := tag_def["tag_uri"]) not in tags:
-                    tag_uris[tag_uri] = patterns[pattern]
+                    tag_uris[tag_uri] = self._select_tagged_type(tag_def["tag_uri"], tag_def["schema_uri"])
 
             # Update the maps with the newly computed information
             manifests[manifest_uri] = ManifestNode.factory(manifest_uri, tag_uris)
@@ -182,15 +117,9 @@ class Manager:
         #   frozen dataclass.
         object.__setattr__(self, "manifests", MappingProxyType(manifests))
         object.__setattr__(self, "tags", MappingProxyType(tags))
-        object.__setattr__(self, "patterns", MappingProxyType(patterns))
 
         object.__setattr__(
             self,
-            "data_models",
-            MappingProxyType({cls.tag_pattern: cls for cls in DataModel.__subclasses__() if hasattr(cls, "tag_pattern")}),
-        )
-
-        super().__setattr__(
             "data_models",
             MappingProxyType({cls.tag_pattern: cls for cls in DataModel.__subclasses__() if hasattr(cls, "tag_pattern")}),
         )
