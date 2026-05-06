@@ -7,7 +7,8 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING, Generic, TypeVar
+from abc import ABC
+from typing import TYPE_CHECKING, Generic, TypeVar, final
 
 from ._node import DNode, LNode
 from ._registry import (
@@ -16,7 +17,7 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_PATTERN,
     SERIALIZATION_BY_MANIFEST,
 )
-from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
+from ._schema import Builder, FakeDataBuilder, NodeBuilder, NoValueType, _get_schema_from_tag
 from ._uri import get_default_tag
 
 if TYPE_CHECKING:
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ["SerializationNode", "TaggedListNode", "TaggedObjectNode", "TaggedScalarNode"]
+__all__ = ("SerializationNode", "TaggedListNode", "TaggedNode", "TaggedObjectNode", "TaggedScalarNode")
 
 
 def name_from_tag_uri(tag_uri: str) -> str:
@@ -68,7 +69,7 @@ def class_name_from_tag_uri(tag_uri: str) -> str:
     return class_name
 
 
-class _TaggedNodeMixin(NodeMixin):
+class TaggedNode(ABC, NodeMixin):
     """
     Mixin class to provide the common API for all tagged objects.
 
@@ -94,19 +95,54 @@ class _TaggedNodeMixin(NodeMixin):
         return tag
 
     @classmethod
-    def _create_minimal(
-        cls, defaults: Mapping[str, Any] | None = None, builder: Builder | None = None, *, tag: str | None = None
-    ) -> Self:
-        builder = builder or Builder()
-        new = cls(builder.build(_get_schema_from_tag(tag or cls.default_tag()), defaults))
+    def from_tag(cls, *, node: Any, tag: str) -> Self:
+        """
+        Create an instance of this class from a node for a given tag.
 
-        if tag:
-            new._read_tag = tag
+        Parameters
+        ----------
+        node: Any
+            The node to create the instance from
+        tag: str
+            The tag to use when creating the instance.
+        """
+        new = cls(node)
+
+        # This is a bit hacky, but the TaggedScalar node classes don't have a
+        #    easy way to inject the tag into the __init__ method, so we set it
+        #    here like this after the fact.
+        new._read_tag = tag
 
         return new
 
+    @staticmethod
+    def _build_node(
+        *,
+        tag: str,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+    ) -> Any:
+        return (builder or Builder()).build(_get_schema_from_tag(tag), defaults)
+
     @classmethod
-    def create_minimal(cls, defaults: Mapping[str, Any] | None = None, *, tag: str | None = None) -> Self:
+    def _create_minimal(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self | None:
+        tag = tag or cls.default_tag()
+        return cls.from_tag(node=cls._build_node(tag=tag, defaults=defaults, builder=builder), tag=tag)
+
+    @classmethod
+    @final
+    def create_minimal(
+        cls,
+        defaults: Mapping[str, Any] | None = None,
+        *,
+        tag: str | None = None,
+    ) -> Self | None:
         """
         Create a minimal instance of this class, only things with the attributes
         which have a default value that can be determined.
@@ -121,25 +157,34 @@ class _TaggedNodeMixin(NodeMixin):
         Returns
         -------
         Self
-            An instance of this class
+            An instance of this class, or None if creation failed
         """
-        return cls._create_minimal(defaults, tag=tag)
+        return cls._create_minimal(defaults=defaults, tag=tag)
 
     @classmethod
     def _create_fake_data(
         cls,
+        *,
         defaults: Mapping[str, Any] | None = None,
         shape: tuple[int, ...] | None = None,
         builder: Builder | None = None,
-        *,
         tag: str | None = None,
-    ) -> Self:
-        return cls._create_minimal(defaults, builder or FakeDataBuilder(shape), tag=tag)
+    ) -> Self | None:
+        return cls._create_minimal(
+            defaults=defaults,
+            builder=(builder or FakeDataBuilder(shape)),
+            tag=tag,
+        )
 
     @classmethod
+    @final
     def create_fake_data(
-        cls, defaults: Mapping[str, Any] | None = None, shape: tuple[int, ...] | None = None, *, tag: str | None = None
-    ) -> Self:
+        cls,
+        defaults: Mapping[str, Any] | None = None,
+        shape: tuple[int, ...] | None = None,
+        *,
+        tag: str | None = None,
+    ) -> Self | None:
         """
         Create an instance of this class with with all required attributes
         filled in with fake data.
@@ -155,17 +200,33 @@ class _TaggedNodeMixin(NodeMixin):
 
         Returns
         -------
-        Self
-            An instance of this class
+        Self | None
+            An instance of this class, or None if creation failed
         """
-        return cls._create_fake_data(defaults, shape, tag=tag)
+        return cls._create_fake_data(defaults=defaults, shape=shape, tag=tag)
 
     @classmethod
-    def _create_from_node(cls, node: MutableMapping[str, Any], builder: Builder | None = None, *, tag: str | None = None) -> Self:
-        return cls._create_minimal(node, builder or NodeBuilder(), tag=tag)
+    def _create_from_node(
+        cls,
+        *,
+        node: MutableMapping[str, Any],
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self | None:
+        return cls._create_minimal(
+            defaults=node,
+            builder=(builder or NodeBuilder()),
+            tag=tag,
+        )
 
     @classmethod
-    def create_from_node(cls, node: MutableMapping[str, Any], *, tag: str | None = None) -> Self:
+    @final
+    def create_from_node(
+        cls,
+        node: MutableMapping[str, Any],
+        *,
+        tag: str | None = None,
+    ) -> Self | None:
         """
         Create an instance of this class from a node (dict-like object)
 
@@ -178,10 +239,10 @@ class _TaggedNodeMixin(NodeMixin):
 
         Returns
         -------
-        Self
-            An instance of this class
+        Self | None
+            An instance of this class, or None if creation failed
         """
-        return cls._create_from_node(node, tag=tag)
+        return cls._create_from_node(node=node, tag=tag)
 
     @property
     def _tag(self):
@@ -199,7 +260,7 @@ class _TaggedNodeMixin(NodeMixin):
         return _get_schema_from_tag(self.tag)
 
 
-class TaggedObjectNode(DNode, _TaggedNodeMixin):
+class TaggedObjectNode(DNode, TaggedNode):
     """
     Base class for all tagged objects defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -220,7 +281,7 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
 
-class TaggedListNode(LNode, _TaggedNodeMixin):
+class TaggedListNode(LNode, TaggedNode):
     """
     Base class for all tagged list defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -241,7 +302,7 @@ class TaggedListNode(LNode, _TaggedNodeMixin):
             LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
 
-class TaggedScalarNode(_TaggedNodeMixin):
+class TaggedScalarNode(TaggedNode):
     """
     Base class for all tagged scalars defined by RAD
         There will be one of these for any tagged object defined by RAD, which has
@@ -263,17 +324,21 @@ class TaggedScalarNode(_TaggedNodeMixin):
         return self
 
     @classmethod
-    def _create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
-        builder = builder or Builder()
-        value = builder.build(_get_schema_from_tag(tag or cls.default_tag()), defaults)
-        if value is _NO_VALUE:
-            return value
+    def _create_minimal(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self | None:
+        tag = tag or cls.default_tag()
+        if isinstance(
+            value := cls._build_node(tag=tag, defaults=defaults, builder=builder),
+            NoValueType,
+        ):
+            return None
 
-        new = cls(value)
-        if tag:
-            new._read_tag = tag
-
-        return new
+        return cls.from_tag(node=value, tag=tag)
 
     @property
     def _tag(self):
@@ -284,7 +349,7 @@ class TaggedScalarNode(_TaggedNodeMixin):
         return copy.copy(self)
 
 
-_T = TypeVar("_T", bound=TaggedObjectNode | TaggedListNode | TaggedScalarNode)
+_T = TypeVar("_T", bound=TaggedNode)
 
 
 class SerializationNode(Generic[_T]):
@@ -330,6 +395,3 @@ class SerializationNode(Generic[_T]):
                 "__module__": "roman_datamodels._stnode",
             },
         )
-
-
-tagged_type: TypeAlias = type[TaggedObjectNode] | type[TaggedListNode] | type[TaggedScalarNode]
