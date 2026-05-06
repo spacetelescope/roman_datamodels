@@ -190,6 +190,11 @@ class Manager:
             MappingProxyType({cls.tag_pattern: cls for cls in DataModel.__subclasses__() if hasattr(cls, "tag_pattern")}),
         )
 
+        super().__setattr__(
+            "data_models",
+            MappingProxyType({cls.tag_pattern: cls for cls in DataModel.__subclasses__() if hasattr(cls, "tag_pattern")}),
+        )
+
     @staticmethod
     def _select_tagged_type(tag_uri: str, tag_def: _TagDef) -> type[TaggedNode]:
         """
