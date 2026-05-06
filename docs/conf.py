@@ -421,4 +421,5 @@ epub_exclude_files = ["search.html"]
 nitpicky = True
 nitpick_ignore = [
     ("py:class", "_io.FileIO"),
+    ("py:class", "SerializationContext"),
 ]

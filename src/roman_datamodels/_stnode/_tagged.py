@@ -10,6 +10,8 @@ import copy
 from abc import abstractmethod
 from typing import TYPE_CHECKING, final
 
+from asdf.extension import SerializationContext
+
 from ._node import DNode, LNode
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
@@ -22,8 +24,6 @@ from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_sche
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
     from typing import Any, ClassVar, Self, TypeAlias
-
-    from asdf.extension import SerializationContext
 
     from ._manifest import ManifestNode
     from ._node import _NodeMixin as NodeMixin
@@ -202,7 +202,7 @@ class _TaggedNodeMixin(NodeMixin):
 
         Parameters
         ----------
-        ctx: SerializationContext
+        ctx:
             The ASDF serialization context to use when converting this object to a ManifestNode.
         """
 
@@ -213,7 +213,7 @@ class _TaggedNodeMixin(NodeMixin):
 
         Parameters
         ----------
-        ctx: SerializationContext
+        ctx:
             The ASDF serialization context to use when converting this object to a ManifestNode.
         """
         return TAG_MANIFEST_REGISTRY[self._tag](data=self._to_asdf_tree(ctx), tag=self._tag)
