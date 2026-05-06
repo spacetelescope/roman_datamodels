@@ -20,7 +20,6 @@ from ._registry import (
     SERIALIZATION_BY_MANIFEST,
 )
 from ._schema import Builder, FakeDataBuilder, NodeBuilder, NoValueType, _get_schema_from_tag
-from ._uri import get_default_tag
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
@@ -96,15 +95,6 @@ class TaggedNode(ABC, NodeMixin):
     _tag_pattern: ClassVar[str]
 
     @classmethod
-    def default_tag(cls) -> str:
-        """Get the default tag for this class"""
-
-        if (tag := get_default_tag(cls._tag_pattern)) is None:
-            raise RuntimeError(f"No default tag found for pattern '{cls._tag_pattern}'")
-
-        return tag
-
-    @classmethod
     def from_tag(cls, *, node: Any, tag: str) -> Self:
         """
         Create an instance of this class from a node for a given tag.
@@ -129,29 +119,27 @@ class TaggedNode(ABC, NodeMixin):
     def _build_node(
         *,
         tag: str,
-        defaults: Mapping[str, Any] | None = None,
-        builder: Builder | None = None,
+        defaults: Mapping[str, Any] | None,
+        builder: Builder | None,
     ) -> Any:
         return (builder or Builder()).build(_get_schema_from_tag(tag), defaults)
 
     @classmethod
     def _create_minimal(
         cls,
+        tag: str,
         *,
         defaults: Mapping[str, Any] | None = None,
         builder: Builder | None = None,
-        tag: str | None = None,
     ) -> Self | None:
-        tag = tag or cls.default_tag()
         return cls.from_tag(node=cls._build_node(tag=tag, defaults=defaults, builder=builder), tag=tag)
 
     @classmethod
     @final
     def create_minimal(
         cls,
+        tag: str,
         defaults: Mapping[str, Any] | None = None,
-        *,
-        tag: str | None = None,
     ) -> Self | None:
         """
         Create a minimal instance of this class, only things with the attributes
@@ -159,41 +147,40 @@ class TaggedNode(ABC, NodeMixin):
 
         Parameters
         ----------
+        tag : str
+            The tag to use when creating the instance.
         defaults : Mapping[str, Any] | None
             A mapping of default values to use when creating the instance
-        tag : str | None
-            The tag to use when creating the instance. If None, the default tag for the class will be used.
 
         Returns
         -------
         Self
             An instance of this class, or None if creation failed
         """
-        return cls._create_minimal(defaults=defaults, tag=tag)
+        return cls._create_minimal(tag=tag, defaults=defaults)
 
     @classmethod
     def _create_fake_data(
         cls,
+        tag: str,
         *,
         defaults: Mapping[str, Any] | None = None,
         shape: tuple[int, ...] | None = None,
         builder: Builder | None = None,
-        tag: str | None = None,
     ) -> Self | None:
         return cls._create_minimal(
+            tag=tag,
             defaults=defaults,
             builder=(builder or FakeDataBuilder(shape)),
-            tag=tag,
         )
 
     @classmethod
     @final
     def create_fake_data(
         cls,
+        tag: str,
         defaults: Mapping[str, Any] | None = None,
         shape: tuple[int, ...] | None = None,
-        *,
-        tag: str | None = None,
     ) -> Self | None:
         """
         Create an instance of this class with with all required attributes
@@ -201,64 +188,60 @@ class TaggedNode(ABC, NodeMixin):
 
         Parameters
         ----------
+        tag: str
+            The tag to use when creating the instance.
         defaults: Mapping[str, Any] | None
             A mapping of default values to use when creating the instance
         shape: tuple[int, ...] | None
             The shape of the data to create
-        tag: str | None
-            The tag to use when creating the instance. If None, the default tag for the class will be used.
 
         Returns
         -------
         Self | None
             An instance of this class, or None if creation failed
         """
-        return cls._create_fake_data(defaults=defaults, shape=shape, tag=tag)
+        return cls._create_fake_data(tag=tag, defaults=defaults, shape=shape)
 
     @classmethod
     def _create_from_node(
         cls,
+        tag: str,
         *,
         node: MutableMapping[str, Any],
         builder: Builder | None = None,
-        tag: str | None = None,
     ) -> Self | None:
         return cls._create_minimal(
+            tag=tag,
             defaults=node,
             builder=(builder or NodeBuilder()),
-            tag=tag,
         )
 
     @classmethod
     @final
     def create_from_node(
         cls,
+        tag: str,
         node: MutableMapping[str, Any],
-        *,
-        tag: str | None = None,
     ) -> Self | None:
         """
         Create an instance of this class from a node (dict-like object)
 
         Parameters
         ----------
+        tag: str
+            The tag to use when creating the instance.
         node: MutableMapping[str, Any]
             The node to create the instance from
-        tag: str | None
-            The tag to use when creating the instance. If None, the default tag for the class will be used.
 
         Returns
         -------
         Self | None
             An instance of this class, or None if creation failed
         """
-        return cls._create_from_node(node=node, tag=tag)
+        return cls._create_from_node(tag=tag, node=node)
 
     @property
     def _tag(self):
-        if self._read_tag is None:
-            return self.default_tag()
-
         return self._read_tag
 
     @property
@@ -337,12 +320,11 @@ class TaggedScalarNode(TaggedNode):
     @classmethod
     def _create_minimal(
         cls,
+        tag: str,
         *,
         defaults: Mapping[str, Any] | None = None,
         builder: Builder | None = None,
-        tag: str | None = None,
     ) -> Self | None:
-        tag = tag or cls.default_tag()
         if isinstance(
             value := cls._build_node(tag=tag, defaults=defaults, builder=builder),
             NoValueType,
@@ -354,7 +336,7 @@ class TaggedScalarNode(TaggedNode):
     @property
     def _tag(self):
         # _tag is required by asdf to allow __asdf_traverse__
-        return getattr(self, "_read_tag", self.default_tag())
+        return getattr(self, "_read_tag", None)
 
     def copy(self):
         return copy.copy(self)
@@ -367,20 +349,31 @@ class TaggedStrNode(str, TaggedScalarNode):  # type: ignore[misc]
 
 class TaggedTimeNode(Time, TaggedScalarNode):
     @classmethod
-    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls.now()
-        if tag:
-            new._read_tag = tag
-
-        return new
+    def _create_minimal(
+        cls,
+        tag: str,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+    ) -> Self:
+        return cls.from_tag(
+            node=(defaults if defaults else cls.now()),
+            tag=(tag or cls.default_tag()),
+        )
 
     @classmethod
-    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
-        if tag:
-            new._read_tag = tag
-
-        return new
+    def _create_fake_data(
+        cls,
+        tag: str,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        shape: tuple[int, ...] | None = None,
+        builder: Builder | None = None,
+    ) -> Self:
+        return cls.from_tag(
+            node=(defaults if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")),
+            tag=(tag or cls.default_tag()),
+        )
 
 
 _T = TypeVar("_T", bound=TaggedNode)

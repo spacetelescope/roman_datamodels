@@ -26,7 +26,7 @@ from asdf.tags.core.ndarray import NDArrayType
 from astropy.time import Time
 from astropy.utils import classproperty
 
-from roman_datamodels._stnode import DNode, TaggedObjectNode
+from roman_datamodels._stnode import DNode, TaggedObjectNode, get_default_tag
 from roman_datamodels._stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN, SCHEMA_URIS_BY_TAG
 
 __all__ = ["MODEL_REGISTRY", "DataModel"]
@@ -57,6 +57,15 @@ class DataModel(abc.ABC):
 
     crds_observatory: ClassVar[str] = "roman"
     tag_pattern: ClassVar[str]
+
+    @classmethod
+    def default_tag(cls) -> str:
+        """Get the default tag for this class"""
+
+        if (tag := get_default_tag(cls.tag_pattern)) is None:
+            raise RuntimeError(f"No default tag found for pattern '{cls.tag_pattern}'")
+
+        return tag
 
     @classmethod
     def node_class(cls) -> type[TaggedObjectNode]:
@@ -138,7 +147,12 @@ class DataModel(abc.ABC):
             be incomplete (invalid) as not all required attributes
             can be guessed.
         """
-        return cls(cls.node_class().create_minimal(defaults, tag=tag))
+        return cls(
+            cls.node_class().create_minimal(
+                tag=(tag or cls.default_tag()),
+                defaults=defaults,
+            )
+        )
 
     @classmethod
     def create_fake_data(
@@ -176,7 +190,13 @@ class DataModel(abc.ABC):
         DataModel
             A valid model with fake data.
         """
-        return cls(cls.node_class().create_fake_data(defaults, shape, tag=tag))
+        return cls(
+            cls.node_class().create_fake_data(
+                tag=(tag or cls.default_tag()),
+                defaults=defaults,
+                shape=shape,
+            )
+        )
 
     __slots__ = ("_asdf", "_files_to_close", "_instance", "_iscopy", "_shape")
 
@@ -185,11 +205,12 @@ class DataModel(abc.ABC):
         """
         Create a new DataModel from an existing model.
         """
-        if isinstance(model, DataModel):
-            node = model._instance
-        else:
-            node = model
-        return cls(cls.node_class().create_from_node(node, tag=tag))
+        return cls(
+            cls.node_class().create_from_node(
+                tag=(tag or cls.default_tag()),
+                node=(model._instance if isinstance(model, DataModel) else model),
+            )
+        )
 
     def migrate_tag(self, tag: str | None = None) -> Self:
         """
@@ -218,7 +239,7 @@ class DataModel(abc.ABC):
             A new version of this model with the tag updated.
         """
         # If no tag is provided, then update to the default tag.
-        tag = tag or self._node_type.default_tag()
+        tag = tag or self.default_tag()
 
         if self.tag == tag:
             return self
@@ -250,7 +271,7 @@ class DataModel(abc.ABC):
             return
 
         if init is None:
-            self._instance = self.node_class()()
+            self._instance = self.node_class()(read_tag=self.default_tag())
 
         elif isinstance(init, str | bytes | PurePath):
             if isinstance(init, PurePath):

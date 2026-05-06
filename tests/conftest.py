@@ -1,7 +1,7 @@
 import pytest
 from asdf import get_config
 
-from roman_datamodels._stnode import TaggedListNode, TaggedNode, TaggedObjectNode
+from roman_datamodels._stnode import TaggedListNode, TaggedNode, TaggedObjectNode, get_default_tag
 from roman_datamodels._stnode._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     NODE_CLASSES_BY_TAG,
@@ -38,16 +38,34 @@ def node_class(request) -> type[TaggedNode]:
     return request.param
 
 
+@pytest.fixture(scope="module")
+def node_default_tag(node_class: type[TaggedNode]) -> str:
+    """Fixture to provide a node's default tag for testing"""
+    return get_default_tag(node_class._tag_pattern)
+
+
 @pytest.fixture(scope="module", params=OBJECT_NODE_CLASSES_BY_PATTERN.values())
 def object_node_class(request) -> type[TaggedObjectNode]:
     """Fixture to provide all of the object node classes"""
     return request.param
 
 
+@pytest.fixture(scope="module")
+def object_node_default_tag(object_node_class: type[TaggedObjectNode]) -> str:
+    """Fixture to provide an object node's default tag for testing"""
+    return get_default_tag(object_node_class._tag_pattern)
+
+
 @pytest.fixture(scope="module", params=LIST_NODE_CLASSES_BY_PATTERN.values())
 def list_node_class(request) -> type[TaggedListNode]:
     """Fixture to provide all of the list node classes"""
     return request.param
+
+
+@pytest.fixture(scope="module")
+def list_node_default_tag(list_node_class: type[TaggedListNode]) -> str:
+    """Fixture to provide a list node's default tag for testing"""
+    return get_default_tag(list_node_class._tag_pattern)
 
 
 @pytest.fixture(scope="module", params=(*OBJECT_NODE_CLASSES_BY_PATTERN.values(), *LIST_NODE_CLASSES_BY_PATTERN.values()))
@@ -57,15 +75,23 @@ def container_node_class(request) -> type[TaggedObjectNode] | type[TaggedListNod
 
 
 @pytest.fixture(scope="module")
-def object_node_default_uri(object_node_class):
-    return SCHEMA_URIS_BY_TAG[object_node_class.default_tag()]
+def container_node_default_tag(container_node_class: type[TaggedObjectNode | TaggedListNode]) -> str:
+    """Fixture to provide a container node's default tag for testing"""
+    return get_default_tag(container_node_class._tag_pattern)
 
 
 @pytest.fixture(scope="module")
-def object_node_uris(object_node_default_uri):
-    prefix_uri = f"{object_node_default_uri.rsplit('-', 1)[0]}-"
+def object_node_default_schema_uri(object_node_default_tag: str) -> str:
+    """Fixture to provide an object node's default schema URI for testing"""
+    return SCHEMA_URIS_BY_TAG[object_node_default_tag]
 
-    return [schema_uri for schema_uri in get_config().resource_manager if schema_uri.startswith(prefix_uri)]
+
+@pytest.fixture(scope="module")
+def object_node_schema_uris(object_node_default_schema_uri: str) -> tuple[str, ...]:
+    """Fixture to provide all of the schema URIs associated with an object node for testing"""
+    prefix_uri = f"{object_node_default_schema_uri.rsplit('-', 1)[0]}-"
+
+    return tuple(schema_uri for schema_uri in get_config().resource_manager if schema_uri.startswith(prefix_uri))
 
 
 @pytest.fixture(scope="module", params=MODEL_REGISTRY)

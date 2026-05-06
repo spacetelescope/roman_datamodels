@@ -195,10 +195,26 @@ class _RomanDataModel(_DataModel):
     __slots__ = ()
 
     def __init__(self, init=None, **kwargs):
+        from roman_datamodels._stnode import TaggedStrNode
+
         super().__init__(init, **kwargs)
 
         if init is not None:
-            self.meta.model_type = type(self.get("meta", {}).get("model_type", ""))(self.__class__.__name__)
+            current_model_type = self.get("meta", {}).get("model_type", None)
+            # This is only necessary if we wish to support creating and writing
+            #   RAD datamodels-1.4.0 and below
+            match current_model_type:
+                case TaggedStrNode():
+                    self.meta.model_type = type(current_model_type).from_tag(
+                        tag=current_model_type.tag,
+                        node=type(self).__name__,
+                    )
+
+                case None:
+                    self.meta.model_type = type(self).__name__
+
+                case _:
+                    self.meta.model_type = type(current_model_type)(type(self).__name__)
 
     @classmethod
     def _creator_defaults(
