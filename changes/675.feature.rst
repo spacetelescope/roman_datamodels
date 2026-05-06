@@ -1,0 +1,2 @@
+Switch from using pseudo global mutable maps to a singleton immutable map manager
+so that the stnode and DataModels infrastructure cannot be corrupted.
