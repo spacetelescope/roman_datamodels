@@ -132,10 +132,17 @@ class TaggedScalarNodeConverter(_TaggedNodeConverter):
         return list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
 
     def to_yaml_tree(self, obj, tag, ctx):
-        node = type(obj).__bases__[0](obj)
+        from ._tagged import TaggedStrNode, TaggedTimeNode
 
-        if "file_date" in obj.tag:
-            converter = ctx.extension_manager.get_converter_for_type(type(node))
-            node = converter.to_yaml_tree(node, tag, ctx)
+        match obj:
+            case TaggedStrNode():
+                node = str(obj)
+
+            case TaggedTimeNode():
+                converter = ctx.extension_manager.get_converter_for_type(Time)
+                node = converter.to_yaml_tree(Time(obj), tag, ctx)
+
+            case _:
+                raise TypeError(f"Unsupported type {type(obj)} for TaggedScalarNodeConverter")
 
         return super().to_yaml_tree(node, obj.tag, ctx)

@@ -7,19 +7,18 @@ from __future__ import annotations
 
 from typing import Any
 
-from astropy.time import Time
+from ._tagged import (
+    TaggedListNode,
+    TaggedNode,
+    TaggedObjectNode,
+    TaggedScalarNode,
+    TaggedStrNode,
+    TaggedTimeNode,
+    class_name_from_tag_uri,
+)
 
-from . import _mixins
-from ._tagged import TaggedListNode, TaggedNode, TaggedObjectNode, TaggedScalarNode, class_name_from_tag_uri
+__all__ = ("stnode_factory",)
 
-__all__ = ["stnode_factory"]
-
-# Map of scalar types by pattern (str is default)
-_SCALAR_TYPE_BY_PATTERN = {
-    "asdf://stsci.edu/datamodels/roman/tags/file_date-*": Time,
-    "asdf://stsci.edu/datamodels/roman/tags/fps/file_date-*": Time,
-    "asdf://stsci.edu/datamodels/roman/tags/tvac/file_date-*": Time,
-}
 # Map of node types by pattern (TaggedObjectNode is default)
 _NODE_TYPE_BY_PATTERN = {
     "asdf://stsci.edu/datamodels/roman/tags/cal_logs-*": TaggedListNode,
@@ -61,30 +60,12 @@ def scalar_factory(pattern: str, tag_def: dict[str, Any]) -> type[TaggedScalarNo
     -------
     A dynamically generated TaggedScalarNode subclass
     """
-    class_name = class_name_from_tag_uri(pattern)
-
-    # TaggedScalarNode subclasses are really subclasses of the type of the scalar,
-    #   with the TaggedScalarNode as a mixin.  This is because the TaggedScalarNode
-    #   is supposed to be the scalar, but it needs to be serializable under a specific
-    #   ASDF tag.
-    # _SCALAR_TYPE_BY_PATTERN will need to be updated as new wrappers of scalar types are added
-    #   to the RAD manifest.
-    # assume everything is a string if not otherwise defined
-    class_type = _SCALAR_TYPE_BY_PATTERN.get(pattern, str)
-
-    # In special cases one may need to add additional features to a tagged node class.
-    #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
-    #   Here we mixin the mixin class if it exists.
-    if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-        class_type = (class_type, getattr(_mixins, mixin), TaggedScalarNode)
-    else:
-        class_type = (class_type, TaggedScalarNode)
 
     return type(
-        class_name,
-        class_type,
+        class_name_from_tag_uri(pattern),
+        (TaggedTimeNode,) if "file_date" in pattern else (TaggedStrNode,),
         {
-            "_pattern": pattern,
+            "_tag_pattern": pattern,
             "__module__": "roman_datamodels._stnode",
             "__doc__": docstring_from_tag(tag_def),
         },
@@ -107,24 +88,12 @@ def node_factory(pattern: str, tag_def: dict[str, Any]) -> type[TaggedObjectNode
     -------
     A dynamically generated TaggedObjectNode or TaggedListNode subclass
     """
-    class_name = class_name_from_tag_uri(pattern)
-
-    base_class_type = _NODE_TYPE_BY_PATTERN.get(pattern, TaggedObjectNode)
-
-    # In special cases one may need to add additional features to a tagged node class.
-    #   This is done by creating a mixin class with the name <ClassName>Mixin in _mixins.py
-    #   Here we mixin the mixin class if it exists.
-    class_type: tuple[Any, type[TaggedObjectNode] | type[TaggedListNode]] | tuple[type[TaggedObjectNode] | type[TaggedListNode]]
-    if hasattr(_mixins, mixin := f"{class_name}Mixin"):
-        class_type = (getattr(_mixins, mixin), base_class_type)
-    else:
-        class_type = (base_class_type,)
 
     return type(
-        class_name,
-        class_type,
+        class_name_from_tag_uri(pattern),
+        (TaggedListNode,) if "cal_logs" in pattern else (TaggedObjectNode,),
         {
-            "_pattern": pattern,
+            "_tag_pattern": pattern,
             "__module__": "roman_datamodels._stnode",
             "__doc__": docstring_from_tag(tag_def),
             "__slots__": (),

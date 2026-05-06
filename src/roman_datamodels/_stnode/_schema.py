@@ -20,7 +20,7 @@ from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
 if TYPE_CHECKING:
     from ._tagged import TaggedNode
 
-__all__ = ("Builder", "FakeDataBuilder", "NoValueType", "NodeBuilder", "get_latest_schema")
+__all__ = ("Builder", "FakeDataBuilder", "NoValueType", "NodeBuilder", "get_keyword", "get_latest_schema")
 
 
 NOSTR = "?"
@@ -80,7 +80,7 @@ class _MissingKeywordType:
 _MISSING_KEYWORD = _MissingKeywordType()
 
 
-def _get_keyword(schema, key):
+def get_keyword(schema, key):
     """
     Search a schema for value for a given a keyword.
 
@@ -103,7 +103,7 @@ def _get_keyword(schema, key):
         if combiner not in schema:
             continue
         for subschema in schema[combiner]:
-            value = _get_keyword(subschema, key)
+            value = get_keyword(subschema, key)
             if value is not _MISSING_KEYWORD:
                 return value
     return _MISSING_KEYWORD
@@ -126,7 +126,7 @@ def _has_keyword(schema, key):
     bool
         If the keyword was found
     """
-    return _get_keyword(schema, key) != _MISSING_KEYWORD
+    return get_keyword(schema, key) != _MISSING_KEYWORD
 
 
 def _get_properties(schema):
@@ -265,7 +265,7 @@ class Builder:
     def get_type(self, schema):
         if _has_keyword(schema, "tag"):
             return SchemaType.TAGGED
-        if defined_type := _get_keyword(schema, "type"):
+        if defined_type := get_keyword(schema, "type"):
             defined_type = defined_type.upper()
             if hasattr(SchemaType, defined_type):
                 return getattr(SchemaType, defined_type)
@@ -281,7 +281,7 @@ class Builder:
         return SchemaType.UNKNOWN
 
     def from_enum(self, schema):
-        if enum := _get_keyword(schema, "enum"):
+        if enum := get_keyword(schema, "enum"):
             if len(enum) == 1:
                 return enum[0]
         return _NO_VALUE
@@ -330,7 +330,7 @@ class Builder:
             defaults = []
         arr = []
 
-        min_items = _get_keyword(schema, "minItems")
+        min_items = get_keyword(schema, "minItems")
         if min_items is _MISSING_KEYWORD:
             return arr
 
@@ -340,7 +340,7 @@ class Builder:
         if len(arr) == min_items:
             return arr
 
-        items_keyword = _get_keyword(schema, "items")
+        items_keyword = get_keyword(schema, "items")
         if items_keyword is _MISSING_KEYWORD:
             return arr
         if isinstance(items_keyword, dict):
@@ -409,7 +409,7 @@ class Builder:
         return _NO_VALUE
 
     def from_tagged(self, schema, defaults):
-        tag = _get_keyword(schema, "tag")
+        tag = get_keyword(schema, "tag")
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
             return self._from_tagged_node(property_class, tag, defaults)
 
@@ -464,14 +464,14 @@ class FakeDataBuilder(Builder):
         self._shape = shape
 
     def from_enum(self, schema):
-        if enum := _get_keyword(schema, "enum"):
+        if enum := get_keyword(schema, "enum"):
             return enum[0]
         return _NO_VALUE
 
     def from_string(self, schema, defaults):
         if (value := super().from_string(schema, defaults)) is not _NO_VALUE:
             return value
-        if pattern := _get_keyword(schema, "pattern"):
+        if pattern := get_keyword(schema, "pattern"):
             if "WFI_IMAGE|" in pattern:
                 # this is special cased for p_exptype
                 return "WFI_IMAGE|"
@@ -515,7 +515,7 @@ class FakeDataBuilder(Builder):
         if (value := super().from_tagged(schema, defaults)) is not _NO_VALUE:
             return value
 
-        tag = _get_keyword(schema, "tag")
+        tag = get_keyword(schema, "tag")
         if defaults is not _NO_VALUE:
             return copy.deepcopy(defaults)
         if tag == "tag:stsci.edu:asdf/time/time-1.*":
@@ -538,8 +538,8 @@ class FakeDataBuilder(Builder):
     def make_array(self, schema, defaults):
         import numpy as np
 
-        ndim = _get_keyword(schema, "ndim") or 0
-        dtype = _get_keyword(schema, "datatype") or "float32"
+        ndim = get_keyword(schema, "ndim") or 0
+        dtype = get_keyword(schema, "datatype") or "float32"
         shape = [0] * ndim
         if self._shape is not None:
             for i, v in enumerate(self._shape):
@@ -591,6 +591,67 @@ class FakeDataBuilder(Builder):
             arr = np.zeros(shape, dtype=arr.dtype)
         return u.Quantity(arr, unit=unit, dtype=arr.dtype, copy=False)
 
+    @staticmethod
+    def make_empty_catalog(schema, aperture_radii=None, filters=None):
+        """Create an source catalog based on the schema"""
+        from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
+        from astropy.table import Column, Table
+
+        aperture_radii = aperture_radii or ["00"]
+        filters = filters or ["f184"]
+
+        columns_schema = dict(_get_properties(schema["properties"]["source_catalog"]))
+        columns = []
+
+        if "columns" in columns_schema:
+            for raw_col_def in columns_schema["columns"]["allOf"]:
+                col_def = raw_col_def["not"]["items"]["not"]
+                properties = dict(_get_properties(col_def))
+                name_regex = properties["name"]["pattern"]
+                unit = get_keyword(col_def, "unit")
+                description = get_keyword(col_def, "description")
+                dtype = asdf_datatype_to_numpy_dtype(properties["data"]["properties"]["datatype"]["enum"][0])
+
+                name_queue = [name_regex[1:-1]]
+
+                substitutions = [
+                    (r"\[0-9]\{2}", aperture_radii),
+                    (r"\(.*\)", filters),
+                ]
+                while name_queue:
+                    name = name_queue.pop()
+                    for regex, values in substitutions:
+                        if re.search(regex, name):
+                            name_queue.extend(re.sub(regex, value, name) for value in values)
+                            break
+                    else:
+                        columns.append(Column([], unit=unit, description=description, dtype=dtype, name=name))
+
+        return Table(columns)
+
+    def build_node(self, schema, defaults):
+        """Inject empty source catalogs when building source catalog nodes"""
+
+        if (
+            (uri := get_keyword(schema, "id")) is not _MISSING_KEYWORD
+            and isinstance(uri, str)
+            and any(
+                catalog in uri
+                for catalog in (
+                    "image_source_catalog",
+                    "forced_image_source_catalog",
+                    "mosaic_source_catalog",
+                    "forced_mosaic_source_catalog",
+                    "multiband_source_catalog",
+                )
+            )
+        ):
+            defaults = dict(defaults) if defaults else {}
+            if "source_catalog" not in defaults:
+                defaults["source_catalog"] = self.make_empty_catalog(schema)
+
+        return super().build_node(schema, defaults)
+
 
 class NodeBuilder(Builder):
     """
@@ -632,7 +693,7 @@ class NodeBuilder(Builder):
             return self._copy_default(defaults)
 
         # don't consider minItem maxItems, consider items
-        items_keyword = _get_keyword(schema, "items")
+        items_keyword = get_keyword(schema, "items")
         if items_keyword is _MISSING_KEYWORD:
             return self._copy_default(defaults)
 
@@ -670,7 +731,7 @@ class NodeBuilder(Builder):
         return cls._create_from_node(node=defaults, builder=self, tag=tag)
 
     def from_tagged(self, schema, defaults):
-        tag = _get_keyword(schema, "tag")
+        tag = get_keyword(schema, "tag")
         if property_class := NODE_CLASSES_BY_TAG.get(tag):
             try:
                 return self._create_tagged_node(property_class, tag, defaults)

@@ -9,10 +9,10 @@ This module provides all the specific datamodels used by the Roman pipeline.
 from __future__ import annotations
 
 import copy
-import functools
 import itertools
 import logging
 import pathlib
+import re
 from collections import abc
 from typing import TYPE_CHECKING, ClassVar
 
@@ -54,8 +54,6 @@ log.setLevel(logging.DEBUG)
 
 
 class _SourceCatalogMixin:
-    from roman_datamodels._stnode import ImageSourceCatalogMixin
-
     __slots__ = ()
 
     def create_empty_catalog(self, aperture_radii=None, filters=None):
@@ -74,14 +72,55 @@ class _SourceCatalogMixin:
         -------
         Table
         """
+        from roman_datamodels._stnode._schema import FakeDataBuilder
+
         if aperture_radii:
             aperture_radii = [f"{i:02}" for i in aperture_radii]
 
-        return self._instance._create_empty_catalog(aperture_radii, filters)
+        return FakeDataBuilder.make_empty_catalog(self._instance.get_schema(), aperture_radii=aperture_radii, filters=filters)
 
-    @functools.wraps(ImageSourceCatalogMixin.get_column_definition)
     def get_column_definition(self, name):
-        return self._instance.get_column_definition(name)
+        """
+        Get the definition of a named column in the catalog table.
+
+        This function parses the "definitions" part of the catalog
+        schema and returns the parsed content.
+
+        Parameters
+        ----------
+        name: str
+            Column name, may contain aperture radisu or filter/band or prefixed
+            with ``forced_``.
+
+        Returns
+        -------
+        dict or None
+            Dictionary containing unit, description, and datatype information
+            or None if the name does not match any definition.
+        """
+        from asdf.tags.core.ndarray import asdf_datatype_to_numpy_dtype
+
+        from roman_datamodels._stnode import get_keyword
+
+        if name.startswith("forced_"):
+            _, name = name.split("forced_", maxsplit=1)
+
+        definitions = get_keyword(self._instance.get_schema()["properties"]["source_catalog"], "definitions")
+        for def_name, definition in definitions.items():
+            if "~radius~" in def_name:
+                def_name = def_name.replace("~radius~", r"[0-9]{2}")
+            if "_~band~" in def_name:
+                def_name = def_name.replace("_~band~", r"(_f[0-9]{3}|)")
+            if "~band~" in def_name:
+                def_name = def_name.replace("~band~", r"(f[0-9]{3}|)")
+            if re.match(f"^{def_name}$", name):
+                return {
+                    "unit": definition["unit"],
+                    "description": definition["description"],
+                    "datatype": asdf_datatype_to_numpy_dtype(
+                        definition["properties"]["data"]["properties"]["datatype"]["enum"][0]
+                    ),
+                }
 
 
 class _ParquetMixin:

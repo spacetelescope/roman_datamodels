@@ -1,0 +1,3 @@
+Completely remove all of the ``._stnode._mixin`` related structure replacing them
+with specific ``TaggedScalarNode`` classes: ``TaggedStrNode``, ``TaggedTimeNode``.
+Any other necessary functionality was moved into  the  wrapping data models themselves.

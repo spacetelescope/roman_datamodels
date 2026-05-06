@@ -10,6 +10,8 @@ import copy
 from abc import ABC
 from typing import TYPE_CHECKING, Generic, TypeVar, final
 
+from astropy.time import Time
+
 from ._node import DNode, LNode
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
@@ -28,7 +30,15 @@ if TYPE_CHECKING:
 else:
     NodeMixin: TypeAlias = object
 
-__all__ = ("SerializationNode", "TaggedListNode", "TaggedNode", "TaggedObjectNode", "TaggedScalarNode")
+__all__ = (
+    "SerializationNode",
+    "TaggedListNode",
+    "TaggedNode",
+    "TaggedObjectNode",
+    "TaggedScalarNode",
+    "TaggedStrNode",
+    "TaggedTimeNode",
+)
 
 
 def name_from_tag_uri(tag_uri: str) -> str:
@@ -83,14 +93,14 @@ class TaggedNode(ABC, NodeMixin):
 
     __slots__ = ()
 
-    _pattern: ClassVar[str]
+    _tag_pattern: ClassVar[str]
 
     @classmethod
     def default_tag(cls) -> str:
         """Get the default tag for this class"""
 
-        if (tag := get_default_tag(cls._pattern)) is None:
-            raise RuntimeError(f"No default tag found for pattern '{cls._pattern}'")
+        if (tag := get_default_tag(cls._tag_pattern)) is None:
+            raise RuntimeError(f"No default tag found for pattern '{cls._tag_pattern}'")
 
         return tag
 
@@ -276,9 +286,10 @@ class TaggedObjectNode(DNode, TaggedNode):
         """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedObjectNode":
-            if cls._pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._pattern}' has been defined twice")
-            OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+            if cls._tag_pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
+                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._tag_pattern}' has been defined twice")
+
+            OBJECT_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
 
 
 class TaggedListNode(LNode, TaggedNode):
@@ -297,9 +308,9 @@ class TaggedListNode(LNode, TaggedNode):
         """
         super().__init_subclass__(**kwargs)
         if cls.__name__ != "TaggedListNode":
-            if cls._pattern in LIST_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedListNode class for tag '{cls._pattern}' has been defined twice")
-            LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+            if cls._tag_pattern in LIST_NODE_CLASSES_BY_PATTERN:
+                raise RuntimeError(f"TaggedListNode class for tag '{cls._tag_pattern}' has been defined twice")
+            LIST_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
 
 
 class TaggedScalarNode(TaggedNode):
@@ -315,10 +326,10 @@ class TaggedScalarNode(TaggedNode):
         Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
         """
         super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedScalarNode":
-            if cls._pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._pattern}' has been defined twice")
-            SCALAR_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+        if cls.__name__ not in ("TaggedScalarNode", "TaggedStrNode", "TaggedTimeNode"):
+            if cls._tag_pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
+                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._tag_pattern}' has been defined twice")
+            SCALAR_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
 
     def __asdf_traverse__(self):
         return self
@@ -347,6 +358,29 @@ class TaggedScalarNode(TaggedNode):
 
     def copy(self):
         return copy.copy(self)
+
+
+# TODO: MyPy doesn't like the disjoint bases
+class TaggedStrNode(str, TaggedScalarNode):  # type: ignore[misc]
+    pass
+
+
+class TaggedTimeNode(Time, TaggedScalarNode):
+    @classmethod
+    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
+        new = cls(defaults) if defaults else cls.now()
+        if tag:
+            new._read_tag = tag
+
+        return new
+
+    @classmethod
+    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
+        new = cls(defaults) if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
+        if tag:
+            new._read_tag = tag
+
+        return new
 
 
 _T = TypeVar("_T", bound=TaggedNode)

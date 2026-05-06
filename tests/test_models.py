@@ -87,7 +87,7 @@ def test_node_type_matches_model(model):
 
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_model_schemas(model):
+def test_model_schemas(model: type[datamodels.DataModel]):
     instance = model.create_fake_data()
     asdf.schema.load_schema(instance.schema_uri)
 
