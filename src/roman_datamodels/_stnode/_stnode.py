@@ -8,6 +8,7 @@ Dynamic creation of STNode classes from the RAD manifest.
 
 import importlib.resources
 from pathlib import Path
+from types import MappingProxyType
 
 import yaml
 from asdf.extension import ManifestExtension
@@ -58,7 +59,7 @@ def _factory(pattern, tag_def):
 #   Reads each tag entry from the manifest and creates a class for it
 NODE_EXTENSIONS: dict[str, ManifestExtension] = {}
 for manifest in _MANIFESTS:
-    _manifest = _add_cls(ManifestNode.factory(manifest_uri := manifest["id"]))
+    _manifest = _add_cls(ManifestNode.factory(manifest_uri := manifest["id"], MappingProxyType({})))
     NODE_EXTENSIONS[manifest_uri] = _manifest.extension
 
     MANIFEST_TAG_REGISTRY[manifest_uri] = []

@@ -1,10 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, ClassVar, Self
+from typing import TYPE_CHECKING, Any, ClassVar, Self
 
 from asdf.extension import ManifestExtension
 
 from ._converters import ManifestNodeConverter, TaggedNodeConverter
+
+if TYPE_CHECKING:
+    from types import MappingProxyType
+
+    from ._tagged import TaggedNode
 
 __all__ = ("ManifestNode",)
 
@@ -18,6 +23,7 @@ class ManifestNode:
 
     __slots__ = ("_data", "_tag")
     manifest_uri: ClassVar[str]
+    tag_uris: ClassVar[MappingProxyType[str, type[TaggedNode]]]
     extension: ClassVar[ManifestExtension]
 
     # TODO: Fix the Any hint here
@@ -48,7 +54,7 @@ class ManifestNode:
         return cls
 
     @staticmethod
-    def factory(uri: str) -> type[ManifestNode]:
+    def factory(uri: str, tags: MappingProxyType[str, type[TaggedNode]]) -> type[ManifestNode]:
         """
         Factory method to create a ManifestNode subclass with the given manifest URI.
         """
@@ -58,5 +64,6 @@ class ManifestNode:
         class _ManifestNode(ManifestNode):
             __slots__ = ()
             manifest_uri: ClassVar[str] = uri
+            tag_uris: ClassVar[MappingProxyType[str, type[TaggedNode]]] = tags
 
         return _ManifestNode._with_asdf_extension()
