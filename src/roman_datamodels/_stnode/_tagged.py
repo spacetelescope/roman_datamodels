@@ -7,9 +7,10 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
-from abc import ABC
-from typing import TYPE_CHECKING, Generic, TypeVar, final
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, final
 
+from asdf.extension import SerializationContext
 from astropy.time import Time
 
 from ._node import DNode, LNode
@@ -17,7 +18,7 @@ from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
-    SERIALIZATION_BY_MANIFEST,
+    TAG_MANIFEST_REGISTRY,
 )
 from ._schema import Builder, FakeDataBuilder, NodeBuilder, NoValueType, _get_schema_from_tag
 from ._uri import get_default_tag
@@ -26,12 +27,12 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
     from typing import Any, ClassVar, Self, TypeAlias
 
+    from ._manifest import ManifestNode
     from ._node import _NodeMixin as NodeMixin
 else:
     NodeMixin: TypeAlias = object
 
 __all__ = (
-    "SerializationNode",
     "TaggedListNode",
     "TaggedNode",
     "TaggedObjectNode",
@@ -269,6 +270,29 @@ class TaggedNode(ABC, NodeMixin):
         """Retrieve the schema associated with this tag"""
         return _get_schema_from_tag(self.tag)
 
+    @abstractmethod
+    def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
+        """
+        Convert this object to a ManifestNode for ASDF serialization.
+
+        Parameters
+        ----------
+        ctx:
+            The ASDF serialization context to use when converting this object to a ManifestNode.
+        """
+
+    @final
+    def to_asdf_tree(self, ctx: SerializationContext) -> ManifestNode:
+        """
+        Convert this object to a ManifestNode for ASDF serialization.
+
+        Parameters
+        ----------
+        ctx:
+            The ASDF serialization context to use when converting this object to a ManifestNode.
+        """
+        return TAG_MANIFEST_REGISTRY[self._tag](data=self._to_asdf_tree(ctx), tag=self._tag)
+
 
 class TaggedObjectNode(DNode, TaggedNode):
     """
@@ -291,6 +315,9 @@ class TaggedObjectNode(DNode, TaggedNode):
 
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
 
+    def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
+        return dict(self._data)
+
 
 class TaggedListNode(LNode, TaggedNode):
     """
@@ -311,6 +338,9 @@ class TaggedListNode(LNode, TaggedNode):
             if cls._tag_pattern in LIST_NODE_CLASSES_BY_PATTERN:
                 raise RuntimeError(f"TaggedListNode class for tag '{cls._tag_pattern}' has been defined twice")
             LIST_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
+
+    def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
+        return list(self.data)
 
 
 class TaggedScalarNode(TaggedNode):
@@ -362,70 +392,37 @@ class TaggedScalarNode(TaggedNode):
 
 # TODO: MyPy doesn't like the disjoint bases
 class TaggedStrNode(str, TaggedScalarNode):  # type: ignore[misc]
-    pass
+    def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
+        return str(self)
 
 
 class TaggedTimeNode(Time, TaggedScalarNode):
     @classmethod
-    def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls.now()
-        if tag:
-            new._read_tag = tag
-
-        return new
-
-    @classmethod
-    def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
-        new = cls(defaults) if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")
-        if tag:
-            new._read_tag = tag
-
-        return new
-
-
-_T = TypeVar("_T", bound=TaggedNode)
-
-
-class SerializationNode(Generic[_T]):
-    """
-    Intermediate class used to assist in serialization of Tagged objects
-    so that the extension is correctly written.
-    """
-
-    _manifest: ClassVar[str]
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        """
-        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
-        """
-        super().__init_subclass__(**kwargs)
-        if cls.__name__ != "SerializationTaggedNode":
-            if cls._manifest in SERIALIZATION_BY_MANIFEST:
-                raise RuntimeError(f"SerializationNode class for '{cls._manifest}' has been defined twice")
-            SERIALIZATION_BY_MANIFEST[cls._manifest] = cls
-
-    def __init__(self, data: _T, tag: str):
-        self._data = data
-        self._tag = tag
-
-    @property
-    def tag(self) -> str:
-        return self._tag
-
-    @property
-    def data(self) -> _T:
-        return self._data
-
-    @classmethod
-    def _factory(cls, manifest: str) -> type[SerializationNode]:
-        """Create a subclass of this for the given tag"""
-        tag_uri, version = manifest.rsplit("-", maxsplit=1)
-
-        return type(
-            f"SerializationNode_{class_name_from_tag_uri(tag_uri)}__{version.replace('.', '_')}",
-            (SerializationNode,),
-            {
-                "_manifest": manifest,
-                "__module__": "roman_datamodels._stnode",
-            },
+    def _create_minimal(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self | None:
+        return cls.from_tag(
+            node=(cls(defaults) if defaults else cls.now()),
+            tag=(tag or cls.default_tag()),
         )
+
+    @classmethod
+    def _create_fake_data(
+        cls,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+        shape: tuple[int, ...] | None = None,
+        builder: Builder | None = None,
+        tag: str | None = None,
+    ) -> Self | None:
+        return cls.from_tag(
+            node=(cls(defaults) if defaults else cls("2020-01-01T00:00:00.0", format="isot", scale="utc")),
+            tag=(tag or cls.default_tag()),
+        )
+
+    def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
+        return ctx.extension_manager.get_converter_for_type(Time).to_yaml_tree(self, self._tag, ctx)

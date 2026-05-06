@@ -1,0 +1,2 @@
+Cleanup and centralize all of the ASDF extension/serialization objects in order
+to reduce the number of objects that RDM needs in order to support ASDF.
