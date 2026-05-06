@@ -13,13 +13,12 @@ import yaml
 from asdf.extension import ManifestExtension
 from rad import resources
 
-from ._converters import SerializationNodeConverter
+from ._converters import SerializationNodeConverter, TaggedNodeConverter
 from ._factories import stnode_factory
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     MANIFEST_TAG_REGISTRY,
     NODE_CLASSES_BY_TAG,
-    NODE_CONVERTERS,
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
     SCHEMA_URIS_BY_TAG,
@@ -62,8 +61,12 @@ def _factory(pattern, latest_manifest, tag_def):
 # Main dynamic class creation loop
 #   Reads each tag entry from the manifest and creates a class for it
 _generated = {}
+NODE_EXTENSIONS: dict[str, ManifestExtension] = {}
 for manifest in _MANIFESTS:
-    _add_cls(SerializationNode._factory(manifest_uri := manifest["id"]))
+    _serialization = _add_cls(SerializationNode._factory(manifest_uri := manifest["id"]))
+    NODE_EXTENSIONS[manifest_uri] = ManifestExtension.from_uri(
+        manifest_uri, converters=(SerializationNodeConverter(manifest_uri), TaggedNodeConverter())
+    )
 
     MANIFEST_TAG_REGISTRY[manifest_uri] = []
     for tag_def in manifest["tags"]:
@@ -78,18 +81,8 @@ for manifest in _MANIFESTS:
 
         # Make serialization intermediate
         if tag_uri not in TAG_MANIFEST_REGISTRY:
-            TAG_MANIFEST_REGISTRY[tag_uri] = manifest_uri
+            TAG_MANIFEST_REGISTRY[tag_uri] = _serialization
             MANIFEST_TAG_REGISTRY[manifest_uri].append(tag_uri)
-
-
-# Create the ASDF extension for the STNode classes.
-#    ASDF extension is setup here so that it is after the dynamic object creation
-NODE_EXTENSIONS = {
-    manifest_uri: ManifestExtension.from_uri(
-        manifest_uri, converters=(SerializationNodeConverter(manifest_uri), *tuple(NODE_CONVERTERS.values()))
-    )
-    for manifest_uri in MANIFEST_TAG_REGISTRY
-}
 
 
 # List of node classes made available by this library.

@@ -7,7 +7,8 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING, Generic, TypeVar
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Generic, TypeVar, final
 
 from ._node import DNode, LNode
 from ._registry import (
@@ -15,12 +16,15 @@ from ._registry import (
     OBJECT_NODE_CLASSES_BY_PATTERN,
     SCALAR_NODE_CLASSES_BY_PATTERN,
     SERIALIZATION_BY_MANIFEST,
+    TAG_MANIFEST_REGISTRY,
 )
 from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
     from typing import Any, ClassVar, Self, TypeAlias
+
+    from asdf.extension import SerializationContext
 
     from ._node import _NodeMixin as NodeMixin
 else:
@@ -191,6 +195,29 @@ class _TaggedNodeMixin(NodeMixin):
         """Retrieve the schema associated with this tag"""
         return _get_schema_from_tag(self.tag)
 
+    @abstractmethod
+    def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
+        """
+        Convert this object to a ManifestNode for ASDF serialization.
+
+        Parameters
+        ----------
+        ctx: SerializationContext
+            The ASDF serialization context to use when converting this object to a ManifestNode.
+        """
+
+    @final
+    def to_asdf_tree(self, ctx: SerializationContext) -> SerializationNode:
+        """
+        Convert this object to a ManifestNode for ASDF serialization.
+
+        Parameters
+        ----------
+        ctx: SerializationContext
+            The ASDF serialization context to use when converting this object to a ManifestNode.
+        """
+        return TAG_MANIFEST_REGISTRY[self._tag](data=self._to_asdf_tree(ctx), tag=self._tag)
+
 
 class TaggedObjectNode(DNode, _TaggedNodeMixin):
     """
@@ -212,6 +239,9 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
                 raise RuntimeError(f"TaggedObjectNode class for tag '{cls._pattern}' has been defined twice")
             OBJECT_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
 
+    def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
+        return dict(self._data)
+
 
 class TaggedListNode(LNode, _TaggedNodeMixin):
     """
@@ -232,6 +262,9 @@ class TaggedListNode(LNode, _TaggedNodeMixin):
             if cls._pattern in LIST_NODE_CLASSES_BY_PATTERN:
                 raise RuntimeError(f"TaggedListNode class for tag '{cls._pattern}' has been defined twice")
             LIST_NODE_CLASSES_BY_PATTERN[cls._pattern] = cls
+
+    def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
+        return list(self.data)
 
 
 class TaggedScalarNode(_TaggedNodeMixin):
@@ -275,6 +308,17 @@ class TaggedScalarNode(_TaggedNodeMixin):
 
     def copy(self):
         return copy.copy(self)
+
+    def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
+        from astropy.time import Time
+
+        match self:
+            case str():
+                return str(self)
+
+            case Time():
+                converter = ctx.extension_manager.get_converter_for_type(Time)
+                return converter.to_yaml_tree(self, self._tag, ctx)
 
 
 _T = TypeVar("_T", bound=TaggedObjectNode | TaggedListNode | TaggedScalarNode)

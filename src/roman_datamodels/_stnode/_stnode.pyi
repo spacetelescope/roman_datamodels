@@ -2,7 +2,7 @@ from typing import Any
 
 from asdf.extension import ManifestExtension
 
-from ._tagged import TaggedObjectNode
+from ._tagged import TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 class AbvegaoffsetRef(TaggedObjectNode): ...
 class ApcorrRef(TaggedObjectNode): ...
@@ -50,3 +50,4 @@ class WfiWcs(TaggedObjectNode): ...
 
 _MANIFESTS: list[dict[str, Any]]
 NODE_EXTENSIONS: dict[str, ManifestExtension]
+NODE_CLASSES: list[type[TaggedObjectNode | TaggedListNode | TaggedScalarNode]]
