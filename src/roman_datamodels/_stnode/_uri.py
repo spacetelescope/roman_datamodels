@@ -153,7 +153,8 @@ def get_schema_uri(tag_uri: str) -> str:
 
     Returns
     -------
-    Returns the schema URI for the given tag URI.
+    str
+        Returns the schema URI for the given tag URI.
     """
 
     manager: ExtensionManager
@@ -183,7 +184,8 @@ def get_schema_from_tag(tag_uri: str) -> Any:
 
     Returns
     -------
-    The schema for the given tag URI.
+    Any
+        The schema for the given tag URI.
     """
 
     return load_schema(get_schema_uri(tag_uri), resolve_references=True)

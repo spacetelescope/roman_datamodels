@@ -14,12 +14,7 @@ from asdf.extension import SerializationContext
 from astropy.time import Time
 
 from ._node import DNode, LNode
-from ._registry import (
-    LIST_NODE_CLASSES_BY_PATTERN,
-    OBJECT_NODE_CLASSES_BY_PATTERN,
-    SCALAR_NODE_CLASSES_BY_PATTERN,
-    TAG_MANIFEST_REGISTRY,
-)
+from ._registry import TAG_MANIFEST_REGISTRY
 from ._schema import Builder, FakeDataBuilder, NodeBuilder, NoValueType
 from ._uri import get_default_tag, get_schema_from_tag
 
@@ -303,18 +298,6 @@ class TaggedObjectNode(DNode, TaggedNode):
 
     __slots__ = ()
 
-    def __init_subclass__(cls, **kwargs) -> None:
-        """
-        Register any subclasses of this class in the OBJECT_NODE_CLASSES_BY_PATTERN
-        registry.
-        """
-        super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedObjectNode":
-            if cls._tag_pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedObjectNode class for tag '{cls._tag_pattern}' has been defined twice")
-
-            OBJECT_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
-
     def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
         return dict(self._data)
 
@@ -328,17 +311,6 @@ class TaggedListNode(LNode, TaggedNode):
 
     __slots__ = ()
 
-    def __init_subclass__(cls, **kwargs) -> None:
-        """
-        Register any subclasses of this class in the LIST_NODE_CLASSES_BY_PATTERN
-        registry.
-        """
-        super().__init_subclass__(**kwargs)
-        if cls.__name__ != "TaggedListNode":
-            if cls._tag_pattern in LIST_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedListNode class for tag '{cls._tag_pattern}' has been defined twice")
-            LIST_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
-
     def _to_asdf_tree(self, ctx: SerializationContext) -> Any:
         return list(self.data)
 
@@ -350,16 +322,6 @@ class TaggedScalarNode(TaggedNode):
         a scalar base type, or wraps a scalar base type.
         These will all be in the tagged_scalars directory.
     """
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        """
-        Register any subclasses of this class in the SCALAR_NODE_CLASSES_BY_PATTERN registry.
-        """
-        super().__init_subclass__(**kwargs)
-        if cls.__name__ not in ("TaggedScalarNode", "TaggedStrNode", "TaggedTimeNode"):
-            if cls._tag_pattern in SCALAR_NODE_CLASSES_BY_PATTERN:
-                raise RuntimeError(f"TaggedScalarNode class for tag '{cls._tag_pattern}' has been defined twice")
-            SCALAR_NODE_CLASSES_BY_PATTERN[cls._tag_pattern] = cls
 
     def __asdf_traverse__(self):
         return self

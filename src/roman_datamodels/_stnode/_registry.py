@@ -10,11 +10,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ._manifest import ManifestNode
-    from ._tagged import TaggedListNode, TaggedNode, TaggedObjectNode, TaggedScalarNode
+    from ._tagged import TaggedNode
 
-OBJECT_NODE_CLASSES_BY_PATTERN: dict[str, type[TaggedObjectNode]] = {}
-LIST_NODE_CLASSES_BY_PATTERN: dict[str, type[TaggedListNode]] = {}
-SCALAR_NODE_CLASSES_BY_PATTERN: dict[str, type[TaggedScalarNode]] = {}
 NODES_BY_PATTERN: dict[str, type[TaggedNode]] = {}
 NODE_CLASSES_BY_TAG: dict[str, type[TaggedNode]] = {}
 MANIFEST_TAG_REGISTRY: dict[str, list[str]] = {}

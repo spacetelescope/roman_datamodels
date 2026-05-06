@@ -17,7 +17,7 @@ import functools
 import sys
 from collections.abc import Mapping
 from pathlib import Path, PurePath
-from typing import Any, ClassVar, Self
+from typing import Any, ClassVar, Self, cast
 
 import asdf
 import numpy as np
@@ -27,7 +27,7 @@ from astropy.time import Time
 from astropy.utils import classproperty
 
 from roman_datamodels._stnode import DNode, TaggedObjectNode, get_schema_uri
-from roman_datamodels._stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN
+from roman_datamodels._stnode._registry import NODES_BY_PATTERN
 
 __all__ = ["MODEL_REGISTRY", "DataModel"]
 
@@ -64,7 +64,7 @@ class DataModel(abc.ABC):
         Get the TaggedNode subclass that is associated with this data model
         """
 
-        return OBJECT_NODE_CLASSES_BY_PATTERN[cls.tag_pattern]
+        return cast(type[TaggedObjectNode], NODES_BY_PATTERN[cls.tag_pattern])
 
     # I don't like using a classproperty but a few places in RCAL directly
     # access the node type and use it.

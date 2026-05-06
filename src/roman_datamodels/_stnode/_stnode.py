@@ -16,16 +16,13 @@ from rad import resources
 from ._factories import stnode_factory
 from ._manifest import ManifestNode
 from ._registry import (
-    LIST_NODE_CLASSES_BY_PATTERN,
     MANIFEST_TAG_REGISTRY,
     NODE_CLASSES_BY_TAG,
     NODES_BY_PATTERN,
-    OBJECT_NODE_CLASSES_BY_PATTERN,
-    SCALAR_NODE_CLASSES_BY_PATTERN,
     TAG_MANIFEST_REGISTRY,
 )
 
-__all__ = ["NODE_CLASSES", "NODE_EXTENSIONS"]
+__all__ = ["NODE_EXTENSIONS"]
 
 
 # Load the manifest directly from the rad resources and not from ASDF.
@@ -73,18 +70,10 @@ for manifest in _MANIFESTS:
         pattern = f"{base}-*"
         if pattern not in NODES_BY_PATTERN:
             NODES_BY_PATTERN[pattern] = _factory(pattern, tag_def)
+
         NODE_CLASSES_BY_TAG[tag_uri] = NODES_BY_PATTERN[pattern]
 
         # Make serialization intermediate
         if tag_uri not in TAG_MANIFEST_REGISTRY:
             TAG_MANIFEST_REGISTRY[tag_uri] = _manifest
             MANIFEST_TAG_REGISTRY[manifest_uri].append(tag_uri)
-
-
-# List of node classes made available by this library.
-#   This is part of the public API.
-NODE_CLASSES = (
-    list(OBJECT_NODE_CLASSES_BY_PATTERN.values())
-    + list(LIST_NODE_CLASSES_BY_PATTERN.values())
-    + list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
-)

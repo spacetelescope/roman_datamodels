@@ -86,9 +86,9 @@ class TaggedNodeConverter(_RomanConverter):
 
     @property
     def types(self) -> tuple[type[TaggedNode], ...]:
-        from ._stnode import NODE_CLASSES
+        from ._registry import NODE_CLASSES_BY_TAG
 
-        return tuple(NODE_CLASSES)
+        return tuple(NODE_CLASSES_BY_TAG.values())
 
     def to_yaml_tree(self, obj: TaggedNode, tag: str, ctx: SerializationContext) -> ManifestNode:
         return obj.to_asdf_tree(ctx)
