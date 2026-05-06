@@ -32,52 +32,79 @@ def tagged_node_class(tag_uri: str) -> type[TaggedNode]:
     return NODE_CLASSES_BY_TAG[tag_uri]
 
 
-@pytest.fixture(scope="module", params=NODES_BY_PATTERN.values())
-def node_class(request) -> type[TaggedNode]:
+@pytest.fixture(scope="module", params=NODES_BY_PATTERN)
+def node_pattern(request) -> str:
+    """Fixture to provide a tag pattern for each of the RAD tags"""
+    return request.param
+
+
+@pytest.fixture(scope="module")
+def node_class(node_pattern: str) -> type[TaggedNode]:
     """Fixture to provide all of the node classes"""
-    return request.param
+    return NODES_BY_PATTERN[node_pattern]
 
 
 @pytest.fixture(scope="module")
-def node_default_tag(node_class: type[TaggedNode]) -> str:
+def node_default_tag(node_pattern: str) -> str:
     """Fixture to provide a node's default tag for testing"""
-    return get_default_tag(node_class._tag_pattern)
+    return get_default_tag(node_pattern)
 
 
-@pytest.fixture(scope="module", params=OBJECT_NODE_CLASSES_BY_PATTERN.values())
-def object_node_class(request) -> type[TaggedObjectNode]:
+@pytest.fixture(scope="module", params=OBJECT_NODE_CLASSES_BY_PATTERN)
+def object_pattern(request) -> str:
+    """Fixture to provide a tag pattern for each of the object node classes"""
+    return request.param
+
+
+@pytest.fixture(scope="module")
+def object_node_class(object_pattern: str) -> type[TaggedObjectNode]:
     """Fixture to provide all of the object node classes"""
-    return request.param
+    return OBJECT_NODE_CLASSES_BY_PATTERN[object_pattern]
 
 
 @pytest.fixture(scope="module")
-def object_node_default_tag(object_node_class: type[TaggedObjectNode]) -> str:
+def object_node_default_tag(object_pattern: str) -> str:
     """Fixture to provide an object node's default tag for testing"""
-    return get_default_tag(object_node_class._tag_pattern)
+    return get_default_tag(object_pattern)
 
 
-@pytest.fixture(scope="module", params=LIST_NODE_CLASSES_BY_PATTERN.values())
-def list_node_class(request) -> type[TaggedListNode]:
+@pytest.fixture(scope="module", params=LIST_NODE_CLASSES_BY_PATTERN)
+def list_pattern(request) -> str:
+    """Fixture to provide a tag pattern for each of the list node classes"""
+    return request.param
+
+
+@pytest.fixture(scope="module")
+def list_node_class(list_pattern: str) -> type[TaggedListNode]:
     """Fixture to provide all of the list node classes"""
-    return request.param
+    return LIST_NODE_CLASSES_BY_PATTERN[list_pattern]
 
 
 @pytest.fixture(scope="module")
-def list_node_default_tag(list_node_class: type[TaggedListNode]) -> str:
+def list_node_default_tag(list_pattern: str) -> str:
     """Fixture to provide a list node's default tag for testing"""
-    return get_default_tag(list_node_class._tag_pattern)
+    return get_default_tag(list_pattern)
 
 
-@pytest.fixture(scope="module", params=(*OBJECT_NODE_CLASSES_BY_PATTERN.values(), *LIST_NODE_CLASSES_BY_PATTERN.values()))
-def container_node_class(request) -> type[TaggedObjectNode] | type[TaggedListNode]:
-    """Fixture to provide all of the container node classes (object and list)"""
+@pytest.fixture(scope="module", params=(*OBJECT_NODE_CLASSES_BY_PATTERN, *LIST_NODE_CLASSES_BY_PATTERN))
+def container_pattern(request) -> str:
+    """Fixture to provide a tag pattern for each of the container node classes (object and list)"""
     return request.param
 
 
 @pytest.fixture(scope="module")
-def container_node_default_tag(container_node_class: type[TaggedObjectNode | TaggedListNode]) -> str:
+def container_node_class(container_pattern: str) -> type[TaggedObjectNode] | type[TaggedListNode]:
+    """Fixture to provide all of the container node classes (object and list)"""
+    if container_pattern in OBJECT_NODE_CLASSES_BY_PATTERN:
+        return OBJECT_NODE_CLASSES_BY_PATTERN[container_pattern]
+    else:
+        return LIST_NODE_CLASSES_BY_PATTERN[container_pattern]
+
+
+@pytest.fixture(scope="module")
+def container_node_default_tag(container_pattern: str) -> str:
     """Fixture to provide a container node's default tag for testing"""
-    return get_default_tag(container_node_class._tag_pattern)
+    return get_default_tag(container_pattern)
 
 
 @pytest.fixture(scope="module")

@@ -26,7 +26,7 @@ from ._registry import (
     SCHEMA_URIS_BY_TAG,
     TAG_MANIFEST_REGISTRY,
 )
-from ._tagged import SerializationNode
+from ._tagged import SerializationNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 __all__ = ["NODE_CLASSES", "NODE_EXTENSIONS"]
 
@@ -73,7 +73,20 @@ for manifest in _MANIFESTS:
         # make pattern from tag
         pattern = f"{base}-*"
         if pattern not in NODES_BY_PATTERN:
-            NODES_BY_PATTERN[pattern] = _factory(pattern, tag_def)
+            _new_cls = _factory(pattern, tag_def)
+            NODES_BY_PATTERN[pattern] = _new_cls
+
+            if issubclass(_new_cls, TaggedObjectNode):
+                OBJECT_NODE_CLASSES_BY_PATTERN[pattern] = _new_cls
+            elif issubclass(_new_cls, TaggedListNode):
+                LIST_NODE_CLASSES_BY_PATTERN[pattern] = _new_cls
+            elif issubclass(_new_cls, TaggedScalarNode):
+                SCALAR_NODE_CLASSES_BY_PATTERN[pattern] = _new_cls
+            else:
+                raise RuntimeError(
+                    f"Generated class for tag pattern '{pattern}' is not a subclass of any of the expected base classes"
+                )
+
         NODE_CLASSES_BY_TAG[tag_uri] = NODES_BY_PATTERN[pattern]
 
         # Make serialization intermediate

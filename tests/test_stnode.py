@@ -32,8 +32,9 @@ def test_tag_has_node_class(raw_tag_def: dict[str, Any]):
     class_name = stnode._tagged.class_name_from_tag_uri(raw_tag_def["tag_uri"])
     node_class = getattr(stnode, class_name)
 
-    assert asdf.util.uri_match(node_class._tag_pattern, raw_tag_def["tag_uri"])
-    if (default_tag := stnode.get_default_tag(node_class._tag_pattern)) == raw_tag_def["tag_uri"]:
+    tag_pattern = raw_tag_def["tag_uri"].rsplit("-", maxsplit=1)[0] + "-*"
+    assert asdf.util.uri_match(tag_pattern, raw_tag_def["tag_uri"])
+    if (default_tag := stnode.get_default_tag(tag_pattern)) == raw_tag_def["tag_uri"]:
         assert raw_tag_def["description"] in node_class.__doc__
         assert raw_tag_def["tag_uri"] in node_class.__doc__
     else:
