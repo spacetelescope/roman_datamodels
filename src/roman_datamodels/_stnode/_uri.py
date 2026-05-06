@@ -34,7 +34,8 @@ def get_default_tag(pattern: str) -> str | None:
 
     Returns
     -------
-    The default tag URI for the given pattern
+    str | None
+        The default tag URI for the given pattern
     """
     default_tag: str | None = None
     default_version = Version("0.0.0")

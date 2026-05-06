@@ -1,0 +1,1 @@
+Move the default tag methods from the nodes in STNode into the DataModels themselves.
