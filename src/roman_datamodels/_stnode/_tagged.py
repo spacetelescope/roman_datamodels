@@ -20,8 +20,8 @@ from ._registry import (
     SCALAR_NODE_CLASSES_BY_PATTERN,
     TAG_MANIFEST_REGISTRY,
 )
-from ._schema import Builder, FakeDataBuilder, NodeBuilder, NoValueType, _get_schema_from_tag
-from ._uri import get_default_tag
+from ._schema import Builder, FakeDataBuilder, NodeBuilder, NoValueType
+from ._uri import get_default_tag, get_schema_from_tag
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
@@ -133,7 +133,7 @@ class TaggedNode(ABC, NodeMixin):
         defaults: Mapping[str, Any] | None = None,
         builder: Builder | None = None,
     ) -> Any:
-        return (builder or Builder()).build(_get_schema_from_tag(tag), defaults)
+        return (builder or Builder()).build(get_schema_from_tag(tag), defaults)
 
     @classmethod
     def _create_minimal(
@@ -268,7 +268,7 @@ class TaggedNode(ABC, NodeMixin):
 
     def get_schema(self):
         """Retrieve the schema associated with this tag"""
-        return _get_schema_from_tag(self.tag)
+        return get_schema_from_tag(self.tag)
 
     @abstractmethod
     def _to_asdf_tree(self, ctx: SerializationContext) -> Any:

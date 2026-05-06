@@ -6,68 +6,24 @@ from __future__ import annotations
 
 import copy
 import enum
-import functools
 import re
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, final
+from typing import TYPE_CHECKING, final
 
 import asdf
 import asdf.schema
-from semantic_version import Version
 
-from ._registry import NODE_CLASSES_BY_TAG, SCHEMA_URIS_BY_TAG
+from ._registry import NODE_CLASSES_BY_TAG
 
 if TYPE_CHECKING:
     from ._tagged import TaggedNode
 
-__all__ = ("Builder", "FakeDataBuilder", "NoValueType", "NodeBuilder", "get_keyword", "get_latest_schema")
+__all__ = ("Builder", "FakeDataBuilder", "NoValueType", "NodeBuilder", "get_keyword")
 
 
 NOSTR = "?"
 NONUM = -999999
 NOBOOL = False
-
-
-@functools.cache
-def get_latest_schema(uri: str) -> tuple[str, dict[str, Any]]:
-    """
-    Get the latest version of a schema by URI (or partial URI).
-    """
-
-    if "-" in uri:
-        uri_prefix, version = uri.rsplit("-", 1)
-        latest_uri = uri
-    else:
-        uri_prefix = uri
-        version = "0.0.0"
-        latest_uri = None
-
-    uri_prefix += "-"
-    current_version = Version(version)
-    for schema_uri in asdf.get_config().resource_manager:
-        if schema_uri.startswith(uri_prefix) and (new_version := Version(schema_uri.rsplit("-", 1)[-1])) > current_version:
-            current_version = new_version
-            latest_uri = schema_uri
-
-    if latest_uri is None:
-        raise ValueError(f"No schema found for {uri}")
-
-    return latest_uri, asdf.schema.load_schema(latest_uri, resolve_references=True)
-
-
-@functools.cache
-def _get_schema_from_tag(tag):
-    """
-    Look up and load ASDF's schema corresponding to the tag_uri.
-
-    Parameters
-    ----------
-    tag : str
-        The tag_uri of the schema to load.
-    """
-    schema_uri = SCHEMA_URIS_BY_TAG[tag]
-
-    return asdf.schema.load_schema(schema_uri, resolve_references=True)
 
 
 class _MissingKeywordType:
