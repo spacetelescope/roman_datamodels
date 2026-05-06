@@ -264,7 +264,7 @@ def test_open_asn(tmp_path):
 
 
 def test_filename_matches_meta(tmp_path, data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
-    if "Ref" in data_model_node.__name__:
+    if data_model.__name__.endswith("RefModel"):
         # These models don't have a file name
         return
 

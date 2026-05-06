@@ -1,5 +1,6 @@
 import pytest
 from asdf import get_config
+from asdf.util import uri_match
 
 from roman_datamodels import Manager
 from roman_datamodels._stnode import TaggedListNode, TaggedNode, TaggedObjectNode, get_default_tag, get_schema_uri
@@ -141,15 +142,15 @@ def data_model_node(data_model: type[DataModel]) -> type[TaggedObjectNode]:
 
 
 @pytest.fixture(scope="module")
-def data_model_tags(data_model_node: type[TaggedObjectNode]) -> set[str]:
+def data_model_tags(data_model_pattern: str) -> set[str]:
     """
     Fixture to provide all of the tags associated with each of the DataModels
     """
     return set(
         tag_uri
         for manifest in Manager().manifests.values()
-        for tag_uri, node in manifest.tag_uris.items()
-        if node is data_model_node
+        for tag_uri in manifest.tag_uris
+        if uri_match(data_model_pattern, tag_uri)
     )
 
 

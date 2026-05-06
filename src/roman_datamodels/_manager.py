@@ -166,7 +166,7 @@ class Manager:
             for tag_def in manifest["tags"]:
                 pattern = f"{tag_def['tag_uri'].rsplit('-', 1)[0]}-*"
                 if pattern not in patterns:
-                    patterns[pattern] = self._select_tagged_type(tag_def["tag_uri"], tag_def)
+                    patterns[pattern] = self._select_tagged_type(tag_def["tag_uri"], tag_def["schema_uri"])
 
                 # Only add a tag to the ones managed by this manifest if it hasn't already been
                 #    assigned to an earlier manifest.
@@ -196,52 +196,23 @@ class Manager:
         )
 
     @staticmethod
-    def _select_tagged_type(tag_uri: str, tag_def: _TagDef) -> type[TaggedNode]:
+    def _select_tagged_type(tag_uri: str, schema_uri: str) -> type[TaggedNode]:
         """
         A helper function to select the appropriate TaggedNode subclass based on the
             the uris from the tag definition
+
+        Notes
+        -----
+        - This is for legacy support as post datamodels-1.4.0 manifest all tags
+            should only be TaggedObjectNodes
         """
-        pattern = f"{tag_uri.rsplit('-', 1)[0]}-*"
+        if "tagged_scalar" in schema_uri:
+            return TaggedTimeNode if "file_date" in tag_uri else TaggedStrNode
 
-        if "tagged_scalar" in tag_def["schema_uri"]:
-            return type(
-                _class_name_from_tag_uri(pattern),
-                (TaggedTimeNode,) if "file_date" in pattern else (TaggedStrNode,),
-                {
-                    "__module__": "roman_datamodels._stnode",
-                    "__doc__": _docstring_from_tag(tag_def),
-                },
-            )
+        if "cal_logs" in tag_uri:
+            return TaggedListNode
 
-        return type(
-            _class_name_from_tag_uri(pattern),
-            (TaggedListNode,) if "cal_logs" in pattern else (TaggedObjectNode,),
-            {
-                "__module__": "roman_datamodels._stnode",
-                "__doc__": _docstring_from_tag(tag_def),
-                "__slots__": (),
-            },
-        )
-
-    # TODO: Below is an implementation of the _select_tagged_type when the nodes are not dynamic classes
-    # @staticmethod
-    # def _select_tagged_type(tag_uri: str, schema_uri: str) -> type[TaggedNode]:
-    #     """
-    #     A helper function to select the appropriate TaggedNode subclass based on the
-    #         the uris from the tag definition
-
-    #     Notes
-    #     -----
-    #     - This is for legacy support as post datamodels-1.4.0 manifest all tags
-    #         should only be TaggedObjectNodes
-    #     """
-    #     if "tagged_scalar" in schema_uri:
-    #         return TaggedTimeNode if "file_date" in tag_uri else TaggedStrNode
-
-    #     if "cal_logs" in tag_uri:
-    #         return TaggedListNode
-
-    #     return TaggedObjectNode
+        return TaggedObjectNode
 
     def get_node_class(self, tag_uri: str) -> type[TaggedNode] | None:
         """

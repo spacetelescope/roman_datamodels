@@ -7,7 +7,6 @@ from asdf.schema import load_schema
 
 from roman_datamodels import DataModel, Manager, datamodels
 from roman_datamodels import _stnode as stnode
-from roman_datamodels._manager import _class_name_from_tag_uri
 from roman_datamodels._stnode import TaggedNode
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
@@ -28,17 +27,11 @@ def raw_tag_def(request) -> dict[str, Any]:
 
 
 def test_tag_has_node_class(raw_tag_def: dict[str, Any]):
-
-    class_name = _class_name_from_tag_uri(raw_tag_def["tag_uri"])
-    assert (node_class := Manager().get_node_class(raw_tag_def["tag_uri"])) is not None
-    assert node_class.__name__ == class_name
+    assert Manager().get_node_class(raw_tag_def["tag_uri"]) is not None
 
     tag_pattern = raw_tag_def["tag_uri"].rsplit("-", maxsplit=1)[0] + "-*"
     assert asdf.util.uri_match(tag_pattern, raw_tag_def["tag_uri"])
-    if (default_tag := stnode.get_default_tag(tag_pattern)) == raw_tag_def["tag_uri"]:
-        assert raw_tag_def["description"] in node_class.__doc__
-        assert raw_tag_def["tag_uri"] in node_class.__doc__
-    else:
+    if (default_tag := stnode.get_default_tag(tag_pattern)) != raw_tag_def["tag_uri"]:
         default_tag_version = default_tag.rsplit("-", maxsplit=1)[1]
         tag_def_version = raw_tag_def["tag_uri"].rsplit("-", maxsplit=1)[1]
         assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
@@ -46,7 +39,7 @@ def test_tag_has_node_class(raw_tag_def: dict[str, Any]):
 
 def test_node_classes_available_via_manager(node_pattern: str, node_class: type[TaggedNode]):
     assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
-    assert node_class.__module__ == stnode.__name__
+    assert node_class.__module__.startswith(stnode.__name__)
     assert Manager().patterns[node_pattern] is node_class
 
 

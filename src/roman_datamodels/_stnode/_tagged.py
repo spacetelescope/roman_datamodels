@@ -197,11 +197,16 @@ class TaggedNode(NodeMixin):
         return cls._create_from_node(tag=tag, node=node)
 
     @property
-    def _tag(self):
+    def _tag(self) -> str:
+        """__asdf_traverse__ requires that we have a _tag attribute, so this accommodates that"""
+        if self._read_tag is None:
+            raise AttributeError("TaggedNode instances must have a _read_tag attribute")
+
         return self._read_tag
 
     @property
-    def tag(self):
+    def tag(self) -> str:
+        """The tag this node is operating under"""
         return self._tag
 
     def get_schema(self):
@@ -288,9 +293,12 @@ class TaggedScalarNode(TaggedNode):
         return cls.from_tag(node=value, tag=tag)
 
     @property
-    def _tag(self):
+    def _tag(self) -> str:
         # _tag is required by asdf to allow __asdf_traverse__
-        return getattr(self, "_read_tag", None)
+        if self._read_tag is None:
+            raise AttributeError("TaggedNode instances must have a _read_tag attribute")
+
+        return self._read_tag
 
     def copy(self):
         return copy.copy(self)

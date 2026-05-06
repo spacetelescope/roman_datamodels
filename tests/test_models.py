@@ -378,10 +378,11 @@ def test_model_validate_without_save():
 
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
-@pytest.mark.parametrize("model", Manager().data_models.values())
+@pytest.mark.parametrize("model_pattern, model", Manager().data_models.items())
 def test_model_only_init_with_correct_node(
+    model_pattern: str,
     model: type[DataModel],
-    data_model_node: type[TaggedObjectNode],
+    data_model_pattern: str,
     data_model: type[DataModel],
 ):
     """
@@ -392,7 +393,7 @@ def test_model_only_init_with_correct_node(
     node_class = model.node_class()
 
     node = node_class.create_fake_data(tag=model.default_tag())
-    with nullcontext() if node_class is data_model_node else pytest.raises(ValidationError):
+    with nullcontext() if model_pattern == data_model_pattern else pytest.raises(ValidationError):
         data_model(node).validate()
 
 
@@ -765,7 +766,7 @@ def test_create_fake_data(data_model: type[DataModel]):
     assert m.validate() is None
 
 
-def test_migrate_tag(data_model_node: type[TaggedObjectNode], data_model: type[DataModel], data_model_tags: set[str]):
+def test_migrate_tag(data_model: type[DataModel], data_model_tags: set[str]):
     """Test that we can migrate the tag to a new version"""
 
     for current_tag in data_model_tags:
