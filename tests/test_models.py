@@ -1,110 +1,87 @@
 import gc
 from contextlib import nullcontext
 from copy import deepcopy
+from typing import Any
 
 import asdf
 import numpy as np
 import pytest
 from asdf.exceptions import ValidationError
+from asdf.schema import load_schema
 from astropy import units as u
 from astropy.time import Time
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels
-from roman_datamodels._stnode import (
-    CalLogs,
-    DNode,
-    IndividualImageMeta,
-    LNode,
-    MosaicAssociations,
-    Observation,
-    OutlierDetection,
-    Resample,
-    SkyBackground,
-    SourceCatalog,
-    WfiImage,
-    WfiWcs,
-)
-from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
-from roman_datamodels._stnode._tagged import TaggedObjectNode
+from roman_datamodels import DataModel, datamodels
+from roman_datamodels._stnode import DNode, LNode, Observation, TaggedNode, TaggedObjectNode, WfiImage
+from roman_datamodels._stnode._registry import MANIFEST_TAG_REGISTRY
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
-from .conftest import MANIFESTS
 
-# Nodes for metadata schema that do not contain any archive_catalog keywords
-NODES_LACKING_ARCHIVE_CATALOG = [
-    CalLogs,
-    OutlierDetection,
-    MosaicAssociations,
-    IndividualImageMeta,
-    Resample,
-    SkyBackground,
-    SourceCatalog,
-    WfiWcs,
-]
-
-
-def datamodel_names():
-    names = []
-
-    extension_manager = asdf.AsdfFile().extension_manager
-    for manifest in MANIFESTS:
-        for tag in manifest["tags"]:
-            schema_uri = extension_manager.get_tag_definition(tag["tag_uri"]).schema_uris[0]
-            schema = asdf.schema.load_schema(schema_uri, resolve_references=True)
-
-            if not (datamodel_name := schema.get("datamodel_name")):
+def _get_top_level_schemas():
+    visited_schemas: set[str] = set()
+    for manifest_uri in MANIFEST_TAG_REGISTRY:
+        for tag_def in load_schema(manifest_uri)["tags"]:
+            if (schema_uri := tag_def["schema_uri"]) in visited_schemas:
                 continue
 
-            if datamodel_name == "AssociationsModel":
-                continue
-
-            names.append(datamodel_name)
-
-    return names
+            visited_schemas.add(schema_uri)
+            if "datamodel_name" in (schema := load_schema(schema_uri, resolve_references=True)):
+                yield schema
 
 
-@pytest.mark.parametrize("name", datamodel_names())
-def test_datamodel_exists(name):
+@pytest.fixture(scope="session", params=_get_top_level_schemas())
+def top_level_schema(request) -> dict[str, Any]:
     """
-    Confirm that a datamodel exists for every schema indicating that it is a datamodel
+    Fixture to return the top level schemas from the manifest information.
+        This returns all of the top level schemas even if they map to the same data model.
+        This is intentional in case a datamodel_name changes between schemas
     """
-    assert hasattr(datamodels, name)
+    return request.param
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_node_type_matches_model(model):
+def test_data_model_exists(top_level_schema: dict[str, Any], request):
+    """
+    Confirm that a DataModel exists with the correct datamodel_name for each top
+    level schema entry listed by RAD
+    """
+    name = top_level_schema["datamodel_name"]
+    # TODO: We should probably add this model back but with a warning instead
+    if name == "AssociationsModel":
+        request.applymarker(pytest.mark.xfail(reason="AssociationsModel was removed by #562"))
+    assert hasattr(datamodels, top_level_schema["datamodel_name"])
+
+
+def test_node_type_matches_model(data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
     """
     Test that the _node_type listed for each model is what is listed in the schema
     """
-    node_type = model.node_class()
-    assert node_type is model._node_type
-    node = node_type.create_fake_data()
+    assert data_model.node_class() is data_model_node
+    node = data_model_node.create_fake_data()
+
     schema = node.get_schema()
     name = schema["datamodel_name"]
 
-    assert model.__name__ == name
+    assert data_model.__name__ == name
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_model_schemas(model: type[datamodels.DataModel]):
-    instance = model.create_fake_data()
+def test_model_schemas(data_model: type[DataModel]):
+    instance = data_model.create_fake_data()
     asdf.schema.load_schema(instance.schema_uri)
 
 
-@pytest.mark.parametrize("node, model", datamodels.MODEL_REGISTRY.items())
 @pytest.mark.parametrize("method", ["info", "search", "schema_info"])
-def test_model_asdf_operations(node, model, method):
+def test_model_asdf_operations(data_model_node: type[TaggedObjectNode], data_model: type[DataModel], method: str):
     """
     Test the decorator for asdf operations on models when an empty initial model
     which is then filled.
     """
     # Create an empty model
-    mdl = model()
-    assert isinstance(mdl._instance, node)
+    mdl = data_model()
+    assert isinstance(mdl._instance, data_model_node)
 
     # Fill the model with data, but no asdf file is present
-    mdl._instance = node.create_fake_data()
+    mdl._instance = data_model_node.create_fake_data()
     assert mdl._asdf is None
 
     # Run the method we wish to test (it should fail with warning or error
@@ -225,18 +202,8 @@ def test_node_assignment():
     assert isinstance(darkexp, DNode)
 
 
-@pytest.mark.parametrize(
-    "model_class",
-    (
-        datamodels.ImageSourceCatalogModel,
-        datamodels.MosaicSourceCatalogModel,
-        datamodels.ForcedImageSourceCatalogModel,
-        datamodels.ForcedMosaicSourceCatalogModel,
-        datamodels.MultibandSourceCatalogModel,
-    ),
-)
-def test_get_column_description(model_class):
-    model = model_class.create_fake_data()
+def test_get_column_description(catalog_data_model: type[DataModel]):
+    model = catalog_data_model.create_fake_data()
     for column in model.source_catalog.columns.values():
         column_def = model.get_column_definition(column.name)
         assert column_def is not None
@@ -353,21 +320,18 @@ def test_datamodel_schema_info_values():
     }
 
 
-@pytest.mark.parametrize(
-    "name", (name for name in datamodel_names() if not name.startswith("Fps") and not name.startswith("Tvac"))
-)
-def test_datamodel_schema_info_existence(name):
-    # Loop over datamodels that have archive_catalog entries
-    if not name.endswith("RefModel"):
-        model_class = getattr(datamodels, name)
-        model = model_class.create_fake_data()
-        info = model.schema_info("archive_catalog")
-        for keyword in model.meta.keys():
-            # Only DNodes or LNodes need to be canvassed
-            if isinstance(model.meta[keyword], DNode | LNode):
-                # Ignore metadata schemas that lack archive_catalog entries
-                if type(model.meta[keyword]) not in NODES_LACKING_ARCHIVE_CATALOG:
-                    assert keyword in info["roman"]["meta"]
+def test_data_model_schema_info_existence(data_model: type[DataModel]):
+    """Test the archive_catalog entries in the schema info"""
+    model = data_model.create_fake_data()
+    info = model.schema_info("archive_catalog")
+    for keyword, value in model.meta.items():
+        # Bug in the TVAC/FPS schemas "ref_file" so we skip it
+        if data_model in (datamodels.TvacModel, datamodels.FpsModel) and keyword == "ref_file":
+            continue
+
+        # Only searches LNodes or DNodes
+        if isinstance(value, DNode | LNode):
+            assert keyword in info["roman"]["meta"]
 
 
 @pytest.mark.parametrize("include_arrays", (True, False))
@@ -380,7 +344,7 @@ def test_to_flat_dict(include_arrays):
 
 
 @pytest.mark.parametrize("model_class", (datamodels.ImageModel, datamodels.RampModel))
-def test_crds_parameters(model_class):
+def test_crds_parameters(model_class: type[DataModel]):
     # CRDS uses meta.exposure.start_time to compare to USEAFTER
     model = model_class.create_fake_data()
     # patch on a value that is valid (a simple type)
@@ -408,29 +372,24 @@ def test_model_validate_without_save():
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
 @pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
-@pytest.mark.parametrize("correct, model", datamodels.MODEL_REGISTRY.items())
-def test_model_only_init_with_correct_node(node_class, correct, model):
+def test_model_only_init_with_correct_node(
+    node_class: type[TaggedObjectNode], data_model_node: type[TaggedObjectNode], data_model: type[DataModel]
+):
     """
     Datamodels should only be initializable with the correct node in the model_registry.
     This checks that it can be initialized with the correct node, and that it cannot be
     with any other node.
     """
     node = node_class.create_fake_data()
-    with nullcontext() if node_class is correct else pytest.raises(ValidationError):
-        model(node).validate()
+    with nullcontext() if node_class is data_model_node else pytest.raises(ValidationError):
+        data_model(node).validate()
 
 
 @pytest.mark.parametrize(
-    "mk_raw",
-    [
-        lambda: datamodels.ScienceRawModel.create_fake_data(shape=(2, 8, 8)),
-        lambda: datamodels.TvacModel.create_fake_data(shape=(2, 8, 8)),
-        lambda: datamodels.FpsModel.create_fake_data(shape=(2, 8, 8)),
-        lambda: datamodels.RampModel.create_fake_data(shape=(2, 8, 8)),
-    ],
+    "model_class", (datamodels.ScienceRawModel, datamodels.TvacModel, datamodels.FpsModel, datamodels.RampModel)
 )
-def test_ramp_from_science_raw(mk_raw):
-    raw = mk_raw()
+def test_ramp_from_science_raw(model_class: type[DataModel]):
+    raw = model_class.create_fake_data(shape=(2, 8, 8))
     ramp = datamodels.RampModel.from_science_raw(raw)
     for key in ramp:
         if not hasattr(raw, key):
@@ -483,17 +442,10 @@ def test_science_raw_from_tvac_raw_invalid_input():
         _ = datamodels.ScienceRawModel.from_tvac_raw(model)
 
 
-@pytest.mark.parametrize(
-    "mk_tvac",
-    [
-        lambda: datamodels.ScienceRawModel.create_fake_data(shape=(2, 8, 8)),
-        lambda: datamodels.TvacModel.create_fake_data(shape=(2, 8, 8)),
-        lambda: datamodels.FpsModel.create_fake_data(shape=(2, 8, 8)),
-    ],
-)
-def test_science_raw_from_tvac_raw(mk_tvac):
+@pytest.mark.parametrize("model_class", (datamodels.ScienceRawModel, datamodels.TvacModel, datamodels.FpsModel))
+def test_science_raw_from_tvac_raw(model_class: type[DataModel]):
     """Test conversion from expected inputs"""
-    tvac = mk_tvac()
+    tvac = model_class.create_fake_data(shape=(2, 8, 8))
     tvac.meta.statistics = {"mean_counts_per_second": 1}
 
     raw = datamodels.ScienceRawModel.from_tvac_raw(tvac)
@@ -534,8 +486,7 @@ def test_science_raw_from_tvac_raw(mk_tvac):
         assert raw.extras.tvac.meta.statistics == tvac.meta.statistics
 
 
-@pytest.mark.parametrize("model_class", datamodels.MODEL_REGISTRY.values())
-def test_datamodel_construct_like_from_like(model_class):
+def test_datamodel_construct_like_from_like(data_model: type[DataModel]):
     """
     This is a regression test for the issue reported issue #51.
 
@@ -548,13 +499,13 @@ def test_datamodel_construct_like_from_like(model_class):
     """
 
     # Create a model
-    model = model_class.create_fake_data()
+    model = data_model.create_fake_data()
 
     # Modify _iscopy as it will be reset to False by initializer if called incorrectly
     model._iscopy = "foo"
 
     # Pass model instance to model constructor
-    new_model = model_class(model)
+    new_model = data_model(model)
     assert new_model is model
     assert new_model._iscopy == "foo"  # Verify that the constructor didn't override stuff
 
@@ -607,7 +558,7 @@ def test_datamodel_save_file_date(tmp_path, monkeypatch):
         (datamodels.MosaicModel, False),
     ],
 )
-def test_rampmodel_from_science_raw(model_class, expect_success):
+def test_rampmodel_from_science_raw(model_class: type[DataModel], expect_success: bool):
     """Test creation of RampModel from raw science/tvac"""
     model = model_class.create_fake_data(
         defaults={"meta": {"calibration_software_version": "1.2.3", "exposure": {"read_pattern": [[1], [2], [3]]}}}
@@ -624,7 +575,7 @@ def test_rampmodel_from_science_raw(model_class, expect_success):
 
 @pytest.mark.parametrize(
     "model_class",
-    [datamodels.FpsModel, datamodels.RampModel, datamodels.ScienceRawModel, datamodels.TvacModel, datamodels.MosaicModel],
+    (datamodels.FpsModel, datamodels.RampModel, datamodels.ScienceRawModel, datamodels.TvacModel, datamodels.MosaicModel),
 )
 def test_model_assignment_access_types(model_class):
     """Test assignment and access of model keyword value via keys and dot notation"""
@@ -783,34 +734,28 @@ def test_deepcopy_after_use():
     deepcopy(m.meta)
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_create_minimal(model):
+def test_create_minimal(data_model: type[DataModel]):
     """Test that create_minimal produces a model instance"""
-    m = model.create_minimal()
-    assert isinstance(m, model)
+    m = data_model.create_minimal()
+    assert isinstance(m, data_model)
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_create_fake_data(model):
+def test_create_fake_data(data_model: type[DataModel]):
     """Test that create_fake_data produces a valid model instance"""
-    m = model.create_fake_data()
-    assert isinstance(m, model)
+    m = data_model.create_fake_data()
+    assert isinstance(m, data_model)
     assert m.validate() is None
 
 
-@pytest.mark.parametrize("node_class, model", datamodels.MODEL_REGISTRY.items())
-def test_migrate_tag(node_class: type[TaggedObjectNode], model: type[datamodels.DataModel]):
+def test_migrate_tag(data_model_node: type[TaggedObjectNode], data_model: type[DataModel], data_model_tags: set[str]):
     """Test that we can migrate the tag to a new version"""
 
-    # Find all the tags that are mapped to the datamodel's node class
-    model_tags = set(tag_uri for tag_uri, node in NODE_CLASSES_BY_TAG.items() if node is node_class)
-
-    for current_tag in model_tags:
+    for current_tag in data_model_tags:
         # Create a model with the current tag
-        current = model.create_fake_data(tag=current_tag)
+        current = data_model.create_fake_data(tag=current_tag)
         assert current.tag == current_tag
 
-        for new_tag in model_tags:
+        for new_tag in data_model_tags:
             new = current.migrate_tag(new_tag)
 
             # The tag has been updated
@@ -824,34 +769,31 @@ def test_migrate_tag(node_class: type[TaggedObjectNode], model: type[datamodels.
 
         # Check the default is to migrage to the default tag
         new = current.migrate_tag()
-        assert new.tag == node_class.default_tag()
+        assert new.tag == data_model_node.default_tag()
 
 
-@pytest.mark.parametrize("tag, node_class", NODE_CLASSES_BY_TAG.items())
-def test_create_tag(tag, node_class):
+def test_create_tag(tag_uri: str, tagged_node_class: type[TaggedNode]):
     """Test that we can create a node for every registered tag"""
 
-    node = node_class.create_minimal(tag=tag)
+    node = tagged_node_class.create_minimal(tag=tag_uri)
     if node is not None:
-        assert node._read_tag == tag
+        assert node._read_tag == tag_uri
 
-    node = node_class.create_fake_data(tag=tag)
+    node = tagged_node_class.create_fake_data(tag=tag_uri)
     if node is not None:
-        assert node._read_tag == tag
+        assert node._read_tag == tag_uri
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_no_hidden(model):
+def test_no_hidden(data_model: type[DataModel]):
     """Test that no hidden attributes are allowed"""
-    m = model.create_minimal()
+    m = data_model.create_minimal()
     with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
         m._foo = "bar"  # Add a hidden attribute
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_delattr(model):
+def test_delattr(data_model: type[DataModel]):
     """Test that delattr works as expected"""
-    m = model.create_minimal()
+    m = data_model.create_minimal()
 
     m.foo = "bar"
     assert hasattr(m, "foo")
@@ -860,24 +802,22 @@ def test_delattr(model):
     assert not hasattr(m, "foo")
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_slotted(model):
+def test_slotted(data_model: type[DataModel]):
     """Test that the model is slotted as expected"""
-    m = model.create_minimal()
+    m = data_model.create_minimal()
 
     with pytest.raises(AttributeError, match=r"No attribute .*"):
         # slotted object instances do not have a __dict__
         m.__dict__  # noqa: B018
 
 
-@pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
-def test_create_minimal_copies(model, tmp_path):
+def test_create_minimal_copies(data_model: type[DataModel], tmp_path):
     """Test that create_minimal does not retain references to input"""
     fn = tmp_path / "test.asdf"
-    fake = model.create_fake_data()
+    fake = data_model.create_fake_data()
     fake.save(fn)
     with datamodels.open(fn) as opened_model:
-        new_model = model.create_minimal(opened_model)
+        new_model = data_model.create_minimal(opened_model)
     del opened_model
     gc.collect(2)
     assert new_model.validate() is None

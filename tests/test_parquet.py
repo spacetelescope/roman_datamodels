@@ -4,17 +4,11 @@ import pyarrow.parquet as pq
 import pytest
 from asdf.exceptions import ValidationError
 
-from roman_datamodels import datamodels
-
-CATALOG_CLASSES = (
-    datamodels.ImageSourceCatalogModel,
-    datamodels.MosaicSourceCatalogModel,
-)
+from roman_datamodels import DataModel
 
 
-@pytest.mark.parametrize("catalog_class", CATALOG_CLASSES)
-def test_source_catalog(catalog_class, tmp_path):
-    sc_dm = catalog_class.create_fake_data()
+def test_source_catalog(catalog_data_model: type[DataModel], tmp_path):
+    sc_dm = catalog_data_model.create_fake_data()
     name_a, name_b = sc_dm.source_catalog.colnames[:2]
 
     sc_dm.source_catalog[name_a].description = "a description"
@@ -48,9 +42,8 @@ def test_source_catalog(catalog_class, tmp_path):
         assert f.read(4) == b"PAR1"
 
 
-@pytest.mark.parametrize("catalog_class", CATALOG_CLASSES)
-def test_to_parquet_validates(catalog_class, tmp_path):
-    sc_dm = catalog_class.create_fake_data()
+def test_to_parquet_validates(catalog_data_model: type[DataModel], tmp_path):
+    sc_dm = catalog_data_model.create_fake_data()
     fn = tmp_path / "foo.parquet"
     sc_dm.meta = {}
     with pytest.raises(ValidationError):
