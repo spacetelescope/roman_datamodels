@@ -5,16 +5,16 @@ import asdf
 import pytest
 from asdf.schema import load_schema
 
-from roman_datamodels import DataModel, datamodels
+from roman_datamodels import DataModel, Manager, datamodels
 from roman_datamodels import _stnode as stnode
+from roman_datamodels._manager import _class_name_from_tag_uri
 from roman_datamodels._stnode import TaggedNode
-from roman_datamodels._stnode._registry import MANIFEST_TAG_REGISTRY
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 
 @pytest.fixture(
     scope="session",
-    params=(tag_def for manifest_uri in MANIFEST_TAG_REGISTRY for tag_def in load_schema(manifest_uri)["tags"]),
+    params=(tag_def for manifest_uri in Manager().manifests for tag_def in load_schema(manifest_uri)["tags"]),
 )
 def raw_tag_def(request) -> dict[str, Any]:
     """
@@ -29,8 +29,9 @@ def raw_tag_def(request) -> dict[str, Any]:
 
 def test_tag_has_node_class(raw_tag_def: dict[str, Any]):
 
-    class_name = stnode._tagged.class_name_from_tag_uri(raw_tag_def["tag_uri"])
-    node_class = getattr(stnode, class_name)
+    class_name = _class_name_from_tag_uri(raw_tag_def["tag_uri"])
+    assert (node_class := Manager().get_node_class(raw_tag_def["tag_uri"])) is not None
+    assert node_class.__name__ == class_name
 
     tag_pattern = raw_tag_def["tag_uri"].rsplit("-", maxsplit=1)[0] + "-*"
     assert asdf.util.uri_match(tag_pattern, raw_tag_def["tag_uri"])
@@ -43,10 +44,10 @@ def test_tag_has_node_class(raw_tag_def: dict[str, Any]):
         assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
 
 
-def test_node_classes_available_via_stnode(node_class: type[TaggedNode]):
+def test_node_classes_available_via_manager(node_pattern: str, node_class: type[TaggedNode]):
     assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
     assert node_class.__module__ == stnode.__name__
-    assert hasattr(stnode, node_class.__name__)
+    assert Manager().patterns[node_pattern] is node_class
 
 
 def test_copy(node_class: type[TaggedNode], node_default_tag: str):
@@ -115,7 +116,11 @@ def test_slotted(
 
 
 def test_info(capsys):
-    node = stnode.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
+    tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.2.0"
+    node = Manager().get_node_class(tag)(
+        {"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"},
+        read_tag=tag,
+    )
     tree = dict(wfimode=node)
     af = asdf.AsdfFile(tree)
     af.info()
@@ -125,9 +130,10 @@ def test_info(capsys):
 
 
 def test_schema_info():
-    node = stnode.WfiMode(
+    tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.2.0"
+    node = Manager().get_node_class(tag)(
         {"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"},
-        read_tag="asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.2.0",
+        read_tag=tag,
     )
     tree = dict(wfimode=node)
     af = asdf.AsdfFile(tree)

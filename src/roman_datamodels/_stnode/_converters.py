@@ -37,9 +37,7 @@ class ManifestNodeConverter(_RomanConverter):
 
     @property
     def tags(self) -> tuple[str, ...]:
-        from ._registry import MANIFEST_TAG_REGISTRY
-
-        return tuple(MANIFEST_TAG_REGISTRY[self._node_cls.manifest_uri])
+        return tuple(self._node_cls.tag_uris)
 
     @property
     def types(self) -> tuple[type[ManifestNode], ...]:
@@ -51,13 +49,16 @@ class ManifestNodeConverter(_RomanConverter):
     def from_yaml_tree(self, node: dict[str, Any], tag: str, ctx: SerializationContext) -> TaggedNode:
         from astropy.time import Time
 
-        from ._registry import NODE_CLASSES_BY_TAG
+        from roman_datamodels import Manager
 
         if "file_date" in tag:
             converter = ctx.extension_manager.get_converter_for_type(Time)
             node = converter.from_yaml_tree(node, tag, ctx)
 
-        return NODE_CLASSES_BY_TAG[tag].from_tag(node=node, tag=tag)
+        if (cls := Manager().get_node_class(tag)) is None:
+            raise TypeError(f"No node class found for tag {tag}")
+
+        return cls.from_tag(node=node, tag=tag)
 
 
 class TaggedNodeConverter(_RomanConverter):
@@ -86,9 +87,9 @@ class TaggedNodeConverter(_RomanConverter):
 
     @property
     def types(self) -> tuple[type[TaggedNode], ...]:
-        from ._registry import NODE_CLASSES_BY_TAG
+        from roman_datamodels import Manager
 
-        return tuple(NODE_CLASSES_BY_TAG.values())
+        return tuple(Manager().patterns.values())
 
     def to_yaml_tree(self, obj: TaggedNode, tag: str, ctx: SerializationContext) -> ManifestNode:
         return obj.to_asdf_tree(ctx)

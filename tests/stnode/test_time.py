@@ -1,7 +1,7 @@
 import pytest
 from astropy.time import Time
 
-from roman_datamodels import _stnode as stnode
+from roman_datamodels import Manager
 
 NOW_MJD = int(Time.now().to_value("mjd"))
 TEST_TIME = Time("2000-01-01T00:00:00.0", format="isot", scale="utc")
@@ -9,13 +9,13 @@ TEST_MJD = TEST_TIME.to_value("mjd")
 
 
 FILE_DATE_TYPES = (
-    (stnode.FileDate, "asdf://stsci.edu/datamodels/roman/tags/file_date-1.0.0"),
-    (stnode.FpsFileDate, "asdf://stsci.edu/datamodels/roman/tags/fps/file_date-1.0.0"),
-    (stnode.TvacFileDate, "asdf://stsci.edu/datamodels/roman/tags/tvac/file_date-1.0.0"),
+    "asdf://stsci.edu/datamodels/roman/tags/file_date-1.0.0",
+    "asdf://stsci.edu/datamodels/roman/tags/fps/file_date-1.0.0",
+    "asdf://stsci.edu/datamodels/roman/tags/tvac/file_date-1.0.0",
 )
 
 
-@pytest.mark.parametrize("type_, tag", FILE_DATE_TYPES)
+@pytest.mark.parametrize("tag", FILE_DATE_TYPES)
 @pytest.mark.parametrize(
     "method, defaults, expected",
     (
@@ -25,7 +25,9 @@ FILE_DATE_TYPES = (
         ("create_fake_data", TEST_TIME, TEST_MJD),
     ),
 )
-def test_file_date(type_, tag, method, defaults, expected):
+def test_file_date(tag, method, defaults, expected):
+    type_ = Manager().get_node_class(tag)
+
     obj = getattr(type_, method)(tag=tag, defaults=defaults)
     assert isinstance(obj, type_)
     assert abs(obj.to_value("mjd") - expected) < 1

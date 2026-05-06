@@ -1,8 +1,8 @@
 import pytest
 from asdf import get_config
 
+from roman_datamodels import Manager
 from roman_datamodels._stnode import TaggedListNode, TaggedNode, TaggedObjectNode, get_default_tag, get_schema_uri
-from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG, NODES_BY_PATTERN
 from roman_datamodels.datamodels import (
     MODEL_REGISTRY,
     DataModel,
@@ -14,7 +14,7 @@ from roman_datamodels.datamodels import (
 )
 
 
-@pytest.fixture(scope="module", params=NODE_CLASSES_BY_TAG)
+@pytest.fixture(scope="module", params=Manager().tags)
 def tag_uri(request) -> str:
     """Fixture to provide a tag URI for each of the RAD tags"""
     return request.param
@@ -23,10 +23,10 @@ def tag_uri(request) -> str:
 @pytest.fixture(scope="module")
 def tagged_node_class(tag_uri: str) -> type[TaggedNode]:
     """Fixture to provide the node class associated with each of the RAD tags"""
-    return NODE_CLASSES_BY_TAG[tag_uri]
+    return Manager().get_node_class(tag_uri)
 
 
-@pytest.fixture(scope="module", params=NODES_BY_PATTERN)
+@pytest.fixture(scope="module", params=Manager().patterns)
 def node_pattern(request) -> str:
     """Fixture to provide a tag pattern for each of the RAD tags"""
     return request.param
@@ -35,7 +35,7 @@ def node_pattern(request) -> str:
 @pytest.fixture(scope="module")
 def node_class(node_pattern: str) -> type[TaggedNode]:
     """Fixture to provide all of the node classes"""
-    return NODES_BY_PATTERN[node_pattern]
+    return Manager().patterns[node_pattern]
 
 
 @pytest.fixture(scope="module")
@@ -45,7 +45,7 @@ def node_default_tag(node_pattern: str) -> str:
 
 
 @pytest.fixture(
-    scope="session", params=(pattern for pattern, cls in NODES_BY_PATTERN.items() if issubclass(cls, TaggedObjectNode))
+    scope="session", params=(pattern for pattern, cls in Manager().patterns.items() if issubclass(cls, TaggedObjectNode))
 )
 def object_pattern(request) -> str:
     """Fixture to provide a tag pattern for each of the object node classes"""
@@ -55,7 +55,7 @@ def object_pattern(request) -> str:
 @pytest.fixture(scope="module")
 def object_node_class(object_pattern: str) -> type[TaggedObjectNode]:
     """Fixture to provide all of the object node classes"""
-    return NODES_BY_PATTERN[object_pattern]
+    return Manager().patterns[object_pattern]
 
 
 @pytest.fixture(scope="module")
@@ -64,7 +64,9 @@ def object_node_default_tag(object_pattern: str) -> str:
     return get_default_tag(object_pattern)
 
 
-@pytest.fixture(scope="module", params=(pattern for pattern, cls in NODES_BY_PATTERN.items() if issubclass(cls, TaggedListNode)))
+@pytest.fixture(
+    scope="module", params=(pattern for pattern, cls in Manager().patterns.items() if issubclass(cls, TaggedListNode))
+)
 def list_pattern(request) -> str:
     """Fixture to provide a tag pattern for each of the list node classes"""
     return request.param
@@ -73,7 +75,7 @@ def list_pattern(request) -> str:
 @pytest.fixture(scope="module")
 def list_node_class(list_pattern: str) -> type[TaggedListNode]:
     """Fixture to provide all of the list node classes"""
-    return NODES_BY_PATTERN[list_pattern]
+    return Manager().patterns[list_pattern]
 
 
 @pytest.fixture(scope="module")
@@ -84,7 +86,7 @@ def list_node_default_tag(list_pattern: str) -> str:
 
 @pytest.fixture(
     scope="module",
-    params=(pattern for pattern, cls in NODES_BY_PATTERN.items() if issubclass(cls, (TaggedObjectNode, TaggedListNode))),
+    params=(pattern for pattern, cls in Manager().patterns.items() if issubclass(cls, (TaggedObjectNode, TaggedListNode))),
 )
 def container_pattern(request) -> str:
     """Fixture to provide a tag pattern for each of the container node classes (object and list)"""
@@ -94,7 +96,7 @@ def container_pattern(request) -> str:
 @pytest.fixture(scope="module")
 def container_node_class(container_pattern: str) -> type[TaggedObjectNode] | type[TaggedListNode]:
     """Fixture to provide all of the container node classes (object and list)"""
-    return NODES_BY_PATTERN[container_pattern]
+    return Manager().patterns[container_pattern]
 
 
 @pytest.fixture(scope="module")
@@ -138,7 +140,12 @@ def data_model_tags(data_model_node: type[TaggedObjectNode]) -> set[str]:
     """
     Fixture to provide all of the tags associated with each of the DataModels
     """
-    return set(tag_uri for tag_uri, node in NODE_CLASSES_BY_TAG.items() if node is data_model_node)
+    return set(
+        tag_uri
+        for manifest in Manager().manifests.values()
+        for tag_uri, node in manifest.tag_uris.items()
+        if node is data_model_node
+    )
 
 
 # TODO: Automate how to get these instead of hardcoding them here

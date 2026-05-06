@@ -7,14 +7,13 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import TYPE_CHECKING, final
 
 from asdf.extension import SerializationContext
 from astropy.time import Time
 
 from ._node import DNode, LNode
-from ._registry import TAG_MANIFEST_REGISTRY
 from ._schema import Builder, FakeDataBuilder, NodeBuilder, NoValueType
 from ._uri import get_schema_from_tag
 
@@ -37,45 +36,7 @@ __all__ = (
 )
 
 
-def name_from_tag_uri(tag_uri: str) -> str:
-    """
-    Compute the name of the schema from the tag_uri.
-
-    Parameters
-    ----------
-    tag_uri : str
-        The tag_uri to find the name from
-    """
-    tag_uri_split = tag_uri.split("/")[-1].split("-")[0]
-    if "/tvac/" in tag_uri and "tvac" not in tag_uri_split:
-        tag_uri_split = "tvac_" + tag_uri.split("/")[-1].split("-")[0]
-    elif "/fps/" in tag_uri and "fps" not in tag_uri_split:
-        tag_uri_split = "fps_" + tag_uri.split("/")[-1].split("-")[0]
-    return tag_uri_split
-
-
-def class_name_from_tag_uri(tag_uri: str) -> str:
-    """
-    Construct the class name for the STNode class from the tag_uri
-
-    Parameters
-    ----------
-    tag_uri : str
-        The tag_uri found in the RAD manifest
-
-    Returns
-    -------
-    string name for the class
-    """
-    tag_name = name_from_tag_uri(tag_uri)
-    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
-    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
-        class_name += "Ref"
-
-    return class_name
-
-
-class TaggedNode(ABC, NodeMixin):
+class TaggedNode(NodeMixin):
     """
     Mixin class to provide the common API for all tagged objects.
 
@@ -268,7 +229,9 @@ class TaggedNode(ABC, NodeMixin):
         ctx:
             The ASDF serialization context to use when converting this object to a ManifestNode.
         """
-        return TAG_MANIFEST_REGISTRY[self._tag](data=self._to_asdf_tree(ctx), tag=self._tag)
+        from roman_datamodels import Manager
+
+        return Manager().tags[self._tag](data=self._to_asdf_tree(ctx), tag=self._tag)
 
 
 class TaggedObjectNode(DNode, TaggedNode):

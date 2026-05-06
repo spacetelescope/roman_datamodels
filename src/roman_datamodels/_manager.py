@@ -24,11 +24,69 @@ if TYPE_CHECKING:
 class _TagDef(TypedDict):
     tag_uri: str
     schema_uri: str
+    description: str | None
 
 
 class _ManifestDef(TypedDict):
     id: str
     tags: list[_TagDef]
+
+
+def _docstring_from_tag(tag_def: _TagDef) -> str:
+    """
+    Read the docstring (if it exists) from the RAD manifest and generate a docstring
+        for the dynamically generated class.
+
+    Parameters
+    ----------
+    tag_def: _TagDef
+        A tag entry from the RAD manifest
+
+    Returns
+    -------
+    A docstring for the class based on the tag
+    """
+    docstring = f"{tag_def['description']}\n\n" if "description" in tag_def else ""
+
+    return docstring + f"Class generated from tag '{tag_def['tag_uri']}'"
+
+
+def _name_from_tag_uri(tag_uri: str) -> str:
+    """
+    Compute the name of the schema from the tag_uri.
+
+    Parameters
+    ----------
+    tag_uri : str
+        The tag_uri to find the name from
+    """
+    tag_uri_split = tag_uri.split("/")[-1].split("-")[0]
+    if "/tvac/" in tag_uri and "tvac" not in tag_uri_split:
+        tag_uri_split = "tvac_" + tag_uri.split("/")[-1].split("-")[0]
+    elif "/fps/" in tag_uri and "fps" not in tag_uri_split:
+        tag_uri_split = "fps_" + tag_uri.split("/")[-1].split("-")[0]
+    return tag_uri_split
+
+
+def _class_name_from_tag_uri(tag_uri: str) -> str:
+    """
+    Construct the class name for the STNode class from the tag_uri
+
+    Parameters
+    ----------
+    tag_uri : str
+        The tag_uri found in the RAD manifest
+
+    Returns
+    -------
+    string name for the class
+    """
+    tag_name = _name_from_tag_uri(tag_uri)
+    class_name = "".join([p.capitalize() for p in tag_name.split("_")])
+    if tag_uri.startswith("asdf://stsci.edu/datamodels/roman/tags/reference_files/"):
+        class_name += "Ref"
+
+    return class_name
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -67,6 +125,9 @@ class Manager:
     tags: MappingProxyType[str, type[ManifestNode]] = field(init=False)
     """A mapping between the tag URI and the ManifestNode class that manages it"""
 
+    patterns: MappingProxyType[str, type[TaggedNode]] = field(init=False)
+    """A mapping between the tag URI pattern and the TaggedNode class that manages it"""
+
     def __post_init__(self) -> None:
         # To allow for the ManifestManager's singleton instance to be accessible
         #    via ManifestNode() we need to add a small protection to avoid
@@ -80,6 +141,7 @@ class Manager:
         # Set of mutable maps
         manifests: dict[str, type[ManifestNode]] = {}
         tags: dict[str, type[ManifestNode]] = {}
+        patterns: dict[str, type[TaggedNode]] = {}
 
         # Start computing the maps from the resources that RAD has registered
         #   with ASDF.
@@ -98,11 +160,14 @@ class Manager:
             tag_uris: dict[str, type[TaggedNode]] = {}
 
             for tag_def in manifest["tags"]:
+                pattern = f"{tag_def['tag_uri'].rsplit('-', 1)[0]}-*"
+                if pattern not in patterns:
+                    patterns[pattern] = self._select_tagged_type(tag_def["tag_uri"], tag_def)
+
                 # Only add a tag to the ones managed by this manifest if it hasn't already been
                 #    assigned to an earlier manifest.
                 if (tag_uri := tag_def["tag_uri"]) not in tags:
-                    # tag_uris[tag_uri] = self._select_tagged_type(tag_uri, tag_def["schema_uri"])
-                    tag_uris[tag_uri] = self._select_tagged_type(tag_uri, tag_def)
+                    tag_uris[tag_uri] = patterns[pattern]
 
             # Update the maps with the newly computed information
             manifests[manifest_uri] = ManifestNode.factory(manifest_uri, MappingProxyType(tag_uris))
@@ -113,6 +178,7 @@ class Manager:
         #   frozen dataclass.
         super().__setattr__("manifests", MappingProxyType(manifests))
         super().__setattr__("tags", MappingProxyType(tags))
+        super().__setattr__("patterns", MappingProxyType(patterns))
 
     @staticmethod
     def _select_tagged_type(tag_uri: str, tag_def: _TagDef) -> type[TaggedNode]:
@@ -120,26 +186,24 @@ class Manager:
         A helper function to select the appropriate TaggedNode subclass based on the
             the uris from the tag definition
         """
-        from ._stnode._factories import class_name_from_tag_uri, docstring_from_tag
-
         pattern = f"{tag_uri.rsplit('-', 1)[0]}-*"
 
         if "tagged_scalar" in tag_def["schema_uri"]:
             return type(
-                class_name_from_tag_uri(pattern),
+                _class_name_from_tag_uri(pattern),
                 (TaggedTimeNode,) if "file_date" in pattern else (TaggedStrNode,),
                 {
                     "__module__": "roman_datamodels._stnode",
-                    "__doc__": docstring_from_tag(tag_def),  # type: ignore[arg-type]
+                    "__doc__": _docstring_from_tag(tag_def),
                 },
             )
 
         return type(
-            class_name_from_tag_uri(pattern),
+            _class_name_from_tag_uri(pattern),
             (TaggedListNode,) if "cal_logs" in pattern else (TaggedObjectNode,),
             {
                 "__module__": "roman_datamodels._stnode",
-                "__doc__": docstring_from_tag(tag_def),  # type: ignore[arg-type]
+                "__doc__": _docstring_from_tag(tag_def),
                 "__slots__": (),
             },
         )
@@ -175,6 +239,6 @@ class Manager:
         return node.tag_uris[tag_uri]
 
 
-# # Go ahead and build the singleton instance for the first time so that it's available
-# #    and no one can mess with maps by accident during other imports
-# _ = Manager()
+# Go ahead and build the singleton instance for the first time so that it's available
+#    and no one can mess with maps by accident during other imports
+_ = Manager()

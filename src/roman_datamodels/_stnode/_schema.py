@@ -11,9 +11,6 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, final
 
 import asdf
-import asdf.schema
-
-from ._registry import NODE_CLASSES_BY_TAG
 
 if TYPE_CHECKING:
     from ._tagged import TaggedNode
@@ -365,8 +362,10 @@ class Builder:
         return _NO_VALUE
 
     def from_tagged(self, schema, defaults):
+        from roman_datamodels import Manager
+
         tag = get_keyword(schema, "tag")
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+        if property_class := Manager().get_node_class(tag):
             return self._from_tagged_node(property_class, tag, defaults)
 
         if defaults is not _NO_VALUE:
@@ -687,8 +686,10 @@ class NodeBuilder(Builder):
         return cls._create_from_node(node=defaults, builder=self, tag=tag)
 
     def from_tagged(self, schema, defaults):
+        from roman_datamodels import Manager
+
         tag = get_keyword(schema, "tag")
-        if property_class := NODE_CLASSES_BY_TAG.get(tag):
+        if property_class := Manager().get_node_class(tag):
             try:
                 return self._create_tagged_node(property_class, tag, defaults)
             except ValueError:

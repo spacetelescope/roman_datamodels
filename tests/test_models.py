@@ -12,24 +12,21 @@ from astropy import units as u
 from astropy.time import Time
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import DataModel, datamodels
+from roman_datamodels import DataModel, Manager, datamodels
 from roman_datamodels._stnode import (
     DNode,
     LNode,
-    Observation,
     TaggedNode,
     TaggedObjectNode,
     TaggedStrNode,
-    WfiImage,
     get_default_tag,
 )
-from roman_datamodels._stnode._registry import MANIFEST_TAG_REGISTRY
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 
 def _get_top_level_schemas():
     visited_schemas: set[str] = set()
-    for manifest_uri in MANIFEST_TAG_REGISTRY:
+    for manifest_uri in Manager().manifests:
         for tag_def in load_schema(manifest_uri)["tags"]:
             if (schema_uri := tag_def["schema_uri"]) in visited_schemas:
                 continue
@@ -106,7 +103,8 @@ def test_core_schema(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
 
-    wfi_image = WfiImage.create_fake_data(tag=datamodels.ImageModel.default_tag(), shape=(8, 8))
+    wfi_image = datamodels.ImageModel.create_fake_data(shape=(8, 8))._instance
+
     with asdf.AsdfFile() as af:
         af.tree = {"roman": wfi_image}
 
@@ -885,8 +883,10 @@ def test_create_from_model_dict():
     model = datamodels.ImageModel.create_from_model({"meta": {"observation": {"visit": 42}}})
     assert isinstance(model, datamodels.ImageModel)
 
+    observation = Manager().get_node_class("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0")
+
     # Observation tagged node is no longer used
-    assert not isinstance(model.meta.observation, Observation)
+    assert not isinstance(model.meta.observation, observation)
     assert isinstance(model.meta.observation, DNode)
 
     assert model.meta.observation.visit == 42
@@ -923,7 +923,10 @@ def test_create_from_model_old_tags():
     converted = datamodels.ImageModel.create_from_model(old_model)
     assert converted.tag == new_model_tag
     # New models should not have a tagged observation node
-    assert not isinstance(converted.meta.observation, Observation)
+
+    observation = Manager().get_node_class("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0")
+
+    assert not isinstance(converted.meta.observation, observation)
     assert isinstance(converted.meta.observation, DNode)
 
 

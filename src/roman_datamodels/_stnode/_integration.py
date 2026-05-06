@@ -8,8 +8,6 @@ def get_extensions():
     -------
     List[`asdf.extension.Extension`]
     """
-    # Importing from ._stnode itself so that all the dynamically created
-    #   objects are in fact created
-    from ._stnode import NODE_EXTENSIONS
+    from roman_datamodels import Manager
 
-    return list(NODE_EXTENSIONS.values())
+    return [manifest.extension for manifest in Manager().manifests.values()]

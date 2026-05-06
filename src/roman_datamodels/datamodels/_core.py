@@ -27,7 +27,6 @@ from astropy.time import Time
 from astropy.utils import classproperty
 
 from roman_datamodels._stnode import DNode, TaggedObjectNode, get_default_tag, get_schema_uri
-from roman_datamodels._stnode._registry import NODES_BY_PATTERN
 
 __all__ = ["MODEL_REGISTRY", "DataModel"]
 
@@ -72,8 +71,9 @@ class DataModel(abc.ABC):
         """
         Get the TaggedNode subclass that is associated with this data model
         """
+        from roman_datamodels import Manager
 
-        return cast(type[TaggedObjectNode], NODES_BY_PATTERN[cls.tag_pattern])
+        return cast(type[TaggedObjectNode], Manager().get_node_class(cls.default_tag()))
 
     # I don't like using a classproperty but a few places in RCAL directly
     # access the node type and use it.

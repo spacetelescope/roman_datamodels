@@ -5,7 +5,7 @@ from astropy.table import Table
 from astropy.time import Time
 from astropy.units import Quantity
 
-from roman_datamodels._stnode import Observation, SkyBackground
+from roman_datamodels import Manager
 from roman_datamodels._stnode._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, NoValueType, SchemaType
 
 
@@ -119,8 +119,10 @@ def test_default_is_copied(subschema, data):
         ("tag:stsci.edu:asdf/unit/quantity-1.*", NoValueType),
         # unknown tag
         ("abc", NoValueType),
-        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
-        ("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0", SkyBackground),
+        (
+            "asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0",
+            Manager().get_node_class("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0"),
+        ),
     ),
 )
 def test_tag(tag, expected_type):
@@ -142,8 +144,10 @@ def test_tag(tag, expected_type):
         ("tag:stsci.edu:asdf/unit/quantity-1.*", Quantity),
         # unknown tag
         ("abc", NoValueType),
-        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
-        ("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0", SkyBackground),
+        (
+            "asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0",
+            Manager().get_node_class("asdf://stsci.edu/datamodels/roman/tags/sky_background-1.0.0"),
+        ),
     ),
 )
 def test_fake_tag(tag, expected_type):
@@ -181,21 +185,24 @@ def test_node_builder(schema, value):
 @pytest.mark.parametrize(
     "tag, value",
     (
-        # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
         (
             "asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0",
-            Observation.create_fake_data("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0"),
+            Manager()
+            .get_node_class("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0")
+            .create_fake_data("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0"),
         ),
         ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", {"program": 1}),
         (
             "asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0",
-            Observation.create_fake_data("asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"),
+            Manager()
+            .get_node_class("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0")
+            .create_fake_data("asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"),
         ),
     ),
 )
 def test_node_builder_tagged(tag, value):
     result = NodeBuilder().build({"tag": tag}, value)
-    assert isinstance(result, Observation)
+    assert isinstance(result, Manager().get_node_class(tag))
     assert result is not value
     assert result.tag == tag
 
