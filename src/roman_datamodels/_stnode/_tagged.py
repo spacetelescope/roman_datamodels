@@ -17,6 +17,7 @@ from ._registry import (
     SERIALIZATION_BY_MANIFEST,
 )
 from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_schema_from_tag
+from ._uri import get_default_tag
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
@@ -82,16 +83,22 @@ class _TaggedNodeMixin(NodeMixin):
     __slots__ = ()
 
     _pattern: ClassVar[str]
-    _latest_manifest: ClassVar[str]
 
-    _default_tag: ClassVar[str]
+    @classmethod
+    def default_tag(cls) -> str:
+        """Get the default tag for this class"""
+
+        if (tag := get_default_tag(cls._pattern)) is None:
+            raise RuntimeError(f"No default tag found for pattern '{cls._pattern}'")
+
+        return tag
 
     @classmethod
     def _create_minimal(
         cls, defaults: Mapping[str, Any] | None = None, builder: Builder | None = None, *, tag: str | None = None
     ) -> Self:
         builder = builder or Builder()
-        new = cls(builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults))
+        new = cls(builder.build(_get_schema_from_tag(tag or cls.default_tag()), defaults))
 
         if tag:
             new._read_tag = tag
@@ -179,7 +186,7 @@ class _TaggedNodeMixin(NodeMixin):
     @property
     def _tag(self):
         if self._read_tag is None:
-            return self._default_tag
+            return self.default_tag()
 
         return self._read_tag
 
@@ -258,7 +265,7 @@ class TaggedScalarNode(_TaggedNodeMixin):
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag: str | None = None):
         builder = builder or Builder()
-        value = builder.build(_get_schema_from_tag(tag or cls._default_tag), defaults)
+        value = builder.build(_get_schema_from_tag(tag or cls.default_tag()), defaults)
         if value is _NO_VALUE:
             return value
 
@@ -271,7 +278,7 @@ class TaggedScalarNode(_TaggedNodeMixin):
     @property
     def _tag(self):
         # _tag is required by asdf to allow __asdf_traverse__
-        return getattr(self, "_read_tag", self._default_tag)
+        return getattr(self, "_read_tag", self.default_tag())
 
     def copy(self):
         return copy.copy(self)

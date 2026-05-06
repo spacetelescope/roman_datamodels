@@ -1,0 +1,3 @@
+Add simple tag migration function to the ``DataModel`` class. This is a dumb
+function that just makes a new model from the old with a new tag. It does not
+attempt to migrate any of the data, so routines in ``romancal`` maybe needed.

@@ -173,7 +173,7 @@ class RefFileMixin(_ObjectBase):
             defaults = deepcopy(defaults)
         else:
             defaults = {}
-        schema = _get_schema_from_tag(tag or cls._default_tag)
+        schema = _get_schema_from_tag(tag or cls.default_tag())
         for k, v in schema["properties"].items():
             if v["type"] != "string":
                 continue
@@ -196,7 +196,7 @@ class L2CalStepMixin(_ObjectBase):
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         defaults = defaults or {}
-        schema = _get_schema_from_tag(tag or cls._default_tag)
+        schema = _get_schema_from_tag(tag or cls.default_tag())
         new = cls({k: defaults.get(k, "INCOMPLETE") for k in schema["properties"]})
         if tag:
             new._read_tag = tag
@@ -256,7 +256,7 @@ class ImageSourceCatalogMixin(_ObjectBase):
         aperture_radii = aperture_radii or ["00"]
         filters = filters or ["f184"]
 
-        columns_schema = dict(_get_properties(_get_schema_from_tag(tag or cls._default_tag)["properties"]["source_catalog"]))
+        columns_schema = dict(_get_properties(_get_schema_from_tag(tag or cls.default_tag())["properties"]["source_catalog"]))
         columns = []
 
         if "columns" in columns_schema:

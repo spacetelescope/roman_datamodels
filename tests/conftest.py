@@ -17,7 +17,7 @@ def object_node(request):
 
 @pytest.fixture(scope="session")
 def object_node_default_uri(object_node):
-    return SCHEMA_URIS_BY_TAG[object_node._default_tag]
+    return SCHEMA_URIS_BY_TAG[object_node.default_tag()]
 
 
 @pytest.fixture(scope="session")

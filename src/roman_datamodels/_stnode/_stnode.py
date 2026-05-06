@@ -51,12 +51,12 @@ def _add_cls(cls):
     return cls
 
 
-def _factory(pattern, latest_manifest, tag_def):
+def _factory(pattern, tag_def):
     """
     Wrap the __all__ append and class creation in a function to avoid the linter
         getting upset
     """
-    return _add_cls(stnode_factory(pattern, latest_manifest, tag_def))
+    return _add_cls(stnode_factory(pattern, tag_def))
 
 
 # Main dynamic class creation loop
@@ -73,7 +73,7 @@ for manifest in _MANIFESTS:
         # make pattern from tag
         pattern = f"{base}-*"
         if pattern not in _generated:
-            _generated[pattern] = _factory(pattern, manifest_uri, tag_def)
+            _generated[pattern] = _factory(pattern, tag_def)
         NODE_CLASSES_BY_TAG[tag_uri] = _generated[pattern]
 
         # Make serialization intermediate

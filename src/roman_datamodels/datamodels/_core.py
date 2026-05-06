@@ -26,8 +26,8 @@ from asdf.tags.core.ndarray import NDArrayType
 from astropy.time import Time
 from astropy.utils import classproperty
 
-from roman_datamodels._stnode import NODE_EXTENSIONS, DNode, TaggedObjectNode
-from roman_datamodels._stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN
+from roman_datamodels._stnode import DNode, TaggedObjectNode
+from roman_datamodels._stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN, SCHEMA_URIS_BY_TAG
 
 __all__ = ["MODEL_REGISTRY", "DataModel"]
 
@@ -181,7 +181,7 @@ class DataModel(abc.ABC):
     __slots__ = ("_asdf", "_files_to_close", "_instance", "_iscopy", "_shape")
 
     @classmethod
-    def create_from_model(cls, model: DataModel | DNode) -> Self:
+    def create_from_model(cls, model: DataModel | DNode, *, tag: str | None = None) -> Self:
         """
         Create a new DataModel from an existing model.
         """
@@ -189,7 +189,41 @@ class DataModel(abc.ABC):
             node = model._instance
         else:
             node = model
-        return cls(cls.node_class().create_from_node(node))
+        return cls(cls.node_class().create_from_node(node, tag=tag))
+
+    def migrate_tag(self, tag: str | None = None) -> Self:
+        """
+        Return a new version of this model with the tag updated.
+
+        .. note::
+
+            This may not fully update your model to the new tag, it only moves
+            the information into the new tree. So it maybe missing information
+            or have information of the wrong type. If you want a more complete
+            migration to the new tag, use
+
+                ``romancal.datamodels.migration.update_model_version``
+
+            instead. This function begins with the result of this function and
+            then apply migration steps that require the full pipeline to determine.
+
+        Parameters
+        ----------
+        tag: str or None
+            If provided, specifically update to this tag not the default (latest) one.
+
+        Returns
+        -------
+        DataModel
+            A new version of this model with the tag updated.
+        """
+        # If no tag is provided, then update to the default tag.
+        tag = tag or self._node_type.default_tag()
+
+        if self.tag == tag:
+            return self
+
+        return type(self).create_from_model(self, tag=tag)
 
     def __init__(self, init=None, **kwargs):
         if isinstance(init, self.__class__):
@@ -246,13 +280,8 @@ class DataModel(abc.ABC):
         return MODEL_REGISTRY[asdf_file.tree["roman"].__class__] == self.__class__
 
     @property
-    def _latest_manifest_uri(self):
-        return self.node_class()._latest_manifest
-
-    @property
     def schema_uri(self):
-        # Determine the schema corresponding to this model's tag
-        return next(t for t in NODE_EXTENSIONS[self._latest_manifest_uri].tags if t.tag_uri == self._instance._tag).schema_uris[0]
+        return SCHEMA_URIS_BY_TAG[self._instance.tag]
 
     def close(self):
         if not (self._iscopy or self._asdf is None):
