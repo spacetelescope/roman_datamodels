@@ -13,7 +13,16 @@ from astropy.time import Time
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import DataModel, datamodels
-from roman_datamodels._stnode import DNode, LNode, Observation, TaggedNode, TaggedObjectNode, WfiImage
+from roman_datamodels._stnode import (
+    DNode,
+    LNode,
+    Observation,
+    TaggedNode,
+    TaggedObjectNode,
+    TaggedStrNode,
+    WfiImage,
+    get_default_tag,
+)
 from roman_datamodels._stnode._registry import MANIFEST_TAG_REGISTRY
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
@@ -57,7 +66,7 @@ def test_node_type_matches_model(data_model_node: type[TaggedObjectNode], data_m
     Test that the _node_type listed for each model is what is listed in the schema
     """
     assert data_model.node_class() is data_model_node
-    node = data_model_node.create_fake_data()
+    node = data_model_node.create_fake_data(tag=data_model.default_tag())
 
     schema = node.get_schema()
     name = schema["datamodel_name"]
@@ -81,7 +90,7 @@ def test_model_asdf_operations(data_model_node: type[TaggedObjectNode], data_mod
     assert isinstance(mdl._instance, data_model_node)
 
     # Fill the model with data, but no asdf file is present
-    mdl._instance = data_model_node.create_fake_data()
+    mdl._instance = data_model_node.create_fake_data(tag=data_model.default_tag())
     assert mdl._asdf is None
 
     # Run the method we wish to test (it should fail with warning or error
@@ -97,7 +106,7 @@ def test_core_schema(tmp_path):
     # Set temporary asdf file
     file_path = tmp_path / "test.asdf"
 
-    wfi_image = WfiImage.create_fake_data(shape=(8, 8))
+    wfi_image = WfiImage.create_fake_data(tag=datamodels.ImageModel.default_tag(), shape=(8, 8))
     with asdf.AsdfFile() as af:
         af.tree = {"roman": wfi_image}
 
@@ -371,16 +380,19 @@ def test_model_validate_without_save():
 
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
-@pytest.mark.parametrize("node_class", datamodels.MODEL_REGISTRY.keys())
+@pytest.mark.parametrize("node_class, model", datamodels.MODEL_REGISTRY.items())
 def test_model_only_init_with_correct_node(
-    node_class: type[TaggedObjectNode], data_model_node: type[TaggedObjectNode], data_model: type[DataModel]
+    node_class: type[TaggedObjectNode],
+    model: type[DataModel],
+    data_model_node: type[TaggedObjectNode],
+    data_model: type[DataModel],
 ):
     """
     Datamodels should only be initializable with the correct node in the model_registry.
     This checks that it can be initialized with the correct node, and that it cannot be
     with any other node.
     """
-    node = node_class.create_fake_data()
+    node = node_class.create_fake_data(tag=model.default_tag())
     with nullcontext() if node_class is data_model_node else pytest.raises(ValidationError):
         data_model(node).validate()
 
@@ -594,8 +606,15 @@ def test_model_assignment_access_types(model_class):
     # Test assignment
     model2 = model_class.create_fake_data(defaults={"meta": {"calibration_software_version": "4.5.6"}})
 
-    model.meta["filename"] = type(model.meta.filename)("Roman_keys_test.asdf")
-    model2.meta.filename = type(model2.meta.filename)("Roman_dot_test.asdf")
+    if isinstance(model.meta.filename, TaggedStrNode):
+        model.meta["filename"] = type(model.meta.filename).from_tag(node="Roman_keys_test.asdf", tag=model.meta.filename.tag)
+    else:
+        model.meta["filename"] = type(model.meta.filename)("Roman_keys_test.asdf")
+
+    if isinstance(model2.meta.filename, TaggedStrNode):
+        model2.meta.filename = type(model2.meta.filename).from_tag(node="Roman_dot_test.asdf", tag=model2.meta.filename.tag)
+    else:
+        model2.meta.filename = type(model2.meta.filename)("Roman_dot_test.asdf")
 
     assert model.validate() is None
     assert model2.validate() is None
@@ -769,7 +788,7 @@ def test_migrate_tag(data_model_node: type[TaggedObjectNode], data_model: type[D
 
         # Check the default is to migrage to the default tag
         new = current.migrate_tag()
-        assert new.tag == data_model_node.default_tag()
+        assert new.tag == data_model.default_tag()
 
 
 def test_create_tag(tag_uri: str, tagged_node_class: type[TaggedNode]):
@@ -890,8 +909,8 @@ def test_create_from_model_old_tags():
     """
     old_model_tag = "asdf://stsci.edu/datamodels/roman/tags/wfi_image-1.2.0"
     old_observation_tag = "asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"
-    new_model_tag = WfiImage.default_tag()
-    new_observation_tag = Observation.default_tag()
+    new_model_tag = datamodels.ImageModel.default_tag()
+    new_observation_tag = get_default_tag(f"{old_observation_tag.rsplit('-', 1)[0]}-*")
 
     # check tags aren't defaults (which is required for this test)
     assert old_model_tag != new_model_tag

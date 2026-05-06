@@ -65,7 +65,6 @@ def scalar_factory(pattern: str, tag_def: dict[str, Any]) -> type[TaggedScalarNo
         class_name_from_tag_uri(pattern),
         (TaggedTimeNode,) if "file_date" in pattern else (TaggedStrNode,),
         {
-            "_tag_pattern": pattern,
             "__module__": "roman_datamodels._stnode",
             "__doc__": docstring_from_tag(tag_def),
         },
@@ -93,7 +92,6 @@ def node_factory(pattern: str, tag_def: dict[str, Any]) -> type[TaggedObjectNode
         class_name_from_tag_uri(pattern),
         (TaggedListNode,) if "cal_logs" in pattern else (TaggedObjectNode,),
         {
-            "_tag_pattern": pattern,
             "__module__": "roman_datamodels._stnode",
             "__doc__": docstring_from_tag(tag_def),
             "__slots__": (),

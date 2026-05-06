@@ -9,14 +9,14 @@ import pytest
 from astropy.io import fits
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import datamodels
-from roman_datamodels._stnode import TaggedObjectNode, WfiImage
+from roman_datamodels import DataModel, datamodels
+from roman_datamodels._stnode import TaggedObjectNode, TaggedStrNode, WfiImage
 from roman_datamodels.datamodels._utils import _patch_meta_filename
 from roman_datamodels.testing import assert_node_equal
 
 
 def test_asdf_file_input():
-    tree = WfiImage.create_fake_data()
+    tree = WfiImage.create_fake_data(tag=datamodels.ImageModel.default_tag())
     with asdf.AsdfFile() as af:
         af.tree = {"roman": tree}
         model = datamodels.open(af)
@@ -28,7 +28,7 @@ def test_asdf_file_input():
 def test_path_input(tmp_path):
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        tree = WfiImage.create_fake_data()
+        tree = WfiImage.create_fake_data(tag=datamodels.ImageModel.default_tag())
         af.tree = {"roman": tree}
         af.write_to(file_path)
 
@@ -62,7 +62,7 @@ def test_model_input(tmp_path):
     data = np.random.default_rng(42).uniform(size=(4, 4)).astype(np.float32)
 
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": WfiImage.create_fake_data()}
+        af.tree = {"roman": WfiImage.create_fake_data(tag=datamodels.ImageModel.default_tag())}
         af.tree["roman"].meta["bozo"] = "clown"
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -85,7 +85,7 @@ def test_model_input(tmp_path):
 
 def test_file_input(tmp_path):
     file_path = tmp_path / "test.asdf"
-    tree = WfiImage.create_fake_data()
+    tree = WfiImage.create_fake_data(tag=datamodels.ImageModel.default_tag())
     with asdf.AsdfFile() as af:
         af.tree = {"roman": tree}
         af.write_to(file_path)
@@ -113,7 +113,7 @@ def test_memmap(tmp_path):
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": WfiImage.create_fake_data()}
+        af.tree = {"roman": WfiImage.create_fake_data(tag=datamodels.ImageModel.default_tag())}
 
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -164,7 +164,7 @@ def test_no_memmap(tmp_path, kwargs):
 
     file_path = tmp_path / "test.asdf"
     with asdf.AsdfFile() as af:
-        af.tree = {"roman": WfiImage.create_fake_data()}
+        af.tree = {"roman": WfiImage.create_fake_data(tag=datamodels.ImageModel.default_tag())}
 
         af.tree["roman"].data = data
         af.write_to(file_path)
@@ -194,23 +194,27 @@ def test_no_memmap(tmp_path, kwargs):
         assert (model.data == data).all()
 
 
-def test_node_round_trip(tmp_path, data_model_node: type[TaggedObjectNode]):
+def test_node_round_trip(tmp_path, data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
     file_path = tmp_path / "test.asdf"
 
     # Create/return a node and write it to disk, then check if the node round trips
-    node = data_model_node.create_fake_data()
+    node = data_model_node.create_fake_data(tag=data_model.default_tag())
     asdf.AsdfFile({"roman": node}).write_to(file_path)
     with asdf.open(file_path) as af:
         assert_node_equal(af.tree["roman"], node)
 
 
-def test_opening_model(tmp_path, data_model_node: type[TaggedObjectNode]):
+def test_opening_model(tmp_path, data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
     file_path = tmp_path / "test.asdf"
 
     # Create a node and write it to disk
-    node = data_model_node.create_fake_data()
+    node = data_model_node.create_fake_data(tag=data_model.default_tag())
     if hasattr(node, "meta") and hasattr(node.meta, "filename"):
-        node.meta.filename = type(node.meta.filename)(file_path.name)
+        match node.meta.filename:
+            case TaggedStrNode():
+                node.meta.filename = type(node.meta.filename).from_tag(node=file_path.name, tag=node.meta.filename.tag)
+            case _:
+                node.meta.filename = type(node.meta.filename)(file_path.name)
     asdf.AsdfFile({"roman": node}).write_to(file_path)
 
     with datamodels.open(file_path) as model:
@@ -259,7 +263,7 @@ def test_open_asn(tmp_path):
     assert isinstance(lib, romancal.datamodels.ModelLibrary)
 
 
-def test_filename_matches_meta(tmp_path, data_model_node: type[TaggedObjectNode]):
+def test_filename_matches_meta(tmp_path, data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
     if "Ref" in data_model_node.__name__:
         # These models don't have a file name
         return
@@ -268,7 +272,7 @@ def test_filename_matches_meta(tmp_path, data_model_node: type[TaggedObjectNode]
     open_path = tmp_path / "test_filename_read.asdf"
 
     # Create a node and write it to disk
-    gen_model = data_model_node.create_fake_data()
+    gen_model = data_model_node.create_fake_data(tag=data_model.default_tag())
     asdf.AsdfFile({"roman": gen_model}).write_to(save_path)
 
     # Save the filename type
@@ -304,7 +308,7 @@ def test_filename_matches_meta(tmp_path, data_model_node: type[TaggedObjectNode]
     ],
 )
 def test_patch_filename(filename, original, expected):
-    asdf_file = asdf.AsdfFile({"roman": WfiImage.create_fake_data()})
+    asdf_file = asdf.AsdfFile({"roman": WfiImage.create_fake_data(tag=datamodels.ImageModel.default_tag())})
     asdf_file["roman"]["meta"]["filename"] = original
     ctx = nullcontext() if original == expected else pytest.warns(datamodels.FilenameMismatchWarning)
     with ctx:

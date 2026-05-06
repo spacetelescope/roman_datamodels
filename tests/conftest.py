@@ -98,15 +98,23 @@ def container_node_class(container_pattern: str) -> type[TaggedObjectNode] | typ
 
 
 @pytest.fixture(scope="module")
-def object_node_default_uri(object_node_class):
-    return get_schema_uri(object_node_class.default_tag())
+def container_node_default_tag(container_pattern: str) -> str:
+    """Fixture to provide a container node's default tag for testing"""
+    return get_default_tag(container_pattern)
 
 
 @pytest.fixture(scope="module")
-def object_node_uris(object_node_default_uri):
-    prefix_uri = f"{object_node_default_uri.rsplit('-', 1)[0]}-"
+def object_node_default_schema_uri(object_node_default_tag: str) -> str:
+    """Fixture to provide an object node's default schema URI for testing"""
+    return get_schema_uri(object_node_default_tag)
 
-    return [schema_uri for schema_uri in get_config().resource_manager if schema_uri.startswith(prefix_uri)]
+
+@pytest.fixture(scope="module")
+def object_node_schema_uris(object_node_default_schema_uri: str) -> tuple[str, ...]:
+    """Fixture to provide all of the schema URIs associated with an object node for testing"""
+    prefix_uri = f"{object_node_default_schema_uri.rsplit('-', 1)[0]}-"
+
+    return tuple(schema_uri for schema_uri in get_config().resource_manager if schema_uri.startswith(prefix_uri))
 
 
 @pytest.fixture(scope="module", params=MODEL_REGISTRY)

@@ -178,20 +178,19 @@ def test_node_builder(schema, value):
         assert result is not value
 
 
-def _make_old_observation():
-    """Helper to make a 1.0.0 Observation"""
-    obj = Observation.create_fake_data()
-    obj._read_tag = "asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"
-    return obj
-
-
 @pytest.mark.parametrize(
     "tag, value",
     (
         # test one rad tag to not make this test dependent on NODE_CLASSES_BY_TAG
-        ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", Observation.create_fake_data()),
+        (
+            "asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0",
+            Observation.create_fake_data("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0"),
+        ),
         ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", {"program": 1}),
-        ("asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0", _make_old_observation()),
+        (
+            "asdf://stsci.edu/datamodels/roman/tags/observation-1.1.0",
+            Observation.create_fake_data("asdf://stsci.edu/datamodels/roman/tags/observation-1.0.0"),
+        ),
     ),
 )
 def test_node_builder_tagged(tag, value):

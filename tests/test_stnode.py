@@ -32,12 +32,13 @@ def test_tag_has_node_class(raw_tag_def: dict[str, Any]):
     class_name = stnode._tagged.class_name_from_tag_uri(raw_tag_def["tag_uri"])
     node_class = getattr(stnode, class_name)
 
-    assert asdf.util.uri_match(node_class._tag_pattern, raw_tag_def["tag_uri"])
-    if node_class.default_tag() == raw_tag_def["tag_uri"]:
+    tag_pattern = raw_tag_def["tag_uri"].rsplit("-", maxsplit=1)[0] + "-*"
+    assert asdf.util.uri_match(tag_pattern, raw_tag_def["tag_uri"])
+    if (default_tag := stnode.get_default_tag(tag_pattern)) == raw_tag_def["tag_uri"]:
         assert raw_tag_def["description"] in node_class.__doc__
         assert raw_tag_def["tag_uri"] in node_class.__doc__
     else:
-        default_tag_version = node_class.default_tag().rsplit("-", maxsplit=1)[1]
+        default_tag_version = default_tag.rsplit("-", maxsplit=1)[1]
         tag_def_version = raw_tag_def["tag_uri"].rsplit("-", maxsplit=1)[1]
         assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
 
@@ -48,9 +49,9 @@ def test_node_classes_available_via_stnode(node_class: type[TaggedNode]):
     assert hasattr(stnode, node_class.__name__)
 
 
-def test_copy(node_class: type[TaggedNode]):
+def test_copy(node_class: type[TaggedNode], node_default_tag: str):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
-    node = node_class.create_fake_data()
+    node = node_class.create_fake_data(tag=node_default_tag)
     node_copy = node.copy()
 
     # Assert the copy is shallow:
@@ -73,10 +74,10 @@ def test_deepcopy_model(data_model: type[DataModel]):
     assert_node_is_copy(model._instance, model_copy._instance, deepcopy=True)
 
 
-def test_serialization(node_class: type[TaggedNode], tmp_path):
+def test_serialization(node_class: type[TaggedNode], node_default_tag: str, tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    node = node_class.create_fake_data()
+    node = node_class.create_fake_data(tag=node_default_tag)
     with asdf.AsdfFile() as af:
         af["node"] = node
         af.write_to(file_path)
@@ -85,15 +86,15 @@ def test_serialization(node_class: type[TaggedNode], tmp_path):
         assert_node_equal(af["node"], node)
 
 
-def test_no_hidden(object_node_class: type[stnode.TaggedObjectNode]):
-    node = object_node_class.create_fake_data()
+def test_no_hidden(object_node_class: type[stnode.TaggedObjectNode], object_node_default_tag: str):
+    node = object_node_class.create_fake_data(tag=object_node_default_tag)
     with pytest.raises(AttributeError, match=r"Cannot set private attribute.*"):
         node._foo = "bar"  # Add a hidden attribute
 
 
-def test_list_node_no_new_attributes(list_node_class: type[stnode.TaggedListNode]):
+def test_list_node_no_new_attributes(list_node_class: type[stnode.TaggedListNode], list_node_default_tag: str):
     """Test that no new attributes can be added to a list node."""
-    node = list_node_class.create_fake_data()
+    node = list_node_class.create_fake_data(tag=list_node_default_tag)
     with pytest.raises(AttributeError, match=r"Cannot set attribute .*, only allowed are .*"):
         node.foo = "bar"
 
@@ -101,11 +102,13 @@ def test_list_node_no_new_attributes(list_node_class: type[stnode.TaggedListNode
         node._foo = "bar"
 
 
-def test_slotted(container_node_class: type[stnode.TaggedObjectNode] | type[stnode.TaggedListNode]):
+def test_slotted(
+    container_node_class: type[stnode.TaggedObjectNode] | type[stnode.TaggedListNode], container_node_default_tag: str
+):
     """
     Test that slotted nodes do not allow new attributes to be added.
     """
-    node = container_node_class.create_fake_data()
+    node = container_node_class.create_fake_data(tag=container_node_default_tag)
     with pytest.raises(AttributeError, match=r".* attribute .*__dict__.*"):
         # Attempt to access __dict__ directly, slotted classes do not have __dict__
         node.__dict__  # noqa: B018
@@ -122,7 +125,10 @@ def test_info(capsys):
 
 
 def test_schema_info():
-    node = stnode.WfiMode({"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"})
+    node = stnode.WfiMode(
+        {"optical_element": "GRISM", "detector": "WFI18", "name": "WFI"},
+        read_tag="asdf://stsci.edu/datamodels/roman/tags/wfi_mode-1.2.0",
+    )
     tree = dict(wfimode=node)
     af = asdf.AsdfFile(tree)
 
@@ -187,15 +193,18 @@ def test_node_representation():
 
 
 def test_get_latest_schema(
-    object_node_class: type[stnode.TaggedObjectNode], object_node_default_uri: str, object_node_uris: list[str]
+    object_node_class: type[stnode.TaggedObjectNode],
+    object_node_default_schema_uri: str,
+    object_node_schema_uris: list[str],
+    object_node_default_tag: str,
 ):
-    assert len(object_node_uris) > 0, "This test requires at lest one URI available."
+    assert len(object_node_schema_uris) > 0, "This test requires at lest one URI available."
 
-    for uri in [object_node_default_uri.rsplit("-", 1)[0], *object_node_uris]:
+    for uri in [object_node_default_schema_uri.rsplit("-", 1)[0], *object_node_schema_uris]:
         latest_uri, schema = stnode.get_latest_schema(uri)
-        assert latest_uri == object_node_default_uri
+        assert latest_uri == object_node_default_schema_uri
 
-        assert stnode.get_schema_from_tag(object_node_class.default_tag()) == schema
+        assert stnode.get_schema_from_tag(object_node_default_tag) == schema
 
 
 @pytest.mark.parametrize(
