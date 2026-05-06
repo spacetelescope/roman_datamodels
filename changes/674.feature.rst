@@ -1,0 +1,2 @@
+Eliminate the TaggedObjectNode, TaggedListNode, and TaggedScalarNode registries
+in addition to removing the schema_uri registry.
