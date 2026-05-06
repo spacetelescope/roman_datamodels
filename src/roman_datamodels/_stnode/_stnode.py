@@ -13,8 +13,8 @@ import yaml
 from asdf.extension import ManifestExtension
 from rad import resources
 
-from ._converters import SerializationNodeConverter, TaggedNodeConverter
 from ._factories import stnode_factory
+from ._manifest import ManifestNode
 from ._registry import (
     LIST_NODE_CLASSES_BY_PATTERN,
     MANIFEST_TAG_REGISTRY,
@@ -24,7 +24,6 @@ from ._registry import (
     SCHEMA_URIS_BY_TAG,
     TAG_MANIFEST_REGISTRY,
 )
-from ._tagged import SerializationNode
 
 __all__ = ["NODE_CLASSES", "NODE_EXTENSIONS"]
 
@@ -63,10 +62,8 @@ def _factory(pattern, latest_manifest, tag_def):
 _generated = {}
 NODE_EXTENSIONS: dict[str, ManifestExtension] = {}
 for manifest in _MANIFESTS:
-    _serialization = _add_cls(SerializationNode._factory(manifest_uri := manifest["id"]))
-    NODE_EXTENSIONS[manifest_uri] = ManifestExtension.from_uri(
-        manifest_uri, converters=(SerializationNodeConverter(manifest_uri), TaggedNodeConverter())
-    )
+    _manifest = _add_cls(ManifestNode.factory(manifest_uri := manifest["id"]))
+    NODE_EXTENSIONS[manifest_uri] = _manifest.extension
 
     MANIFEST_TAG_REGISTRY[manifest_uri] = []
     for tag_def in manifest["tags"]:
@@ -81,7 +78,7 @@ for manifest in _MANIFESTS:
 
         # Make serialization intermediate
         if tag_uri not in TAG_MANIFEST_REGISTRY:
-            TAG_MANIFEST_REGISTRY[tag_uri] = _serialization
+            TAG_MANIFEST_REGISTRY[tag_uri] = _manifest
             MANIFEST_TAG_REGISTRY[manifest_uri].append(tag_uri)
 
 
