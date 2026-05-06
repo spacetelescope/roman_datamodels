@@ -16,9 +16,9 @@ import asdf
 import numpy as np
 from astropy import time
 
-from roman_datamodels._stnode import TaggedScalarNode
+from roman_datamodels._stnode import TaggedObjectNode, TaggedScalarNode
 
-from ._core import MODEL_REGISTRY, DataModel
+from ._core import DataModel
 
 if TYPE_CHECKING:
     from roman_datamodels._stnode import DNode, LNode
@@ -306,6 +306,8 @@ def rdm_open(init, memmap=False, **kwargs):
     -------
     `DataModel`
     """
+    from roman_datamodels import Manager
+
     if isinstance(init, str | Path):
         if Path(init).suffix.lower() == ".json":
             try:
@@ -330,9 +332,21 @@ def rdm_open(init, memmap=False, **kwargs):
             asdf_file.close()
         raise ValueError(f"'{init}' is not a roman file, please use asdf.open")
 
-    if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
-        return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
+    roman_node = asdf_file.tree["roman"]
+    if isinstance(roman_node, TaggedObjectNode):
+        if (data_model := Manager().get_data_model(roman_node.tag)) is not None:
+            return data_model(asdf_file, **kwargs)
+        else:
+            msg = (
+                f"The 'roman' node in the provided tree has tag: '{roman_node.tag}', which is not associated with any data model."
+            )
+    else:
+        msg = (
+            f"The 'roman' node in the provided tree is of type: '{type(roman_node)}', "
+            "which is not associated with any data model."
+        )
 
     if not isinstance(init, asdf.AsdfFile):
         asdf_file.close()
-    raise TypeError(f"Unknown datamodel type: {model_type}, please use asdf.open for non-roman_datamodels files")
+
+    raise TypeError(msg)

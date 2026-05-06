@@ -23,14 +23,13 @@ import asdf
 import numpy as np
 from asdf.exceptions import ValidationError
 from asdf.tags.core.ndarray import NDArrayType
+from asdf.util import uri_match
 from astropy.time import Time
 from astropy.utils import classproperty
 
 from roman_datamodels._stnode import DNode, TaggedObjectNode, get_default_tag, get_schema_uri
 
-__all__ = ["MODEL_REGISTRY", "DataModel"]
-
-MODEL_REGISTRY: dict[type[TaggedObjectNode], type[DataModel]] = {}
+__all__ = ("DataModel",)
 
 
 def _set_default_asdf(func):
@@ -86,25 +85,6 @@ class DataModel(abc.ABC):
             for use in classmethods that need to generate new instances of the node type.
         """
         return cls.node_class()
-
-    def __init_subclass__(cls, **kwargs):
-        """Register each subclass in the MODEL_REGISTRY"""
-        super().__init_subclass__(**kwargs)
-
-        # Allow for sub-registry classes to be defined
-        if cls.__name__.startswith("_"):
-            return
-
-        # Check the node_type is a tagged object node
-        if not issubclass(cls.node_class(), TaggedObjectNode):
-            raise ValueError("Subclass must be a TaggedObjectNode subclass")
-
-        # Check for duplicates
-        if cls.node_class() in MODEL_REGISTRY:
-            raise ValueError(f"Duplicate model type {cls.node_class()}")
-
-        # Add to registry
-        MODEL_REGISTRY[cls.node_class()] = cls
 
     def __new__(cls, init=None, **kwargs):
         """
@@ -258,10 +238,9 @@ class DataModel(abc.ABC):
         self._files_to_close = None
 
         if isinstance(init, TaggedObjectNode):
-            if not isinstance(self, MODEL_REGISTRY.get(init.__class__)):
-                expected = {mdl: node for node, mdl in MODEL_REGISTRY.items()}[self.__class__].__name__
+            if not uri_match(self.tag_pattern, init.tag):
                 raise ValidationError(
-                    f"TaggedObjectNode: {init.__class__.__name__} is not of the type expected. Expected {expected}"
+                    f"The provided TaggedObjectNode's tag '{init.tag}' does not match the expected pattern '{self.tag_pattern}' for this model! "
                 )
 
             self._instance = init
@@ -295,10 +274,14 @@ class DataModel(abc.ABC):
         """
         Subclass is expected to check for proper type of node
         """
+        from roman_datamodels import Manager
+
         if "roman" not in asdf_file.tree:
             raise ValueError('ASDF file does not have expected "roman" attribute')
 
-        return MODEL_REGISTRY[asdf_file.tree["roman"].__class__] == self.__class__
+        roman_branch = asdf_file.tree["roman"]
+        if isinstance(roman_branch, TaggedObjectNode):
+            return Manager().get_data_model(roman_branch.tag) is type(self)
 
     @property
     def schema_uri(self):

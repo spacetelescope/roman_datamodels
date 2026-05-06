@@ -16,6 +16,7 @@ from ._stnode import (
     TaggedTimeNode,
     get_version,
 )
+from .datamodels import DataModel
 
 if TYPE_CHECKING:
     from semantic_version import Version
@@ -128,6 +129,9 @@ class Manager:
     patterns: MappingProxyType[str, type[TaggedNode]] = field(init=False)
     """A mapping between the tag URI pattern and the TaggedNode class that manages it"""
 
+    data_models: MappingProxyType[str, type[DataModel]] = field(init=False)
+    """A mapping between tag patterns and the DataModel class that wraps nodes following those patterns"""
+
     def __post_init__(self) -> None:
         # To allow for the ManifestManager's singleton instance to be accessible
         #    via ManifestNode() we need to add a small protection to avoid
@@ -170,15 +174,21 @@ class Manager:
                     tag_uris[tag_uri] = patterns[pattern]
 
             # Update the maps with the newly computed information
-            manifests[manifest_uri] = ManifestNode.factory(manifest_uri, MappingProxyType(tag_uris))
+            manifests[manifest_uri] = ManifestNode.factory(manifest_uri, tag_uris)
             tags.update(dict.fromkeys(tag_uris, manifests[manifest_uri]))
 
         # Finally, turn all the mutable fields into immutable versions and assign
         #   them carefully to the instance using object.__setattr__ as this is a
         #   frozen dataclass.
-        super().__setattr__("manifests", MappingProxyType(manifests))
-        super().__setattr__("tags", MappingProxyType(tags))
-        super().__setattr__("patterns", MappingProxyType(patterns))
+        object.__setattr__(self, "manifests", MappingProxyType(manifests))
+        object.__setattr__(self, "tags", MappingProxyType(tags))
+        object.__setattr__(self, "patterns", MappingProxyType(patterns))
+
+        object.__setattr__(
+            self,
+            "data_models",
+            MappingProxyType({cls.tag_pattern: cls for cls in DataModel.__subclasses__() if hasattr(cls, "tag_pattern")}),
+        )
 
     @staticmethod
     def _select_tagged_type(tag_uri: str, tag_def: _TagDef) -> type[TaggedNode]:
@@ -237,6 +247,24 @@ class Manager:
             return None
 
         return node.tag_uris[tag_uri]
+
+    def get_data_model(self, tag_uri: str) -> type[DataModel] | None:
+        """
+        Get the DataModel class that manages the given tag URI, or None if it is not
+            registered in any manifest.
+
+        Parameters
+        ----------
+        tag_uri: str
+            The tag URI to get the DataModel class for.
+
+        Returns
+        -------
+        type[DataModel] | None
+            The DataModel class that manages the given tag URI, or None if it is not
+            associated with any DataModel.
+        """
+        return self.data_models.get(f"{tag_uri.rsplit('-', 1)[0]}-*")
 
 
 # Go ahead and build the singleton instance for the first time so that it's available

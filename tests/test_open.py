@@ -9,7 +9,7 @@ import pytest
 from astropy.io import fits
 from numpy.testing import assert_array_equal
 
-from roman_datamodels import DataModel, datamodels
+from roman_datamodels import DataModel, Manager, datamodels
 from roman_datamodels._stnode import TaggedObjectNode, TaggedStrNode
 from roman_datamodels.datamodels._utils import _patch_meta_filename
 from roman_datamodels.testing import assert_node_equal
@@ -204,7 +204,7 @@ def test_node_round_trip(tmp_path, data_model_node: type[TaggedObjectNode], data
         assert_node_equal(af.tree["roman"], node)
 
 
-def test_opening_model(tmp_path, data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
+def test_opening_model(tmp_path, data_model_pattern: str, data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
     file_path = tmp_path / "test.asdf"
 
     # Create a node and write it to disk
@@ -219,7 +219,7 @@ def test_opening_model(tmp_path, data_model_node: type[TaggedObjectNode], data_m
 
     with datamodels.open(file_path) as model:
         # Check that the model is the correct type
-        assert isinstance(model, datamodels.MODEL_REGISTRY[data_model_node])
+        assert isinstance(model, Manager().data_models[data_model_pattern])
 
 
 def test_read_pattern_properties():
@@ -232,7 +232,7 @@ def test_read_pattern_properties():
 
 
 def test_rdm_open_non_datamodel():
-    with pytest.raises(TypeError, match=r"Unknown datamodel type: .*"):
+    with pytest.raises(TypeError, match=r"The 'roman' node in the provided tree is of type: .*"):
         datamodels.open(Path(__file__).parent / "data" / "not_a_datamodel.asdf")
 
 

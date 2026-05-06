@@ -378,18 +378,19 @@ def test_model_validate_without_save():
 
 
 @pytest.mark.filterwarnings("ignore:ERFA function.*")
-@pytest.mark.parametrize("node_class, model", datamodels.MODEL_REGISTRY.items())
+@pytest.mark.parametrize("model", Manager().data_models.values())
 def test_model_only_init_with_correct_node(
-    node_class: type[TaggedObjectNode],
     model: type[DataModel],
     data_model_node: type[TaggedObjectNode],
     data_model: type[DataModel],
 ):
     """
-    Datamodels should only be initializable with the correct node in the model_registry.
+    Datamodels should only be initializable with the correct node in the manager.
     This checks that it can be initialized with the correct node, and that it cannot be
     with any other node.
     """
+    node_class = model.node_class()
+
     node = node_class.create_fake_data(tag=model.default_tag())
     with nullcontext() if node_class is data_model_node else pytest.raises(ValidationError):
         data_model(node).validate()

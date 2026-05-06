@@ -4,7 +4,6 @@ from asdf import get_config
 from roman_datamodels import Manager
 from roman_datamodels._stnode import TaggedListNode, TaggedNode, TaggedObjectNode, get_default_tag, get_schema_uri
 from roman_datamodels.datamodels import (
-    MODEL_REGISTRY,
     DataModel,
     ForcedImageSourceCatalogModel,
     ForcedMosaicSourceCatalogModel,
@@ -119,20 +118,26 @@ def object_node_schema_uris(object_node_default_schema_uri: str) -> tuple[str, .
     return tuple(schema_uri for schema_uri in get_config().resource_manager if schema_uri.startswith(prefix_uri))
 
 
-@pytest.fixture(scope="module", params=MODEL_REGISTRY)
-def data_model_node(request) -> type[TaggedObjectNode]:
-    """
-    Fixture to provide all of the model nodes associated with each of the DataModels
-    """
+@pytest.fixture(scope="module", params=Manager().data_models)
+def data_model_pattern(request) -> str:
+    """Fixture to provide a tag pattern for each of the DataModels"""
     return request.param
 
 
 @pytest.fixture(scope="module")
-def data_model(data_model_node: type[TaggedObjectNode]) -> type[DataModel]:
+def data_model(data_model_pattern: str) -> type[DataModel]:
     """
     Fixture to provide all of the DataModels
     """
-    return MODEL_REGISTRY[data_model_node]
+    return Manager().data_models[data_model_pattern]
+
+
+@pytest.fixture(scope="module")
+def data_model_node(data_model: type[DataModel]) -> type[TaggedObjectNode]:
+    """
+    Fixture to provide all of the model nodes associated with each of the DataModels
+    """
+    return data_model.node_class()
 
 
 @pytest.fixture(scope="module")
