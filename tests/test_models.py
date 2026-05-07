@@ -16,7 +16,6 @@ from roman_datamodels import DataModel, Manager, datamodels
 from roman_datamodels._stnode import (
     DNode,
     LNode,
-    TaggedNode,
     TaggedObjectNode,
     TaggedStrNode,
     get_default_tag,
@@ -58,12 +57,11 @@ def test_data_model_exists(top_level_schema: dict[str, Any], request):
     assert hasattr(datamodels, top_level_schema["datamodel_name"])
 
 
-def test_node_type_matches_model(data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
+def test_node_type_matches_model(data_model: type[DataModel]):
     """
     Test that the _node_type listed for each model is what is listed in the schema
     """
-    assert data_model.node_class() is data_model_node
-    node = data_model_node.create_fake_data(tag=data_model.default_tag())
+    node = TaggedObjectNode.create_fake_data(tag=data_model.default_tag())
 
     schema = node.get_schema()
     name = schema["datamodel_name"]
@@ -77,17 +75,17 @@ def test_model_schemas(data_model: type[DataModel]):
 
 
 @pytest.mark.parametrize("method", ["info", "search", "schema_info"])
-def test_model_asdf_operations(data_model_node: type[TaggedObjectNode], data_model: type[DataModel], method: str):
+def test_model_asdf_operations(data_model: type[DataModel], method: str):
     """
     Test the decorator for asdf operations on models when an empty initial model
     which is then filled.
     """
     # Create an empty model
     mdl = data_model()
-    assert isinstance(mdl._instance, data_model_node)
+    assert isinstance(mdl._instance, TaggedObjectNode)
 
     # Fill the model with data, but no asdf file is present
-    mdl._instance = data_model_node.create_fake_data(tag=data_model.default_tag())
+    mdl._instance = TaggedObjectNode.create_fake_data(tag=data_model.default_tag())
     assert mdl._asdf is None
 
     # Run the method we wish to test (it should fail with warning or error
@@ -390,9 +388,7 @@ def test_model_only_init_with_correct_node(
     This checks that it can be initialized with the correct node, and that it cannot be
     with any other node.
     """
-    node_class = model.node_class()
-
-    node = node_class.create_fake_data(tag=model.default_tag())
+    node = TaggedObjectNode.create_fake_data(tag=model.default_tag())
     with nullcontext() if model_pattern == data_model_pattern else pytest.raises(ValidationError):
         data_model(node).validate()
 
@@ -791,14 +787,14 @@ def test_migrate_tag(data_model: type[DataModel], data_model_tags: set[str]):
         assert new.tag == data_model.default_tag()
 
 
-def test_create_tag(tag_uri: str, node_class: type[TaggedNode]):
+def test_create_tag(tag_uri: str):
     """Test that we can create a node for every registered tag"""
 
-    node = node_class.create_minimal(tag=tag_uri)
+    node = Manager().get_node_class(tag_uri).create_minimal(tag=tag_uri)
     if node is not None:
         assert node._read_tag == tag_uri
 
-    node = node_class.create_fake_data(tag=tag_uri)
+    node = Manager().get_node_class(tag_uri).create_fake_data(tag=tag_uri)
     if node is not None:
         assert node._read_tag == tag_uri
 

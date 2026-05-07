@@ -7,7 +7,7 @@ from asdf.schema import load_schema
 
 from roman_datamodels import DataModel, Manager, datamodels
 from roman_datamodels import _stnode as stnode
-from roman_datamodels._stnode import TaggedListNode, TaggedNode, TaggedObjectNode
+from roman_datamodels._stnode import TaggedListNode, TaggedObjectNode
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy, wraps_hashable
 
 
@@ -37,15 +37,9 @@ def test_tag_has_node_class(raw_tag_def: dict[str, Any]):
         assert asdf.versioning.Version(default_tag_version) > asdf.versioning.Version(tag_def_version)
 
 
-def test_node_classes_available_via_manager(tag_uri: str, node_class: type[TaggedNode]):
-    assert issubclass(node_class, stnode.TaggedObjectNode | stnode.TaggedListNode | stnode.TaggedScalarNode)
-    assert node_class.__module__.startswith(stnode.__name__)
-    assert Manager().get_node_class(tag_uri) is node_class
-
-
-def test_copy(node_class: type[TaggedNode], node_default_tag: str):
+def test_copy(node_default_tag: str):
     """Demonstrate nodes can copy themselves, but don't always deepcopy."""
-    node = node_class.create_fake_data(tag=node_default_tag)
+    node = Manager().get_node_class(node_default_tag).create_fake_data(tag=node_default_tag)
     node_copy = node.copy()
 
     # Assert the copy is shallow:
@@ -68,10 +62,10 @@ def test_deepcopy_model(data_model: type[DataModel]):
     assert_node_is_copy(model._instance, model_copy._instance, deepcopy=True)
 
 
-def test_serialization(node_class: type[TaggedNode], node_default_tag: str, tmp_path):
+def test_serialization(node_default_tag: str, tmp_path):
     file_path = tmp_path / "test.asdf"
 
-    node = node_class.create_fake_data(tag=node_default_tag)
+    node = Manager().get_node_class(node_default_tag).create_fake_data(tag=node_default_tag)
     with asdf.AsdfFile() as af:
         af["node"] = node
         af.write_to(file_path)

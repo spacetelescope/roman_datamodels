@@ -17,7 +17,7 @@ import functools
 import sys
 from collections.abc import Mapping
 from pathlib import Path, PurePath
-from typing import Any, ClassVar, Self, cast
+from typing import Any, ClassVar, Self
 
 import asdf
 import numpy as np
@@ -25,7 +25,6 @@ from asdf.exceptions import ValidationError
 from asdf.tags.core.ndarray import NDArrayType
 from asdf.util import uri_match
 from astropy.time import Time
-from astropy.utils import classproperty
 
 from roman_datamodels._stnode import DNode, TaggedObjectNode, get_default_tag, get_schema_uri
 
@@ -64,27 +63,6 @@ class DataModel(abc.ABC):
             raise RuntimeError(f"No default tag found for pattern '{cls.tag_pattern}'")
 
         return tag
-
-    @classmethod
-    def node_class(cls) -> type[TaggedObjectNode]:
-        """
-        Get the TaggedNode subclass that is associated with this data model
-        """
-        from roman_datamodels import Manager
-
-        return cast(type[TaggedObjectNode], Manager().get_node_class(cls.default_tag()))
-
-    # I don't like using a classproperty but a few places in RCAL directly
-    # access the node type and use it.
-    @classproperty(lazy=True)
-    def _node_type(cls) -> type[TaggedObjectNode]:
-        """
-        Get the TaggedNode subclass that is associated with this data model
-
-        This is a classproperty that allows for more convenient access to the node type
-            for use in classmethods that need to generate new instances of the node type.
-        """
-        return cls.node_class()
 
     def __new__(cls, init=None, **kwargs):
         """
@@ -128,7 +106,7 @@ class DataModel(abc.ABC):
             can be guessed.
         """
         return cls(
-            cls.node_class().create_minimal(
+            TaggedObjectNode.create_minimal(
                 tag=(tag or cls.default_tag()),
                 defaults=defaults,
             )
@@ -171,7 +149,7 @@ class DataModel(abc.ABC):
             A valid model with fake data.
         """
         return cls(
-            cls.node_class().create_fake_data(
+            TaggedObjectNode.create_fake_data(
                 tag=(tag or cls.default_tag()),
                 defaults=defaults,
                 shape=shape,
@@ -186,7 +164,7 @@ class DataModel(abc.ABC):
         Create a new DataModel from an existing model.
         """
         return cls(
-            cls.node_class().create_from_node(
+            TaggedObjectNode.create_from_node(
                 tag=(tag or cls.default_tag()),
                 node=(model._instance if isinstance(model, DataModel) else model),
             )
@@ -250,7 +228,7 @@ class DataModel(abc.ABC):
             return
 
         if init is None:
-            self._instance = self.node_class()(read_tag=self.default_tag())
+            self._instance = TaggedObjectNode(read_tag=self.default_tag())
 
         elif isinstance(init, str | bytes | PurePath):
             if isinstance(init, PurePath):

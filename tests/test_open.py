@@ -194,21 +194,21 @@ def test_no_memmap(tmp_path, kwargs):
         assert (model.data == data).all()
 
 
-def test_node_round_trip(tmp_path, data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
+def test_node_round_trip(tmp_path, data_model: type[DataModel]):
     file_path = tmp_path / "test.asdf"
 
     # Create/return a node and write it to disk, then check if the node round trips
-    node = data_model_node.create_fake_data(tag=data_model.default_tag())
+    node = TaggedObjectNode.create_fake_data(tag=data_model.default_tag())
     asdf.AsdfFile({"roman": node}).write_to(file_path)
     with asdf.open(file_path) as af:
         assert_node_equal(af.tree["roman"], node)
 
 
-def test_opening_model(tmp_path, data_model_pattern: str, data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
+def test_opening_model(tmp_path, data_model_pattern: str, data_model: type[DataModel]):
     file_path = tmp_path / "test.asdf"
 
     # Create a node and write it to disk
-    node = data_model_node.create_fake_data(tag=data_model.default_tag())
+    node = TaggedObjectNode.create_fake_data(tag=data_model.default_tag())
     if hasattr(node, "meta") and hasattr(node.meta, "filename"):
         match node.meta.filename:
             case TaggedStrNode():
@@ -263,7 +263,7 @@ def test_open_asn(tmp_path):
     assert isinstance(lib, romancal.datamodels.ModelLibrary)
 
 
-def test_filename_matches_meta(tmp_path, data_model_node: type[TaggedObjectNode], data_model: type[DataModel]):
+def test_filename_matches_meta(tmp_path, data_model: type[DataModel]):
     if data_model.__name__.endswith("RefModel"):
         # These models don't have a file name
         return
@@ -272,7 +272,7 @@ def test_filename_matches_meta(tmp_path, data_model_node: type[TaggedObjectNode]
     open_path = tmp_path / "test_filename_read.asdf"
 
     # Create a node and write it to disk
-    gen_model = data_model_node.create_fake_data(tag=data_model.default_tag())
+    gen_model = TaggedObjectNode.create_fake_data(tag=data_model.default_tag())
     asdf.AsdfFile({"roman": gen_model}).write_to(save_path)
 
     # Save the filename type

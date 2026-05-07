@@ -3,7 +3,7 @@ from asdf import get_config
 from asdf.util import uri_match
 
 from roman_datamodels import Manager
-from roman_datamodels._stnode import TaggedListNode, TaggedNode, TaggedObjectNode, get_default_tag, get_schema_uri
+from roman_datamodels._stnode import TaggedListNode, TaggedObjectNode, get_default_tag, get_schema_uri
 from roman_datamodels.datamodels import (
     DataModel,
     ForcedImageSourceCatalogModel,
@@ -20,16 +20,10 @@ def tag_uri(request) -> str:
     return request.param
 
 
-@pytest.fixture(scope="module")
-def node_class(tag_uri: str) -> type[TaggedNode]:
-    """Fixture to provide the node class associated with each of the RAD tags"""
-    return Manager().get_node_class(tag_uri)
-
-
-@pytest.fixture(scope="module")
-def node_pattern(tag_uri: str) -> str:
+@pytest.fixture(scope="session", params=sorted(set(f"{tag_uri.rsplit('-', 1)[0]}-*" for tag_uri in Manager().tags)))
+def node_pattern(request) -> str:
     """Fixture to provide a tag pattern for each of the RAD tags"""
-    return f"{tag_uri.rsplit('-', 1)[0]}-*"
+    return request.param
 
 
 @pytest.fixture(scope="module")
@@ -39,11 +33,18 @@ def node_default_tag(node_pattern: str) -> str:
 
 
 @pytest.fixture(
-    scope="session", params=(tag_uri for tag_uri in Manager().tags if Manager().get_node_class(tag_uri) is TaggedObjectNode)
+    scope="session",
+    params=sorted(
+        set(
+            f"{tag_uri.rsplit('-', 1)[0]}-*"
+            for tag_uri in Manager().tags
+            if Manager().get_node_class(tag_uri) is TaggedObjectNode
+        )
+    ),
 )
 def object_pattern(request) -> str:
     """Fixture to provide a tag pattern for each of the object node classes"""
-    return f"{request.param.rsplit('-', 1)[0]}-*"
+    return request.param
 
 
 @pytest.fixture(scope="module")
@@ -53,11 +54,14 @@ def object_node_default_tag(object_pattern: str) -> str:
 
 
 @pytest.fixture(
-    scope="session", params=(tag_uri for tag_uri in Manager().tags if Manager().get_node_class(tag_uri) is TaggedListNode)
+    scope="session",
+    params=sorted(
+        set(f"{tag_uri.rsplit('-', 1)[0]}-*" for tag_uri in Manager().tags if Manager().get_node_class(tag_uri) is TaggedListNode)
+    ),
 )
 def list_pattern(request) -> str:
     """Fixture to provide a tag pattern for each of the list node classes"""
-    return f"{request.param.rsplit('-', 1)[0]}-*"
+    return request.param
 
 
 @pytest.fixture(scope="module")
@@ -68,23 +72,32 @@ def list_node_default_tag(list_pattern: str) -> str:
 
 @pytest.fixture(
     scope="session",
-    params=(tag_uri for tag_uri in Manager().tags if Manager().get_node_class(tag_uri) in (TaggedObjectNode, TaggedListNode)),
+    params=sorted(
+        set(
+            f"{tag_uri.rsplit('-', 1)[0]}-*"
+            for tag_uri in Manager().tags
+            if Manager().get_node_class(tag_uri) in (TaggedObjectNode, TaggedListNode)
+        )
+    ),
 )
-def container_tag_uris(request) -> str:
+def container_pattern(request) -> str:
     """Fixture to provide a tag pattern for each of the container node classes (object and list)"""
     return request.param
 
 
 @pytest.fixture(scope="module")
-def container_node_class(container_tag_uris: str) -> type[TaggedObjectNode] | type[TaggedListNode]:
+def container_node_class(container_pattern: str) -> type[TaggedObjectNode] | type[TaggedListNode]:
     """Fixture to provide all of the container node classes (object and list)"""
-    return Manager().get_node_class(container_tag_uris)
+    if "cal_logs" in container_pattern:
+        return TaggedListNode
+
+    return TaggedObjectNode
 
 
 @pytest.fixture(scope="module")
-def container_node_default_tag(container_tag_uris: str) -> str:
+def container_node_default_tag(container_pattern: str) -> str:
     """Fixture to provide a container node's default tag for testing"""
-    return get_default_tag(container_tag_uris)
+    return get_default_tag(container_pattern)
 
 
 @pytest.fixture(scope="module")
@@ -113,14 +126,6 @@ def data_model(data_model_pattern: str) -> type[DataModel]:
     Fixture to provide all of the DataModels
     """
     return Manager().data_models[data_model_pattern]
-
-
-@pytest.fixture(scope="module")
-def data_model_node(data_model: type[DataModel]) -> type[TaggedObjectNode]:
-    """
-    Fixture to provide all of the model nodes associated with each of the DataModels
-    """
-    return data_model.node_class()
 
 
 @pytest.fixture(scope="module")
