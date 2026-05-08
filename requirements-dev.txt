@@ -10,8 +10,5 @@ astropy>=0.0.dev0
 numpy>=0.0.dev0
 scipy>=0.0.dev0
 
-# Roman upstream packages
-git+https://github.com/spacetelescope/rad
-
 # Other important upstream packages
 git+https://github.com/spacetelescope/gwcs

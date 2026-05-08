@@ -1,3 +1,5 @@
 # automatically requests pull request reviews for files matching the given pattern; the last match takes precedence
 
-*       @spacetelescope/roman_datamodels-maintainers
+*												@spacetelescope/roman_datamodels-maintainers
+packages/rad/									@spacetelescope/rad-maintainers @WilliamJamieson
+packages/rad/src/rad/resources/schemas/*.yaml	@kdupriestsci @jbrookens

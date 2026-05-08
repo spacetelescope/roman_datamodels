@@ -17,6 +17,7 @@ User Manual
    roman_datamodels/datamodels/creating_datamodels.rst
    roman_datamodels/datamodels/stnode.rst
    roman_datamodels/datamodels/index.rst
+   rad/index.rst
 
 
 

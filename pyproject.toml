@@ -16,7 +16,7 @@ dependencies = [
   "gwcs >=0.20.0",
   "numpy >=1.25",
   "astropy >=6.0.0",
-  "rad >=0.31.0,<0.32",
+  "rad @ file://{root}/packages/rad",
   "asdf-standard >=1.1.0",
   "pyarrow >= 10.0.1",
   "semantic_version>=2.10",
@@ -36,15 +36,22 @@ repository = "https://github.com/spacetelescope/roman_datamodels"
 roman_datamodels = "roman_datamodels._stnode._integration:get_extensions"
 
 [build-system]
-requires = ["setuptools >=61", "setuptools_scm[toml] >=3.4"]
-build-backend = "setuptools.build_meta"
+requires = ["hatch-vcs", "hatchling"]
+build-backend = "hatchling.build"
 
-[tool.setuptools_scm]
-write_to = "src/roman_datamodels/_version.py"
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.envs.default]
+workspace.members = ["packages/rad"]
+workspace.parallel = true
+
+[tool.hatch.version]
+source = "vcs"
+version-file = "src/roman_datamodels/_version.py"
+
+[tool.hatch.version.raw-options]
 version_scheme = "release-branch-semver"
-
-[tool.setuptools.packages.find]
-where = ["src"]
 
 [tool.pytest]
 minversion = "9"
