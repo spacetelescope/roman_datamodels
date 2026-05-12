@@ -16,7 +16,7 @@ dependencies = [
   "gwcs >=0.20.0",
   "numpy >=1.25",
   "astropy >=6.0.0",
-  "rad >=0.31.0,<0.32",
+  "rad @ git+https://github.com/spacetelescope/rad.git",
   "asdf-standard >=1.1.0",
   "pyarrow >= 10.0.1",
   "semantic_version>=2.10",
