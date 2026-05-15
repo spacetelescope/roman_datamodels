@@ -1,3 +1,13 @@
+1.0.0 (2026-05-15)
+==================
+
+Bug Fixes
+---------
+
+- Fix bug where list defaults were ignored by ``create_fake_data``. (`#659
+  <https://github.com/spacetelescope/roman_datamodels/issues/659>`_)
+
+
 0.31.0 (2026-04-17)
 ===================
 
