@@ -284,7 +284,10 @@ class DataModel(abc.ABC):
                 output_path, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
             )
         elif ext == ".parquet" and hasattr(self, "to_parquet"):
-            self.to_parquet(output_path)
+            to_parquet_kwargs = {}
+            if "ivoa_compliant" in kwargs:
+                to_parquet_kwargs["ivoa_compliant"] = kwargs["ivoa_compliant"]
+            self.to_parquet(output_path, **to_parquet_kwargs)
         else:
             raise ValueError(f"unknown filetype {ext}")
 
