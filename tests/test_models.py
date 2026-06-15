@@ -264,7 +264,7 @@ def test_datamodel_schema_info_values():
 
 
 @pytest.mark.parametrize(
-    "name", (name for name in datamodel_names() if not name.startswith("Fps") and not name.startswith("Tvac"))
+    "name", [name for name in datamodel_names() if not name.startswith("Fps") and not name.startswith("Tvac")]
 )
 def test_datamodel_schema_info_existence(name):
     # Loop over datamodels that have archive_catalog entries
