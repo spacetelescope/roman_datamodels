@@ -250,43 +250,46 @@ class ImageSourceCatalogMixin(_ObjectBase):
                 }
 
     @classmethod
-    def _create_empty_catalog(cls, aperture_radii=None, filters=None):
+    def _create_empty_catalog(cls, tag=None, aperture_radii=None, filters=None):
         from astropy.table import Column, Table
 
         aperture_radii = aperture_radii or ["00"]
         filters = filters or ["f184"]
 
-        table_schema = _get_schema_from_tag(cls._default_tag)["properties"]["source_catalog"]
+        columns_schema = dict(_get_properties(_get_schema_from_tag(tag or cls._default_tag)["properties"]["source_catalog"]))
         columns = []
-        for raw_col_def in dict(_get_properties(table_schema))["columns"]["allOf"]:
-            col_def = raw_col_def["not"]["items"]["not"]
-            properties = dict(_get_properties(col_def))
-            name_regex = properties["name"]["pattern"]
-            unit = _get_keyword(col_def, "unit")
-            description = _get_keyword(col_def, "description")
-            dtype = asdf_datatype_to_numpy_dtype(properties["data"]["properties"]["datatype"]["enum"][0])
 
-            name_queue = [name_regex[1:-1]]
+        if "columns" in columns_schema:
+            for raw_col_def in columns_schema["columns"]["allOf"]:
+                col_def = raw_col_def["not"]["items"]["not"]
+                properties = dict(_get_properties(col_def))
+                name_regex = properties["name"]["pattern"]
+                unit = _get_keyword(col_def, "unit")
+                description = _get_keyword(col_def, "description")
+                dtype = asdf_datatype_to_numpy_dtype(properties["data"]["properties"]["datatype"]["enum"][0])
 
-            substitutions = [
-                (r"\[0-9]\{2}", aperture_radii),
-                (r"\(.*\)", filters),
-            ]
-            while name_queue:
-                name = name_queue.pop()
-                for regex, values in substitutions:
-                    if re.search(regex, name):
-                        name_queue.extend(re.sub(regex, value, name) for value in values)
-                        break
-                else:
-                    columns.append(Column([], unit=unit, description=description, dtype=dtype, name=name))
+                name_queue = [name_regex[1:-1]]
+
+                substitutions = [
+                    (r"\[0-9]\{2}", aperture_radii),
+                    (r"\(.*\)", filters),
+                ]
+                while name_queue:
+                    name = name_queue.pop()
+                    for regex, values in substitutions:
+                        if re.search(regex, name):
+                            name_queue.extend(re.sub(regex, value, name) for value in values)
+                            break
+                    else:
+                        columns.append(Column([], unit=unit, description=description, dtype=dtype, name=name))
+
         return Table(columns)
 
     @classmethod
     def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         defaults = defaults or {}
         if "source_catalog" not in defaults:
-            defaults["source_catalog"] = cls._create_empty_catalog()
+            defaults["source_catalog"] = cls._create_empty_catalog(tag=tag)
         return super()._create_fake_data(defaults, shape, builder, tag=tag)
 
 

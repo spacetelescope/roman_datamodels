@@ -17,7 +17,7 @@ on:
 
 jobs:
   test:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@99401c364fa51c9c507d3cd6d272049278ac0b2c  # v2.4.0
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@4193751d511425d4edc1d5657c24b2128d49b017  # v2.6.4
     with:
       envs: |
         - linux: py311-oldestdeps-cov
@@ -32,7 +32,7 @@ jobs:
           coverage: codecov
 
   test_upstream:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@99401c364fa51c9c507d3cd6d272049278ac0b2c  # v2.4.0
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@4193751d511425d4edc1d5657c24b2128d49b017  # v2.6.4
     with:
       envs: |
         - linux: py314-rad
@@ -44,11 +44,13 @@ jobs:
         run: echo "path=${{ runner.temp }}/data" >> $GITHUB_OUTPUT
     outputs:
       data_path: ${{ steps.data_path.outputs.path }}
-  crds_contexts:
-    uses: ./.github/workflows/contexts.yml
+  latest_crds_contexts:
+    uses: spacetelescope/crds/.github/workflows/contexts.yml@main
+    with:
+      observatory: roman
   test_downstream:
-    needs: [ environment, crds_contexts ]
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@99401c364fa51c9c507d3cd6d272049278ac0b2c  # v2.4.0
+    needs: [ environment, latest_crds_contexts ]
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@4193751d511425d4edc1d5657c24b2128d49b017  # v2.6.4
     with:
       setenv: |
         CRDS_PATH: ${{ needs.environment.outputs.data_path }}/crds
@@ -56,6 +58,6 @@ jobs:
         CRDS_CLIENT_RETRY_COUNT: 3
         CRDS_CLIENT_RETRY_DELAY_SECONDS: 20
       cache-path: ${{ needs.environment.outputs.data_path }}/crds
-      cache-key: crds-${{ needs.crds_contexts.outputs.roman }}
+      cache-key: crds-${{ needs.latest_crds_contexts.outputs.roman }}
       envs: |
         - linux: py313-romancal

@@ -8,6 +8,8 @@ def get_extensions():
     -------
     List[`asdf.extension.Extension`]
     """
-    from ._converters import NODE_EXTENSIONS
+    # Importing from ._stnode itself so that all the dynamically created
+    #   objects are in fact created
+    from ._stnode import NODE_EXTENSIONS
 
     return list(NODE_EXTENSIONS.values())

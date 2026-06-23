@@ -15,10 +15,7 @@ import importlib
 import os
 import sys
 import tomllib
-from distutils.version import LooseVersion
 from pathlib import Path
-
-import sphinx
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -36,16 +33,6 @@ setup_cfg = conf["project"]
 
 on_rtd = os.environ.get("READTHEDOCS", None) == "True"
 
-
-def check_sphinx_version(expected_version):
-    sphinx_version = LooseVersion(sphinx.__version__)
-    expected_version = LooseVersion(expected_version)
-    if sphinx_version < expected_version:
-        raise RuntimeError(
-            f"At least Sphinx version {expected_version} is required to build this documentation.  Found {sphinx_version}."
-        )
-
-
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", (None, "http://data.astropy.org/intersphinx/python3.inv")),
@@ -54,7 +41,6 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", (None, "http://data.astropy.org/intersphinx/matplotlib.inv")),
     "astropy": ("https://docs.astropy.org/en/stable/", None),
     "asdf": ("https://asdf.readthedocs.io/en/latest/", None),
-    "psutil": ("https://psutil.readthedocs.io/en/stable/", None),
     "rad": ("https://rad.readthedocs.io/en/latest/", None),
 }
 
@@ -81,10 +67,7 @@ extensions = [
 if on_rtd:
     extensions.append("sphinx.ext.mathjax")
 
-elif LooseVersion(sphinx.__version__) < LooseVersion("1.4"):
-    extensions.append("sphinx.ext.pngmath")
-else:
-    extensions.append("sphinx.ext.imgmath")
+extensions.append("sphinx.ext.imgmath")
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']

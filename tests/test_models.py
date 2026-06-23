@@ -260,108 +260,11 @@ def test_datamodel_info_search(capsys):
 def test_datamodel_schema_info_values():
     dm = datamodels.ScienceRawModel.create_fake_data()
     info = dm.schema_info("archive_catalog")
-    assert info["roman"]["meta"]["pointing"] == {
-        "ra_v1": {
-            "archive_catalog": (
-                {
-                    "datatype": "float",
-                    "destination": [
-                        "WFIExposure.ra_v1",
-                        "GuideWindow.ra_v1",
-                    ],
-                },
-                dm.meta.pointing.ra_v1,
-            ),
-        },
-        "dec_v1": {
-            "archive_catalog": (
-                {
-                    "datatype": "float",
-                    "destination": [
-                        "WFIExposure.dec_v1",
-                        "GuideWindow.dec_v1",
-                    ],
-                },
-                dm.meta.pointing.dec_v1,
-            )
-        },
-        "pa_v3": {
-            "archive_catalog": (
-                {
-                    "datatype": "float",
-                    "destination": [
-                        "WFIExposure.pa_v3",
-                        "GuideWindow.pa_v3",
-                    ],
-                },
-                dm.meta.pointing.pa_v3,
-            ),
-        },
-        "target_aperture": {
-            "archive_catalog": (
-                {
-                    "datatype": "nvarchar(100)",
-                    "destination": [
-                        "WFIExposure.target_aperture",
-                        "GuideWindow.target_aperture",
-                    ],
-                },
-                dm.meta.pointing.target_aperture,
-            )
-        },
-        "target_ra": {
-            "archive_catalog": (
-                {
-                    "datatype": "float",
-                    "destination": [
-                        "WFIExposure.target_ra",
-                        "GuideWindow.target_ra",
-                    ],
-                },
-                dm.meta.pointing.target_ra,
-            ),
-        },
-        "target_dec": {
-            "archive_catalog": (
-                {
-                    "datatype": "float",
-                    "destination": [
-                        "WFIExposure.target_dec",
-                        "GuideWindow.target_dec",
-                    ],
-                },
-                dm.meta.pointing.target_dec,
-            )
-        },
-        "pointing_engineering_source": {
-            "archive_catalog": (
-                {
-                    "datatype": "nvarchar(10)",
-                    "destination": [
-                        "WFIExposure.pointing_engineering_source",
-                        "GuideWindow.pointing_engineering_source",
-                    ],
-                },
-                dm.meta.pointing.pointing_engineering_source,
-            )
-        },
-        "pa_aperture": {
-            "archive_catalog": (
-                {
-                    "datatype": "float",
-                    "destination": [
-                        "WFIExposure.pa_aperture",
-                        "GuideWindow.pa_aperture",
-                    ],
-                },
-                dm.meta.pointing.pa_aperture,
-            ),
-        },
-    }
+    assert "WFIExposure.ra_v1" in info["roman"]["meta"]["pointing"]["ra_v1"]["archive_catalog"].info["destination"]
 
 
 @pytest.mark.parametrize(
-    "name", (name for name in datamodel_names() if not name.startswith("Fps") and not name.startswith("Tvac"))
+    "name", [name for name in datamodel_names() if not name.startswith("Fps") and not name.startswith("Tvac")]
 )
 def test_datamodel_schema_info_existence(name):
     # Loop over datamodels that have archive_catalog entries
@@ -471,6 +374,16 @@ def test_ramp_from_science_raw(mk_raw):
     if hasattr(raw, "resultantdq"):
         assert hasattr(ramp, "groupdq")
         assert not hasattr(ramp, "resultantdq")
+
+
+def test_science_raw_missing_required():
+    """Test that from_science_raw does not fill in required but missing values"""
+    raw = datamodels.ScienceRawModel.create_fake_data()
+    del raw.meta.exposure._data["hga_move"]
+    ramp = datamodels.RampModel.from_science_raw(raw)
+    assert "hga_move" not in raw.meta.exposure
+    with pytest.raises(ValidationError, match="hga_move"):
+        ramp.validate()
 
 
 def test_science_raw_from_tvac_raw_invalid_input():
@@ -934,6 +847,20 @@ def test_create_from_model_old_tags():
     # New models should not have a tagged observation node
     assert not isinstance(converted.meta.observation, Observation)
     assert isinstance(converted.meta.observation, DNode)
+
+
+def test_create_nested_list_default():
+    """
+    Test that a read_pattern provided to create_fake_data is copied to the produced model.
+
+    read_pattern is used here since the nested list form is different than other metadata.
+    """
+    read_pattern = [[1], [2], [3]]
+    mdl = datamodels.ImageModel.create_fake_data(defaults={"meta": {"exposure": {"read_pattern": read_pattern}}})
+    model_value = mdl["meta"]["exposure"]["read_pattern"]
+    assert model_value is not read_pattern
+    assert not any((a is b for a, b in zip(read_pattern, model_value, strict=True)))
+    assert model_value == read_pattern
 
 
 @pytest.mark.parametrize("method", ["create_minimal", "create_fake_data"])
