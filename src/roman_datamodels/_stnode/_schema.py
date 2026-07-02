@@ -526,9 +526,9 @@ class FakeDataBuilder(Builder):
     def make_array(self, schema, defaults):
         import numpy as np
 
-        ndim = _get_keyword(schema, "ndim") or 0
+        ndim = _get_keyword(schema, "ndim") or 1
         dtype = _get_keyword(schema, "datatype") or "float32"
-        shape = [0] * ndim
+        shape = [1] * ndim
         if self._shape is not None:
             for i, v in enumerate(self._shape):
                 if i == len(shape):

@@ -597,7 +597,7 @@ def test_array_storage_override(tmp_path, storage):
     array compression.
     """
     fn = tmp_path / "foo.asdf"
-    model = datamodels.ImageModel.create_fake_data(shape=(2, 2))
+    model = datamodels.ImageModel.create_fake_data(shape=(200, 200))
     model.save(fn, all_array_storage=storage)
     with asdf.open(fn) as af:
         assert af.get_array_storage(af["roman"]["data"]) == "internal" if storage is None else storage

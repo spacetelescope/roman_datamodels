@@ -278,7 +278,6 @@ class DataModel(abc.ABC):
         output_path = Path(dir_path) / path.name if dir_path else path
         ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix
 
-        # TODO: Support gzip-compressed fits
         if ext == ".asdf":
             self.to_asdf(
                 output_path, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
@@ -298,7 +297,7 @@ class DataModel(abc.ABC):
 
         return asdf.AsdfFile(init, **kwargs)
 
-    def to_asdf(self, init, *args, all_array_compression="lz4", all_array_storage="internal", **kwargs):
+    def to_asdf(self, init, *args, all_array_compression="lz4", all_array_storage=None, **kwargs):
         from ._utils import temporary_update_filedate, temporary_update_filename
 
         with (
@@ -307,9 +306,15 @@ class DataModel(abc.ABC):
         ):
             asdf_file = self.open_asdf(**kwargs)
             asdf_file["roman"] = self._instance
-            asdf_file.write_to(
-                init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
-            )
+            with asdf.config_context() as cfg:
+                # only set array inline threshold if not already set by the user
+                if cfg.array_inline_threshold is None and all_array_storage is None:
+                    # inline arrays 512 bytes or less
+                    cfg.array_inline_threshold = 512
+
+                asdf_file.write_to(
+                    init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
+                )
 
     def get_primary_array_name(self):
         """

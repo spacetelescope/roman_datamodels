@@ -219,14 +219,14 @@ def test_node_builder_tag_mismatch(tag, value):
 @pytest.mark.parametrize(
     "ndim, shape, expected",
     (
-        (None, None, tuple()),
-        (1, None, (0,)),
-        (2, None, (0, 0)),
-        (None, (10, 20, 30), tuple()),
+        (None, None, (1,)),
+        (1, None, (1,)),
+        (2, None, (1, 1)),
+        (None, (10, 20, 30), (10,)),
         (1, (10, 20, 30), (10,)),
         (2, (10, 20, 30), (10, 20)),
         (3, (10, 20, 30), (10, 20, 30)),
-        (4, (10, 20, 30), (10, 20, 30, 0)),
+        (4, (10, 20, 30), (10, 20, 30, 1)),
     ),
 )
 def test_array_shape(ndim, shape, expected):
