@@ -666,6 +666,29 @@ def test_wcs_array_inline(tmp_path):
     assert wcs.pixel_to_world_values(1, 1)
 
 
+@pytest.mark.parametrize(
+    "threshold, shape, storage",
+    [
+        (100, (10, 1), "inline"),
+        (100, (100, 1), "internal"),
+        (None, (DEFAULT_ARRAY_INLINE_THRESHOLD // 10, 1), "inline"),
+        (None, (DEFAULT_ARRAY_INLINE_THRESHOLD * 2, 1), "internal"),
+    ],
+)
+def test_array_inline_threshold(tmp_path, threshold, shape, storage):
+    """
+    Test a provided array_inline_threshold is respected or the default is used.
+    """
+    fn = tmp_path / "foo.asdf"
+    # thresholds are in bytes, assuming data is 4 bytes per element
+    with asdf.config_context() as cfg:
+        cfg.array_inline_threshold = threshold
+        model = datamodels.ImageModel.create_fake_data(shape=shape)
+        model.save(fn)
+        with asdf.open(fn) as af:
+            assert af.get_array_storage(af["roman"]["data"]) == storage
+
+
 def test_apcorr_none_array():
     """
     Check that ApcorrRefModel data arrays can be None.

@@ -282,9 +282,7 @@ class DataModel(abc.ABC):
         ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix
 
         if ext == ".asdf":
-            self.to_asdf(
-                output_path, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
-            )
+            self.to_asdf(output_path, *args, all_array_compression=all_array_compression, **kwargs)
         elif ext == ".parquet" and hasattr(self, "to_parquet"):
             self.to_parquet(output_path)
         else:
@@ -314,9 +312,7 @@ class DataModel(abc.ABC):
                 if cfg.array_inline_threshold is None and all_array_storage is NotSet:
                     cfg.array_inline_threshold = DEFAULT_ARRAY_INLINE_THRESHOLD
 
-                asdf_file.write_to(
-                    init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
-                )
+                asdf_file.write_to(init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs)
 
     def get_primary_array_name(self):
         """
