@@ -6,8 +6,12 @@ import asdf
 import numpy as np
 import pytest
 from asdf.exceptions import ValidationError
+from astropy import coordinates
 from astropy import units as u
+from astropy.modeling import models
 from astropy.time import Time
+from gwcs import coordinate_frames
+from gwcs.wcs import WCS
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
@@ -625,6 +629,38 @@ def test_array_inline_threshold(tmp_path, threshold, shape, storage):
         model.save(fn)
         with asdf.open(fn) as af:
             assert af.get_array_storage(af["roman"]["data"]) == storage
+
+
+def test_wcs_array_inline(tmp_path):
+    fn = tmp_path / "foo.asdf"
+    model = datamodels.ImageModel.create_fake_data()
+
+    # make a WCS with a model containing an array
+    transform = models.AffineTransformation2D([[1, 0], [0, 1]])
+
+    detector_frame = coordinate_frames.Frame2D(name="detector", axes_names=("x", "y"), unit=(u.pix, u.pix))
+    sky_frame = coordinate_frames.CelestialFrame(reference_frame=coordinates.ICRS(), name="icrs", unit=(u.deg, u.deg))
+    model.meta.wcs = WCS(
+        [
+            (detector_frame, transform),
+            (sky_frame, None),
+        ]
+    )
+    model.save(fn)
+
+    # load just the YAML from the ASDF file
+    wcs_tree = asdf.util.load_yaml(fn, tagged=True)["roman"]["meta"]["wcs"]
+
+    # Check for inline data (ndarray tagged items contain "data" and not "source")
+    for node in asdf.treeutil.iter_tree(wcs_tree):
+        tag = asdf.tagged.get_tag(node)
+        if not tag or "/ndarray-" not in tag:
+            continue
+        assert "data" in node
+
+    # Also check that the WCS is functional with no ASDF blocks
+    wcs = asdf.yamlutil.tagged_tree_to_custom_tree(wcs_tree, asdf.AsdfFile())
+    assert wcs.pixel_to_world_values(1, 1)
 
 
 def test_apcorr_none_array():
