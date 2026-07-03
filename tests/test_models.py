@@ -690,6 +690,9 @@ def test_array_inline_threshold(tmp_path, threshold, shape, storage):
 
 
 def test_wcs_array_inline(tmp_path):
+    """
+    Test that saving a file with a wcs with an array results in that array inline.
+    """
     fn = tmp_path / "foo.asdf"
     model = datamodels.ImageModel.create_fake_data()
 
