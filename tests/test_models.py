@@ -27,6 +27,7 @@ from roman_datamodels._stnode import (
 )
 from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
 from roman_datamodels._stnode._tagged import _NO_VALUE
+from roman_datamodels.datamodels._core import DEFAULT_ARRAY_INLINE_THRESHOLD
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 from .conftest import MANIFESTS
@@ -571,7 +572,7 @@ def test_default_array_compression(tmp_path):
     for default options.
     """
     fn = tmp_path / "foo.asdf"
-    model = datamodels.ImageModel.create_fake_data()
+    model = datamodels.ImageModel.create_fake_data(shape=(DEFAULT_ARRAY_INLINE_THRESHOLD + 1, 1))
     model.save(fn)
     with asdf.open(fn) as af:
         assert af.get_array_compression(af["roman"]["data"]) == "lz4"
@@ -584,7 +585,7 @@ def test_array_compression_override(tmp_path, compression):
     array compression.
     """
     fn = tmp_path / "foo.asdf"
-    model = datamodels.ImageModel.create_fake_data()
+    model = datamodels.ImageModel.create_fake_data(shape=(DEFAULT_ARRAY_INLINE_THRESHOLD + 1, 1))
     model.save(fn, all_array_compression=compression)
     with asdf.open(fn) as af:
         assert af.get_array_compression(af["roman"]["data"]) == compression
@@ -601,6 +602,29 @@ def test_array_storage_override(tmp_path, storage):
     model.save(fn, all_array_storage=storage)
     with asdf.open(fn) as af:
         assert af.get_array_storage(af["roman"]["data"]) == "internal" if storage is None else storage
+
+
+@pytest.mark.parametrize(
+    "threshold, shape, storage",
+    [
+        (100, (10, 1), "inline"),
+        (100, (100, 1), "internal"),
+        (None, (DEFAULT_ARRAY_INLINE_THRESHOLD // 10, 1), "inline"),
+        (None, (DEFAULT_ARRAY_INLINE_THRESHOLD * 2, 1), "internal"),
+    ],
+)
+def test_array_inline_threshold(tmp_path, threshold, shape, storage):
+    """
+    Test a provided array_inline_threshold is respected or the default is used.
+    """
+    fn = tmp_path / "foo.asdf"
+    # thresholds are in bytes, assuming data is 4 bytes per element
+    with asdf.config_context() as cfg:
+        cfg.array_inline_threshold = threshold
+        model = datamodels.ImageModel.create_fake_data(shape=shape)
+        model.save(fn)
+        with asdf.open(fn) as af:
+            assert af.get_array_storage(af["roman"]["data"]) == storage
 
 
 def test_apcorr_none_array():

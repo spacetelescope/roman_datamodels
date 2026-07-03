@@ -613,6 +613,11 @@ class SkycellsRefModel(DataModel):
     __slots__ = ()
     _node_type = SkycellsRef
 
+    def to_asdf(self, *args, **kwargs):
+        if "all_array_storage" not in kwargs:
+            kwargs["all_array_storage"] = "internal"
+        return super().to_asdf(*args, **kwargs)
+
 
 class SuperbiasRefModel(DataModel):
     from roman_datamodels._stnode import SuperbiasRef
