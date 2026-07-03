@@ -602,7 +602,7 @@ def test_array_storage_override(tmp_path, storage):
     array compression.
     """
     fn = tmp_path / "foo.asdf"
-    model = datamodels.ImageModel.create_fake_data(shape=(200, 200))
+    model = datamodels.ImageModel.create_fake_data(shape=(DEFAULT_ARRAY_INLINE_THRESHOLD + 1, 1))
     model.save(fn, all_array_storage=storage)
     with asdf.open(fn) as af:
         assert af.get_array_storage(af["roman"]["data"]) == "internal" if storage is None else storage
@@ -632,6 +632,9 @@ def test_array_inline_threshold(tmp_path, threshold, shape, storage):
 
 
 def test_wcs_array_inline(tmp_path):
+    """
+    Test that saving a file with a wcs with an array results in that array inline.
+    """
     fn = tmp_path / "foo.asdf"
     model = datamodels.ImageModel.create_fake_data()
 

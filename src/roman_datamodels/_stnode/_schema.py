@@ -526,6 +526,10 @@ class FakeDataBuilder(Builder):
     def make_array(self, schema, defaults):
         import numpy as np
 
+        # Ideally we default to 0 instead of 1 for ndim and shape here but
+        # cannot until asdf fixes issues with 0-length inline arrays.
+        # Likely we can switch back to 1 when our minimum asdf version is 5.4
+        # which is not yet released.
         ndim = _get_keyword(schema, "ndim") or 1
         dtype = _get_keyword(schema, "datatype") or "float32"
         shape = [1] * ndim

@@ -16,6 +16,8 @@ def test_l2_compression(tmp_path):
     Test that L2 files use lz4 compression.
     """
     fn = tmp_path / "test.asdf"
+    # Set shape large enough to make sure the arrays are stored
+    # in internal ASDF blocks instead of inline (which won't be compressed).
     ImageModel.create_fake_data(shape=(1000, 1000)).save(fn)
 
     compression_codes = set()

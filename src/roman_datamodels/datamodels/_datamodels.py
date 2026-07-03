@@ -614,6 +614,9 @@ class SkycellsRefModel(DataModel):
     _node_type = SkycellsRef
 
     def to_asdf(self, *args, **kwargs):
+        # Set all SkycellRefModel arrays to internal so test
+        # files with unrealistically small arrays don't get inlined
+        # triggering: https://github.com/spacetelescope/rad/issues/887
         if "all_array_storage" not in kwargs:
             kwargs["all_array_storage"] = "internal"
         return super().to_asdf(*args, **kwargs)
