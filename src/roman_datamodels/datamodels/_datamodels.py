@@ -617,9 +617,8 @@ class SkycellsRefModel(DataModel):
         # Set all SkycellRefModel arrays to internal so test
         # files with unrealistically small arrays don't get inlined
         # triggering: https://github.com/spacetelescope/rad/issues/887
-        if "all_array_storage" not in kwargs:
-            kwargs["all_array_storage"] = "internal"
-        return super().to_asdf(*args, **kwargs)
+        kwargs.pop("all_array_storage")
+        return super().to_asdf(*args, all_array_storage="internal", **kwargs)
 
 
 class SuperbiasRefModel(DataModel):
