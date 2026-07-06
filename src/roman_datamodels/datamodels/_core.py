@@ -321,7 +321,9 @@ class DataModel(abc.ABC):
                             continue
                         if np.isdtype(v.dtype, "integral") or np.isdtype(v.dtype, "bool"):
                             asdf_file.set_array_compression(v, "lz4")
-                asdf_file.write_to(init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs)
+                asdf_file.write_to(
+                    init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
+                )
 
     def get_primary_array_name(self):
         """
