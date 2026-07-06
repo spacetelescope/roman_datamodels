@@ -282,7 +282,9 @@ class DataModel(abc.ABC):
         ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix
 
         if ext == ".asdf":
-            self.to_asdf(output_path, *args, all_array_compression=all_array_compression, **kwargs)
+            self.to_asdf(
+                output_path, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
+            )
         elif ext == ".parquet" and hasattr(self, "to_parquet"):
             self.to_parquet(output_path)
         else:
