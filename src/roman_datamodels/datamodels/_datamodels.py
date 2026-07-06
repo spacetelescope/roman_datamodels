@@ -613,6 +613,13 @@ class SkycellsRefModel(DataModel):
     __slots__ = ()
     _node_type = SkycellsRef
 
+    def to_asdf(self, *args, **kwargs):
+        # Set all SkycellRefModel arrays to internal so test
+        # files with unrealistically small arrays don't get inlined
+        # triggering: https://github.com/spacetelescope/rad/issues/887
+        kwargs.pop("all_array_storage")
+        return super().to_asdf(*args, all_array_storage="internal", **kwargs)
+
 
 class SuperbiasRefModel(DataModel):
     from roman_datamodels._stnode import SuperbiasRef

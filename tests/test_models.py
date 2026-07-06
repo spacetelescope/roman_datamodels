@@ -6,8 +6,12 @@ import asdf
 import numpy as np
 import pytest
 from asdf.exceptions import ValidationError
+from astropy import coordinates
 from astropy import units as u
+from astropy.modeling import models
 from astropy.time import Time
+from gwcs import coordinate_frames
+from gwcs.wcs import WCS
 from numpy.testing import assert_array_equal
 
 from roman_datamodels import datamodels
@@ -27,6 +31,7 @@ from roman_datamodels._stnode import (
 )
 from roman_datamodels._stnode._registry import NODE_CLASSES_BY_TAG
 from roman_datamodels._stnode._tagged import _NO_VALUE
+from roman_datamodels.datamodels._core import DEFAULT_ARRAY_INLINE_THRESHOLD
 from roman_datamodels.testing import assert_node_equal, assert_node_is_copy
 
 from .conftest import MANIFESTS
@@ -571,7 +576,7 @@ def test_default_array_compression(tmp_path):
     for default options.
     """
     fn = tmp_path / "foo.asdf"
-    model = datamodels.ImageModel.create_fake_data()
+    model = datamodels.ImageModel.create_fake_data(shape=(DEFAULT_ARRAY_INLINE_THRESHOLD + 1, 1))
     model.save(fn)
     with asdf.open(fn) as af:
         assert af.get_array_compression(af["roman"]["data"]) == "lz4"
@@ -584,23 +589,81 @@ def test_array_compression_override(tmp_path, compression):
     array compression.
     """
     fn = tmp_path / "foo.asdf"
-    model = datamodels.ImageModel.create_fake_data()
+    model = datamodels.ImageModel.create_fake_data(shape=(DEFAULT_ARRAY_INLINE_THRESHOLD + 1, 1))
     model.save(fn, all_array_compression=compression)
     with asdf.open(fn) as af:
         assert af.get_array_compression(af["roman"]["data"]) == compression
 
 
-@pytest.mark.parametrize("storage", [None, "inline", "internal", "external"])
+@pytest.mark.parametrize("storage", ["inline", "internal", "external"])
 def test_array_storage_override(tmp_path, storage):
     """
     Test that providing a compression argument changes the
     array compression.
     """
     fn = tmp_path / "foo.asdf"
-    model = datamodels.ImageModel.create_fake_data(shape=(2, 2))
+    model = datamodels.ImageModel.create_fake_data(shape=(DEFAULT_ARRAY_INLINE_THRESHOLD + 1, 1))
     model.save(fn, all_array_storage=storage)
     with asdf.open(fn) as af:
-        assert af.get_array_storage(af["roman"]["data"]) == "internal" if storage is None else storage
+        assert af.get_array_storage(af["roman"]["data"]) == storage
+
+
+@pytest.mark.parametrize(
+    "threshold, shape, storage",
+    [
+        (100, (10, 1), "inline"),
+        (100, (100, 1), "internal"),
+        (None, (DEFAULT_ARRAY_INLINE_THRESHOLD // 10, 1), "inline"),
+        (None, (DEFAULT_ARRAY_INLINE_THRESHOLD * 2, 1), "internal"),
+    ],
+)
+def test_array_inline_threshold(tmp_path, threshold, shape, storage):
+    """
+    Test a provided array_inline_threshold is respected or the default is used.
+    """
+    fn = tmp_path / "foo.asdf"
+    # thresholds are in bytes, assuming data is 4 bytes per element
+    with asdf.config_context() as cfg:
+        cfg.array_inline_threshold = threshold
+        model = datamodels.ImageModel.create_fake_data(shape=shape)
+        model.save(fn)
+        with asdf.open(fn) as af:
+            assert af.get_array_storage(af["roman"]["data"]) == storage
+
+
+def test_wcs_array_inline(tmp_path):
+    """
+    Test that saving a file with a wcs with an array results in that array inline.
+    """
+    fn = tmp_path / "foo.asdf"
+    model = datamodels.ImageModel.create_fake_data()
+
+    # make a WCS with a model containing an array
+    transform = models.AffineTransformation2D([[1, 0], [0, 1]])
+
+    detector_frame = coordinate_frames.Frame2D(name="detector", axes_names=("x", "y"), unit=(u.pix, u.pix))
+    sky_frame = coordinate_frames.CelestialFrame(reference_frame=coordinates.ICRS(), name="icrs", unit=(u.deg, u.deg))
+    model.meta.wcs = WCS(
+        [
+            (detector_frame, transform),
+            (sky_frame, None),
+        ]
+    )
+    model.save(fn)
+
+    # load just the YAML from the ASDF file
+    wcs_tree = asdf.util.load_yaml(fn, tagged=True)["roman"]["meta"]["wcs"]
+
+    # Check for inline data (ndarray tagged items contain "data" and not "source")
+    for node in asdf.treeutil.iter_tree(wcs_tree):
+        tag = asdf.tagged.get_tag(node)
+        if not tag or "/ndarray-" not in tag:
+            continue
+        assert "data" in node
+
+    # Also check that the WCS is functional with no ASDF blocks
+    wcs = asdf.yamlutil.tagged_tree_to_custom_tree(wcs_tree, asdf.AsdfFile())
+    assert wcs.pixel_to_world_values(1, 1)
 
 
 def test_apcorr_none_array():
