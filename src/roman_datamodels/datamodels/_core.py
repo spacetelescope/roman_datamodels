@@ -22,6 +22,7 @@ import asdf
 import numpy as np
 from asdf.exceptions import ValidationError
 from asdf.tags.core.ndarray import NDArrayType
+from asdf.util import NotSet
 from astropy.time import Time
 
 from roman_datamodels._stnode import NODE_EXTENSIONS, DNode, TaggedObjectNode
@@ -275,13 +276,15 @@ class DataModel(abc.ABC):
         target._files_to_close = []
         target._shape = source._shape
 
-    def save(self, path, dir_path=None, *args, all_array_compression="lz4", **kwargs):
+    def save(self, path, dir_path=None, *args, all_array_compression="lz4", all_array_storage=NotSet, **kwargs):
         path = Path(path(self.meta.filename) if callable(path) else path)
         output_path = Path(dir_path) / path.name if dir_path else path
         ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix
 
         if ext == ".asdf":
-            self.to_asdf(output_path, *args, all_array_compression=all_array_compression, **kwargs)
+            self.to_asdf(
+                output_path, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
+            )
         elif ext == ".parquet" and hasattr(self, "to_parquet"):
             self.to_parquet(output_path)
         else:
@@ -297,23 +300,20 @@ class DataModel(abc.ABC):
 
         return asdf.AsdfFile(init, **kwargs)
 
-    def to_asdf(self, init, *args, all_array_compression="lz4", **kwargs):
+    def to_asdf(self, init, *args, all_array_compression="lz4", all_array_storage=NotSet, **kwargs):
         from ._utils import temporary_update_filedate, temporary_update_filename
 
         with (
             temporary_update_filename(self, Path(init).name),
             temporary_update_filedate(self, Time.now()),
         ):
-            all_array_storage = kwargs.pop("all_array_storage", None)
             asdf_file = self.open_asdf(**kwargs)
             asdf_file["roman"] = self._instance
             with asdf.config_context() as cfg:
                 # only set array inline threshold if not already set by the user
-                if cfg.array_inline_threshold is None and all_array_storage is None:
+                if cfg.array_inline_threshold is None and all_array_storage is NotSet:
                     cfg.array_inline_threshold = DEFAULT_ARRAY_INLINE_THRESHOLD
 
-                if all_array_storage is not None:
-                    kwargs["all_array_storage"] = all_array_storage
                 asdf_file.write_to(init, *args, all_array_compression=all_array_compression, **kwargs)
 
     def get_primary_array_name(self):
