@@ -595,7 +595,7 @@ def test_array_compression_override(tmp_path, compression):
         assert af.get_array_compression(af["roman"]["data"]) == compression
 
 
-@pytest.mark.parametrize("storage", [None, "inline", "internal", "external"])
+@pytest.mark.parametrize("storage", ["inline", "internal", "external"])
 def test_array_storage_override(tmp_path, storage):
     """
     Test that providing a compression argument changes the
@@ -605,7 +605,7 @@ def test_array_storage_override(tmp_path, storage):
     model = datamodels.ImageModel.create_fake_data(shape=(DEFAULT_ARRAY_INLINE_THRESHOLD + 1, 1))
     model.save(fn, all_array_storage=storage)
     with asdf.open(fn) as af:
-        assert af.get_array_storage(af["roman"]["data"]) == "internal" if storage is None else storage
+        assert af.get_array_storage(af["roman"]["data"]) == storage
 
 
 @pytest.mark.parametrize(

@@ -314,7 +314,9 @@ class DataModel(abc.ABC):
                 if cfg.array_inline_threshold is None and all_array_storage is NotSet:
                     cfg.array_inline_threshold = DEFAULT_ARRAY_INLINE_THRESHOLD
 
-                asdf_file.write_to(init, *args, all_array_compression=all_array_compression, **kwargs)
+                asdf_file.write_to(
+                    init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
+                )
 
     def get_primary_array_name(self):
         """
