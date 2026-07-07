@@ -667,64 +667,6 @@ def test_wcs_array_inline(tmp_path):
     assert wcs.pixel_to_world_values(1, 1)
 
 
-@pytest.mark.parametrize(
-    "threshold, shape, storage",
-    [
-        (100, (10, 1), "inline"),
-        (100, (100, 1), "internal"),
-        (None, (DEFAULT_ARRAY_INLINE_THRESHOLD // 10, 1), "inline"),
-        (None, (DEFAULT_ARRAY_INLINE_THRESHOLD * 2, 1), "internal"),
-    ],
-)
-def test_array_inline_threshold(tmp_path, threshold, shape, storage):
-    """
-    Test a provided array_inline_threshold is respected or the default is used.
-    """
-    fn = tmp_path / "foo.asdf"
-    # thresholds are in bytes, assuming data is 4 bytes per element
-    with asdf.config_context() as cfg:
-        cfg.array_inline_threshold = threshold
-        model = datamodels.ImageModel.create_fake_data(shape=shape)
-        model.save(fn)
-        with asdf.open(fn) as af:
-            assert af.get_array_storage(af["roman"]["data"]) == storage
-
-
-def test_wcs_array_inline(tmp_path):
-    """
-    Test that saving a file with a wcs with an array results in that array inline.
-    """
-    fn = tmp_path / "foo.asdf"
-    model = datamodels.ImageModel.create_fake_data()
-
-    # make a WCS with a model containing an array
-    transform = models.AffineTransformation2D([[1, 0], [0, 1]])
-
-    detector_frame = coordinate_frames.Frame2D(name="detector", axes_names=("x", "y"), unit=(u.pix, u.pix))
-    sky_frame = coordinate_frames.CelestialFrame(reference_frame=coordinates.ICRS(), name="icrs", unit=(u.deg, u.deg))
-    model.meta.wcs = WCS(
-        [
-            (detector_frame, transform),
-            (sky_frame, None),
-        ]
-    )
-    model.save(fn)
-
-    # load just the YAML from the ASDF file
-    wcs_tree = asdf.util.load_yaml(fn, tagged=True)["roman"]["meta"]["wcs"]
-
-    # Check for inline data (ndarray tagged items contain "data" and not "source")
-    for node in asdf.treeutil.iter_tree(wcs_tree):
-        tag = asdf.tagged.get_tag(node)
-        if not tag or "/ndarray-" not in tag:
-            continue
-        assert "data" in node
-
-    # Also check that the WCS is functional with no ASDF blocks
-    wcs = asdf.yamlutil.tagged_tree_to_custom_tree(wcs_tree, asdf.AsdfFile())
-    assert wcs.pixel_to_world_values(1, 1)
-
-
 def test_apcorr_none_array():
     """
     Check that ApcorrRefModel data arrays can be None.
