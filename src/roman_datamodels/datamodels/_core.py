@@ -315,12 +315,14 @@ class DataModel(abc.ABC):
                     cfg.array_inline_threshold = DEFAULT_ARRAY_INLINE_THRESHOLD
 
                 if all_array_compression is NotSet:
-                    # only compress top level arrays that have int datatypes
-                    for v in self._instance.values():
-                        if not isinstance(v, (np.ndarray, NDArrayType)):
+                    # only compress non-"data" top-level arrays that have integral datatypes
+                    for name, node in self._instance.items():
+                        if name == "data":
                             continue
-                        if np.isdtype(v.dtype, "integral") or np.isdtype(v.dtype, "bool"):
-                            asdf_file.set_array_compression(v, "lz4")
+                        if not isinstance(node, (np.ndarray, NDArrayType)):
+                            continue
+                        if np.isdtype(node.dtype, "integral") or np.isdtype(node.dtype, "bool"):
+                            asdf_file.set_array_compression(node, "lz4")
                 asdf_file.write_to(
                     init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
                 )
