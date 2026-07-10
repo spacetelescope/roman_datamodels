@@ -396,7 +396,7 @@ def test_science_raw_missing_required():
 def test_science_raw_from_tvac_raw_invalid_input():
     """Test for invalid input"""
     model = datamodels.RampModel.create_fake_data()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError), pytest.warns(DeprecationWarning, match="from_tvac_raw is deprecated"):
         _ = datamodels.ScienceRawModel.from_tvac_raw(model)
 
 
@@ -413,7 +413,8 @@ def test_science_raw_from_tvac_raw(mk_tvac):
     tvac = mk_tvac()
     tvac.meta.statistics = {"mean_counts_per_second": 1}
 
-    raw = datamodels.ScienceRawModel.from_tvac_raw(tvac)
+    with pytest.warns(DeprecationWarning, match="from_tvac_raw is deprecated"):
+        raw = datamodels.ScienceRawModel.from_tvac_raw(tvac)
     for key in raw:
         if not hasattr(tvac, key):
             continue

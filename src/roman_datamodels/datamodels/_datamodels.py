@@ -317,6 +317,7 @@ class ScienceRawModel(_RomanDataModel):
             If the input was a ScienceRawModel, that model is simply returned.
 
         """
+        warnings.warn("from_tvac_raw is deprecated. Use create_from_model instead", DeprecationWarning, stacklevel=2)
         ALLOWED_MODELS = (FpsModel, ScienceRawModel, TvacModel)
 
         if isinstance(model, cls):
