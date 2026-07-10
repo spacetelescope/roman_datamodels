@@ -346,7 +346,8 @@ def test_model_only_init_with_correct_node(node_class, correct, model):
 )
 def test_ramp_from_science_raw(mk_raw):
     raw = mk_raw()
-    ramp = datamodels.RampModel.from_science_raw(raw)
+    with pytest.warns(DeprecationWarning, match="from_science_raw is deprecated"):
+        ramp = datamodels.RampModel.from_science_raw(raw)
     for key in ramp:
         if not hasattr(raw, key):
             continue
@@ -385,7 +386,8 @@ def test_science_raw_missing_required():
     """Test that from_science_raw does not fill in required but missing values"""
     raw = datamodels.ScienceRawModel.create_fake_data()
     del raw.meta.exposure._data["hga_move"]
-    ramp = datamodels.RampModel.from_science_raw(raw)
+    with pytest.warns(DeprecationWarning, match="from_science_raw is deprecated"):
+        ramp = datamodels.RampModel.from_science_raw(raw)
     assert "hga_move" not in raw.meta.exposure
     with pytest.raises(ValidationError, match="hga_move"):
         ramp.validate()
@@ -528,12 +530,16 @@ def test_rampmodel_from_science_raw(model_class, expect_success):
         defaults={"meta": {"calibration_software_version": "1.2.3", "exposure": {"read_pattern": [[1], [2], [3]]}}}
     )
     if expect_success:
-        ramp = datamodels.RampModel.from_science_raw(model)
+        with pytest.warns(DeprecationWarning, match="from_science_raw is deprecated"):
+            ramp = datamodels.RampModel.from_science_raw(model)
 
         assert ramp.meta.calibration_software_version == model.meta.calibration_software_version
         assert ramp.meta.exposure.read_pattern == model.meta.exposure.read_pattern
     else:
-        with pytest.raises((ValueError, ValidationError)):
+        with (
+            pytest.raises((ValueError, ValidationError)),
+            pytest.warns(DeprecationWarning, match="from_science_raw is deprecated"),
+        ):
             datamodels.RampModel.from_science_raw(model)
 
 

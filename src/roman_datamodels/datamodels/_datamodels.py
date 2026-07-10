@@ -13,6 +13,7 @@ import functools
 import itertools
 import logging
 import pathlib
+import warnings
 from collections import abc
 from typing import TYPE_CHECKING
 
@@ -380,6 +381,7 @@ class RampModel(_RomanDataModel):
             a RampModel, it is simply returned.
 
         """
+        warnings.warn("from_science_raw is deprecated. Use create_from_model instead", DeprecationWarning, stacklevel=2)
         ALLOWED_MODELS = (FpsModel, RampModel, ScienceRawModel, TvacModel)
 
         if isinstance(model, cls):
