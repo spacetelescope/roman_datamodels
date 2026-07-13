@@ -11,12 +11,12 @@ classifiers = [
 ]
 dependencies = [
   "asdf>=4.1.0",
-  "astropy>=6.0.0",
+  "astropy>=6.1.4",
   "asdf-astropy>=0.8.0",
   "gwcs>=0.20.0",
   "lz4>=4.3.0",
-  "numpy>=1.25",
-  "pyarrow>=10.0.1",
+  "numpy>=2.0.0",
+  "pyarrow>=16.0",
   "pyyaml>=6.0",
   "semantic_version>=2.10",
   #"rad >=1.0,<1.1",

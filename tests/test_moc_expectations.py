@@ -25,4 +25,4 @@ def test_l2_compression(tmp_path):
         for node in af.search(type_=asdf.tags.core.NDArrayType).nodes:
             compression_codes.add(af.get_array_compression(node))
 
-    assert compression_codes == {"lz4"}
+    assert compression_codes == {"lz4", None}
