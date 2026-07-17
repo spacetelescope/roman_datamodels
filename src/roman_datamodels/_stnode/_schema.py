@@ -332,10 +332,10 @@ class Builder:
 
         min_items = _get_keyword(schema, "minItems")
         if min_items is _MISSING_KEYWORD:
-            # The schema imposes no minimum length, so preserve a provided
-            # default (as the scalar builders do) instead of discarding it.
-            # Without a default this yields an empty array.
-            return [copy.deepcopy(sub_default) for sub_default in defaults]
+            # No minimum length is imposed by the schema, so keep however many
+            # defaults were provided (as the scalar builders do) instead of
+            # discarding them.  Without a default this yields an empty array.
+            min_items = len(defaults)
 
         for sub_default in defaults[:min_items]:
             arr.append(copy.deepcopy(sub_default))
