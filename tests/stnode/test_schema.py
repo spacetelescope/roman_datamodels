@@ -67,6 +67,10 @@ def test_type(schema, type_):
             {"a": 0},
         ),
         ({"items": {"enum": [0]}}, None, []),
+        # a provided default is preserved when the schema has no minItems
+        ({"items": {"enum": [0]}}, [1, 2], [1, 2]),
+        # nested arrays (e.g. exposure.read_pattern) are preserved
+        ({"type": "array", "items": {"type": "array"}}, [[1], [2, 3]], [[1], [2, 3]]),
         ({"items": {"enum": [0]}, "minItems": 1}, None, [0]),
         ({"items": [{"enum": [0]}, {"enum": [1]}], "minItems": 2}, None, [0, 1]),
         ({"items": [{"enum": [0]}, {"enum": [1]}], "minItems": 1}, None, [0]),
