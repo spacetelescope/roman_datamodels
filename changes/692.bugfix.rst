@@ -1,0 +1,3 @@
+Preserve provided defaults in ``create_minimal`` for required array attributes
+that lack ``minItems`` in the schema (for example ``exposure.read_pattern`` and
+``cal_logs``) instead of returning an empty array.
