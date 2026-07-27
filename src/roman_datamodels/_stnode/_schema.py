@@ -335,7 +335,7 @@ class Builder:
             # No minimum length is imposed by the schema, so keep however many
             # defaults were provided (as the scalar builders do) instead of
             # discarding them.  Without a default this yields an empty array.
-            min_items = len(defaults)
+            return copy.deepcopy(defaults)
 
         for sub_default in defaults[:min_items]:
             arr.append(copy.deepcopy(sub_default))
