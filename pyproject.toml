@@ -80,27 +80,6 @@ exclude_lines = [
   "pass\\n",
 ]
 
-[tool.ruff]
-line-length = 130
-
-[tool.ruff.lint]
-extend-select = [
-  "UP",  # PyUpgrade
-  "I",   # isort
-  "B",   # BugBear
-  "S",   # Bandit
-  "RUF", # ruff specific
-  "NPY", # numpy specific
-]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**.py" = [
-  "S101", # Bandit: Use of assert detected (fine in test files)
-]
-"src/roman_datamodels/testing.py" = [
-  "S101", # Bandit: Use of assert detected (useful public API for testing only)
-]
-
 [tool.mypy]
 warn_return_any = true
 warn_unused_configs = true
