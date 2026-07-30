@@ -1,0 +1,25 @@
+line-length = 130
+
+[lint]
+select = [
+  "S",   # flake8-bandit
+  "B",   # flake8-bugbear
+  "I",   # isort
+  "E4",
+  "E7",
+  "E9",  # pycodestyle
+  "F",   # Pyflakes
+  "UP",  # pyupgrade
+  "RUF", # Ruff-specific rules
+]
+extend-select = [
+  "NPY", # numpy specific
+]
+
+[lint.per-file-ignores]
+"tests/**.py" = [
+  "S101", # Bandit: Use of assert detected (fine in test files)
+]
+"src/roman_datamodels/testing.py" = [
+  "S101", # Bandit: Use of assert detected (useful public API for testing only)
+]
