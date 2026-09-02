@@ -161,14 +161,18 @@ def test_core_schema(tmp_path):
     newcontents = fcontents[:romanloc] + bytes("X", "utf-8") + fcontents[romanloc + 1 :]
     with open(file_path, "wb") as fp:
         fp.write(newcontents)
-    with pytest.raises(ValidationError):
-        with datamodels.open(file_path) as model:
-            pass
-    asdf.get_config().validate_on_read = False
-    # Filename mismatch warning, because did not save through datamodel to_asdf method
-    with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(file_path) as model:
-        assert model.meta.telescope == "XOMAN"
-    asdf.get_config().validate_on_read = True
+
+    with asdf.config_context() as cfg:
+        cfg.validate_on_read = True
+        with pytest.raises(ValidationError):
+            with datamodels.open(file_path) as model:
+                pass
+
+    with asdf.config_context() as cfg:
+        cfg.validate_on_read = False
+        # Filename mismatch warning, because did not save through datamodel to_asdf method
+        with pytest.warns(datamodels.FilenameMismatchWarning), datamodels.open(file_path) as model:
+            assert model.meta.telescope == "XOMAN"
 
 
 def test_add_model_attribute(tmp_path):
