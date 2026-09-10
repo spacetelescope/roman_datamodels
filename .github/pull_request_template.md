@@ -1,26 +1,26 @@
-<!-- If this PR closes a JIRA ticket, make sure the title starts with the JIRA issue number,
-for example RCAL-1234: <Fix a bug> -->
-Resolves [RCAL-nnnn](https://jira.stsci.edu/browse/RCAL-nnnn)
+<!-- If this PR addresses a JIRA ticket: -->
+<!-- Resolves [RCAL-nnnn](https://jira.stsci.edu/browse/RCAL-nnnn) -->
 
-<!-- If this PR closes a GitHub issue, reference it here by its number -->
-Closes #
+<!-- If this PR will close an existing GitHub issue (that is not already attached to a JIRA ticket): -->
+<!-- Closes # -->
 
-<!-- describe the changes comprising this PR here -->
-This PR addresses ...
+<!-- Describe your changes here: -->
 
-<!-- if you can't perform these tasks due to permissions, please ask a maintainer to do them -->
+## Description
+
+This change ...
+
+<!-- If you can't perform these tasks due to permissions, reach out to a maintainer. -->
+
 ## Tasks
+
 - [ ] Update or add relevant `roman_datamodels` tests.
 - [ ] Update relevant docstrings and / or `docs/` page.
-- [ ] Does this PR change any API used downstream? (If not, label with `no-changelog-entry-needed`.)
-  - [ ] Write news fragment(s) in `changes/`: `echo "changed something" > changes/<PR#>.<changetype>.rst` (see below for change types).
+- [ ] Does this PR change user-facing code / API? (if not, label with `no-changelog-entry-needed`)
+  - [ ] write news fragment(s) in `changes/`: `echo "changed something" > changes/<PR#>.<changetype>.rst` (see [changelog readme](https://github.com/spacetelescope/roman_datamodels/blob/main/changes/README.rst) for instructions)
   - [ ] Start a `romancal` regression test (https://github.com/spacetelescope/RegressionTests/actions/workflows/romancal.yml) with this branch installed (`"git+https://github.com/<fork>/rad@<branch>"`).
 
-<details><summary>News fragment change types:</summary>
+## Generative AI Usage Disclosure
 
-- ``changes/<PR#>.feature.rst``: new feature
-- ``changes/<PR#>.bugfix.rst``: fixes an issue
-- ``changes/<PR#>.doc.rst``: documentation change
-- ``changes/<PR#>.removal.rst``: deprecation or removal of public API
-- ``changes/<PR#>.misc.rst``: infrastructure or miscellaneous change
-</details
+<!-- If generative AI or LLMs were used in the process of making this change, describe their use here. -->
+<!-- Otherwise, indicate "No genAI tools used". -->
