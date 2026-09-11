@@ -57,10 +57,6 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    "sphinx_automodapi.automodapi",
-    "sphinx_automodapi.automodsumm",
-    "sphinx_automodapi.autodoc_enhancements",
-    "sphinx_automodapi.smart_resolver",
     "sphinxcontrib.jquery",
 ]
 
@@ -89,6 +85,12 @@ master_doc = "index"
 
 suppress_warnings = [
     "app.add_directive",
+    # The `collections.abc.MutableMapping`/`MutableSequence` mixin methods (e.g.
+    # `update`) inherited by DNode/LNode mix unindented prose with indented
+    # examples without a blank line between them. docutils warns about the
+    # ambiguous indentation, but still renders the content (as a definition
+    # list rather than nested block quotes), so it's safe to silence.
+    "docutils",
 ]
 
 # General information about the project
@@ -125,6 +127,9 @@ except AttributeError:
 # directories to ignore when looking for source files.
 exclude_patterns = ["_build"]
 
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
+
 # This is added to the end of RST files - a good place to put substitutions to
 # be used globally.
 rst_epilog = """.. _roman_datamodels: high-level_API.html"""
@@ -138,12 +143,21 @@ default_role = "obj"
 numpydoc_show_class_members = False
 
 autosummary_generate = True
-
-automodapi_toctreedirnm = "api"
+# Document members re-exported via a module's __all__
+autosummary_ignore_module_all = False
+# Document classes/functions imported into a module's namespace even when the
+# module has no `__all__` (e.g. `roman_datamodels.datamodels`).
+autosummary_imported_members = True
 
 # Class documentation should contain *both* the class docstring and
 # the __init__ docstring
 autoclass_content = "both"
+
+# Don't treat the first line of a docstring (e.g. the C-implemented
+# `MutableMapping`/`MutableSequence` methods inherited by DNode/LNode, such as
+# "D.pop(k[,d]) -> v, remove specified key...") as an overriding signature;
+# doing so makes autodoc try to cross-reference the prose after "->" as a class.
+autodoc_docstring_signature = False
 
 # Render inheritance diagrams in SVG
 graphviz_output_format = "svg"
@@ -420,5 +434,36 @@ epub_exclude_files = ["search.html"]
 # Enable nitpicky mode - which ensures that all references in the docs resolve.
 nitpicky = True
 nitpick_ignore = [
-    ("py:class", "_io.FileIO"),
+    # Private mixin/base classes used only to share implementation across
+    # public classes; not documented themselves, but the methods/attributes
+    # they contribute still show up on the public class's page.
+    ("py:class", "roman_datamodels._stnode._converters._TaggedNodeConverter"),
+    ("py:class", "roman_datamodels._stnode._node._NodeMixin"),
+    ("py:class", "roman_datamodels._stnode._tagged._TaggedNodeMixin"),
+    ("py:class", "roman_datamodels.datamodels._datamodels._ParquetMixin"),
+    ("py:class", "roman_datamodels.datamodels._datamodels._RomanDataModel"),
+    ("py:class", "roman_datamodels.datamodels._datamodels._SourceCatalogMixin"),
+    # The deprecated FileDate/FpsFileDate/TvacFileDate subclass the `astropy.time.Time`
+    # (kept only to read legacy files). Their inherited numpydoc type fields use
+    # bare names and prose type descriptions that nitpicky mode can't resolve.
+    ("py:class", "'stable'"),
+    ("py:class", "array_like"),
+    ("py:class", "array-like"),
+    ("py:class", "instance"),
+    ("py:class", "ints"),
+    ("py:class", "iterable"),
+    ("py:class", "ndarray"),
+    ("py:class", "None; optional"),
+    ("py:class", "numpy.array"),
+    ("py:class", "optional"),
+    ("py:class", "sequence"),
+    ("py:class", "Table"),
+    ("py:class", "Time"),
+    ("py:class", "Time object"),
+    ("py:obj", "Time"),
+    ("py:obj", "Time.reshape"),
+    ("py:obj", "erfa.era00"),
+    # TypeVars have no autodoc page to link to.
+    ("py:class", "roman_datamodels._stnode._tagged._T"),
+    ("py:obj", "roman_datamodels._stnode._tagged._T"),
 ]
