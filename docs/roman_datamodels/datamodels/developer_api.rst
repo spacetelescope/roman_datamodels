@@ -2,6 +2,9 @@
 Developer API
 *************
 
-.. automodapi:: roman_datamodels.datamodels
+.. autosummary::
+   :toctree: generated
+   :template: autosummary/module.rst
 
-.. automodapi:: roman_datamodels._stnode
+   roman_datamodels.datamodels
+   roman_datamodels._stnode

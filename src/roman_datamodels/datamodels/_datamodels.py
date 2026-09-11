@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 # NOTE: this module does not have the typical `__all__`` present like most of the other
 #    modules in `roman_datamodels``. The presence of the `__all__` variable causes is
 #    entirely to control what is imported by the wildcard `*` import. This style of
-#    import is used by `spiinx-automodapi` to determine what to document within a given
+#    import is used by `sphinx.ext.autosummary` to determine what to document within a given
 #    module. However, in this module's case we would have to list every single datamodel
 #    in the `__all__` which would become tedious and error-prone. Therefore, we simply
 #    omit the `__all__` variable and carefully control what we make publicly available
@@ -39,8 +39,8 @@ if TYPE_CHECKING:
 #    the import of items from other modules directly into this module's namespace and instead
 #    importing them as the namespace from that module (e.g. `from astropy import time` and
 #    using `time.Time` instead of `from astropy.time import Time` and using `Time` directly).
-#    this prevents `spinx-automodapi` from documenting these items which can cause documentation
-#    warnings and bloat.
+#    this prevents `sphinx.ext.autosummary` from documenting these items which can cause
+#    documentation warnings and bloat.
 
 DTYPE_MAP: dict[str, Any] = {}
 
