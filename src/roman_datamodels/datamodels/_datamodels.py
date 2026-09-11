@@ -166,7 +166,7 @@ class _RomanDataModel(DataModel):
 
         Parameters
         ----------
-        defaults : None or dict
+        defaults :
             If provided, defaults will be used in place of schema
         time: default time value
 
