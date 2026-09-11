@@ -12,6 +12,7 @@
 
 import datetime
 import importlib
+import inspect
 import os
 import sys
 import tomllib
@@ -92,6 +93,9 @@ suppress_warnings = [
     # ambiguous indentation, but still renders the content (as a definition
     # list rather than nested block quotes), so it's safe to silence.
     "docutils",
+    # `autosummary_context` holds the `is_property` helper used by the class
+    # template, which cannot be pickled into the config cache.
+    "config.cache",
 ]
 
 # General information about the project
@@ -149,6 +153,89 @@ autosummary_ignore_module_all = False
 # Document classes/functions imported into a module's namespace even when the
 # module has no `__all__` (e.g. `roman_datamodels.datamodels`).
 autosummary_imported_members = True
+
+
+def is_property(modname, qualname, attr):
+    """Used by the autosummary class template to pick autoproperty vs autoattribute."""
+    obj = importlib.import_module(modname)
+    for part in qualname.split("."):
+        obj = getattr(obj, part)
+    try:
+        member = inspect.getattr_static(obj, attr)
+    except AttributeError:
+        return False
+    return isinstance(member, property)
+
+
+def datamodel_category(modname, name):
+    """Used by the autosummary module template to group the datamodel classes."""
+    obj = getattr(importlib.import_module(modname), name)
+    # Only concrete datamodels bind ``_node_type``; base classes fall through to "general".
+    if not hasattr(obj, "_node_type"):
+        return "general"
+    return "reference" if name.endswith("RefModel") else "science"
+
+
+def stnode_category(modname, name):
+    """Used by the autosummary ``_stnode`` module template to group the node classes."""
+    from roman_datamodels._stnode import _converters, _mixins, _node, _tagged
+    from roman_datamodels.datamodels._core import MODEL_REGISTRY
+
+    obj = getattr(importlib.import_module(modname), name)
+
+    if any(getattr(submodule, name, None) is obj for submodule in (_node, _tagged)):
+        return "general"
+    if obj in MODEL_REGISTRY:
+        return "reference-node" if name.endswith("Ref") else "science-node"
+    if getattr(_converters, name, None) is obj:
+        return "converter"
+    if issubclass(obj, _tagged.SerializationNode):
+        return "serialization"
+    if getattr(_mixins, name, None) is obj:
+        return "legacy-mixin"
+    if issubclass(obj, _tagged.TaggedScalarNode):
+        return "legacy-scalar"
+    if issubclass(obj, _tagged.TaggedListNode):
+        return "legacy-list"
+    return "legacy-object"
+
+
+def _public_members(obj):
+    attributes, methods = [], []
+    for name in dir(obj):
+        if name.startswith("_"):
+            continue
+        try:
+            member = inspect.getattr_static(obj, name)
+        except AttributeError:
+            continue
+        if isinstance(member, staticmethod | classmethod):
+            member = member.__func__
+        (methods if inspect.isroutine(member) else attributes).append(name)
+    return attributes, methods
+
+
+def node_class(modname, name):
+    """Describe the node class backing a datamodel, for the autosummary class template."""
+    node = getattr(getattr(importlib.import_module(modname), name), "_node_type", None)
+    if node is None:
+        return None
+
+    attributes, methods = _public_members(node)
+    return {
+        "module": node.__module__,
+        "name": node.__name__,
+        "attributes": attributes,
+        "methods": methods,
+    }
+
+
+autosummary_context = {
+    "is_property": is_property,
+    "datamodel_category": datamodel_category,
+    "stnode_category": stnode_category,
+    "node_class": node_class,
+}
 
 # Class documentation should contain *both* the class docstring and
 # the __init__ docstring
