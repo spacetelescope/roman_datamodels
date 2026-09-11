@@ -84,7 +84,7 @@ for manifest in _MANIFESTS:
 
 # Create the ASDF extension for the STNode classes.
 #    ASDF extension is setup here so that it is after the dynamic object creation
-NODE_EXTENSIONS = {
+NODE_EXTENSIONS: dict[str, ManifestExtension] = {
     manifest_uri: ManifestExtension.from_uri(
         manifest_uri, converters=(SerializationNodeConverter(manifest_uri), *tuple(NODE_CONVERTERS.values()))
     )

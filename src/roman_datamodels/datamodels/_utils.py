@@ -21,16 +21,17 @@ from roman_datamodels._stnode import TaggedScalarNode
 from ._core import MODEL_REGISTRY, DataModel
 
 if TYPE_CHECKING:
+    from os import PathLike
+
     from roman_datamodels._stnode import DNode, LNode
 
 
-__all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filedate", "temporary_update_filename"]
+__all__ = ["FilenameMismatchWarning", "node_update", "rdm_open"]
 
 
 class FilenameMismatchWarning(UserWarning):
     """
-    Warning when the filename in the meta attribute does not match the filename
-    of the file being opened.
+    Filename does not match the meta attribute for filename.
     """
 
 
@@ -63,7 +64,7 @@ def _temporary_update(datamodel: DataModel, key: str, value: Any) -> Generator[N
 
 
 @contextmanager
-def temporary_update_filename(datamodel: DataModel, filename: str) -> Generator[None, None, None]:
+def _temporary_update_filename(datamodel: DataModel, filename: str) -> Generator[None, None, None]:
     """
     Context manager to temporarily update the filename of a datamodel so that it
     can be saved with that new file name without changing the current model's filename
@@ -80,7 +81,7 @@ def temporary_update_filename(datamodel: DataModel, filename: str) -> Generator[
 
 
 @contextmanager
-def temporary_update_filedate(datamodel: DataModel, file_date: time.Time) -> Generator[None, None, None]:
+def _temporary_update_filedate(datamodel: DataModel, file_date: time.Time) -> Generator[None, None, None]:
     """
     Context manager to temporarily update the filedate of a datamodel so that it
     can be saved with that new file date without changing the current model's filedate.
@@ -102,7 +103,8 @@ def node_update(
     extras_key: str | None = None,
     ignore: list[str] | tuple[str, ...] | None = None,
 ) -> None:
-    """Copy node contents from an existing node to another existing node
+    """
+    Copy node contents from one node to another node.
 
     How the copy occurs depends on existence of keys in ``to_node``
 
@@ -199,7 +201,7 @@ def node_update(
             to_node["extras"] = extras_node
 
 
-def _patch_meta_filename(init, asdf_file):
+def _patch_meta_filename(init: PathLike | asdf.AsdfFile | None, asdf_file: asdf.AsdfFile) -> asdf.AsdfFile:
     """
     Modify meta.filename to match init if needed.
 
@@ -211,14 +213,14 @@ def _patch_meta_filename(init, asdf_file):
 
     Parameters
     ----------
-    init : str, ``Path`` or file-like
+    init :
         An object that can be opened by `asdf.open`
-    asdf_file : `asdf.AsdfFile`
+    asdf_file :
         Instance that may be patched if init does not match meta.filename
 
     Returns
     -------
-    `asdf.AsdfFile`
+    The patched ASDF file
     """
     if isinstance(init, str):
         # is init string is a url, don't patch
@@ -250,7 +252,7 @@ def _patch_meta_filename(init, asdf_file):
     return asdf_file
 
 
-def _open_asdf(init, lazy_tree=True, **kwargs):
+def _open_asdf(init: PathLike | asdf.AsdfFile | None, lazy_tree: bool = True, **kwargs: Any) -> asdf.AsdfFile:
     """
     Open init with `asdf.open`.
 
@@ -259,16 +261,16 @@ def _open_asdf(init, lazy_tree=True, **kwargs):
 
     Parameters
     ----------
-    init : str, ``Path`` or file-like
+    init :
         An object that can be opened by `asdf.open`
-    lazy_tree : bool
+    lazy_tree :
         If we should open the file with a "lazy tree"
     **kwargs:
         Any additional arguments to pass to asdf.open
 
     Returns
     -------
-    `asdf.AsdfFile`
+    The opened ASDF file
     """
     # asdf defaults to lazy_tree=False, this overwrites it to
     # lazy_tree=True for roman_datamodels
@@ -282,33 +284,36 @@ def _open_asdf(init, lazy_tree=True, **kwargs):
     return _patch_meta_filename(init, asdf_file)
 
 
-def rdm_open(init, memmap=False, **kwargs):
+def rdm_open(init: PathLike | asdf.AsdfFile | DataModel, memmap: bool = False, **kwargs: Any) -> DataModel:
     """
-    Datamodel open/create function.
-        This function opens a Roman datamodel from an asdf file or generates
-        the datamodel from an existing one.
+    Datamodel open/create function
+
+    This function opens a Roman datamodel from an asdf file or generates
+    the datamodel from an existing one.
 
     Parameters
     ----------
-    init : str, ``Path``, `DataModel`, `asdf.AsdfFile`, file-like
+    init :
         May be any one of the following types:
             - `asdf.AsdfFile` instance
             - string or ``Path`` indicating the path to an ASDF file
             - `DataModel` Roman data model instance
             - file-like object compatible with `asdf.open`
-    memmap : bool
+    memmap :
         Open ASDF file binary data using memmap (default: False)
 
     Returns
     -------
-    `DataModel`
+        The opened or created `DataModel` instance.
     """
     if isinstance(init, str | Path):
         if Path(init).suffix.lower() == ".json":
             try:
                 from romancal.datamodels.library import ModelLibrary  # type: ignore[import-not-found]
 
-                return ModelLibrary(init)
+                # This will only be relevant in romancal
+                # MyPy doesn't have access to romancal so we ignore the type check
+                return ModelLibrary(init)  # type: ignore[no-any-return]
             except ImportError as err:
                 raise ImportError("Please install romancal to allow opening associations with roman_datamodels") from err
 

@@ -15,7 +15,7 @@ from ._tagged import _get_schema_from_tag
 
 # This is a workaround for MyPy to understand the Mixin classes
 if TYPE_CHECKING:
-    from typing import ClassVar, TypeAlias
+    from typing import Any, ClassVar, TypeAlias
 
     from astropy.time import Time
 
@@ -55,7 +55,7 @@ __all__ = [
 
 class WfiModeMixin:
     """
-    Extensions to the WfiMode class.
+    Extensions to the WfiMode class
         Adds to indication properties
     """
 
@@ -64,30 +64,34 @@ class WfiModeMixin:
     # Every optical element is a grating or a filter
     #   There are less gratings than filters so its easier to list out the
     #   gratings.
-    _GRATING_OPTICAL_ELEMENTS: ClassVar = {"GRISM", "PRISM"}
+    _GRATING_OPTICAL_ELEMENTS: ClassVar[set[str]] = {"GRISM", "PRISM"}
 
     @property
-    def filter(self):
+    def filter(self) -> str | None:
         """
         Returns the filter if it is one, otherwise None
         """
-        if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
+        if (element := self.optical_element) in self._GRATING_OPTICAL_ELEMENTS:  # type: ignore[attr-defined]
             return None
         else:
-            return self.optical_element
+            return element  # type: ignore[no-any-return]
 
     @property
-    def grating(self):
+    def grating(self) -> str | None:
         """
         Returns the grating if it is one, otherwise None
         """
-        if self.optical_element in self._GRATING_OPTICAL_ELEMENTS:
-            return self.optical_element
+        if (element := self.optical_element) in self._GRATING_OPTICAL_ELEMENTS:  # type: ignore[attr-defined]
+            return element  # type: ignore[no-any-return]
         else:
             return None
 
 
 class FileDateMixin(_TimeBase):
+    """
+    Extensions to the FileDate class
+    """
+
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls.now()
@@ -106,14 +110,22 @@ class FileDateMixin(_TimeBase):
 
 
 class FpsFileDateMixin(FileDateMixin):
-    pass
+    """
+    Extensions to the FpsFileDate class
+    """
 
 
 class TvacFileDateMixin(FileDateMixin):
-    pass
+    """
+    Extensions to the TvacFileDate class
+    """
 
 
 class CalibrationSoftwareNameMixin(_ScalarBase):
+    """
+    Extensions to the CalibrationSoftwareName class
+    """
+
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("RomanCAL")
@@ -124,6 +136,10 @@ class CalibrationSoftwareNameMixin(_ScalarBase):
 
 
 class PrdVersionMixin(_ScalarBase):
+    """
+    Extensions to the PrdVersion class
+    """
+
     @classmethod
     def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("8.8.8")
@@ -134,6 +150,10 @@ class PrdVersionMixin(_ScalarBase):
 
 
 class SdfSoftwareVersionMixin(_ScalarBase):
+    """
+    Extensions to the SdfSoftwareVersion class
+    """
+
     @classmethod
     def _create_fake_data(cls, defaults=None, shape=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("7.7.7")
@@ -144,6 +164,10 @@ class SdfSoftwareVersionMixin(_ScalarBase):
 
 
 class OriginMixin(_ScalarBase):
+    """
+    Extensions to the Origin class
+    """
+
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("STSCI/SOC")
@@ -154,6 +178,10 @@ class OriginMixin(_ScalarBase):
 
 
 class TelescopeMixin(_ScalarBase):
+    """
+    Extensions to the Telescope class
+    """
+
     @classmethod
     def _create_minimal(cls, defaults=None, builder=None, *, tag=None):
         new = cls(defaults) if defaults else cls("ROMAN")
@@ -164,6 +192,10 @@ class TelescopeMixin(_ScalarBase):
 
 
 class RefFileMixin(_ObjectBase):
+    """
+    Extensions to the RefFile class
+    """
+
     __slots__ = ()
 
     @classmethod
@@ -191,6 +223,10 @@ class RefFileMixin(_ObjectBase):
 
 
 class L2CalStepMixin(_ObjectBase):
+    """
+    Extensions to the L2CalStep class
+    """
+
     __slots__ = ()
 
     @classmethod
@@ -205,13 +241,21 @@ class L2CalStepMixin(_ObjectBase):
 
 
 class L3CalStepMixin(L2CalStepMixin):  # same as L2CalStepMixin
+    """
+    Extensions to the L3CalStep class
+    """
+
     __slots__ = ()
 
 
 class ImageSourceCatalogMixin(_ObjectBase):
+    """
+    Extensions to the ImageSourceCatalog class
+    """
+
     __slots__ = ()
 
-    def get_column_definition(self, name):
+    def get_column_definition(self, name: str) -> dict[str, Any] | None:
         """
         Get the definition of a named column in the catalog table.
 
@@ -220,13 +264,12 @@ class ImageSourceCatalogMixin(_ObjectBase):
 
         Parameters
         ----------
-        name: str
+        name :
             Column name, may contain aperture radisu or filter/band or prefixed
             with ``forced_``.
 
         Returns
         -------
-        dict or None
             Dictionary containing unit, description, and datatype information
             or None if the name does not match any definition.
         """
@@ -248,6 +291,8 @@ class ImageSourceCatalogMixin(_ObjectBase):
                         definition["properties"]["data"]["properties"]["datatype"]["enum"][0]
                     ),
                 }
+
+        return None
 
     @classmethod
     def _create_empty_catalog(cls, tag=None, aperture_radii=None, filters=None):
@@ -294,16 +339,32 @@ class ImageSourceCatalogMixin(_ObjectBase):
 
 
 class ForcedImageSourceCatalogMixin(ImageSourceCatalogMixin):
+    """
+    Extensions to the ForcedImageSourceCatalog class
+    """
+
     __slots__ = ()
 
 
 class MosaicSourceCatalogMixin(ImageSourceCatalogMixin):
+    """
+    Extensions to the MosaicSourceCatalog class
+    """
+
     __slots__ = ()
 
 
 class ForcedMosaicSourceCatalogMixin(ImageSourceCatalogMixin):
+    """
+    Extensions to the ForcedMosaicSourceCatalog class
+    """
+
     __slots__ = ()
 
 
 class MultibandSourceCatalogMixin(ImageSourceCatalogMixin):
+    """
+    Extensions to the MultibandSourceCatalog class
+    """
+
     __slots__ = ()

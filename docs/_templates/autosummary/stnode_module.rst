@@ -42,6 +42,8 @@
 {% if general_classes %}
 General Classes
 ---------------
+These are the base classes for the rest of the STNode classes.
+
 {{ table(general_classes, true) }}
 {% endif %}
 
@@ -68,6 +70,9 @@ Reference File Node Classes
 {% if converters or serialization_nodes %}
 Serialization Classes
 ---------------------
+
+These classes handle the serialization of STNode objects into ASDF files and
+their deserialization from ASDF files.
 
 {% if converters %}
 ASDF Converter Classes
@@ -96,6 +101,9 @@ Functions
 {% if legacy_objects or legacy_scalars or legacy_lists or legacy_mixins %}
 Legacy Node Classes
 -------------------
+
+These classes are the Node classes that are used to support older legacy versions
+of RAD.
 
 {% if legacy_objects %}
 Legacy Object Node Classes
