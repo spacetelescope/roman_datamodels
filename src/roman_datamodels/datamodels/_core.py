@@ -55,6 +55,16 @@ def _set_default_asdf(func):
     return wrapper
 
 
+def _schema_link_from_tag(tag_uri: str) -> str:
+    """
+    generate an intersphinx link docstring for the given tag uri to the rad documentation.
+    """
+    page = tag_uri.replace("asdf://stsci.edu/datamodels/roman/tags", "generated/schemas")
+    text = tag_uri.replace("/tags/", "/schemas/")
+
+    return f"The schema for this DataModel is :external+rad:doc:`{text} <{page}>`"
+
+
 class DataModel(abc.ABC):
     """Base class for all top level datamodels"""
 
@@ -78,7 +88,7 @@ class DataModel(abc.ABC):
         if cls._node_type in MODEL_REGISTRY:
             raise ValueError(f"Duplicate model type {cls._node_type}")
 
-        cls.__doc__ = f"DataModel for node type :class:`~roman_datamodels._stnode.{cls._node_type.__name__}`"
+        cls.__doc__ = f"DataModel for node type :class:`~roman_datamodels._stnode.{cls._node_type.__name__}`\n\n{_schema_link_from_tag(cls._node_type._default_tag)}"
 
         # Add to registry
         MODEL_REGISTRY[cls._node_type] = cls
