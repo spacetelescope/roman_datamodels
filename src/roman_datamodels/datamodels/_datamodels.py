@@ -23,10 +23,17 @@ from astropy import time as _time
 from astropy.modeling import models
 
 from ._core import DataModel
-from ._utils import node_update, temporary_update_filedate, temporary_update_filename
+from ._utils import _temporary_update_filedate, _temporary_update_filename, node_update
 
 if TYPE_CHECKING:
-    from typing import Any
+    from os import PathLike
+    from typing import Any, Self
+
+    from astropy.table import Table
+
+    _DataModel = DataModel
+else:
+    _DataModel = object
 
 # NOTE: this module does not have the typical `__all__`` present like most of the other
 #    modules in `roman_datamodels``. The presence of the `__all__` variable causes is
@@ -49,12 +56,12 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class _SourceCatalogMixin:
+class _SourceCatalogMixin(_DataModel):
     from roman_datamodels._stnode import ImageSourceCatalogMixin as _Mixin
 
     __slots__ = ()
 
-    def create_empty_catalog(self, aperture_radii=None, filters=None):
+    def create_empty_catalog(self, aperture_radii: list[int] | None = None, filters: list[str] | None = None) -> Table:
         """
         Create an empty but valid source catalog table
 
@@ -68,28 +75,32 @@ class _SourceCatalogMixin:
 
         Returns
         -------
-        Table
+            An empty but valid source catalog table.
         """
-        if aperture_radii:
-            aperture_radii = [f"{i:02}" for i in aperture_radii]
+        radii = None if aperture_radii is None else [f"{i:02}" for i in aperture_radii]
 
-        return self._instance._create_empty_catalog(aperture_radii, filters)
+        return self._instance._create_empty_catalog(radii, filters)
 
     @functools.wraps(_Mixin.get_column_definition)
     def get_column_definition(self, name):
         return self._instance.get_column_definition(name)
 
 
-class _ParquetMixin:
+class _ParquetMixin(_DataModel):
     """Gives SourceCatalogModels the ability to save to parquet files."""
 
     __slots__ = ()
 
-    def to_parquet(self, filepath):
+    def to_parquet(self, filepath: PathLike) -> None:
         """
         Save catalog in parquet format.
 
         Defers import of parquet to minimize import overhead for all other models.
+
+        Parameters
+        ----------
+        filepath :
+            The path to save the parquet file to.
         """
         from roman_datamodels._stnode import DNode
 
@@ -118,7 +129,7 @@ class _ParquetMixin:
                 }
             )
 
-        with temporary_update_filename(self, pathlib.Path(filepath).name), temporary_update_filedate(self, _time.Time.now()):
+        with _temporary_update_filename(self, pathlib.Path(filepath).name), _temporary_update_filedate(self, _time.Time.now()):
             # Construct flat metadata dict
             flat_meta = self.to_flat_dict()
         # select only meta items
@@ -241,8 +252,9 @@ class ScienceRawModel(_RomanDataModel):
     __slots__ = ()
 
     @classmethod
-    def from_tvac_raw(cls, model):
-        """Convert TVAC/FPS into ScienceRawModel
+    def from_tvac_raw(cls, model: ScienceRawModel | TvacModel | FpsModel) -> Self:
+        """
+        Convert TVAC/FPS into ScienceRawModel
 
         romancal supports processing a selection of files which use an outdated
         schema. It supports these with a bespoke method that converts the files
@@ -255,15 +267,13 @@ class ScienceRawModel(_RomanDataModel):
 
         Parameters
         ----------
-        model : ScienceRawModel, TvacModel, FpsModel
+        model :
             Model to convert from.
 
         Returns
         -------
-        science_raw_model : ScienceRawModel
             The ScienceRawModel built from the input model.
             If the input was a ScienceRawModel, that model is simply returned.
-
         """
         warnings.warn("from_tvac_raw is deprecated. Use create_from_model instead", DeprecationWarning, stacklevel=2)
         ALLOWED_MODELS = (FpsModel, ScienceRawModel, TvacModel)
@@ -275,9 +285,10 @@ class ScienceRawModel(_RomanDataModel):
 
         # Create base raw node with dummy values (for validation)
         if isinstance(model, (FpsModel | TvacModel)):
-            raw_model = cls.create_fake_data()
+            # Limitation of MyPy with the functools.wraps
+            raw_model: Self = cls.create_fake_data()  # type: ignore[call-arg]
         else:
-            raw_model = cls.create_minimal()
+            raw_model = cls.create_minimal()  # type: ignore[call-arg]
 
         node_update(raw_model._instance, model, extras=("meta.statistics",), extras_key="tvac", ignore=("meta.model_type",))
 
@@ -303,8 +314,9 @@ class RampModel(_RomanDataModel):
     __slots__ = ()
 
     @classmethod
-    def from_science_raw(cls, model):
-        """Attempt to construct a RampModel from a DataModel
+    def from_science_raw(cls, model: FpsModel | RampModel | ScienceRawModel | TvacModel) -> Self:
+        """
+        Attempt to construct a RampModel from a DataModel
 
         If the model has a resultantdq attribute, this is copied into
         the RampModel.groupdq attribute.
@@ -323,7 +335,6 @@ class RampModel(_RomanDataModel):
 
         Returns
         -------
-        ramp_model : RampModel
             The RampModel built from the input model. If the input is already
             a RampModel, it is simply returned.
 
@@ -337,7 +348,8 @@ class RampModel(_RomanDataModel):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base ramp node with dummy values (for validation)
-        ramp_model = cls.create_minimal()
+        # Limitation of MyPy with the functools.wraps
+        ramp_model: Self = cls.create_minimal()  # type: ignore[call-arg]
 
         # make cal_step
         ramp_model.meta.cal_step = {}
@@ -476,13 +488,8 @@ class IntegralnonlinearityRefModel(DataModel):
 
     __slots__ = ()
 
+    @functools.wraps(DataModel.get_primary_array_name)
     def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
         return "value"
 
 
@@ -491,13 +498,8 @@ class InverselinearityRefModel(DataModel):
 
     __slots__ = ()
 
+    @functools.wraps(DataModel.get_primary_array_name)
     def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
         return "coeffs"
 
 
@@ -506,13 +508,8 @@ class MaskRefModel(DataModel):
 
     __slots__ = ()
 
+    @functools.wraps(DataModel.get_primary_array_name)
     def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
         return "dq"
 
 
@@ -539,6 +536,7 @@ class SkycellsRefModel(DataModel):
 
     __slots__ = ()
 
+    @functools.wraps(DataModel.to_asdf)
     def to_asdf(self, *args, **kwargs):
         # Set all SkycellRefModel arrays to internal so test
         # files with unrealistically small arrays don't get inlined
@@ -637,8 +635,9 @@ class WfiWcsModel(_RomanDataModel):
     __slots__ = ()
 
     @classmethod
-    def from_model_with_wcs(cls, model, l1_border=4):
-        """Extract the WCS information from an exposure model post-assign_wcs
+    def from_model_with_wcs(cls, model: ImageModel, l1_border: int = 4) -> Self:
+        """
+        Extract the WCS information from an exposure
 
         Construct a `WfiWcsModel` from any model that is used post-assign_wcs step
         in the ELP pipeline. The WCS information is extracted out of the input model.
@@ -650,15 +649,14 @@ class WfiWcsModel(_RomanDataModel):
 
         Parameters
         ----------
-        model : ImageModel
+        model :
             The input data model.
 
-        l1_border : int
+        l1_border :
             The extra border to add for the L1 wcs.
 
         Returns
         -------
-        wfiwcs_model : WfiWcsModel
             The WfiWcsModel built from the input model.
 
         """

@@ -101,7 +101,7 @@ class _TaggedNodeMixin(NodeMixin):
     @classmethod
     def create_minimal(cls, defaults: Mapping[str, Any] | None = None, *, tag: str | None = None) -> Self:
         """
-        Class method that constructs an "minimal" model.
+        Constructs a "minimal" model
 
         The "minimal" model will contain schema-required attributes
         where a default value can be determined:
@@ -145,7 +145,7 @@ class _TaggedNodeMixin(NodeMixin):
         cls, defaults: Mapping[str, Any] | None = None, shape: tuple[int, ...] | None = None, *, tag: str | None = None
     ) -> Self:
         """
-        Class method that constructs a model filled with fake data.
+        Constructs a model filled with fake data
 
         Similar to :meth:`~roman_datamodels.datamodels.DataModel.create_minimal` this only creates
         required attributes.
@@ -201,18 +201,25 @@ class _TaggedNodeMixin(NodeMixin):
         return cls._create_from_node(node, tag=tag)
 
     @property
-    def _tag(self):
+    def _tag(self) -> str:
         if self._read_tag is None:
             return self._default_tag
 
         return self._read_tag
 
     @property
-    def tag(self):
+    def tag(self) -> str:
+        """The ASDF tag associated with this node."""
         return self._tag
 
-    def get_schema(self):
-        """Retrieve the schema associated with this tag"""
+    def get_schema(self) -> dict[str, Any]:
+        """
+        Retrieve the schema associated with this tag
+
+        Returns
+        -------
+            The schema corresponding to this node's tag.
+        """
         return _get_schema_from_tag(self.tag)
 
 
@@ -297,7 +304,14 @@ class TaggedScalarNode(_TaggedNodeMixin):
         # _tag is required by asdf to allow __asdf_traverse__
         return getattr(self, "_read_tag", self._default_tag)
 
-    def copy(self):
+    def copy(self) -> Self:
+        """
+        Copy the current node
+
+        Returns
+        -------
+            A copy of the current node.
+        """
         return copy.copy(self)
 
 
@@ -307,7 +321,8 @@ _T = TypeVar("_T", bound=TaggedObjectNode | TaggedListNode | TaggedScalarNode)
 class SerializationNode(Generic[_T]):
     """
     Intermediate class used to assist in serialization of Tagged objects
-    so that the extension is correctly written.
+
+    This class exists so that the extension is correctly written.
     """
 
     _manifest: ClassVar[str]
@@ -328,10 +343,12 @@ class SerializationNode(Generic[_T]):
 
     @property
     def tag(self) -> str:
+        """The ASDF tag to associate with the data"""
         return self._tag
 
     @property
     def data(self) -> _T:
+        """The data to be written to the ASDF file"""
         return self._data
 
     @classmethod
@@ -345,6 +362,7 @@ class SerializationNode(Generic[_T]):
             {
                 "_manifest": manifest,
                 "__module__": "roman_datamodels._stnode",
+                "__doc__": f"Serialization support for manifest version {version} Nodes.",
             },
         )
 

@@ -28,11 +28,13 @@ from astropy.time import Time
 from roman_datamodels._stnode import NODE_EXTENSIONS, DNode, TaggedObjectNode
 
 if TYPE_CHECKING:
-    from typing import Self
+    from collections.abc import Callable, Generator
+    from os import PathLike
+    from typing import Any, Self
 
 __all__ = ["MODEL_REGISTRY", "DataModel"]
 
-MODEL_REGISTRY: dict[str, type[DataModel]] = {}
+MODEL_REGISTRY: dict[type[TaggedObjectNode], type[DataModel]] = {}
 
 DEFAULT_ARRAY_INLINE_THRESHOLD = 512
 
@@ -66,11 +68,43 @@ def _schema_link_from_tag(tag_uri: str) -> str:
 
 
 class DataModel(abc.ABC):
-    """Base class for all top level datamodels"""
+    """
+    Base class for all top level data models
 
-    crds_observatory = "roman"
+    This includes both:
+    - The Science Product Data Models
+    - The Reference File Data Models
+    """
+
+    crds_observatory: ClassVar[str] = "roman"
+    """
+    Name of the observatory for CRDS purposes
+    """
 
     _node_type: ClassVar[type[TaggedObjectNode]]
+    """
+    The STNode type associated with this DataModel.
+    """
+
+    _is_copy: bool
+    """
+    Indicates whether this instance is a copy of another instance.
+    """
+
+    _shape: tuple[int, ...] | None
+    """
+    The shape of the data contained in this DataModel instance.
+    """
+
+    _instance: TaggedObjectNode
+    """
+    The underlying STNode instance associated with this DataModel.
+    """
+
+    _asdf: asdf.AsdfFile | None
+    """
+    The ASDF file associated with this DataModel instance, if any.
+    """
 
     def __init_subclass__(cls, **kwargs):
         """Register each subclass in the MODEL_REGISTRY"""
@@ -120,7 +154,7 @@ class DataModel(abc.ABC):
     @classmethod
     def create_from_model(cls, model: DataModel | DNode) -> Self:
         """
-        Create a new instance of this model from an existing model.
+        Create an instance of this model from an existing model
 
         Parameters
         ----------
@@ -133,7 +167,7 @@ class DataModel(abc.ABC):
             A new instance of the model created from the provided model or DNode.
         """
         if isinstance(model, DataModel):
-            node = model._instance
+            node: DNode = model._instance
         else:
             node = model
         return cls(cls._node_type.create_from_node(node))
@@ -145,7 +179,6 @@ class DataModel(abc.ABC):
 
         self._iscopy = False
         self._shape = None
-        self._instance = None
         self._asdf = None
         self._files_to_close = None
 
@@ -185,7 +218,7 @@ class DataModel(abc.ABC):
 
     def check_type(self, asdf_file: asdf.AsdfFile) -> bool:
         """
-        Subclass is expected to check for proper type of node
+        Check that an ASDF file is for the expected node type
 
         Parameters
         ----------
@@ -206,11 +239,15 @@ class DataModel(abc.ABC):
         return self._node_type._latest_manifest
 
     @property
-    def schema_uri(self):
+    def schema_uri(self) -> str:
+        """
+        The URI of the schema in RAD for this data model
+        """
         # Determine the schema corresponding to this model's tag
-        return next(t for t in NODE_EXTENSIONS[self._latest_manifest_uri].tags if t.tag_uri == self._instance._tag).schema_uris[0]
+        return next(t for t in NODE_EXTENSIONS[self._latest_manifest_uri].tags if t.tag_uri == self._instance._tag).schema_uris[0]  # type: ignore[no-any-return]
 
-    def close(self):
+    def close(self) -> None:
+        """Close the associated ASDF file"""
         if not (self._iscopy or self._asdf is None):
             self._asdf.close()
 
@@ -221,23 +258,51 @@ class DataModel(abc.ABC):
         self.close()
 
     def __del__(self):
-        """Ensure closure of resources when deleted."""
+        """Ensure closure of resources when deleted"""
         self.close()
 
-    def copy(self, deepcopy=True, memo=None):
+    def copy(self, deepcopy: bool = True, memo: dict[int, Any] | None = None) -> Self:
+        """
+        Create a copy of the current instance
+
+        Parameters
+        ----------
+        deepcopy :
+            If True, perform a deep copy. Otherwise, perform a shallow copy.
+        memo :
+            Memoization dictionary for deep copy.
+
+        Returns
+        -------
+            The copied instance.
+        """
         result = self.__class__(init=None)
         self.clone(result, self, deepcopy=deepcopy, memo=memo)
         return result
 
     __copy__ = copy
 
-    def __deepcopy__(self, memo=None):
+    def __deepcopy__(self, memo: dict[int, Any] | None = None) -> Self:
         return self.copy(deepcopy=True, memo=memo)
 
     @staticmethod
-    def clone(target, source, deepcopy=False, memo=None):
+    def clone(target: DataModel, source: DataModel, deepcopy: bool = False, memo: dict[int, Any] | None = None) -> None:
+        """
+        Clone the source contents into the target
+
+        Parameters
+        ----------
+        target :
+            The target DataModel instance to clone into.
+        source :
+            The source DataModel instance to clone from.
+        deepcopy :
+            If True, perform a deep copy. Otherwise, perform a shallow copy.
+        memo :
+            Memoization dictionary for deep copy.
+        """
         if deepcopy:
-            target._asdf = source._asdf.copy()
+            target._asdf = source._asdf.copy() if source._asdf is not None else None
             target._instance = copy.deepcopy(source._instance, memo=memo)
         else:
             target._asdf = source._asdf
@@ -247,7 +312,37 @@ class DataModel(abc.ABC):
         target._files_to_close = []
         target._shape = source._shape
 
-    def save(self, path, dir_path=None, *args, all_array_compression="lz4", all_array_storage=NotSet, **kwargs):
+    def save(
+        self,
+        path: PathLike | (Callable[[PathLike], str]),
+        dir_path: PathLike | None = None,
+        *args: Any,
+        all_array_compression: str = "lz4",
+        all_array_storage: Any = NotSet,
+        **kwargs: Any,
+    ) -> Path:
+        """
+        Save the model to a file
+
+        Parameters
+        ----------
+        path :
+            The path or a callable that returns the path to save the file to.
+        dir_path :
+            Optional directory path to prepend to the output file.
+        *args :
+            Additional positional arguments to pass to the underlying save method.
+        all_array_compression :
+            Compression method for all arrays.
+        all_array_storage :
+            Storage method for all arrays.
+        **kwargs :
+            Additional keyword arguments to pass to the underlying save method.
+
+        Returns
+        -------
+            The path to the saved file.
+        """
         path = Path(path(self.meta.filename) if callable(path) else path)
         output_path = Path(dir_path) / path.name if dir_path else path
         ext = path.suffix.decode(sys.getfilesystemencoding()) if isinstance(path.suffix, bytes) else path.suffix
@@ -263,7 +358,22 @@ class DataModel(abc.ABC):
 
         return output_path
 
-    def open_asdf(self, init=None, **kwargs):
+    @staticmethod
+    def open_asdf(init: PathLike | asdf.AsdfFile | None = None, **kwargs: Any) -> asdf.AsdfFile:
+        """
+        Open an ASDF file
+
+        Parameters
+        ----------
+        init :
+            An object that can be opened by `asdf.open`
+        **kwargs :
+            Additional arguments to pass to `asdf.open`
+
+        Returns
+        -------
+            The opened ASDF file
+        """
         from ._utils import _open_asdf
 
         if isinstance(init, str):
@@ -271,12 +381,35 @@ class DataModel(abc.ABC):
 
         return asdf.AsdfFile(init, **kwargs)
 
-    def to_asdf(self, init, *args, all_array_compression="lz4", all_array_storage=NotSet, **kwargs):
-        from ._utils import temporary_update_filedate, temporary_update_filename
+    def to_asdf(
+        self,
+        init: PathLike,
+        *args: Any,
+        all_array_compression: str = "lz4",
+        all_array_storage: Any = NotSet,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Save the model to an ASDF file.
+
+        Parameters
+        ----------
+        init :
+            The path to save the ASDF file to.
+        *args :
+            Additional positional arguments to pass to `asdf.AsdfFile.write_to`.
+        all_array_compression :
+            Compression method for all arrays.
+        all_array_storage :
+            Storage method for all arrays.
+        **kwargs :
+            Additional keyword arguments to pass to `asdf.AsdfFile.write_to`.
+        """
+        from ._utils import _temporary_update_filedate, _temporary_update_filename
 
         with (
-            temporary_update_filename(self, Path(init).name),
-            temporary_update_filedate(self, Time.now()),
+            _temporary_update_filename(self, Path(init).name),
+            _temporary_update_filedate(self, Time.now()),
         ):
             asdf_file = self.open_asdf(**kwargs)
             asdf_file["roman"] = self._instance
@@ -289,29 +422,37 @@ class DataModel(abc.ABC):
                     init, *args, all_array_compression=all_array_compression, all_array_storage=all_array_storage, **kwargs
                 )
 
-    def get_primary_array_name(self):
+    def get_primary_array_name(self) -> str:
         """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
+        Returns the name "primary" array for this model
+
+        This array controls the size of other arrays that are implicitly created.
+
+        This is intended to be overridden in the subclasses if the primary
+        array's name is not "data".
+
+        Returns
+        -------
+            The name of the primary data array.
         """
         return "data" if hasattr(self, "data") else ""
 
     @property
-    def override_handle(self):
-        """override_handle identifies in-memory models where a filepath
-        would normally be used.
+    def override_handle(self) -> str:
+        """
+        The file path used for in-memory models
         """
         # Arbitrary choice to look something like crds://
         return f"override://{self.__class__.__name__}"
 
     @property
-    def shape(self):
+    def shape(self) -> tuple[int, ...] | None:
+        """
+        The shape of the primary data array
+        """
         if self._shape is None:
-            primary_array_name = self.get_primary_array_name()
-            if primary_array_name and hasattr(self, primary_array_name):
-                primary_array = getattr(self, primary_array_name)
+            if (primary_array_name := self.get_primary_array_name()) and hasattr(self, primary_array_name):
+                primary_array: np.ndarray = getattr(self, primary_array_name)
                 self._shape = primary_array.shape
         return self._shape
 
@@ -344,9 +485,9 @@ class DataModel(abc.ABC):
     def __iter__(self):
         return iter(self._instance)
 
-    def to_flat_dict(self, include_arrays=True):
+    def to_flat_dict(self, include_arrays: bool = True) -> dict[str, Any]:
         """
-        Returns a dictionary of all of the model items as a flat dictionary.
+        Flattened Dictionary Representation of the Model
 
         Each dictionary key is a dot-separated name.  For example, the
         model element ``meta.observation.date`` will end up in the
@@ -356,6 +497,15 @@ class DataModel(abc.ABC):
 
         This differs from the JWST data model in that the schema is not
         directly used
+
+        Parameters
+        ----------
+        include_arrays :
+            Whether to include array-type items in the flat dictionary. Defaults to True.
+
+        Returns
+        -------
+            A flat dictionary representation of the model.
         """
 
         def convert_val(val):
@@ -371,9 +521,9 @@ class DataModel(abc.ABC):
             if include_arrays or not isinstance(val, np.ndarray | NDArrayType)
         }
 
-    def items(self):
+    def items(self) -> Generator[tuple[str, Any], None, None]:
         """
-        Iterates over all of the model items in a flat way.
+        Iterates over all of the model items in a flat way
 
         Each element is a pair (``key``, ``value``).  Each ``key`` is a
         dot-separated name.  For example, the schema element
@@ -383,19 +533,25 @@ class DataModel(abc.ABC):
 
         Unlike the JWST DataModel implementation, this does not use
         schemas directly.
+
+        Returns
+        -------
+            A generator of key-value pairs representing the flat dictionary of the model.
         """
 
         yield from self._instance._recursive_items()
 
-    def get_crds_parameters(self):
+    def get_crds_parameters(self) -> dict[str, Any]:
         """
-        Get parameters used by CRDS to select references for this model.
+        Get parameters used by CRDS
+
+        This is used to select references for this model.
 
         This will only return items under ``roman.meta``.
 
         Returns
         -------
-        dict
+            The CRDS parameters as a flat dictionary.
         """
         return {
             f"roman.meta.{key}": val

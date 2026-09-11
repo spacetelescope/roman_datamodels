@@ -538,6 +538,7 @@ nitpick_ignore = [
     # Private mixin/base classes used only to share implementation across
     # public classes; not documented themselves, but the methods/attributes
     # they contribute still show up on the public class's page.
+    ("py:class", "roman_datamodels._stnode._converters._RomanConverter"),
     ("py:class", "roman_datamodels._stnode._converters._TaggedNodeConverter"),
     ("py:class", "roman_datamodels._stnode._node._NodeMixin"),
     ("py:class", "roman_datamodels._stnode._tagged._TaggedNodeMixin"),
