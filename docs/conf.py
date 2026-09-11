@@ -57,6 +57,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
+    "sphinx_autodoc_typehints",
     "sphinxcontrib.jquery",
 ]
 
@@ -158,6 +159,19 @@ autoclass_content = "both"
 # "D.pop(k[,d]) -> v, remove specified key...") as an overriding signature;
 # doing so makes autodoc try to cross-reference the prose after "->" as a class.
 autodoc_docstring_signature = False
+
+# -- Napoleon options -------------------------------------------------------
+# Parse NumPy style docstrings into ``:param:``/``:type:`` fields so that
+# sphinx_autodoc_typehints can fill in the types from the annotations.
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_use_param = True
+napoleon_use_rtype = True
+
+# -- Type hint options -------------------------------------------------------
+# Fill in types from the annotations even when the docstring omits them.
+always_document_param_types = True
+typehints_defaults = "comma"
 
 # Render inheritance diagrams in SVG
 graphviz_output_format = "svg"

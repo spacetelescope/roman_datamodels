@@ -44,10 +44,10 @@ def _temporary_update(datamodel: DataModel, key: str, value: Any) -> Generator[N
     datamodel :
         The datamodel instance to update.
 
-    key : str
+    key :
         The key to update in the datamodel's meta attribute.
 
-    value : Any
+    value :
         The value to set for the key in the datamodel's meta attribute.
     """
     if "meta" in datamodel._instance and key in datamodel._instance.meta:
@@ -70,10 +70,10 @@ def temporary_update_filename(datamodel: DataModel, filename: str) -> Generator[
 
     Parameters
     ----------
-    datamodel : DataModel
+    datamodel :
         The datamodel instance to update.
 
-    filename : str
+    filename :
         The new filename to use.
     """
     yield from _temporary_update(datamodel, "filename", filename)
@@ -87,9 +87,9 @@ def temporary_update_filedate(datamodel: DataModel, file_date: time.Time) -> Gen
 
     Parameters
     ----------
-    datamodel
+    datamodel :
         The datamodel instance to update.
-    file_date
+    file_date :
         The new file date to use.
     """
     yield from _temporary_update(datamodel, "file_date", file_date)
@@ -122,21 +122,21 @@ def node_update(
 
     Parameters
     ----------
-    to_node : DNode, LNode or TaggedScalarNode
+    to_node :
         Node to receive the contents.
 
-    from_node : DNode, LNode, TaggedScalarNode or DataModel
+    from_node :
         Node to copy from
 
-    extras : list[str], tuple[str, ...] or None
+    extras :
         Keys that may create collisions between the two node trees. All such keys are placed
         in the ``extras`` key. If ``extras_key`` is defined, the contents are placed in a subdict
         of that name.
 
-    extras_key : str or None
+    extras_key :
         See parameter ``extras``.
 
-    ignore : list[str], tuple[str, ...] or None
+    ignore :
         Keys that should be completely ignored.
     """
 

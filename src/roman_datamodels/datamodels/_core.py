@@ -108,11 +108,11 @@ class DataModel(abc.ABC):
 
         Parameters
         ----------
-        defaults : None or dict
+        defaults :
             If provided, defaults will be used in place of schema
             defined values for required attributes.
 
-        tag: str or None
+        tag :
             If provided, specifically create a model using this tag not the
             default one.
 
@@ -144,15 +144,15 @@ class DataModel(abc.ABC):
 
         Parameters
         ----------
-        defaults : None or dict
+        defaults :
             If provided, defaults will be used in place of schema
             defined or fake values for required attributes.
 
-        shape : None or tuple of int
+        shape :
             When provided use this shape to determine the
             shape used to construct fake arrays.
 
-        tag: str or None
+        tag :
             If provided, specifically create a model using this tag not the
             default one.
 

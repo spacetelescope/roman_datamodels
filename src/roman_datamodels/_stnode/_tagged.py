@@ -7,7 +7,7 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from ._node import DNode, LNode
 from ._registry import (
@@ -20,7 +20,7 @@ from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_sche
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
-    from typing import Any, ClassVar, Self, TypeAlias
+    from typing import Any, Self, TypeAlias
 
     from ._node import _NodeMixin as NodeMixin
 else:
@@ -35,7 +35,7 @@ def name_from_tag_uri(tag_uri: str) -> str:
 
     Parameters
     ----------
-    tag_uri : str
+    tag_uri :
         The tag_uri to find the name from
     """
     tag_uri_split = tag_uri.split("/")[-1].split("-")[0]
@@ -52,7 +52,7 @@ def class_name_from_tag_uri(tag_uri: str) -> str:
 
     Parameters
     ----------
-    tag_uri : str
+    tag_uri :
         The tag_uri found in the RAD manifest
 
     Returns
@@ -106,9 +106,9 @@ class _TaggedNodeMixin(NodeMixin):
 
         Parameters
         ----------
-        defaults : Mapping[str, Any] | None
+        defaults :
             A mapping of default values to use when creating the instance
-        tag : str | None
+        tag :
             The tag to use when creating the instance. If None, the default tag for the class will be used.
 
         Returns
@@ -139,11 +139,11 @@ class _TaggedNodeMixin(NodeMixin):
 
         Parameters
         ----------
-        defaults: Mapping[str, Any] | None
+        defaults :
             A mapping of default values to use when creating the instance
-        shape: tuple[int, ...] | None
+        shape :
             The shape of the data to create
-        tag: str | None
+        tag :
             The tag to use when creating the instance. If None, the default tag for the class will be used.
 
         Returns
@@ -164,9 +164,9 @@ class _TaggedNodeMixin(NodeMixin):
 
         Parameters
         ----------
-        node: MutableMapping[str, Any]
+        node :
             The node to create the instance from
-        tag: str | None
+        tag :
             The tag to use when creating the instance. If None, the default tag for the class will be used.
 
         Returns
