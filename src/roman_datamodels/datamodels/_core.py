@@ -28,8 +28,7 @@ from astropy.time import Time
 from roman_datamodels._stnode import NODE_EXTENSIONS, DNode, TaggedObjectNode
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-    from typing import Any, Self
+    from typing import Self
 
 __all__ = ["MODEL_REGISTRY", "DataModel"]
 
@@ -61,7 +60,7 @@ class DataModel(abc.ABC):
 
     crds_observatory = "roman"
 
-    node_type: ClassVar[type[TaggedObjectNode]]
+    _node_type: ClassVar[type[TaggedObjectNode]]
 
     def __init_subclass__(cls, **kwargs):
         """Register each subclass in the MODEL_REGISTRY"""
@@ -72,111 +71,62 @@ class DataModel(abc.ABC):
             return
 
         # Check the node_type is a tagged object node
-        if not issubclass(cls.node_type, TaggedObjectNode):
+        if not issubclass(cls._node_type, TaggedObjectNode):
             raise ValueError("Subclass must be a TaggedObjectNode subclass")
 
         # Check for duplicates
-        if cls.node_type in MODEL_REGISTRY:
-            raise ValueError(f"Duplicate model type {cls.node_type}")
+        if cls._node_type in MODEL_REGISTRY:
+            raise ValueError(f"Duplicate model type {cls._node_type}")
 
-        cls._node_type = cls.node_type
+        cls.__doc__ = f"DataModel for node type :class:`~roman_datamodels._stnode.{cls._node_type.__name__}`"
 
         # Add to registry
-        MODEL_REGISTRY[cls.node_type] = cls
+        MODEL_REGISTRY[cls._node_type] = cls
 
+    # Handle the case where one passes in an already instantiated version
+    # of the model. In this case the constructor should just directly return
+    # the model.
     def __new__(cls, init=None, **kwargs):
-        """
-        Handle the case where one passes in an already instantiated version
-        of the model. In this case the constructor should just directly return
-        the model.
-        """
         if init.__class__.__name__ == cls.__name__:
             return init
 
         return super().__new__(cls)
 
+    # The mypy ignore is due to a limitation of mypy where it is only looking at the direct
+    #   object and its main base class. Since this is originates in the _TaggedNodeMixin, mypy
+    #   cannot see the create_minimal enough to examine exactly what it is.
     @classmethod
-    def create_minimal(cls, defaults: Mapping[str, Any] | None = None, *, tag: str | None = None) -> Self:
-        """
-        Class method that constructs an "minimal" model.
-
-        The "minimal" model will contain schema-required attributes
-        where a default value can be determined:
-
-            * node class defining a default value
-            * defined in the schema (for example single item enums)
-            * empty container classes (for example a "meta" dict)
-            * required items with a corresponding provided default
-
-        Parameters
-        ----------
-        defaults :
-            If provided, defaults will be used in place of schema
-            defined values for required attributes.
-
-        tag :
-            If provided, specifically create a model using this tag not the
-            default one.
-
-        Returns
-        -------
-        DataModel
-            "Empty" model with optional defaults. This will often
-            be incomplete (invalid) as not all required attributes
-            can be guessed.
-        """
-        return cls(cls.node_type.create_minimal(defaults, tag=tag))
+    @functools.wraps(TaggedObjectNode.create_minimal.__func__)  # type: ignore[attr-defined]
+    def create_minimal(cls, defaults=None, *, tag=None):
+        return cls(cls._node_type.create_minimal(defaults, tag=tag))
 
     @classmethod
-    def create_fake_data(
-        cls, defaults: Mapping[str, Any] | None = None, shape: tuple[int, ...] | None = None, *, tag: str | None = None
-    ) -> Self:
-        """
-        Class method that constructs a model filled with fake data.
-
-        Similar to `DataModel.create_minimal` this only creates
-        required attributes.
-
-        Fake arrays will have a number of dimensions matching
-        the schema requirements. If shape is provided only the
-        dimensions matching the schema requirements will be used.
-        For example if a 3 dimensional shape is provided but a fake
-        array only requires 2 dimensions only the first 2 values
-        from shape will be used.
-
-        Parameters
-        ----------
-        defaults :
-            If provided, defaults will be used in place of schema
-            defined or fake values for required attributes.
-
-        shape :
-            When provided use this shape to determine the
-            shape used to construct fake arrays.
-
-        tag :
-            If provided, specifically create a model using this tag not the
-            default one.
-
-        Returns
-        -------
-        DataModel
-            A valid model with fake data.
-        """
-        return cls(cls.node_type.create_fake_data(defaults, shape, tag=tag))
+    @functools.wraps(TaggedObjectNode.create_fake_data.__func__)  # type: ignore[attr-defined]
+    def create_fake_data(cls, defaults=None, shape=None, *, tag=None):
+        return cls(cls._node_type.create_fake_data(defaults, shape, tag=tag))
 
     __slots__ = ("_asdf", "_files_to_close", "_instance", "_iscopy", "_shape")
 
     @classmethod
     def create_from_model(cls, model: DataModel | DNode) -> Self:
         """
-        Create a new DataModel from an existing model.
+        Create a new instance of this model from an existing model.
+
+        Parameters
+        ----------
+        model :
+            Model or DNode to convert from. The values in this will be used
+            to fill the new model instance
+
+        Returns
+        -------
+            A new instance of the model created from the provided model or DNode.
         """
         if isinstance(model, DataModel):
             node = model._instance
         else:
             node = model
-        return cls(cls.node_type.create_from_node(node))
+        return cls(cls._node_type.create_from_node(node))
 
     def __init__(self, init=None, **kwargs):
         if isinstance(init, self.__class__):
@@ -203,7 +153,7 @@ class DataModel(abc.ABC):
             return
 
         if init is None:
-            self._instance = self.node_type()
+            self._instance = self._node_type()
 
         elif isinstance(init, str | bytes | PurePath):
             if isinstance(init, PurePath):
@@ -223,9 +173,18 @@ class DataModel(abc.ABC):
         else:
             raise OSError("Argument does not appear to be an ASDF file or TaggedObjectNode.")
 
-    def check_type(self, asdf_file):
+    def check_type(self, asdf_file: asdf.AsdfFile) -> bool:
         """
         Subclass is expected to check for proper type of node
+
+        Parameters
+        ----------
+        asdf_file :
+            The ASDF file to check the type of.
+
+        Returns
+        -------
+            True if the ASDF file contains the expected node type, False otherwise.
         """
         if "roman" not in asdf_file.tree:
             raise ValueError('ASDF file does not have expected "roman" attribute')
@@ -234,7 +193,7 @@ class DataModel(abc.ABC):
 
     @property
     def _latest_manifest_uri(self):
-        return self.node_type._latest_manifest
+        return self._node_type._latest_manifest
 
     @property
     def schema_uri(self):
@@ -435,20 +394,21 @@ class DataModel(abc.ABC):
         }
 
     @_set_default_asdf
+    @functools.wraps(asdf.AsdfFile.validate)
     def validate(self):
-        """
-        Re-validate the model instance against the tags
-        """
         self._asdf.validate()
 
     @_set_default_asdf
+    @functools.wraps(asdf.AsdfFile.info)
     def info(self, *args, **kwargs):
         return self._asdf.info(*args, **kwargs)
 
     @_set_default_asdf
+    @functools.wraps(asdf.AsdfFile.search)
     def search(self, *args, **kwargs):
         return self._asdf.search(*args, **kwargs)
 
     @_set_default_asdf
+    @functools.wraps(asdf.AsdfFile.schema_info)
     def schema_info(self, *args, **kwargs):
         return self._asdf.schema_info(*args, **kwargs)

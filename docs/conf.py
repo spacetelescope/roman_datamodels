@@ -480,4 +480,8 @@ nitpick_ignore = [
     # TypeVars have no autodoc page to link to.
     ("py:class", "roman_datamodels._stnode._tagged._T"),
     ("py:obj", "roman_datamodels._stnode._tagged._T"),
+    # DataModel.search wraps asdf.AsdfFile.search verbatim (via functools.wraps);
+    # its docstring types are asdf's, not fully qualified and not real objects.
+    ("py:class", "NotSet"),
+    ("py:class", "any other object"),
 ]

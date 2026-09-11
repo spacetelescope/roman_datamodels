@@ -101,20 +101,31 @@ class _TaggedNodeMixin(NodeMixin):
     @classmethod
     def create_minimal(cls, defaults: Mapping[str, Any] | None = None, *, tag: str | None = None) -> Self:
         """
-        Create a minimal instance of this class, only things with the attributes
-        which have a default value that can be determined.
+        Class method that constructs an "minimal" model.
+
+        The "minimal" model will contain schema-required attributes
+        where a default value can be determined:
+
+            * node class defining a default value
+            * defined in the schema (for example single item enums)
+            * empty container classes (for example a "meta" dict)
+            * required items with a corresponding provided default
 
         Parameters
         ----------
         defaults :
-            A mapping of default values to use when creating the instance
+            If provided, defaults will be used in place of schema
+            defined values for required attributes.
+
         tag :
-            The tag to use when creating the instance. If None, the default tag for the class will be used.
+            If provided, specifically create a model using this tag not the
+            default one.
 
         Returns
         -------
-        Self
-            An instance of this class
+            "Empty" model with optional defaults. This will often
+            be incomplete (invalid) as not all required attributes
+            can be guessed.
         """
         return cls._create_minimal(defaults, tag=tag)
 
@@ -134,22 +145,35 @@ class _TaggedNodeMixin(NodeMixin):
         cls, defaults: Mapping[str, Any] | None = None, shape: tuple[int, ...] | None = None, *, tag: str | None = None
     ) -> Self:
         """
-        Create an instance of this class with with all required attributes
-        filled in with fake data.
+        Class method that constructs a model filled with fake data.
+
+        Similar to :meth:`~roman_datamodels.datamodels.DataModel.create_minimal` this only creates
+        required attributes.
+
+        Fake arrays will have a number of dimensions matching
+        the schema requirements. If shape is provided only the
+        dimensions matching the schema requirements will be used.
+        For example if a 3 dimensional shape is provided but a fake
+        array only requires 2 dimensions only the first 2 values
+        from shape will be used.
 
         Parameters
         ----------
         defaults :
-            A mapping of default values to use when creating the instance
+            If provided, defaults will be used in place of schema
+            defined or fake values for required attributes.
+
         shape :
-            The shape of the data to create
+            When provided use this shape to determine the
+            shape used to construct fake arrays.
+
         tag :
-            The tag to use when creating the instance. If None, the default tag for the class will be used.
+            If provided, specifically create a model using this tag not the
+            default one.
 
         Returns
         -------
-        Self
-            An instance of this class
+            A valid model with fake data.
         """
         return cls._create_fake_data(defaults, shape, tag=tag)
 
