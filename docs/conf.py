@@ -16,7 +16,10 @@ import inspect
 import os
 import sys
 import tomllib
+import warnings
 from pathlib import Path
+
+warnings.filterwarnings("ignore", message=r"astropy\.samp was deprecated.*")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -585,6 +588,7 @@ nitpick_ignore = [
     # DataModel.search wraps asdf.AsdfFile.search verbatim (via functools.wraps);
     # its docstring types are asdf's, not fully qualified and not real objects.
     ("py:class", "NotSet"),
+    ("py:class", "asdf.util.NOT_SET"),
     ("py:class", "any other object"),
     # The `dqflags` enums subclass these, but numpy's inventory has no entry for them.
     ("py:class", "numpy.uint8"),
