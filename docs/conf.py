@@ -215,6 +215,19 @@ def _public_members(obj):
     return attributes, methods
 
 
+def documented_members(modname, qualname, members):
+    """Drop the numpy machinery inherited by the ``dqflags`` enums from a member list."""
+    obj = importlib.import_module(modname)
+    for part in qualname.split("."):
+        obj = getattr(obj, part)
+
+    def inherited_from_numpy(name):
+        owner = next((klass for klass in obj.__mro__ if name in klass.__dict__), None)
+        return owner is not None and owner.__module__.partition(".")[0] == "numpy"
+
+    return [name for name in members if not inherited_from_numpy(name)]
+
+
 def node_class(modname, name):
     """Describe the node class backing a datamodel, for the autosummary class template."""
     node = getattr(getattr(importlib.import_module(modname), name), "_node_type", None)
@@ -232,6 +245,7 @@ def node_class(modname, name):
 
 autosummary_context = {
     "is_property": is_property,
+    "documented_members": documented_members,
     "datamodel_category": datamodel_category,
     "stnode_category": stnode_category,
     "node_class": node_class,
@@ -572,4 +586,7 @@ nitpick_ignore = [
     # its docstring types are asdf's, not fully qualified and not real objects.
     ("py:class", "NotSet"),
     ("py:class", "any other object"),
+    # The `dqflags` enums subclass these, but numpy's inventory has no entry for them.
+    ("py:class", "numpy.uint8"),
+    ("py:class", "numpy.uint32"),
 ]

@@ -7,6 +7,7 @@ Developer API
    :template: autosummary/module.rst
 
    roman_datamodels.datamodels
+   roman_datamodels.dqflags
 
 .. autosummary::
    :toctree: generated

@@ -1,4 +1,6 @@
-{%- macro class_body(modname, objname, attributes, methods, uline) -%}
+{%- macro class_body(modname, objname, all_attributes, all_methods, uline) -%}
+{% set attributes = documented_members(modname, objname, all_attributes) %}
+{% set methods = documented_members(modname, objname, all_methods) %}
 {% if attributes %}
 Attributes
 {{ uline * 10 }}
