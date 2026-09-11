@@ -16,7 +16,7 @@ import datetime
 import functools
 import sys
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import asdf
 import numpy as np
@@ -61,7 +61,7 @@ class DataModel(abc.ABC):
 
     crds_observatory = "roman"
 
-    _node_type: type[TaggedObjectNode]
+    node_type: ClassVar[type[TaggedObjectNode]]
 
     def __init_subclass__(cls, **kwargs):
         """Register each subclass in the MODEL_REGISTRY"""
@@ -72,15 +72,17 @@ class DataModel(abc.ABC):
             return
 
         # Check the node_type is a tagged object node
-        if not issubclass(cls._node_type, TaggedObjectNode):
+        if not issubclass(cls.node_type, TaggedObjectNode):
             raise ValueError("Subclass must be a TaggedObjectNode subclass")
 
         # Check for duplicates
-        if cls._node_type in MODEL_REGISTRY:
-            raise ValueError(f"Duplicate model type {cls._node_type}")
+        if cls.node_type in MODEL_REGISTRY:
+            raise ValueError(f"Duplicate model type {cls.node_type}")
+
+        cls._node_type = cls.node_type
 
         # Add to registry
-        MODEL_REGISTRY[cls._node_type] = cls
+        MODEL_REGISTRY[cls.node_type] = cls
 
     def __new__(cls, init=None, **kwargs):
         """
@@ -123,7 +125,7 @@ class DataModel(abc.ABC):
             be incomplete (invalid) as not all required attributes
             can be guessed.
         """
-        return cls(cls._node_type.create_minimal(defaults, tag=tag))
+        return cls(cls.node_type.create_minimal(defaults, tag=tag))
 
     @classmethod
     def create_fake_data(
@@ -161,7 +163,7 @@ class DataModel(abc.ABC):
         DataModel
             A valid model with fake data.
         """
-        return cls(cls._node_type.create_fake_data(defaults, shape, tag=tag))
+        return cls(cls.node_type.create_fake_data(defaults, shape, tag=tag))
 
     __slots__ = ("_asdf", "_files_to_close", "_instance", "_iscopy", "_shape")
 
@@ -174,7 +176,7 @@ class DataModel(abc.ABC):
             node = model._instance
         else:
             node = model
-        return cls(cls._node_type.create_from_node(node))
+        return cls(cls.node_type.create_from_node(node))
 
     def __init__(self, init=None, **kwargs):
         if isinstance(init, self.__class__):
@@ -201,7 +203,7 @@ class DataModel(abc.ABC):
             return
 
         if init is None:
-            self._instance = self._node_type()
+            self._instance = self.node_type()
 
         elif isinstance(init, str | bytes | PurePath):
             if isinstance(init, PurePath):
@@ -232,7 +234,7 @@ class DataModel(abc.ABC):
 
     @property
     def _latest_manifest_uri(self):
-        return self._node_type._latest_manifest
+        return self.node_type._latest_manifest
 
     @property
     def schema_uri(self):

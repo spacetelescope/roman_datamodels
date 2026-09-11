@@ -1,7 +1,7 @@
 """
 This module provides all the specific datamodels used by the Roman pipeline.
     These models are what will be read and written by the pipeline to ASDF files.
-    Note that we require each model to specify a _node_type, which corresponds to
+    Note that we require each model to specify a node_type, which corresponds to
     the top-level STNode type that the datamodel wraps. This STNode type is derived
     from the schema manifest defined by RAD.
 """
@@ -21,6 +21,8 @@ import astropy.table.meta
 import numpy as np
 from astropy import time as _time
 from astropy.modeling import models
+
+from roman_datamodels import _stnode
 
 from ._core import DataModel
 from ._utils import node_update, temporary_update_filedate, temporary_update_filename
@@ -273,24 +275,18 @@ class _RomanDataModel(DataModel):
 
 
 class MosaicModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiMosaic
-
     __slots__ = ()
-    _node_type = WfiMosaic
+    node_type = _stnode.WfiMosaic
 
 
 class ImageModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiImage
-
     __slots__ = ()
-    _node_type = WfiImage
+    node_type = _stnode.WfiImage
 
 
 class ScienceRawModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiScienceRaw
-
     __slots__ = ()
-    _node_type = WfiScienceRaw
+    node_type = _stnode.WfiScienceRaw
 
     @classmethod
     def from_tvac_raw(cls, model):
@@ -344,17 +340,13 @@ class ScienceRawModel(_RomanDataModel):
 
 
 class MsosStackModel(_RomanDataModel):
-    from roman_datamodels._stnode import MsosStack
-
     __slots__ = ()
-    _node_type = MsosStack
+    node_type = _stnode.MsosStack
 
 
 class RampModel(_RomanDataModel):
-    from roman_datamodels._stnode import Ramp
-
     __slots__ = ()
-    _node_type = Ramp
+    node_type = _stnode.Ramp
 
     @classmethod
     def from_science_raw(cls, model):
@@ -421,115 +413,83 @@ class RampModel(_RomanDataModel):
 
 
 class RampFitOutputModel(_RomanDataModel):
-    from roman_datamodels._stnode import RampFitOutput
-
     __slots__ = ()
-    _node_type = RampFitOutput
+    node_type = _stnode.RampFitOutput
 
 
 class L1FaceGuidewindowModel(_RomanDataModel):
-    from roman_datamodels._stnode import L1FaceGuidewindow
-
     __slots__ = ()
-    _node_type = L1FaceGuidewindow
+    node_type = _stnode.L1FaceGuidewindow
 
 
 class GuidewindowModel(_RomanDataModel):
-    from roman_datamodels._stnode import Guidewindow
-
     __slots__ = ()
-    _node_type = Guidewindow
+    node_type = _stnode.Guidewindow
 
 
 class L1DetectorGuidewindowModel(_RomanDataModel):
-    from roman_datamodels._stnode import L1DetectorGuidewindow
-
     __slots__ = ()
-    _node_type = L1DetectorGuidewindow
+    node_type = _stnode.L1DetectorGuidewindow
 
 
 class FlatRefModel(DataModel):
-    from roman_datamodels._stnode import FlatRef
-
     __slots__ = ()
-    _node_type = FlatRef
+    node_type = _stnode.FlatRef
 
 
 class AbvegaoffsetRefModel(DataModel):
-    from roman_datamodels._stnode import AbvegaoffsetRef
-
     __slots__ = ()
-    _node_type = AbvegaoffsetRef
+    node_type = _stnode.AbvegaoffsetRef
 
 
 class ApcorrRefModel(DataModel):
-    from roman_datamodels._stnode import ApcorrRef
-
     __slots__ = ()
-    _node_type = ApcorrRef
+    node_type = _stnode.ApcorrRef
 
 
 class DarkRefModel(DataModel):
-    from roman_datamodels._stnode import DarkRef
-
     __slots__ = ()
-    _node_type = DarkRef
+    node_type = _stnode.DarkRef
 
 
 class DetectorstatusRefModel(DataModel):
-    from roman_datamodels._stnode import DetectorstatusRef
-
     __slots__ = ()
-    _node_type = DetectorstatusRef
+    node_type = _stnode.DetectorstatusRef
 
 
 class DarkdecaysignalRefModel(DataModel):
-    from roman_datamodels._stnode import DarkdecaysignalRef
-
     __slots__ = ()
-    _node_type = DarkdecaysignalRef
+    node_type = _stnode.DarkdecaysignalRef
 
 
 class DistortionRefModel(DataModel):
-    from roman_datamodels._stnode import DistortionRef
-
     __slots__ = ()
-    _node_type = DistortionRef
+    node_type = _stnode.DistortionRef
 
 
 class EpsfRefModel(DataModel):
-    from roman_datamodels._stnode import EpsfRef
-
     __slots__ = ()
-    _node_type = EpsfRef
+    node_type = _stnode.EpsfRef
 
 
 class EtcRefModel(DataModel):
-    from roman_datamodels._stnode import EtcRef
-
     __slots__ = ()
-    _node_type = EtcRef
+    node_type = _stnode.EtcRef
 
 
 class GainRefModel(DataModel):
-    from roman_datamodels._stnode import GainRef
-
     __slots__ = ()
-    _node_type = GainRef
+    node_type = _stnode.GainRef
 
 
 class IpcRefModel(DataModel):
-    from roman_datamodels._stnode import IpcRef
-
     __slots__ = ()
-    _node_type = IpcRef
+    node_type = _stnode.IpcRef
 
 
 class LinearityRefModel(DataModel):
-    from roman_datamodels._stnode import LinearityRef
-
     __slots__ = ()
-    _node_type = LinearityRef
+    node_type = _stnode.LinearityRef
 
     def get_primary_array_name(self):
         """
@@ -542,10 +502,8 @@ class LinearityRefModel(DataModel):
 
 
 class IntegralnonlinearityRefModel(DataModel):
-    from roman_datamodels._stnode import IntegralnonlinearityRef
-
     __slots__ = ()
-    _node_type = IntegralnonlinearityRef
+    node_type = _stnode.IntegralnonlinearityRef
 
     def get_primary_array_name(self):
         """
@@ -558,10 +516,8 @@ class IntegralnonlinearityRefModel(DataModel):
 
 
 class InverselinearityRefModel(DataModel):
-    from roman_datamodels._stnode import InverselinearityRef
-
     __slots__ = ()
-    _node_type = InverselinearityRef
+    node_type = _stnode.InverselinearityRef
 
     def get_primary_array_name(self):
         """
@@ -574,10 +530,8 @@ class InverselinearityRefModel(DataModel):
 
 
 class MaskRefModel(DataModel):
-    from roman_datamodels._stnode import MaskRef
-
     __slots__ = ()
-    _node_type = MaskRef
+    node_type = _stnode.MaskRef
 
     def get_primary_array_name(self):
         """
@@ -590,31 +544,23 @@ class MaskRefModel(DataModel):
 
 
 class MATableRefModel(DataModel):
-    from roman_datamodels._stnode import MatableRef
-
     __slots__ = ()
-    _node_type = MatableRef
+    node_type = _stnode.MatableRef
 
 
 class PixelareaRefModel(DataModel):
-    from roman_datamodels._stnode import PixelareaRef
-
     __slots__ = ()
-    _node_type = PixelareaRef
+    node_type = _stnode.PixelareaRef
 
 
 class ReadnoiseRefModel(DataModel):
-    from roman_datamodels._stnode import ReadnoiseRef
-
     __slots__ = ()
-    _node_type = ReadnoiseRef
+    node_type = _stnode.ReadnoiseRef
 
 
 class SkycellsRefModel(DataModel):
-    from roman_datamodels._stnode import SkycellsRef
-
     __slots__ = ()
-    _node_type = SkycellsRef
+    node_type = _stnode.SkycellsRef
 
     def to_asdf(self, *args, **kwargs):
         # Set all SkycellRefModel arrays to internal so test
@@ -625,108 +571,78 @@ class SkycellsRefModel(DataModel):
 
 
 class SuperbiasRefModel(DataModel):
-    from roman_datamodels._stnode import SuperbiasRef
-
     __slots__ = ()
-    _node_type = SuperbiasRef
+    node_type = _stnode.SuperbiasRef
 
 
 class SaturationRefModel(DataModel):
-    from roman_datamodels._stnode import SaturationRef
-
     __slots__ = ()
-    _node_type = SaturationRef
+    node_type = _stnode.SaturationRef
 
 
 class WfiImgPhotomRefModel(DataModel):
-    from roman_datamodels._stnode import WfiImgPhotomRef
-
     __slots__ = ()
-    _node_type = WfiImgPhotomRef
+    node_type = _stnode.WfiImgPhotomRef
 
 
 class RefpixRefModel(DataModel):
-    from roman_datamodels._stnode import RefpixRef
-
     __slots__ = ()
-    _node_type = RefpixRef
+    node_type = _stnode.RefpixRef
 
 
 class FpsModel(DataModel):
-    from roman_datamodels._stnode import Fps
-
     __slots__ = ()
-    _node_type = Fps
+    node_type = _stnode.Fps
 
 
 class TvacModel(DataModel):
-    from roman_datamodels._stnode import Tvac
-
     __slots__ = ()
-    _node_type = Tvac
+    node_type = _stnode.Tvac
 
 
 class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import MosaicSourceCatalog
-
     __slots__ = ()
-    _node_type = MosaicSourceCatalog
+    node_type = _stnode.MosaicSourceCatalog
 
 
 class MultibandSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import MultibandSourceCatalog
-
     __slots__ = ()
-    _node_type = MultibandSourceCatalog
+    node_type = _stnode.MultibandSourceCatalog
 
 
 class ForcedImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import ForcedImageSourceCatalog
-
     __slots__ = ()
-    _node_type = ForcedImageSourceCatalog
+    node_type = _stnode.ForcedImageSourceCatalog
 
 
 class ForcedMosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import ForcedMosaicSourceCatalog
-
     __slots__ = ()
-    _node_type = ForcedMosaicSourceCatalog
+    node_type = _stnode.ForcedMosaicSourceCatalog
 
 
 class MosaicSegmentationMapModel(_RomanDataModel):
-    from roman_datamodels._stnode import MosaicSegmentationMap
-
     __slots__ = ()
-    _node_type = MosaicSegmentationMap
+    node_type = _stnode.MosaicSegmentationMap
 
 
 class MultibandSegmentationMapModel(_RomanDataModel):
-    from roman_datamodels._stnode import MultibandSegmentationMap
-
     __slots__ = ()
-    _node_type = MultibandSegmentationMap
+    node_type = _stnode.MultibandSegmentationMap
 
 
 class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import ImageSourceCatalog
-
     __slots__ = ()
-    _node_type = ImageSourceCatalog
+    node_type = _stnode.ImageSourceCatalog
 
 
 class SegmentationMapModel(_RomanDataModel):
-    from roman_datamodels._stnode import SegmentationMap
-
     __slots__ = ()
-    _node_type = SegmentationMap
+    node_type = _stnode.SegmentationMap
 
 
 class WfiWcsModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiWcs
-
     __slots__ = ()
-    _node_type = WfiWcs
+    node_type = _stnode.WfiWcs
 
     @classmethod
     def from_model_with_wcs(cls, model, l1_border=4):
