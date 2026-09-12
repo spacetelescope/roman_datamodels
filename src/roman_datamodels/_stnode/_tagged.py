@@ -7,7 +7,7 @@ Base classes for all the tagged objects defined by RAD.
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from ._node import DNode, LNode
 from ._registry import (
@@ -20,7 +20,7 @@ from ._schema import _NO_VALUE, Builder, FakeDataBuilder, NodeBuilder, _get_sche
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping
-    from typing import Any, ClassVar, Self, TypeAlias
+    from typing import Any, Self, TypeAlias
 
     from ._node import _NodeMixin as NodeMixin
 else:
@@ -35,7 +35,7 @@ def name_from_tag_uri(tag_uri: str) -> str:
 
     Parameters
     ----------
-    tag_uri : str
+    tag_uri :
         The tag_uri to find the name from
     """
     tag_uri_split = tag_uri.split("/")[-1].split("-")[0]
@@ -52,7 +52,7 @@ def class_name_from_tag_uri(tag_uri: str) -> str:
 
     Parameters
     ----------
-    tag_uri : str
+    tag_uri :
         The tag_uri found in the RAD manifest
 
     Returns
@@ -101,20 +101,31 @@ class _TaggedNodeMixin(NodeMixin):
     @classmethod
     def create_minimal(cls, defaults: Mapping[str, Any] | None = None, *, tag: str | None = None) -> Self:
         """
-        Create a minimal instance of this class, only things with the attributes
-        which have a default value that can be determined.
+        Constructs a "minimal" model
+
+        The "minimal" model will contain schema-required attributes
+        where a default value can be determined:
+
+            * node class defining a default value
+            * defined in the schema (for example single item enums)
+            * empty container classes (for example a "meta" dict)
+            * required items with a corresponding provided default
 
         Parameters
         ----------
-        defaults : Mapping[str, Any] | None
-            A mapping of default values to use when creating the instance
-        tag : str | None
-            The tag to use when creating the instance. If None, the default tag for the class will be used.
+        defaults :
+            If provided, defaults will be used in place of schema
+            defined values for required attributes.
+
+        tag :
+            If provided, specifically create a model using this tag not the
+            default one.
 
         Returns
         -------
-        Self
-            An instance of this class
+            "Empty" model with optional defaults. This will often
+            be incomplete (invalid) as not all required attributes
+            can be guessed.
         """
         return cls._create_minimal(defaults, tag=tag)
 
@@ -134,22 +145,35 @@ class _TaggedNodeMixin(NodeMixin):
         cls, defaults: Mapping[str, Any] | None = None, shape: tuple[int, ...] | None = None, *, tag: str | None = None
     ) -> Self:
         """
-        Create an instance of this class with with all required attributes
-        filled in with fake data.
+        Constructs a model filled with fake data
+
+        Similar to :meth:`~roman_datamodels.datamodels.DataModel.create_minimal` this only creates
+        required attributes.
+
+        Fake arrays will have a number of dimensions matching
+        the schema requirements. If shape is provided only the
+        dimensions matching the schema requirements will be used.
+        For example if a 3 dimensional shape is provided but a fake
+        array only requires 2 dimensions only the first 2 values
+        from shape will be used.
 
         Parameters
         ----------
-        defaults: Mapping[str, Any] | None
-            A mapping of default values to use when creating the instance
-        shape: tuple[int, ...] | None
-            The shape of the data to create
-        tag: str | None
-            The tag to use when creating the instance. If None, the default tag for the class will be used.
+        defaults :
+            If provided, defaults will be used in place of schema
+            defined or fake values for required attributes.
+
+        shape :
+            When provided use this shape to determine the
+            shape used to construct fake arrays.
+
+        tag :
+            If provided, specifically create a model using this tag not the
+            default one.
 
         Returns
         -------
-        Self
-            An instance of this class
+            A valid model with fake data.
         """
         return cls._create_fake_data(defaults, shape, tag=tag)
 
@@ -164,9 +188,9 @@ class _TaggedNodeMixin(NodeMixin):
 
         Parameters
         ----------
-        node: MutableMapping[str, Any]
+        node :
             The node to create the instance from
-        tag: str | None
+        tag :
             The tag to use when creating the instance. If None, the default tag for the class will be used.
 
         Returns
@@ -177,18 +201,25 @@ class _TaggedNodeMixin(NodeMixin):
         return cls._create_from_node(node, tag=tag)
 
     @property
-    def _tag(self):
+    def _tag(self) -> str:
         if self._read_tag is None:
             return self._default_tag
 
         return self._read_tag
 
     @property
-    def tag(self):
+    def tag(self) -> str:
+        """The ASDF tag associated with this node."""
         return self._tag
 
-    def get_schema(self):
-        """Retrieve the schema associated with this tag"""
+    def get_schema(self) -> dict[str, Any]:
+        """
+        Retrieve the schema associated with this tag
+
+        Returns
+        -------
+            The schema corresponding to this node's tag.
+        """
         return _get_schema_from_tag(self.tag)
 
 
@@ -273,7 +304,14 @@ class TaggedScalarNode(_TaggedNodeMixin):
         # _tag is required by asdf to allow __asdf_traverse__
         return getattr(self, "_read_tag", self._default_tag)
 
-    def copy(self):
+    def copy(self) -> Self:
+        """
+        Copy the current node
+
+        Returns
+        -------
+            A copy of the current node.
+        """
         return copy.copy(self)
 
 
@@ -283,7 +321,8 @@ _T = TypeVar("_T", bound=TaggedObjectNode | TaggedListNode | TaggedScalarNode)
 class SerializationNode(Generic[_T]):
     """
     Intermediate class used to assist in serialization of Tagged objects
-    so that the extension is correctly written.
+
+    This class exists so that the extension is correctly written.
     """
 
     _manifest: ClassVar[str]
@@ -304,10 +343,12 @@ class SerializationNode(Generic[_T]):
 
     @property
     def tag(self) -> str:
+        """The ASDF tag to associate with the data"""
         return self._tag
 
     @property
     def data(self) -> _T:
+        """The data to be written to the ASDF file"""
         return self._data
 
     @classmethod
@@ -321,6 +362,7 @@ class SerializationNode(Generic[_T]):
             {
                 "_manifest": manifest,
                 "__module__": "roman_datamodels._stnode",
+                "__doc__": f"Serialization support for manifest version {version} Nodes.",
             },
         )
 

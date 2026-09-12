@@ -47,20 +47,20 @@ In particular, they will track the ``tag`` information
 contained within the manifest from RAD.
 
 These "tagged-nodes" are then turned into specific stnode objects via the
-factories in `roman_datamodels._stnode._factories`. The way these factories work
+factories in ``roman_datamodels._stnode._factories``. The way these factories work
 is they process the ``tag`` value and strip out the unique name for the schema,
 which gets turned into a name for the type that the factory will create.
 
 .. note::
 
     If special methods are needed for a specific stnode object, then one needs
-    to add class to `roman_datamodels._stnode._mixins` with the appropriate
+    to add class to ``roman_datamodels._stnode._mixins`` with the appropriate
     methods/properties under the name ``<expected-class-name>Mixin``. The
     factories will automatically pick up these mixins and mix them into the
     stnode object correctly when it is created.
 
 These factories are looped over and invoked by the
-`roman_datamodels._stnode._stnode` module which will be imported whenever
+``roman_datamodels._stnode._stnode`` module which will be imported whenever
 `roman_datamodels._stnode` is imported which will generate the stnode objects and
 register them during that import. Note that this module is imported as part of
 the `roman_datamodels.datamodels` module.
@@ -79,10 +79,10 @@ itself.
 the stnode objects. This extension does not include the schemas used to build
 the stnode objects, as the schemas are already included in extension provided by
 the RAD package. The ASDF extension itself is defined in the
-`roman_datamodels._stnode._converters` module. As part of this module, the
+``roman_datamodels._stnode._converters`` module. As part of this module, the
 serialization and de-serialization logic is defined in the "converters" for each
 of the "tagged" object base classes. The extension is then integrated into
-ASDF by the `roman_datamodels._stnode._integration` module, as this module allows
+ASDF by the ``roman_datamodels._stnode._integration`` module, as this module allows
 the ASDF extension to be registered with ASDF without having to always import
 ``roman_datamodels`` whether or not it is used for a particular case. This is
 a recommendation from ASDF so that the extension will have minimal impact on the

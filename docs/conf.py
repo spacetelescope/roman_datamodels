@@ -12,10 +12,14 @@
 
 import datetime
 import importlib
+import inspect
 import os
 import sys
 import tomllib
+import warnings
 from pathlib import Path
+
+warnings.filterwarnings("ignore", message=r"astropy\.samp was deprecated.*")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -57,10 +61,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    "sphinx_automodapi.automodapi",
-    "sphinx_automodapi.automodsumm",
-    "sphinx_automodapi.autodoc_enhancements",
-    "sphinx_automodapi.smart_resolver",
+    "sphinx_autodoc_typehints",
     "sphinxcontrib.jquery",
 ]
 
@@ -89,6 +90,15 @@ master_doc = "index"
 
 suppress_warnings = [
     "app.add_directive",
+    # The `collections.abc.MutableMapping`/`MutableSequence` mixin methods (e.g.
+    # `update`) inherited by DNode/LNode mix unindented prose with indented
+    # examples without a blank line between them. docutils warns about the
+    # ambiguous indentation, but still renders the content (as a definition
+    # list rather than nested block quotes), so it's safe to silence.
+    "docutils",
+    # `autosummary_context` holds the `is_property` helper used by the class
+    # template, which cannot be pickled into the config cache.
+    "config.cache",
 ]
 
 # General information about the project
@@ -125,6 +135,9 @@ except AttributeError:
 # directories to ignore when looking for source files.
 exclude_patterns = ["_build"]
 
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
+
 # This is added to the end of RST files - a good place to put substitutions to
 # be used globally.
 rst_epilog = """.. _roman_datamodels: high-level_API.html"""
@@ -138,12 +151,135 @@ default_role = "obj"
 numpydoc_show_class_members = False
 
 autosummary_generate = True
+# Document members re-exported via a module's __all__
+autosummary_ignore_module_all = False
+# Document classes/functions imported into a module's namespace even when the
+# module has no `__all__` (e.g. `roman_datamodels.datamodels`).
+autosummary_imported_members = True
 
-automodapi_toctreedirnm = "api"
+
+def is_property(modname, qualname, attr):
+    """Used by the autosummary class template to pick autoproperty vs autoattribute."""
+    obj = importlib.import_module(modname)
+    for part in qualname.split("."):
+        obj = getattr(obj, part)
+    try:
+        member = inspect.getattr_static(obj, attr)
+    except AttributeError:
+        return False
+    return isinstance(member, property)
+
+
+def datamodel_category(modname, name):
+    """Used by the autosummary module template to group the datamodel classes."""
+    obj = getattr(importlib.import_module(modname), name)
+    # Only concrete datamodels bind ``_node_type``; base classes fall through to "general".
+    if not hasattr(obj, "_node_type"):
+        return "general"
+    return "reference" if name.endswith("RefModel") else "science"
+
+
+def stnode_category(modname, name):
+    """Used by the autosummary ``_stnode`` module template to group the node classes."""
+    from roman_datamodels._stnode import _converters, _mixins, _node, _tagged
+    from roman_datamodels.datamodels._core import MODEL_REGISTRY
+
+    obj = getattr(importlib.import_module(modname), name)
+
+    if any(getattr(submodule, name, None) is obj for submodule in (_node, _tagged)):
+        return "general"
+    if obj in MODEL_REGISTRY:
+        return "reference-node" if name.endswith("Ref") else "science-node"
+    if getattr(_converters, name, None) is obj:
+        return "converter"
+    if issubclass(obj, _tagged.SerializationNode):
+        return "serialization"
+    if getattr(_mixins, name, None) is obj:
+        return "legacy-mixin"
+    if issubclass(obj, _tagged.TaggedScalarNode):
+        return "legacy-scalar"
+    if issubclass(obj, _tagged.TaggedListNode):
+        return "legacy-list"
+    return "legacy-object"
+
+
+def _public_members(obj):
+    attributes, methods = [], []
+    for name in dir(obj):
+        if name.startswith("_"):
+            continue
+        try:
+            member = inspect.getattr_static(obj, name)
+        except AttributeError:
+            continue
+        if isinstance(member, staticmethod | classmethod):
+            member = member.__func__
+        (methods if inspect.isroutine(member) else attributes).append(name)
+    return attributes, methods
+
+
+def documented_members(modname, qualname, members):
+    """Drop the numpy machinery inherited by the ``dqflags`` enums from a member list."""
+    obj = importlib.import_module(modname)
+    for part in qualname.split("."):
+        obj = getattr(obj, part)
+
+    def inherited_from_numpy(name):
+        owner = next((klass for klass in obj.__mro__ if name in klass.__dict__), None)
+        return owner is not None and owner.__module__.partition(".")[0] == "numpy"
+
+    def inherited_astropy_time_info(name):
+        owner = next((klass for klass in obj.__mro__ if name in klass.__dict__), None)
+        return name == "info" and owner is not None and owner.__module__ == "astropy.time.core"
+
+    return [name for name in members if not inherited_from_numpy(name) and not inherited_astropy_time_info(name)]
+
+
+def node_class(modname, name):
+    """Describe the node class backing a datamodel, for the autosummary class template."""
+    node = getattr(getattr(importlib.import_module(modname), name), "_node_type", None)
+    if node is None:
+        return None
+
+    attributes, methods = _public_members(node)
+    return {
+        "module": node.__module__,
+        "name": node.__name__,
+        "attributes": attributes,
+        "methods": methods,
+    }
+
+
+autosummary_context = {
+    "is_property": is_property,
+    "documented_members": documented_members,
+    "datamodel_category": datamodel_category,
+    "stnode_category": stnode_category,
+    "node_class": node_class,
+}
 
 # Class documentation should contain *both* the class docstring and
 # the __init__ docstring
 autoclass_content = "both"
+
+# Don't treat the first line of a docstring (e.g. the C-implemented
+# `MutableMapping`/`MutableSequence` methods inherited by DNode/LNode, such as
+# "D.pop(k[,d]) -> v, remove specified key...") as an overriding signature;
+# doing so makes autodoc try to cross-reference the prose after "->" as a class.
+autodoc_docstring_signature = False
+
+# -- Napoleon options -------------------------------------------------------
+# Parse NumPy style docstrings into ``:param:``/``:type:`` fields so that
+# sphinx_autodoc_typehints can fill in the types from the annotations.
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_use_param = True
+napoleon_use_rtype = True
+
+# -- Type hint options -------------------------------------------------------
+# Fill in types from the annotations even when the docstring omits them.
+always_document_param_types = True
+typehints_defaults = "comma"
 
 # Render inheritance diagrams in SVG
 graphviz_output_format = "svg"
@@ -420,5 +556,49 @@ epub_exclude_files = ["search.html"]
 # Enable nitpicky mode - which ensures that all references in the docs resolve.
 nitpicky = True
 nitpick_ignore = [
-    ("py:class", "_io.FileIO"),
+    # Private mixin/base classes used only to share implementation across
+    # public classes; not documented themselves, but the methods/attributes
+    # they contribute still show up on the public class's page.
+    ("py:class", "roman_datamodels._stnode._converters._RomanConverter"),
+    ("py:class", "roman_datamodels._stnode._converters._TaggedNodeConverter"),
+    ("py:class", "roman_datamodels._stnode._node._NodeMixin"),
+    ("py:class", "roman_datamodels._stnode._tagged._TaggedNodeMixin"),
+    ("py:class", "roman_datamodels.datamodels._datamodels._ParquetMixin"),
+    ("py:class", "roman_datamodels.datamodels._datamodels._RomanDataModel"),
+    ("py:class", "roman_datamodels.datamodels._datamodels._SourceCatalogMixin"),
+    # The deprecated FileDate/FpsFileDate/TvacFileDate subclass the `astropy.time.Time`
+    # (kept only to read legacy files). Their inherited numpydoc type fields use
+    # bare names and prose type descriptions that nitpicky mode can't resolve.
+    ("py:class", "'stable'"),
+    ("py:class", "array_like"),
+    ("py:class", "array-like"),
+    ("py:class", "instance"),
+    ("py:class", "ints"),
+    ("py:class", "iterable"),
+    ("py:class", "ndarray"),
+    ("py:class", "None; optional"),
+    ("py:class", "numpy.array"),
+    ("py:class", "optional"),
+    ("py:class", "sequence"),
+    ("py:class", "Table"),
+    ("py:class", "Time"),
+    ("py:class", "Time object"),
+    ("py:obj", "Time"),
+    ("py:obj", "Time.reshape"),
+    ("py:obj", "roman_datamodels._stnode.FileDate.info"),
+    ("py:obj", "roman_datamodels._stnode.FpsFileDate.info"),
+    ("py:obj", "roman_datamodels._stnode.TvacFileDate.info"),
+    ("py:obj", "erfa.era00"),
+    # TypeVars have no autodoc page to link to.
+    ("py:class", "roman_datamodels._stnode._tagged._T"),
+    ("py:obj", "roman_datamodels._stnode._tagged._T"),
+    # DataModel.search wraps asdf.AsdfFile.search verbatim (via functools.wraps);
+    # its docstring types are asdf's, not fully qualified and not real objects.
+    ("py:class", "NotSet"),
+    ("py:class", "asdf.util.NOT_SET"),
+    ("py:class", "any other object"),
+    ("py:data", "typing.Union"),
+    # The `dqflags` enums subclass these, but numpy's inventory has no entry for them.
+    ("py:class", "numpy.uint8"),
+    ("py:class", "numpy.uint32"),
 ]

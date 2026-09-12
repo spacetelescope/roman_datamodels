@@ -1,7 +1,7 @@
 """
 This module provides all the specific datamodels used by the Roman pipeline.
     These models are what will be read and written by the pipeline to ASDF files.
-    Note that we require each model to specify a _node_type, which corresponds to
+    Note that we require each model to specify a node_type, which corresponds to
     the top-level STNode type that the datamodel wraps. This STNode type is derived
     from the schema manifest defined by RAD.
 """
@@ -23,15 +23,22 @@ from astropy import time as _time
 from astropy.modeling import models
 
 from ._core import DataModel
-from ._utils import node_update, temporary_update_filedate, temporary_update_filename
+from ._utils import _temporary_update_filedate, _temporary_update_filename, node_update
 
 if TYPE_CHECKING:
-    from typing import Any
+    from os import PathLike
+    from typing import Any, Self
+
+    from astropy.table import Table
+
+    _DataModel = DataModel
+else:
+    _DataModel = object
 
 # NOTE: this module does not have the typical `__all__`` present like most of the other
 #    modules in `roman_datamodels``. The presence of the `__all__` variable causes is
 #    entirely to control what is imported by the wildcard `*` import. This style of
-#    import is used by `spiinx-automodapi` to determine what to document within a given
+#    import is used by `sphinx.ext.autosummary` to determine what to document within a given
 #    module. However, in this module's case we would have to list every single datamodel
 #    in the `__all__` which would become tedious and error-prone. Therefore, we simply
 #    omit the `__all__` variable and carefully control what we make publicly available
@@ -39,8 +46,8 @@ if TYPE_CHECKING:
 #    the import of items from other modules directly into this module's namespace and instead
 #    importing them as the namespace from that module (e.g. `from astropy import time` and
 #    using `time.Time` instead of `from astropy.time import Time` and using `Time` directly).
-#    this prevents `spinx-automodapi` from documenting these items which can cause documentation
-#    warnings and bloat.
+#    this prevents `sphinx.ext.autosummary` from documenting these items which can cause
+#    documentation warnings and bloat.
 
 DTYPE_MAP: dict[str, Any] = {}
 
@@ -49,12 +56,12 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class _SourceCatalogMixin:
-    from roman_datamodels._stnode import ImageSourceCatalogMixin
+class _SourceCatalogMixin(_DataModel):
+    from roman_datamodels._stnode import ImageSourceCatalogMixin as _Mixin
 
     __slots__ = ()
 
-    def create_empty_catalog(self, aperture_radii=None, filters=None):
+    def create_empty_catalog(self, aperture_radii: list[int] | None = None, filters: list[str] | None = None) -> Table:
         """
         Create an empty but valid source catalog table
 
@@ -68,28 +75,32 @@ class _SourceCatalogMixin:
 
         Returns
         -------
-        Table
+            An empty but valid source catalog table.
         """
-        if aperture_radii:
-            aperture_radii = [f"{i:02}" for i in aperture_radii]
+        radii = None if aperture_radii is None else [f"{i:02}" for i in aperture_radii]
 
-        return self._instance._create_empty_catalog(aperture_radii, filters)
+        return self._instance._create_empty_catalog(radii, filters)
 
-    @functools.wraps(ImageSourceCatalogMixin.get_column_definition)
+    @functools.wraps(_Mixin.get_column_definition)
     def get_column_definition(self, name):
         return self._instance.get_column_definition(name)
 
 
-class _ParquetMixin:
+class _ParquetMixin(_DataModel):
     """Gives SourceCatalogModels the ability to save to parquet files."""
 
     __slots__ = ()
 
-    def to_parquet(self, filepath):
+    def to_parquet(self, filepath: PathLike) -> None:
         """
         Save catalog in parquet format.
 
         Defers import of parquet to minimize import overhead for all other models.
+
+        Parameters
+        ----------
+        filepath :
+            The path to save the parquet file to.
         """
         from roman_datamodels._stnode import DNode
 
@@ -118,7 +129,7 @@ class _ParquetMixin:
                 }
             )
 
-        with temporary_update_filename(self, pathlib.Path(filepath).name), temporary_update_filedate(self, _time.Time.now()):
+        with _temporary_update_filename(self, pathlib.Path(filepath).name), _temporary_update_filedate(self, _time.Time.now()):
             # Construct flat metadata dict
             flat_meta = self.to_flat_dict()
         # select only meta items
@@ -166,9 +177,10 @@ class _RomanDataModel(DataModel):
 
         Parameters
         ----------
-        defaults : None or dict
+        defaults :
             If provided, defaults will be used in place of schema
-        time: default time value
+        time :
+            default time value
 
 
         Returns
@@ -208,63 +220,13 @@ class _RomanDataModel(DataModel):
         )
 
     @classmethod
+    @functools.wraps(DataModel.create_minimal.__func__)  # type: ignore[attr-defined]
     def create_minimal(cls, defaults=None, *, tag=None):
-        """
-        Class method that constructs an "minimal" model.
-
-        The "minimal" model will contain schema-required attributes
-        where a default value can be determined:
-
-            * node class defining a default value
-            * defined in the schema (for example single item enums)
-            * empty container classes (for example a "meta" dict)
-            * required items with a corresponding provided default
-
-        Parameters
-        ----------
-        defaults : None or dict
-            If provided, defaults will be used in place of schema
-            defined values for required attributes.
-
-        Returns
-        -------
-        DataModel
-            "Empty" model with optional defaults. This will often
-            be incomplete (invalid) as not all required attributes
-            can be guessed.
-        """
         return super().create_minimal(defaults=cls._creator_defaults(defaults), tag=tag)
 
     @classmethod
+    @functools.wraps(DataModel.create_fake_data.__func__)  # type: ignore[attr-defined]
     def create_fake_data(cls, defaults=None, shape=None, *, tag=None):
-        """
-        Class method that constructs a model filled with fake data.
-
-        Similar to `DataModel.create_minimal` this only creates
-        required attributes.
-
-        Fake arrays will have a number of dimensions matching
-        the schema requirements. If shape is provided only the
-        dimensions matching the schema requirements will be used.
-        For example if a 3 dimensional shape is provided but a fake
-        array only requires 2 dimensions only the first 2 values
-        from shape will be used.
-
-        Parameters
-        ----------
-        defaults : None or dict
-            If provided, defaults will be used in place of schema
-            defined or fake values for required attributes.
-
-        shape : None or tuple of int
-            When provided use this shape to determine the
-            shape used to construct fake arrays.
-
-        Returns
-        -------
-        DataModel
-            A valid model with fake data.
-        """
         return super().create_fake_data(
             defaults=cls._creator_defaults(defaults, time=_time.Time("2020-01-01T00:00:00.0", format="isot", scale="utc")),
             shape=shape,
@@ -273,28 +235,26 @@ class _RomanDataModel(DataModel):
 
 
 class MosaicModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiMosaic
+    from roman_datamodels._stnode import WfiMosaic as _node_type
 
     __slots__ = ()
-    _node_type = WfiMosaic
 
 
 class ImageModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiImage
+    from roman_datamodels._stnode import WfiImage as _node_type
 
     __slots__ = ()
-    _node_type = WfiImage
 
 
 class ScienceRawModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiScienceRaw
+    from roman_datamodels._stnode import WfiScienceRaw as _node_type
 
     __slots__ = ()
-    _node_type = WfiScienceRaw
 
     @classmethod
-    def from_tvac_raw(cls, model):
-        """Convert TVAC/FPS into ScienceRawModel
+    def from_tvac_raw(cls, model: ScienceRawModel | TvacModel | FpsModel) -> Self:
+        """
+        Convert TVAC/FPS into ScienceRawModel
 
         romancal supports processing a selection of files which use an outdated
         schema. It supports these with a bespoke method that converts the files
@@ -307,15 +267,13 @@ class ScienceRawModel(_RomanDataModel):
 
         Parameters
         ----------
-        model : ScienceRawModel, TvacModel, FpsModel
-          Model to convert from.
+        model :
+            Model to convert from.
 
         Returns
         -------
-        science_raw_model : ScienceRawModel
             The ScienceRawModel built from the input model.
             If the input was a ScienceRawModel, that model is simply returned.
-
         """
         warnings.warn("from_tvac_raw is deprecated. Use create_from_model instead", DeprecationWarning, stacklevel=2)
         ALLOWED_MODELS = (FpsModel, ScienceRawModel, TvacModel)
@@ -327,9 +285,10 @@ class ScienceRawModel(_RomanDataModel):
 
         # Create base raw node with dummy values (for validation)
         if isinstance(model, (FpsModel | TvacModel)):
-            raw_model = cls.create_fake_data()
+            # Limitation of MyPy with the functools.wraps
+            raw_model: Self = cls.create_fake_data()  # type: ignore[call-arg]
         else:
-            raw_model = cls.create_minimal()
+            raw_model = cls.create_minimal()  # type: ignore[call-arg]
 
         node_update(raw_model._instance, model, extras=("meta.statistics",), extras_key="tvac", ignore=("meta.model_type",))
 
@@ -344,21 +303,20 @@ class ScienceRawModel(_RomanDataModel):
 
 
 class MsosStackModel(_RomanDataModel):
-    from roman_datamodels._stnode import MsosStack
+    from roman_datamodels._stnode import MsosStack as _node_type
 
     __slots__ = ()
-    _node_type = MsosStack
 
 
 class RampModel(_RomanDataModel):
-    from roman_datamodels._stnode import Ramp
+    from roman_datamodels._stnode import Ramp as _node_type
 
     __slots__ = ()
-    _node_type = Ramp
 
     @classmethod
-    def from_science_raw(cls, model):
-        """Attempt to construct a RampModel from a DataModel
+    def from_science_raw(cls, model: FpsModel | RampModel | ScienceRawModel | TvacModel) -> Self:
+        """
+        Attempt to construct a RampModel from a DataModel
 
         If the model has a resultantdq attribute, this is copied into
         the RampModel.groupdq attribute.
@@ -377,7 +335,6 @@ class RampModel(_RomanDataModel):
 
         Returns
         -------
-        ramp_model : RampModel
             The RampModel built from the input model. If the input is already
             a RampModel, it is simply returned.
 
@@ -391,7 +348,8 @@ class RampModel(_RomanDataModel):
             raise ValueError(f"Input must be one of {ALLOWED_MODELS}")
 
         # Create base ramp node with dummy values (for validation)
-        ramp_model = cls.create_minimal()
+        # Limitation of MyPy with the functools.wraps
+        ramp_model: Self = cls.create_minimal()  # type: ignore[call-arg]
 
         # make cal_step
         ramp_model.meta.cal_step = {}
@@ -421,115 +379,99 @@ class RampModel(_RomanDataModel):
 
 
 class RampFitOutputModel(_RomanDataModel):
-    from roman_datamodels._stnode import RampFitOutput
+    from roman_datamodels._stnode import RampFitOutput as _node_type
 
     __slots__ = ()
-    _node_type = RampFitOutput
 
 
 class L1FaceGuidewindowModel(_RomanDataModel):
-    from roman_datamodels._stnode import L1FaceGuidewindow
+    from roman_datamodels._stnode import L1FaceGuidewindow as _node_type
 
     __slots__ = ()
-    _node_type = L1FaceGuidewindow
 
 
 class GuidewindowModel(_RomanDataModel):
-    from roman_datamodels._stnode import Guidewindow
+    from roman_datamodels._stnode import Guidewindow as _node_type
 
     __slots__ = ()
-    _node_type = Guidewindow
 
 
 class L1DetectorGuidewindowModel(_RomanDataModel):
-    from roman_datamodels._stnode import L1DetectorGuidewindow
+    from roman_datamodels._stnode import L1DetectorGuidewindow as _node_type
 
     __slots__ = ()
-    _node_type = L1DetectorGuidewindow
 
 
 class FlatRefModel(DataModel):
-    from roman_datamodels._stnode import FlatRef
+    from roman_datamodels._stnode import FlatRef as _node_type
 
     __slots__ = ()
-    _node_type = FlatRef
 
 
 class AbvegaoffsetRefModel(DataModel):
-    from roman_datamodels._stnode import AbvegaoffsetRef
+    from roman_datamodels._stnode import AbvegaoffsetRef as _node_type
 
     __slots__ = ()
-    _node_type = AbvegaoffsetRef
 
 
 class ApcorrRefModel(DataModel):
-    from roman_datamodels._stnode import ApcorrRef
+    from roman_datamodels._stnode import ApcorrRef as _node_type
 
     __slots__ = ()
-    _node_type = ApcorrRef
 
 
 class DarkRefModel(DataModel):
-    from roman_datamodels._stnode import DarkRef
+    from roman_datamodels._stnode import DarkRef as _node_type
 
     __slots__ = ()
-    _node_type = DarkRef
 
 
 class DetectorstatusRefModel(DataModel):
-    from roman_datamodels._stnode import DetectorstatusRef
+    from roman_datamodels._stnode import DetectorstatusRef as _node_type
 
     __slots__ = ()
-    _node_type = DetectorstatusRef
 
 
 class DarkdecaysignalRefModel(DataModel):
-    from roman_datamodels._stnode import DarkdecaysignalRef
+    from roman_datamodels._stnode import DarkdecaysignalRef as _node_type
 
     __slots__ = ()
-    _node_type = DarkdecaysignalRef
 
 
 class DistortionRefModel(DataModel):
-    from roman_datamodels._stnode import DistortionRef
+    from roman_datamodels._stnode import DistortionRef as _node_type
 
     __slots__ = ()
-    _node_type = DistortionRef
 
 
 class EpsfRefModel(DataModel):
-    from roman_datamodels._stnode import EpsfRef
+    from roman_datamodels._stnode import EpsfRef as _node_type
 
     __slots__ = ()
-    _node_type = EpsfRef
 
 
 class EtcRefModel(DataModel):
-    from roman_datamodels._stnode import EtcRef
+    from roman_datamodels._stnode import EtcRef as _node_type
 
     __slots__ = ()
-    _node_type = EtcRef
 
 
 class GainRefModel(DataModel):
-    from roman_datamodels._stnode import GainRef
+    from roman_datamodels._stnode import GainRef as _node_type
 
     __slots__ = ()
-    _node_type = GainRef
 
 
 class IpcRefModel(DataModel):
-    from roman_datamodels._stnode import IpcRef
+    from roman_datamodels._stnode import IpcRef as _node_type
 
     __slots__ = ()
-    _node_type = IpcRef
 
 
 class LinearityRefModel(DataModel):
-    from roman_datamodels._stnode import LinearityRef
+    from roman_datamodels._stnode import LinearityRef as _node_type
 
     __slots__ = ()
-    _node_type = LinearityRef
 
     def get_primary_array_name(self):
         """
@@ -542,80 +484,59 @@ class LinearityRefModel(DataModel):
 
 
 class IntegralnonlinearityRefModel(DataModel):
-    from roman_datamodels._stnode import IntegralnonlinearityRef
+    from roman_datamodels._stnode import IntegralnonlinearityRef as _node_type
 
     __slots__ = ()
-    _node_type = IntegralnonlinearityRef
 
+    @functools.wraps(DataModel.get_primary_array_name)
     def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
         return "value"
 
 
 class InverselinearityRefModel(DataModel):
-    from roman_datamodels._stnode import InverselinearityRef
+    from roman_datamodels._stnode import InverselinearityRef as _node_type
 
     __slots__ = ()
-    _node_type = InverselinearityRef
 
+    @functools.wraps(DataModel.get_primary_array_name)
     def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
         return "coeffs"
 
 
 class MaskRefModel(DataModel):
-    from roman_datamodels._stnode import MaskRef
+    from roman_datamodels._stnode import MaskRef as _node_type
 
     __slots__ = ()
-    _node_type = MaskRef
 
+    @functools.wraps(DataModel.get_primary_array_name)
     def get_primary_array_name(self):
-        """
-        Returns the name "primary" array for this model, which
-        controls the size of other arrays that are implicitly created.
-        This is intended to be overridden in the subclasses if the
-        primary array's name is not "data".
-        """
         return "dq"
 
 
 class MATableRefModel(DataModel):
-    from roman_datamodels._stnode import MatableRef
+    from roman_datamodels._stnode import MatableRef as _node_type
 
     __slots__ = ()
-    _node_type = MatableRef
 
 
 class PixelareaRefModel(DataModel):
-    from roman_datamodels._stnode import PixelareaRef
+    from roman_datamodels._stnode import PixelareaRef as _node_type
 
     __slots__ = ()
-    _node_type = PixelareaRef
 
 
 class ReadnoiseRefModel(DataModel):
-    from roman_datamodels._stnode import ReadnoiseRef
+    from roman_datamodels._stnode import ReadnoiseRef as _node_type
 
     __slots__ = ()
-    _node_type = ReadnoiseRef
 
 
 class SkycellsRefModel(DataModel):
-    from roman_datamodels._stnode import SkycellsRef
+    from roman_datamodels._stnode import SkycellsRef as _node_type
 
     __slots__ = ()
-    _node_type = SkycellsRef
 
+    @functools.wraps(DataModel.to_asdf)
     def to_asdf(self, *args, **kwargs):
         # Set all SkycellRefModel arrays to internal so test
         # files with unrealistically small arrays don't get inlined
@@ -625,112 +546,98 @@ class SkycellsRefModel(DataModel):
 
 
 class SuperbiasRefModel(DataModel):
-    from roman_datamodels._stnode import SuperbiasRef
+    from roman_datamodels._stnode import SuperbiasRef as _node_type
 
     __slots__ = ()
-    _node_type = SuperbiasRef
 
 
 class SaturationRefModel(DataModel):
-    from roman_datamodels._stnode import SaturationRef
+    from roman_datamodels._stnode import SaturationRef as _node_type
 
     __slots__ = ()
-    _node_type = SaturationRef
 
 
 class WfiImgPhotomRefModel(DataModel):
-    from roman_datamodels._stnode import WfiImgPhotomRef
+    from roman_datamodels._stnode import WfiImgPhotomRef as _node_type
 
     __slots__ = ()
-    _node_type = WfiImgPhotomRef
 
 
 class RefpixRefModel(DataModel):
-    from roman_datamodels._stnode import RefpixRef
+    from roman_datamodels._stnode import RefpixRef as _node_type
 
     __slots__ = ()
-    _node_type = RefpixRef
 
 
 class FpsModel(DataModel):
-    from roman_datamodels._stnode import Fps
+    from roman_datamodels._stnode import Fps as _node_type
 
     __slots__ = ()
-    _node_type = Fps
 
 
 class TvacModel(DataModel):
-    from roman_datamodels._stnode import Tvac
+    from roman_datamodels._stnode import Tvac as _node_type
 
     __slots__ = ()
-    _node_type = Tvac
 
 
 class MosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import MosaicSourceCatalog
+    from roman_datamodels._stnode import MosaicSourceCatalog as _node_type
 
     __slots__ = ()
-    _node_type = MosaicSourceCatalog
 
 
 class MultibandSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import MultibandSourceCatalog
+    from roman_datamodels._stnode import MultibandSourceCatalog as _node_type
 
     __slots__ = ()
-    _node_type = MultibandSourceCatalog
 
 
 class ForcedImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import ForcedImageSourceCatalog
+    from roman_datamodels._stnode import ForcedImageSourceCatalog as _node_type
 
     __slots__ = ()
-    _node_type = ForcedImageSourceCatalog
 
 
 class ForcedMosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import ForcedMosaicSourceCatalog
+    from roman_datamodels._stnode import ForcedMosaicSourceCatalog as _node_type
 
     __slots__ = ()
-    _node_type = ForcedMosaicSourceCatalog
 
 
 class MosaicSegmentationMapModel(_RomanDataModel):
-    from roman_datamodels._stnode import MosaicSegmentationMap
+    from roman_datamodels._stnode import MosaicSegmentationMap as _node_type
 
     __slots__ = ()
-    _node_type = MosaicSegmentationMap
 
 
 class MultibandSegmentationMapModel(_RomanDataModel):
-    from roman_datamodels._stnode import MultibandSegmentationMap
+    from roman_datamodels._stnode import MultibandSegmentationMap as _node_type
 
     __slots__ = ()
-    _node_type = MultibandSegmentationMap
 
 
 class ImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
-    from roman_datamodels._stnode import ImageSourceCatalog
+    from roman_datamodels._stnode import ImageSourceCatalog as _node_type
 
     __slots__ = ()
-    _node_type = ImageSourceCatalog
 
 
 class SegmentationMapModel(_RomanDataModel):
-    from roman_datamodels._stnode import SegmentationMap
+    from roman_datamodels._stnode import SegmentationMap as _node_type
 
     __slots__ = ()
-    _node_type = SegmentationMap
 
 
 class WfiWcsModel(_RomanDataModel):
-    from roman_datamodels._stnode import WfiWcs
+    from roman_datamodels._stnode import WfiWcs as _node_type
 
     __slots__ = ()
-    _node_type = WfiWcs
 
     @classmethod
-    def from_model_with_wcs(cls, model, l1_border=4):
-        """Extract the WCS information from an exposure model post-assign_wcs
+    def from_model_with_wcs(cls, model: ImageModel, l1_border: int = 4) -> Self:
+        """
+        Extract the WCS information from an exposure
 
         Construct a `WfiWcsModel` from any model that is used post-assign_wcs step
         in the ELP pipeline. The WCS information is extracted out of the input model.
@@ -742,15 +649,14 @@ class WfiWcsModel(_RomanDataModel):
 
         Parameters
         ----------
-        model : ImageModel
+        model :
             The input data model.
 
-        l1_border : int
+        l1_border :
             The extra border to add for the L1 wcs.
 
         Returns
         -------
-        wfiwcs_model : WfiWcsModel
             The WfiWcsModel built from the input model.
 
         """
