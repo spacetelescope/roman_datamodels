@@ -228,7 +228,11 @@ def documented_members(modname, qualname, members):
         owner = next((klass for klass in obj.__mro__ if name in klass.__dict__), None)
         return owner is not None and owner.__module__.partition(".")[0] == "numpy"
 
-    return [name for name in members if not inherited_from_numpy(name)]
+    def inherited_astropy_time_info(name):
+        owner = next((klass for klass in obj.__mro__ if name in klass.__dict__), None)
+        return name == "info" and owner is not None and owner.__module__ == "astropy.time.core"
+
+    return [name for name in members if not inherited_from_numpy(name) and not inherited_astropy_time_info(name)]
 
 
 def node_class(modname, name):
@@ -581,6 +585,9 @@ nitpick_ignore = [
     ("py:class", "Time object"),
     ("py:obj", "Time"),
     ("py:obj", "Time.reshape"),
+    ("py:obj", "roman_datamodels._stnode.FileDate.info"),
+    ("py:obj", "roman_datamodels._stnode.FpsFileDate.info"),
+    ("py:obj", "roman_datamodels._stnode.TvacFileDate.info"),
     ("py:obj", "erfa.era00"),
     # TypeVars have no autodoc page to link to.
     ("py:class", "roman_datamodels._stnode._tagged._T"),
@@ -590,6 +597,7 @@ nitpick_ignore = [
     ("py:class", "NotSet"),
     ("py:class", "asdf.util.NOT_SET"),
     ("py:class", "any other object"),
+    ("py:data", "typing.Union"),
     # The `dqflags` enums subclass these, but numpy's inventory has no entry for them.
     ("py:class", "numpy.uint8"),
     ("py:class", "numpy.uint32"),
