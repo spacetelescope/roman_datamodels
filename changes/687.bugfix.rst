@@ -1,0 +1,1 @@
+Limit default lz4 compression to top-level integral and boolean type arrays.
