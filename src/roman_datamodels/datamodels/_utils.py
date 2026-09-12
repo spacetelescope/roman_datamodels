@@ -24,7 +24,15 @@ if TYPE_CHECKING:
     from roman_datamodels._stnode import DNode, LNode
 
 
-__all__ = ["FilenameMismatchWarning", "node_update", "rdm_open", "temporary_update_filedate", "temporary_update_filename"]
+__all__ = [
+    "FilenameMismatchWarning",
+    "create_synchronized_table",
+    "node_update",
+    "parse_units_to_ivoa",
+    "rdm_open",
+    "temporary_update_filedate",
+    "temporary_update_filename",
+]
 
 
 class FilenameMismatchWarning(UserWarning):
@@ -333,3 +341,130 @@ def rdm_open(init, memmap=False, **kwargs):
     if not isinstance(init, asdf.AsdfFile):
         asdf_file.close()
     raise TypeError(f"Unknown datamodel type: {model_type}, please use asdf.open for non-roman_datamodels files")
+
+
+def parse_units_to_ivoa(unit_strings: list[str]) -> list[str]:
+    """
+    Convert a list of unit strings to their IVOA-compliant representations.
+
+    Parameters
+    ----------
+    unit_strings : list of str
+        List of unit strings to be converted. Can include None, empty strings, or 'unitless'.
+
+    Returns
+    -------
+    list of str
+        List of IVOA-compliant unit strings. Dimensionless or unrecognized units are mapped to "1".
+    """
+    from astropy import units as u
+
+    ivoa_list: list[str] = []
+    for s in unit_strings:
+        # Standardize dimensionless/null inputs to IVOA "1"
+        if s is None or str(s).lower() in ("none", "", "unitless"):
+            ivoa_list.append("1")
+            continue
+        try:
+            unit_obj = u.Unit(s)
+            if isinstance(unit_obj, u.function.core.FunctionUnitBase):
+                unit_str = unit_obj.to_string("generic")
+                if unit_str.startswith("mag"):
+                    ivoa_list.append("mag")
+                else:
+                    ivoa_list.append(unit_str)
+            else:
+                ivoa_list.append(unit_obj.to_string(format="vounit", deprecations="convert"))
+        except Exception as e:
+            warnings.warn(
+                f"Could not parse unit '{s}' to IVOA format: {e}. Using dimensionless unit '1'.", UserWarning, stacklevel=2
+            )
+            ivoa_list.append("1")
+
+    return ivoa_list
+
+
+def create_synchronized_table(
+    arrs: list,
+    names: list[str],
+    units: list[str],
+    dtypes: list | None,
+    global_meta: dict | None,
+    ivoa_compliant: bool = False,
+    descriptions: list[str] | None = None,
+    table_meta: Mapping | None = None,
+):
+    """
+    Create a PyArrow table with synchronized field metadata and Astropy YAML metadata.
+
+    Parameters
+    ----------
+    arrs : list
+        List of arrays or PyArrow columns.
+    names : list of str
+        Column names.
+    units : list of str
+        Unit strings for each column.
+    dtypes : list, optional
+        PyArrow data types.
+    global_meta : dict, optional
+        Existing global metadata to preserve.
+    ivoa_compliant : bool, optional
+        If True, convert units to IVOA-compliant strings using parse_units_to_ivoa.
+        Defaults to False (uses units as-is).
+    descriptions : list of str, optional
+        Description strings for each column.
+    table_meta : Mapping, optional
+        Table-level metadata to be embedded in the Astropy YAML sidecar and
+        restored when reading the Parquet file back into an Astropy Table.
+
+    Returns
+    -------
+    pyarrow.Table
+        A PyArrow Table with synchronized field-level unit metadata and Astropy YAML metadata embedded in the schema.
+    """
+    import astropy.table.meta
+    import pyarrow as pa
+    from astropy.table import Table
+
+    # Determine final units to use
+    if ivoa_compliant:
+        # This uses your unified gatekeeper logic
+        final_units = parse_units_to_ivoa(units)
+    else:
+        # Default: Use exactly what was passed in, but ensure strings for .encode()
+        # We still handle None -> "" or "1" here to prevent encode errors
+        final_units = [str(u) if u is not None else "" for u in units]
+
+    # Build Fields with Field-Level Metadata
+    fields = []
+    for i, (name, unit) in enumerate(zip(names, final_units, strict=False)):
+        col_type = dtypes[i] if dtypes else arrs[i].type
+        # Only add metadata if the unit isn't an empty string
+        meta = {b"unit": unit.encode()} if unit else {}
+        fields.append(pa.field(name, type=col_type, metadata=meta))
+
+    # Build Temp Astropy Table for YAML Synchronization
+    temp_table = Table()
+    for i, name in enumerate(names):
+        # Convert to numpy for Astropy compatibility
+        temp_table[name] = arrs[i] if isinstance(arrs[i], np.ndarray) else arrs[i].to_numpy()
+        # Apply the final unit
+        temp_table[name].unit = final_units[i] if final_units[i] else None  # type: ignore[attr-defined]
+        # Apply description if provided
+        if descriptions and descriptions[i]:
+            temp_table[name].description = descriptions[i]  # type: ignore[attr-defined]
+
+    # Attach table-level metadata (e.g., aperture_radii, ee_fractions) so it is
+    # serialized into the YAML sidecar and restored on read.
+    if table_meta:
+        temp_table.meta.update(table_meta)
+
+    # Update Global Metadata (The "Astropy Sidecar")
+    updated_meta = dict(global_meta) if global_meta else {}
+    new_yaml = astropy.table.meta.get_yaml_from_table(temp_table)
+    updated_meta[b"table_meta_yaml"] = "\n".join(new_yaml).encode()
+
+    # Build and return
+    schema = pa.schema(fields, metadata=updated_meta)
+    return pa.Table.from_arrays(arrs, schema=schema)
