@@ -247,6 +247,13 @@ class ImageModel(_RomanDataModel):
 
 
 class ScienceRawModel(_RomanDataModel):
+    """
+    .. list-table:: **Highlighted features**
+
+       * - :meth:`~ScienceRawModel.from_tvac_raw`
+         - Converts :class:`TvacModel` and :class:`FpsModel` instances into :class:`ScienceRawModel` instances.
+    """
+
     from roman_datamodels._stnode import WfiScienceRaw as _node_type
 
     __slots__ = ()
@@ -309,6 +316,13 @@ class MsosStackModel(_RomanDataModel):
 
 
 class RampModel(_RomanDataModel):
+    """
+    .. list-table:: **Highlighted features**
+
+       * - :meth:`~RampModel.from_science_raw`
+         - Converts :class:`~ScienceRawModel` instances into :class:`~RampModel` instances.
+    """
+
     from roman_datamodels._stnode import Ramp as _node_type
 
     __slots__ = ()
@@ -630,6 +644,13 @@ class SegmentationMapModel(_RomanDataModel):
 
 
 class WfiWcsModel(_RomanDataModel):
+    """
+    .. list-table:: **Highlighted features**
+
+       * - :meth:`~WfiWcsModel.from_model_with_wcs`
+         - Extracts WCS information from an :class:`~ImageModel` instance and constructs a :class:`~WfiWcsModel` instance.
+    """
+
     from roman_datamodels._stnode import WfiWcs as _node_type
 
     __slots__ = ()

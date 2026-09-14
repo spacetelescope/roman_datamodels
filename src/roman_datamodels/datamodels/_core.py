@@ -122,7 +122,15 @@ class DataModel(abc.ABC):
         if cls._node_type in MODEL_REGISTRY:
             raise ValueError(f"Duplicate model type {cls._node_type}")
 
-        cls.__doc__ = f"DataModel for node type :class:`~roman_datamodels._stnode.{cls._node_type.__name__}`\n\n{_schema_link_from_tag(cls._node_type._default_tag)}"
+        # Modify the docstring for the data model to include some links
+        docs = [
+            f"DataModel for node type :class:`~roman_datamodels._stnode.{cls._node_type.__name__}`",
+            _schema_link_from_tag(cls._node_type._default_tag),
+        ]
+        if cls.__doc__:
+            docs.append(copy.copy(cls.__doc__))
+
+        cls.__doc__ = "\n\n".join(docs)
 
         # Add to registry
         MODEL_REGISTRY[cls._node_type] = cls
