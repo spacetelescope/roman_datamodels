@@ -246,9 +246,14 @@ class TaggedObjectNode(DNode, _TaggedNodeMixin):
 
 class TaggedListNode(LNode, _TaggedNodeMixin):
     """
-    Base class for all tagged list defined by RAD
+    Base class for all tagged list defined by RAD (for legacy purposes only)
         There will be one of these for any tagged object defined by RAD, which has
         base type: array.
+
+    This class has been deprecated in the sense that the newest schemas in RAD
+    are constructed in a way that prevents this object from being used with
+    respect to newer schemas. It has been left in place to support old pre-launch
+    schemas.
     """
 
     __slots__ = ()
@@ -267,10 +272,15 @@ class TaggedListNode(LNode, _TaggedNodeMixin):
 
 class TaggedScalarNode(_TaggedNodeMixin):
     """
-    Base class for all tagged scalars defined by RAD
+    Base class for all tagged scalars defined by RAD (for legacy purposes only)
         There will be one of these for any tagged object defined by RAD, which has
         a scalar base type, or wraps a scalar base type.
         These will all be in the tagged_scalars directory.
+
+    This class has been deprecated in the sense that the newest schemas in RAD
+    are constructed in a way that prevents this object from being used with
+    respect to newer schemas. It has been left in place to support old pre-launch
+    schemas.
     """
 
     def __init_subclass__(cls, **kwargs) -> None:

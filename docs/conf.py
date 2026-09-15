@@ -90,11 +90,8 @@ master_doc = "index"
 
 suppress_warnings = [
     "app.add_directive",
-    # The `collections.abc.MutableMapping`/`MutableSequence` mixin methods (e.g.
-    # `update`) inherited by DNode/LNode mix unindented prose with indented
-    # examples without a blank line between them. docutils warns about the
-    # ambiguous indentation, but still renders the content (as a definition
-    # list rather than nested block quotes), so it's safe to silence.
+    # Inherited MutableMapping.update documentation contains an ambiguous
+    # indentation pattern in the standard library docstring.
     "docutils",
     # `autosummary_context` holds the `is_property` helper used by the class
     # template, which cannot be pickled into the config cache.
@@ -179,30 +176,6 @@ def datamodel_category(modname, name):
     return "reference" if name.endswith("RefModel") else "science"
 
 
-def stnode_category(modname, name):
-    """Used by the autosummary ``_stnode`` module template to group the node classes."""
-    from roman_datamodels._stnode import _converters, _mixins, _node, _tagged
-    from roman_datamodels.datamodels._core import MODEL_REGISTRY
-
-    obj = getattr(importlib.import_module(modname), name)
-
-    if any(getattr(submodule, name, None) is obj for submodule in (_node, _tagged)):
-        return "general"
-    if obj in MODEL_REGISTRY:
-        return "reference-node" if name.endswith("Ref") else "science-node"
-    if getattr(_converters, name, None) is obj:
-        return "converter"
-    if issubclass(obj, _tagged.SerializationNode):
-        return "serialization"
-    if getattr(_mixins, name, None) is obj:
-        return "legacy-mixin"
-    if issubclass(obj, _tagged.TaggedScalarNode):
-        return "legacy-scalar"
-    if issubclass(obj, _tagged.TaggedListNode):
-        return "legacy-list"
-    return "legacy-object"
-
-
 def _public_members(obj):
     attributes, methods = [], []
     for name in dir(obj):
@@ -254,7 +227,6 @@ autosummary_context = {
     "is_property": is_property,
     "documented_members": documented_members,
     "datamodel_category": datamodel_category,
-    "stnode_category": stnode_category,
     "node_class": node_class,
 }
 
@@ -262,10 +234,8 @@ autosummary_context = {
 # the __init__ docstring
 autoclass_content = "both"
 
-# Don't treat the first line of a docstring (e.g. the C-implemented
-# `MutableMapping`/`MutableSequence` methods inherited by DNode/LNode, such as
-# "D.pop(k[,d]) -> v, remove specified key...") as an overriding signature;
-# doing so makes autodoc try to cross-reference the prose after "->" as a class.
+# Inherited MutableMapping methods use compact signatures as their first
+# docstring line, which autodoc otherwise mistakes for type annotations.
 autodoc_docstring_signature = False
 
 # -- Napoleon options -------------------------------------------------------
@@ -559,39 +529,16 @@ nitpick_ignore = [
     # Private mixin/base classes used only to share implementation across
     # public classes; not documented themselves, but the methods/attributes
     # they contribute still show up on the public class's page.
-    ("py:class", "roman_datamodels._stnode._converters._RomanConverter"),
-    ("py:class", "roman_datamodels._stnode._converters._TaggedNodeConverter"),
+    ("py:class", "roman_datamodels._stnode._mixins.ForcedImageSourceCatalogMixin"),
+    ("py:class", "roman_datamodels._stnode._mixins.ForcedMosaicSourceCatalogMixin"),
+    ("py:class", "roman_datamodels._stnode._mixins.ImageSourceCatalogMixin"),
+    ("py:class", "roman_datamodels._stnode._mixins.MosaicSourceCatalogMixin"),
+    ("py:class", "roman_datamodels._stnode._mixins.MultibandSourceCatalogMixin"),
     ("py:class", "roman_datamodels._stnode._node._NodeMixin"),
     ("py:class", "roman_datamodels._stnode._tagged._TaggedNodeMixin"),
     ("py:class", "roman_datamodels.datamodels._datamodels._ParquetMixin"),
     ("py:class", "roman_datamodels.datamodels._datamodels._RomanDataModel"),
     ("py:class", "roman_datamodels.datamodels._datamodels._SourceCatalogMixin"),
-    # The deprecated FileDate/FpsFileDate/TvacFileDate subclass the `astropy.time.Time`
-    # (kept only to read legacy files). Their inherited numpydoc type fields use
-    # bare names and prose type descriptions that nitpicky mode can't resolve.
-    ("py:class", "'stable'"),
-    ("py:class", "array_like"),
-    ("py:class", "array-like"),
-    ("py:class", "instance"),
-    ("py:class", "ints"),
-    ("py:class", "iterable"),
-    ("py:class", "ndarray"),
-    ("py:class", "None; optional"),
-    ("py:class", "numpy.array"),
-    ("py:class", "optional"),
-    ("py:class", "sequence"),
-    ("py:class", "Table"),
-    ("py:class", "Time"),
-    ("py:class", "Time object"),
-    ("py:obj", "Time"),
-    ("py:obj", "Time.reshape"),
-    ("py:obj", "roman_datamodels._stnode.FileDate.info"),
-    ("py:obj", "roman_datamodels._stnode.FpsFileDate.info"),
-    ("py:obj", "roman_datamodels._stnode.TvacFileDate.info"),
-    ("py:obj", "erfa.era00"),
-    # TypeVars have no autodoc page to link to.
-    ("py:class", "roman_datamodels._stnode._tagged._T"),
-    ("py:obj", "roman_datamodels._stnode._tagged._T"),
     # DataModel.search wraps asdf.AsdfFile.search verbatim (via functools.wraps);
     # its docstring types are asdf's, not fully qualified and not real objects.
     ("py:class", "NotSet"),
