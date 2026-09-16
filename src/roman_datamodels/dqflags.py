@@ -1,10 +1,7 @@
 """Roman Data Quality Flags
 
-The definitions are documented in the Roman RTD:
-
-[NOTE: Documentation not yet implemented. Fix this URL when completed.]
-
-https://roman-cal-pipeline.readthedocs.io/en/latest/roman/references_general/references_general.html#data-quality-flags
+A full description of the data quality flags can be found in the
+:external+romancal:ref:`romancal data quality flags documentation <data_quality_flags>`.
 
 
 Implementation

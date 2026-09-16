@@ -46,6 +46,7 @@ intersphinx_mapping = {
     "astropy": ("https://docs.astropy.org/en/stable/", None),
     "asdf": ("https://asdf.readthedocs.io/en/latest/", None),
     "rad": ("https://rad.readthedocs.io/en/latest/", None),
+    "romancal": ("https://roman-pipeline.readthedocs.io/en/latest/", None),
 }
 
 # Add any Sphinx extension module names here, as strings. They can be
