@@ -36,7 +36,7 @@ def docstring_from_tag(tag_def: dict[str, Any]) -> str:
 
     Parameters
     ----------
-    tag_def: dict
+    tag_def :
         A tag entry from the RAD manifest
 
     Returns
@@ -54,13 +54,13 @@ def scalar_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) 
 
     Parameters
     ----------
-    pattern: str
+    pattern :
         A tag pattern/wildcard
 
-    latest_manifest: str
+    latest_manifest :
         URI for the latest manifest
 
-    tag_def: dict
+    tag_def :
         A tag entry from the RAD manifest
 
     Returns
@@ -105,13 +105,13 @@ def node_factory(pattern: str, latest_manifest: str, tag_def: dict[str, Any]) ->
 
     Parameters
     ----------
-    pattern: str
+    pattern :
         A tag pattern/wildcard
 
-    latest_manifest: str
+    latest_manifest :
         URI for the latest manifest
 
-    tag_def: dict
+    tag_def :
         A tag entry from the RAD manifest
 
     Returns
@@ -153,13 +153,13 @@ def stnode_factory(
 
     Parameters
     ----------
-    pattern: str
+    pattern :
         A tag pattern/wildcard
 
-    latest_manifest: str
+    latest_manifest :
         URI for the latest manifest
 
-    tag_def: dict
+    tag_def :
         A tag entry from the RAD manifest
 
     Returns

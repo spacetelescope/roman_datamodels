@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from ._tagged import SerializationNode, TaggedListNode, TaggedObjectNode, TaggedScalarNode
 
 __all__ = [
+    "SerializationNodeConverter",
     "TaggedListNodeConverter",
     "TaggedObjectNodeConverter",
     "TaggedScalarNodeConverter",
@@ -36,12 +37,17 @@ class _RomanConverter(Converter):
     """
 
     lazy = True
+    """
+    The converter is lazy, meaning by default it will lazy load from the file
+    """
 
 
 class SerializationNodeConverter(_RomanConverter):
     """
-    Converter that tags are deferred to so that the correct
-    extension can be applied
+    Converter that tags are deferred to for serialization
+
+    This ensures that the serialization history is handled in a way that
+    allows for the correct extension to be recorded.
     """
 
     def __init__(self, manifest_uri: str):
@@ -89,7 +95,8 @@ class _TaggedNodeConverter(_RomanConverter):
         return None
 
     @property
-    def tags(self) -> tuple:
+    def tags(self) -> tuple[str, ...]:
+        """Return the tags associated with this converter"""
         return ()
 
     def to_yaml_tree(self, obj, tag, ctx):
@@ -101,11 +108,12 @@ class _TaggedNodeConverter(_RomanConverter):
 
 class TaggedObjectNodeConverter(_TaggedNodeConverter):
     """
-    Converter for all subclasses of TaggedObjectNode.
+    Converter for all subclasses of TaggedObjectNode
     """
 
     @property
-    def types(self):
+    def types(self) -> tuple[type[TaggedObjectNode], ...]:
+        """Return the types associated with this converter"""
         return tuple(OBJECT_NODE_CLASSES_BY_PATTERN.values())
 
     def to_yaml_tree(self, obj: TaggedObjectNode, tag, ctx):
@@ -118,7 +126,8 @@ class TaggedListNodeConverter(_TaggedNodeConverter):
     """
 
     @property
-    def types(self):
+    def types(self) -> tuple[type[TaggedListNode], ...]:
+        """Return the types associated with this converter"""
         return tuple(LIST_NODE_CLASSES_BY_PATTERN.values())
 
     def to_yaml_tree(self, obj, tag, ctx):
@@ -131,8 +140,9 @@ class TaggedScalarNodeConverter(_TaggedNodeConverter):
     """
 
     @property
-    def types(self):
-        return list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
+    def types(self) -> tuple[type[TaggedScalarNode], ...]:
+        """Return the types associated with this converter"""
+        return tuple(SCALAR_NODE_CLASSES_BY_PATTERN.values())
 
     def to_yaml_tree(self, obj, tag, ctx):
         node = type(obj).__bases__[0](obj)
