@@ -66,8 +66,10 @@ def test_pixel_flags(flag, ramp_schema):
     if flag.name == "GOOD":
         # GOOD is the only non-power-of-two flag (it is 0)
         assert flag.value == 0
+        assert flag.bit_number is None
     else:
         assert _is_power_of_two(flag.value)
+        assert 2**flag.bit_number == flag.value
 
 
 @pytest.mark.parametrize("flag", dqflags.pixel)
@@ -114,6 +116,11 @@ def test_group_flags(flag, ramp_schema):
 
     # Test that the group flags are dict accessible
     assert dqflags.group[flag.name] is flag
+
+    if flag.name == "GOOD":
+        assert flag.bit_number is None
+    else:
+        assert 2**flag.bit_number == flag.value
 
     # Test that each group flag matches a pixel flag of the same name
     # except for the WFI18_TRANSIENT flag

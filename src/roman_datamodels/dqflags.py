@@ -1,8 +1,13 @@
 """Roman Data Quality Flags
 
-A full description of the data quality flags can be found in the
+Within science data files, the PIXELDQ flags are stored as 32-bit integers;
+the GROUPDQ flags are 8-bit integers. All calibrated data from a particular
+instrument and observing mode have the same set of DQ flags in the same (bit)
+order. Additional details can be found in the
 :external+romancal:ref:`romancal data quality flags documentation <data_quality_flags>`.
 
+Tables detailing the specifics of the GROUPDQ and PIXELDQ flags are provided in
+the documentation for `group` and `pixel` respectively.
 
 Implementation
 --------------
@@ -11,13 +16,20 @@ The flags are implemented as "bit flags": Each flag is assigned a bit position
 in a byte, or multi-byte word, of memory. If that bit is set, the flag assigned
 to that bit is interpreted as being set or active.
 
-The data structure that stores bit flags is just the standard Python `int`,
-which provides 32 bits. Bits of an integer are most easily referred to using
-the formula ``2**bit_number`` where ``bit_number`` is the 0-index bit of interest.
+NumPy can do bitwise operations on these integer flags, provided they are of an
+unsigned integer type. For our case:
+
+* GROUPDQ (`group` enum) flags are stored as 8-bit unsigned integers (`~numpy.uint8`).
+* PIXELDQ (`pixel` enum) flags are stored as 32-bit unsigned integers (`~numpy.uint32`).
+
+The actual integer values for each flag are found using the formula
+``2**bit_number`` where ``bit_number`` is the 0-index bit of interest.
+
+The flags for both ``pixel`` and ``group`` dq flags are defined as enumerations,
+so that they are both organized in a consistent manner and protected against accidental
+modification. This means they can be accessed like any attribute of a Python `~enum.Enum`.
 """
 
-# Something with pickling of multiclassed enums was changed in 3.11 + allowing
-# us to directly us `np.uint32` as the enum object rather than a python `int`.
 from enum import Enum, unique
 
 import numpy as np
@@ -25,10 +37,19 @@ import numpy as np
 __all__ = ["group", "pixel"]
 
 
+class _DqFlagMixin:
+    @property
+    def bit_number(self):
+        """The bit position represented by this flag, or ``None`` for ``GOOD``."""
+        if self.value == 0:
+            return None
+        return int(self.value).bit_length() - 1
+
+
 # fmt: off
 @unique
-class pixel(np.uint32, Enum):
-    """Pixel-specific data quality flags"""
+class pixel(np.uint32, _DqFlagMixin, Enum):
+    """Pixel-specific, PIXELDQ, data quality flags"""
 
     GOOD             = 0
     """No bits set, all is good"""
@@ -97,10 +118,13 @@ class pixel(np.uint32, Enum):
 
 
 @unique
-class group(np.uint8, Enum):
-    """Group-specific data quality flags
-        Once groups are combined, these flags are equivalent to the pixel-specific flags.
+class group(np.uint8, _DqFlagMixin, Enum):
     """
+    Group-specific, GROUPDQ, data quality flags
+
+    Once groups are combined, these flags are equivalent to the pixel-specific flags.
+    """
+
     GOOD       = pixel.GOOD
     """No bits set, all is good"""
     DO_NOT_USE = pixel.DO_NOT_USE
