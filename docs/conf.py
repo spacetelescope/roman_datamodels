@@ -10,6 +10,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import ast
 import datetime
 import importlib
 import inspect
@@ -46,6 +47,7 @@ intersphinx_mapping = {
     "astropy": ("https://docs.astropy.org/en/stable/", None),
     "asdf": ("https://asdf.readthedocs.io/en/latest/", None),
     "rad": ("https://rad.readthedocs.io/en/latest/", None),
+    "romancal": ("https://roman-pipeline.readthedocs.io/en/latest/", None),
 }
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -205,7 +207,44 @@ def documented_members(modname, qualname, members):
         owner = next((klass for klass in obj.__mro__ if name in klass.__dict__), None)
         return name == "info" and owner is not None and owner.__module__ == "astropy.time.core"
 
-    return [name for name in members if not inherited_from_numpy(name) and not inherited_astropy_time_info(name)]
+    enum_members = getattr(obj, "__members__", {})
+    return [
+        name
+        for name in members
+        if name not in enum_members and not inherited_from_numpy(name) and not inherited_astropy_time_info(name)
+    ]
+
+
+def enum_flags(modname, qualname):
+    """Return enum flag metadata, including descriptions stored after assignments."""
+    obj = importlib.import_module(modname)
+    for part in qualname.split("."):
+        obj = getattr(obj, part)
+
+    members = getattr(obj, "__members__", None)
+    if not members or not all(hasattr(flag, "bit_number") for flag in members.values()):
+        return []
+
+    class_node = next(node for node in ast.parse(inspect.getsource(obj)).body if isinstance(node, ast.ClassDef))
+    descriptions = {}
+    for assignment, docstring in zip(class_node.body, class_node.body[1:], strict=False):
+        if not isinstance(assignment, ast.Assign) or len(assignment.targets) != 1:
+            continue
+        target = assignment.targets[0]
+        if isinstance(target, ast.Name) and isinstance(docstring, ast.Expr):
+            description = ast.get_docstring(ast.Module(body=[docstring], type_ignores=[]), clean=True)
+            if description:
+                descriptions[target.id] = description.splitlines()[0]
+
+    return [
+        {
+            "bit_number": flag.bit_number,
+            "value": int(flag.value),
+            "name": flag.name,
+            "description": descriptions[flag.name],
+        }
+        for flag in members.values()
+    ]
 
 
 def node_class(modname, name):
@@ -226,6 +265,7 @@ def node_class(modname, name):
 autosummary_context = {
     "is_property": is_property,
     "documented_members": documented_members,
+    "enum_flags": enum_flags,
     "datamodel_category": datamodel_category,
     "node_class": node_class,
 }
@@ -539,6 +579,7 @@ nitpick_ignore = [
     ("py:class", "roman_datamodels.datamodels._datamodels._ParquetMixin"),
     ("py:class", "roman_datamodels.datamodels._datamodels._RomanDataModel"),
     ("py:class", "roman_datamodels.datamodels._datamodels._SourceCatalogMixin"),
+    ("py:class", "roman_datamodels.dqflags._DqFlagMixin"),
     # DataModel.search wraps asdf.AsdfFile.search verbatim (via functools.wraps);
     # its docstring types are asdf's, not fully qualified and not real objects.
     ("py:class", "NotSet"),
