@@ -17,6 +17,7 @@ import numpy as np
 from astropy import time
 
 from roman_datamodels._stnode import TaggedScalarNode
+from roman_datamodels._stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN
 
 from ._core import MODEL_REGISTRY, DataModel
 
@@ -26,7 +27,13 @@ if TYPE_CHECKING:
     from roman_datamodels._stnode import DNode, LNode
 
 
-__all__ = ["FilenameMismatchWarning", "node_update", "rdm_open"]
+__all__ = ["DowngradeWarning", "FilenameMismatchWarning", "node_update", "rdm_open"]
+
+
+class DowngradeWarning(UserWarning):
+    """
+    File contains a newer tag that was downgraded.
+    """
 
 
 class FilenameMismatchWarning(UserWarning):
@@ -334,6 +341,23 @@ def rdm_open(init: PathLike | asdf.AsdfFile | DataModel, memmap: bool = False, *
 
     if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
         return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
+
+    # Allow for downgrading new tags to older tags (with a warning and validation)
+    tag = asdf.tagged.get_tag(asdf_file["roman"])
+    if tag is not None and tag.startswith("asdf://stsci.edu/datamodels/roman/tags/"):
+        # Look up any matching node/model class by converting the newer tag to a pattern
+        tag_base, _ = asdf.versioning.split_tag_version(tag)
+        tag_pattern = f"{tag_base}-*"
+        if node_class := OBJECT_NODE_CLASSES_BY_PATTERN.get(tag_pattern):
+            if model_class := MODEL_REGISTRY.get(node_class):
+                # If we found a class, warn, downgrade and validate
+                # TODO msg
+                msg = ""
+                warnings.warn(msg, DowngradeWarning, stacklevel=2)
+                asdf_file["roman"] = node_class(asdf_file["roman"])
+                model = model_class(asdf_file, **kwargs)
+                model.validate()
+                return model
 
     if not isinstance(init, asdf.AsdfFile):
         asdf_file.close()
