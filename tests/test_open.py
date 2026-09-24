@@ -316,6 +316,7 @@ def test_patch_filename(filename, original, expected):
     assert asdf_file["roman"]["meta"]["filename"] == expected
 
 
+@pytest.mark.skipif(asdf.__version__ < "5.1.0", reason="5.1.0 fixed a bug with lazy nodes losing tags")
 @pytest.mark.parametrize("node_class, model_class", list(datamodels.MODEL_REGISTRY.items()))
 def test_downgrade(tmp_path, node_class, model_class):
     test_path = tmp_path / "test_filename.asdf"
