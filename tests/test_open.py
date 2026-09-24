@@ -314,3 +314,30 @@ def test_patch_filename(filename, original, expected):
     with ctx:
         _patch_meta_filename(filename, asdf_file)
     assert asdf_file["roman"]["meta"]["filename"] == expected
+
+
+@pytest.mark.skipif(asdf.__version__ < "5.1.0", reason="5.1.0 fixed a bug with lazy nodes losing tags")
+@pytest.mark.parametrize("node_class, model_class", list(datamodels.MODEL_REGISTRY.items()))
+def test_downgrade(tmp_path, node_class, model_class):
+    test_path = tmp_path / "test_filename.asdf"
+    save_path = tmp_path / "save_filename.asdf"
+
+    # Create a node with a newer tag version and write it to disk
+    node = node_class.create_fake_data()
+    if "filename" in node.get("meta", {}):
+        node.meta.filename = type(node.meta.filename)(test_path.name)
+    tag_base, version = asdf.versioning.split_tag_version(node.tag)
+    newer_tag = asdf.versioning.join_tag_version(tag_base, version.next_patch())
+    asdf.AsdfFile({"roman": asdf.tagged.TaggedDict(node._data, newer_tag)}).write_to(test_path)
+
+    with (
+        pytest.warns(datamodels.DowngradeWarning),
+        pytest.warns(asdf.exceptions.AsdfConversionWarning),
+        datamodels.open(test_path) as model,
+    ):
+        assert isinstance(model, model_class)
+        model.save(save_path)
+
+    # check that resaving produces a file with a known tag (no warnings on reload)
+    with datamodels.open(save_path) as model:
+        assert isinstance(model, model_class)
