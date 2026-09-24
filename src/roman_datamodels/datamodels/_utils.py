@@ -346,16 +346,22 @@ def rdm_open(init: PathLike | asdf.AsdfFile | DataModel, memmap: bool = False, *
     tag = asdf.tagged.get_tag(asdf_file["roman"])
     if tag is not None and tag.startswith("asdf://stsci.edu/datamodels/roman/tags/"):
         # Look up any matching node/model class by converting the newer tag to a pattern
-        tag_base, _ = asdf.versioning.split_tag_version(tag)
+        tag_base, file_tag_version = asdf.versioning.split_tag_version(tag)
         tag_pattern = f"{tag_base}-*"
         if node_class := OBJECT_NODE_CLASSES_BY_PATTERN.get(tag_pattern):
             if model_class := MODEL_REGISTRY.get(node_class):
-                # If we found a class, warn, downgrade and validate
-                # TODO msg
-                msg = ""
-                warnings.warn(msg, DowngradeWarning, stacklevel=2)
+                # If we found a class: downgrade, warn and validate
                 asdf_file["roman"] = node_class(asdf_file["roman"])
                 model = model_class(asdf_file, **kwargs)
+                _, downgraded_tag_version = asdf.versioning.split_tag_version(model.tag)
+                msg = (
+                    f"File with {tag_base} was converted from version {file_tag_version} "
+                    f"to {downgraded_tag_version}. Please update your roman_datamodels "
+                    "version to fully support the original tag. See "
+                    "https://roman-pipeline.readthedocs.io/en/latest/roman/forward_compatibility.html "
+                    "for more details and warnings for when this conversion should not be trusted."
+                )
+                warnings.warn(msg, DowngradeWarning, stacklevel=2)
                 model.validate()
                 return model
 
