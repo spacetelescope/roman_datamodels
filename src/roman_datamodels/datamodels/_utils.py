@@ -332,7 +332,7 @@ def _downgrade_model(asdf_file: asdf.AsdfFile, **kwargs: Any) -> DataModel | Non
         "https://roman-pipeline.readthedocs.io/en/latest/roman/forward_compatibility.html "
         "for more details and warnings for when this conversion should not be trusted."
     )
-    warnings.warn(msg, DowngradeWarning, stacklevel=2)
+    warnings.warn(msg, DowngradeWarning, stacklevel=3)
     model.validate()
     return model
 
