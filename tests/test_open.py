@@ -341,3 +341,32 @@ def test_downgrade(tmp_path, node_class, model_class):
     # check that resaving produces a file with a known tag (no warnings on reload)
     with datamodels.open(save_path) as model:
         assert isinstance(model, model_class)
+
+
+@pytest.mark.skipif(asdf.__version__ < "5.1.0", reason="5.1.0 fixed a bug with lazy nodes losing tags")
+@pytest.mark.parametrize("version_type, success", [("patch", True), ("minor", True), ("major", False)])
+def test_downgrade_version_specificity(tmp_path, version_type, success):
+    test_path = tmp_path / "test_filename.asdf"
+
+    # Create a node with a newer tag version and write it to disk
+    node = WfiImage.create_fake_data()
+    if "filename" in node.get("meta", {}):
+        node.meta.filename = type(node.meta.filename)(test_path.name)
+    tag_base, version = asdf.versioning.split_tag_version(node.tag)
+    next_version = getattr(version, f"next_{version_type}")()
+    newer_tag = asdf.versioning.join_tag_version(tag_base, next_version)
+    asdf.AsdfFile({"roman": asdf.tagged.TaggedDict(node._data, newer_tag)}).write_to(test_path)
+    if success:
+        with (
+            pytest.warns(datamodels.DowngradeWarning),
+            pytest.warns(asdf.exceptions.AsdfConversionWarning),
+            datamodels.open(test_path) as model,
+        ):
+            assert isinstance(model, datamodels.ImageModel)
+    else:
+        with (
+            pytest.raises(TypeError, match="Unknown datamodel"),
+            pytest.warns(asdf.exceptions.AsdfConversionWarning),
+            datamodels.open(test_path) as model,
+        ):
+            pass
