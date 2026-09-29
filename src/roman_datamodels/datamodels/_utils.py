@@ -5,7 +5,6 @@ This module contains the utility functions for the datamodels sub-package. Mainl
 
 from __future__ import annotations
 
-import pdb
 import warnings
 from collections.abc import Generator, Mapping
 from contextlib import contextmanager
@@ -330,7 +329,6 @@ def rdm_open(init, memmap=False, **kwargs):
 
     if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
         return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
-    pdb.set_trace()
 
     if not isinstance(init, asdf.AsdfFile):
         asdf_file.close()

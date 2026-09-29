@@ -19,8 +19,8 @@ dependencies = [
   "pyarrow>=10.0.1",
   "pyyaml>=6.0",
   "semantic_version>=2.10",
-  "rad >=1.1.0,<1.2.0",
-  # "rad@git+https://github.com/spacetelescope/rad.git",
+  # "rad >=1.1.0,<1.2.0",
+  "rad@git+https://github.com/ddavis-stsci/rad.git@rcal-1201_rad",
 ]
 license-files = ["LICENSE"]
 dynamic = ["version"]
