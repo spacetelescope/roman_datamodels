@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 import asdf
 import numpy as np
 from astropy import time
+import pdb
 
 from roman_datamodels._stnode import TaggedScalarNode
 
@@ -329,6 +330,7 @@ def rdm_open(init, memmap=False, **kwargs):
 
     if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
         return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
+    pdb.set_trace()
 
     if not isinstance(init, asdf.AsdfFile):
         asdf_file.close()

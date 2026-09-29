@@ -37,6 +37,7 @@ __all__ = [
     "FileDateMixin",
     "ForcedImageSourceCatalogMixin",
     "ForcedMosaicSourceCatalogMixin",
+    "TimeDomainSourceCatalogMixin",
     "FpsFileDateMixin",
     "ImageSourceCatalogMixin",
     "L2CalStepMixin",
@@ -294,6 +295,10 @@ class ImageSourceCatalogMixin(_ObjectBase):
 
 
 class ForcedImageSourceCatalogMixin(ImageSourceCatalogMixin):
+    __slots__ = ()
+
+
+class TimeDomainSourceCatalogMixin(ImageSourceCatalogMixin):
     __slots__ = ()
 
 

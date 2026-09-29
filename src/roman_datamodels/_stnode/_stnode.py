@@ -6,6 +6,7 @@ Dynamic creation of STNode classes from the RAD manifest.
     used by the user.
 """
 
+import pdb
 import importlib.resources
 from pathlib import Path
 
@@ -42,7 +43,6 @@ _DATAMODEL_MANIFEST_PATHS = sorted(
 DATAMODEL_MANIFESTS = [yaml.safe_load(path.read_bytes()) for path in _DATAMODEL_MANIFEST_PATHS]
 # Notice that the static manifests are first so that we defer to them
 _MANIFESTS = DATAMODEL_MANIFESTS
-
 
 def _add_cls(cls):
     class_name = cls.__name__
@@ -90,7 +90,7 @@ NODE_EXTENSIONS = {
     )
     for manifest_uri in MANIFEST_TAG_REGISTRY
 }
-
+#pdb.set_trace()
 
 # List of node classes made available by this library.
 #   This is part of the public API.
@@ -99,3 +99,4 @@ NODE_CLASSES = (
     + list(LIST_NODE_CLASSES_BY_PATTERN.values())
     + list(SCALAR_NODE_CLASSES_BY_PATTERN.values())
 )
+
