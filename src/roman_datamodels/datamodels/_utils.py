@@ -5,6 +5,7 @@ This module contains the utility functions for the datamodels sub-package. Mainl
 
 from __future__ import annotations
 
+import pdb
 import warnings
 from collections.abc import Generator, Mapping
 from contextlib import contextmanager
@@ -15,7 +16,6 @@ from urllib.parse import urlparse
 import asdf
 import numpy as np
 from astropy import time
-import pdb
 
 from roman_datamodels._stnode import TaggedScalarNode
 

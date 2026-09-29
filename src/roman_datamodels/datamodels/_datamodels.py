@@ -21,7 +21,6 @@ import astropy.table.meta
 import numpy as np
 from astropy import time as _time
 from astropy.modeling import models
-import pdb
 
 from ._core import DataModel
 from ._utils import node_update, temporary_update_filedate, temporary_update_filename
@@ -686,6 +685,7 @@ class ForcedImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatal
 
     __slots__ = ()
     _node_type = ForcedImageSourceCatalog
+
 
 class TimeDomainSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
     from roman_datamodels._stnode import TimeDomainSourceCatalog
