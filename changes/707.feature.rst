@@ -1,0 +1,4 @@
+Updated the API documentation to be more comprehensive and user-friendly. This
+includes making sure that all of the public methods have reasonable docstrings,
+and that the overall structure of the presentation of the API for each module,
+class, and function is clear and clean.

@@ -1,6 +1,7 @@
 """
-The STNode classes and supporting objects generated dynamically at import time
-    from RAD's manifest.
+The STNode classes and supporting objects
+
+Most of these are generated dynamically at import time from RAD's manifest.
 """
 
 from __future__ import annotations

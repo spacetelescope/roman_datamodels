@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import MutableMapping, MutableSequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Self
 
 import numpy as np
 from asdf.lazy_nodes import AsdfDictNode, AsdfListNode
@@ -67,7 +67,7 @@ class _NodeMixin:
 
 class DNode(MutableMapping, _NodeMixin):
     """
-    Base class describing all "object" (dict-like) data nodes for STNode classes.
+    Base class describing all "object" (dict-like) data nodes for STNode classes
     """
 
     __slots__ = ("_data", "_read_tag")
@@ -140,15 +140,26 @@ class DNode(MutableMapping, _NodeMixin):
 
         yield from recurse(self)
 
-    def to_flat_dict(self, include_arrays=True, recursive=False):
+    def to_flat_dict(self, include_arrays: bool = True, recursive: bool = False) -> dict[str, Any]:
         """
-        Returns a dictionary of all of the schema items as a flat dictionary.
+        The schema items as a flat dictionary
 
         Each dictionary key is a dot-separated name.  For example, the
         schema element ``meta.observation.date`` will end up in the
         dictionary as::
 
             { "meta.observation.date": "2012-04-22T03:22:05.432" }
+
+        Parameters
+        ----------
+        include_arrays :
+            Whether to include array-like items in the flat dictionary, by default True
+        recursive :
+            Whether to recursively include items from nested structures, by default False
+
+        Returns
+        -------
+            A flat dictionary representation of the schema items.
 
         """
 
@@ -205,8 +216,14 @@ class DNode(MutableMapping, _NodeMixin):
         """Define a representation"""
         return repr(self._data)
 
-    def copy(self):
-        """Handle copying of the node"""
+    def copy(self) -> Self:
+        """
+        Copy the node
+
+        Returns
+        -------
+            A copy of the current node.
+        """
         instance = self.__class__.__new__(self.__class__)
 
         instance._read_tag = self._read_tag
@@ -217,10 +234,15 @@ class DNode(MutableMapping, _NodeMixin):
 
 class LNode(MutableSequence, _NodeMixin):
     """
-    Base class describing all "array" (list-like) data nodes for STNode classes.
+    Base class describing all "array" (list-like) data nodes for STNode classes
     """
 
     __slots__ = ("_read_tag", "data")
+
+    data: list[Any] | AsdfListNode
+    """
+    The underlying list or AsdfListNode storing the elements of this LNode.
+    """
 
     def __init__(self, node=None):
         super().__init__(node=node)
@@ -246,7 +268,17 @@ class LNode(MutableSequence, _NodeMixin):
     def __len__(self):
         return len(self.data)
 
-    def insert(self, index, value):
+    def insert(self, index: int, value: Any) -> None:
+        """
+        Insert a value into the list at the specified index
+
+        Parameters
+        ----------
+        index :
+            The position at which to insert the value.
+        value :
+            The value to insert.
+        """
         self.data.insert(index, value)
 
     def __asdf_traverse__(self):
@@ -266,8 +298,14 @@ class LNode(MutableSequence, _NodeMixin):
         else:
             return False
 
-    def copy(self):
-        """Handle copying of the node"""
+    def copy(self) -> Self:
+        """
+        Copy the node
+
+        Returns
+        -------
+            A copy of the current node.
+        """
         instance = self.__class__.__new__(self.__class__)
 
         instance.data = self.data.copy()

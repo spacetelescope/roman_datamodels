@@ -46,6 +46,7 @@ help:
 clean:
 	-rm -rf $(BUILDDIR)/*
 	-rm -rf $(APIDIR)/*
+	-rm -rf roman_datamodels/datamodels/generated
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

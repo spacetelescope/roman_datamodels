@@ -56,18 +56,23 @@ def get_latest_schema(uri: str) -> tuple[str, dict[str, Any]]:
 
 
 @functools.cache
-def _get_schema_from_tag(tag):
+def _get_schema_from_tag(tag: str) -> dict[str, Any]:
     """
     Look up and load ASDF's schema corresponding to the tag_uri.
 
     Parameters
     ----------
-    tag : str
+    tag :
         The tag_uri of the schema to load.
+
+    Returns
+    -------
+        The schema corresponding to the tag_uri.
     """
     schema_uri = SCHEMA_URIS_BY_TAG[tag]
 
-    return asdf.schema.load_schema(schema_uri, resolve_references=True)
+    # ASDF does not provide hints for this so MyPy cannot resolve this
+    return asdf.schema.load_schema(schema_uri, resolve_references=True)  # type: ignore[no-any-return]
 
 
 class _MissingKeywordType:

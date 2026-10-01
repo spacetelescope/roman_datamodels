@@ -225,8 +225,10 @@ def test_read_pattern_properties():
     Regression test for reading pattern properties
     """
     # This file has been modified by hand to break the `photmjsr` value
-    with pytest.raises(asdf.ValidationError):
-        datamodels.open(Path(__file__).parent / "data" / "photmjsm.asdf")
+    with asdf.config_context() as cfg:
+        cfg.validate_on_read = True
+        with pytest.raises(asdf.ValidationError):
+            datamodels.open(Path(__file__).parent / "data" / "photmjsm.asdf")
 
 
 def test_rdm_open_non_datamodel():
