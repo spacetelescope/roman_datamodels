@@ -329,7 +329,7 @@ def _downgrade_model(asdf_file: asdf.AsdfFile, **kwargs: Any) -> DataModel | Non
         f"File with {tag_base} was converted from version {file_tag_version} "
         f"to {downgraded_tag_version}. Please update your roman_datamodels "
         "version to fully support the original tag. See "
-        "https://roman-pipeline.readthedocs.io/en/latest/roman/forward_compatibility.html "
+        "https://roman-pipeline.readthedocs.io/en/latest/roman/data_products/versioning.html#forward_compatibility "
         "for more details and warnings for when this conversion should not be trusted."
     )
     warnings.warn(msg, DowngradeWarning, stacklevel=3)
