@@ -434,6 +434,13 @@ class ApcorrRefModel(DataModel):
     __slots__ = ()
 
 
+class BamRefModel(DataModel):
+    from roman_datamodels._stnode import BamRef
+
+    __slots__ = ()
+    _node_type = BamRef
+
+
 class DarkRefModel(DataModel):
     from roman_datamodels._stnode import DarkRef as _node_type
 
