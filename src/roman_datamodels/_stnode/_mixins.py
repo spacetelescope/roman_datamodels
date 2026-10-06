@@ -348,6 +348,10 @@ class ForcedImageSourceCatalogMixin(ImageSourceCatalogMixin):
 
 
 class TimeDomainSourceCatalogMixin(ImageSourceCatalogMixin):
+    """
+    Extensions to the TimeDomainSourceCatalog class
+    """
+
     __slots__ = ()
 
 
