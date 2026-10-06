@@ -18,20 +18,20 @@ on:
 jobs:
   test:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@22ddf09dfabb443adddfb9f861b7d41a787d6b1a  # v3.0.3
+    permissions:
+      id-token: write
     with:
       envs: |
         - linux: py311-oldestdeps-cov
-          coverage: codecov
+          coverage: codecov-oidc
         - linux: py311
         - linux: py312
         - linux: py313
         - linux: py314-cov
-          coverage: codecov
+          coverage: codecov-oidc
         - macos: py314
         - linux: py313-withromancal-cov
-          coverage: codecov
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          coverage: codecov-oidc
 
   test_upstream:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@22ddf09dfabb443adddfb9f861b7d41a787d6b1a  # v3.0.3
