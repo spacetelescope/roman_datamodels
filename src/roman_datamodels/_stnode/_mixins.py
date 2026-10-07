@@ -48,6 +48,7 @@ __all__ = [
     "RefFileMixin",
     "SdfSoftwareVersionMixin",
     "TelescopeMixin",
+    "TimeDomainSourceCatalogMixin",
     "TvacFileDateMixin",
     "WfiModeMixin",
 ]
@@ -341,6 +342,14 @@ class ImageSourceCatalogMixin(_ObjectBase):
 class ForcedImageSourceCatalogMixin(ImageSourceCatalogMixin):
     """
     Extensions to the ForcedImageSourceCatalog class
+    """
+
+    __slots__ = ()
+
+
+class TimeDomainSourceCatalogMixin(ImageSourceCatalogMixin):
+    """
+    Extensions to the TimeDomainSourceCatalog class
     """
 
     __slots__ = ()

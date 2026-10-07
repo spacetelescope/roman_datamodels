@@ -574,6 +574,7 @@ nitpick_ignore = [
     ("py:class", "roman_datamodels._stnode._mixins.ImageSourceCatalogMixin"),
     ("py:class", "roman_datamodels._stnode._mixins.MosaicSourceCatalogMixin"),
     ("py:class", "roman_datamodels._stnode._mixins.MultibandSourceCatalogMixin"),
+    ("py:class", "roman_datamodels._stnode._mixins.TimeDomainSourceCatalogMixin"),
     ("py:class", "roman_datamodels._stnode._node._NodeMixin"),
     ("py:class", "roman_datamodels._stnode._tagged._TaggedNodeMixin"),
     ("py:class", "roman_datamodels.datamodels._datamodels._ParquetMixin"),

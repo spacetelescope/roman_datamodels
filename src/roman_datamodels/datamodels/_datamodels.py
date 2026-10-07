@@ -613,6 +613,13 @@ class ForcedImageSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatal
     __slots__ = ()
 
 
+class TimeDomainSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
+    from roman_datamodels._stnode import TimeDomainSourceCatalog
+
+    __slots__ = ()
+    _node_type = TimeDomainSourceCatalog
+
+
 class ForcedMosaicSourceCatalogModel(_RomanDataModel, _ParquetMixin, _SourceCatalogMixin):
     from roman_datamodels._stnode import ForcedMosaicSourceCatalog as _node_type
 
