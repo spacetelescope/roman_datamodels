@@ -138,14 +138,14 @@ Datamodels build off versioning inherited from ASDF, an achival format focused o
 Forward Compatibility
 ^^^^^^^^^^^^^^^^^^^^^
 
-There is limited support for opening files that were produced with a newer version of roman datamodels. This "forward compatibility" is problematic since the environment being used to open the file is not aware of the changes that led to the contents of the file being opened. When asked to open such a file, roman datamodels will attempt to find the latest known version of the corresponding datamodel type, map the file contents to that version, and check if the model is valid. This process produces either:
+There is limited support for opening files that were produced with a newer version of roman datamodels. This "forward compatibility" is convenient because it allows users to open files without updating their environments, but also problematic since the environment being used to open the file is not aware of the changes that led to the contents of the file being opened. When asked to open such a file, roman datamodels will attempt to find the latest known version of the corresponding datamodel type, map the file contents to that version, and check if the model is valid. This process produces either:
 
 - an error when the downgrade process failed
 - a `roman_datamodels.datamodels.DowngradeWarning` message describing that a downgrade was performed
 
 Since downgrading maps the file contents to an older version (with a different schema) it is important that users are aware of the differences between these versions and verify that the metadata, data, and schema-derived information is correct using the older version.
 
-Users who want to avoid downgrading can convert the `roman_datamodels.datamodels.DowngradeWarning` to an error using functionality from the python standardy library `warnings` module::
+Users who want to avoid downgrading can convert the `roman_datamodels.datamodels.DowngradeWarning` to an error using functionality from the python standard library `warnings` module::
 
     >>> import roman_datamodels as rdm
     >>> import warnings
