@@ -46,10 +46,7 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", (None, "http://data.astropy.org/intersphinx/matplotlib.inv")),
     "astropy": ("https://docs.astropy.org/en/stable/", None),
     "asdf": ("https://asdf.readthedocs.io/en/latest/", None),
-    # TEMPORARY: point at the docs preview for spacetelescope/rad#925 to match the
-    # rad branch pinned in pyproject.toml; revert to latest along with that pin.
-    # "rad": ("https://rad.readthedocs.io/en/latest/", None),
-    "rad": ("https://rad--925.org.readthedocs.build/en/925/", None),
+    "rad": ("https://rad.readthedocs.io/en/latest/", None),
     "romancal": ("https://roman-pipeline.readthedocs.io/en/latest/", None),
 }
 
