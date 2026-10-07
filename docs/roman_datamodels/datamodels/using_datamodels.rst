@@ -131,7 +131,7 @@ page::
 Version Compatibility
 =====================
 
-Datamodels build off versioning inherited from ASDF, an achival format focused on structured backwards-compatibility through extensive versioning. Environments with an up-to-date roman_datamodels, users shouldn't be presented with warnings or errors when opening current or old files. If warnings are presented the messages should contain information about what packages need to be updated to fully support the file(s) being opened.
+Datamodels build off versioning inherited from ASDF, an achival format focused on structured backwards-compatibility through extensive versioning. In environments with an up-to-date roman_datamodels version, users shouldn't be presented with warnings or errors when opening current or old files. If warnings are presented the messages should contain information about what packages need to be updated to fully support the file(s) being opened.
 
 .. _forward-compatibility:
 
