@@ -125,3 +125,31 @@ page::
     42
     >>> dm2.meta.exposure.exposure_time
     60000.0
+
+.. _version-compatibility:
+
+Version Compatibility
+=====================
+
+Datamodels build off versioning inherited from ASDF, an achival format focused on structured backwards-compatibility through extensive versioning. In environments with an up-to-date roman_datamodels version, users shouldn't be presented with warnings or errors when opening current or old files. If warnings are presented the messages should contain information about what packages need to be updated to fully support the file(s) being opened.
+
+.. _forward-compatibility:
+
+Forward Compatibility
+^^^^^^^^^^^^^^^^^^^^^
+
+There is limited support for opening files that were produced with a newer version of roman datamodels. This "forward compatibility" is convenient because it allows users to open files without updating their environments, but also problematic since the environment being used to open the file is not aware of the changes that led to the contents of the file being opened. When asked to open such a file, roman datamodels will attempt to find the latest known version of the corresponding datamodel type, map the file contents to that version, and check if the model is valid. This process produces either:
+
+- an error when the downgrade process failed
+- a `roman_datamodels.datamodels.DowngradeWarning` message describing that a downgrade was performed
+
+Since downgrading maps the file contents to an older version (with a different schema) it is important that users are aware of the differences between these versions and verify that the metadata, data, and schema-derived information is correct using the older version.
+
+Users who want to avoid downgrading can convert the `roman_datamodels.datamodels.DowngradeWarning` to an error using functionality from the python standard library `warnings` module::
+
+    >>> import roman_datamodels as rdm
+    >>> import warnings
+    >>> with warnings.catch_warnings():
+            warnings.simplefilter("error", rdm.datamodels.DowngradeWarning)
+            dm = rdm.open('newer_roman_data.asdf')
+            ...

@@ -17,6 +17,7 @@ import numpy as np
 from astropy import time
 
 from roman_datamodels._stnode import TaggedScalarNode
+from roman_datamodels._stnode._registry import OBJECT_NODE_CLASSES_BY_PATTERN
 
 from ._core import MODEL_REGISTRY, DataModel
 
@@ -26,7 +27,13 @@ if TYPE_CHECKING:
     from roman_datamodels._stnode import DNode, LNode
 
 
-__all__ = ["FilenameMismatchWarning", "node_update", "rdm_open"]
+__all__ = ["DowngradeWarning", "FilenameMismatchWarning", "node_update", "rdm_open"]
+
+
+class DowngradeWarning(UserWarning):
+    """
+    File contains a newer tag that was downgraded.
+    """
 
 
 class FilenameMismatchWarning(UserWarning):
@@ -284,6 +291,52 @@ def _open_asdf(init: PathLike | asdf.AsdfFile | None, lazy_tree: bool = True, **
     return _patch_meta_filename(init, asdf_file)
 
 
+def _downgrade_model(asdf_file: asdf.AsdfFile, **kwargs: Any) -> DataModel | None:
+    """
+    Downgrade a model to the latest known model (if possible).
+
+    Parameters
+    ----------
+    asdf_file :
+        AsdfFile containing a newer-than-known datamodel.
+
+    Returns
+    -------
+    DataModel (with the latest known tag version) or None if unable to downgrade.
+    """
+    tag = asdf.tagged.get_tag(asdf_file["roman"])
+    if tag is None or not tag.startswith("asdf://stsci.edu/datamodels/roman/tags/"):
+        return None
+
+    # Look up any matching node/model class by converting the newer tag to a pattern
+    tag_base, file_tag_version = asdf.versioning.split_tag_version(tag)
+    tag_pattern = f"{tag_base}-*"
+    if not (node_class := OBJECT_NODE_CLASSES_BY_PATTERN.get(tag_pattern)):
+        return None
+    if not (model_class := MODEL_REGISTRY.get(node_class)):
+        return None
+
+    # Found a class, check the version
+    asdf_file["roman"] = node_class(asdf_file["roman"])
+    model = model_class(asdf_file, **kwargs)
+    _, downgraded_tag_version = asdf.versioning.split_tag_version(model.tag)
+
+    if file_tag_version.major != downgraded_tag_version.major:
+        # Don't downgrade across major version
+        return None
+
+    msg = (
+        f"File with {tag_base} was converted from version {file_tag_version} "
+        f"to {downgraded_tag_version}. Please update your roman_datamodels "
+        "version to fully support the original tag. See "
+        "https://roman-pipeline.readthedocs.io/en/latest/roman/data_products/versioning.html#forward_compatibility "
+        "for more details and warnings for when this conversion should not be trusted."
+    )
+    warnings.warn(msg, DowngradeWarning, stacklevel=3)
+    model.validate()
+    return model
+
+
 def rdm_open(init: PathLike | asdf.AsdfFile | DataModel, memmap: bool = False, **kwargs: Any) -> DataModel:
     """
     Datamodel open/create function
@@ -334,6 +387,10 @@ def rdm_open(init: PathLike | asdf.AsdfFile | DataModel, memmap: bool = False, *
 
     if (model_type := type(asdf_file.tree["roman"])) in MODEL_REGISTRY:
         return MODEL_REGISTRY[model_type](asdf_file, **kwargs)
+
+    # Allow for downgrading new tags to older tags (with a warning and validation)
+    if model := _downgrade_model(asdf_file):
+        return model
 
     if not isinstance(init, asdf.AsdfFile):
         asdf_file.close()
