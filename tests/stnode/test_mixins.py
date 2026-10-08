@@ -29,11 +29,13 @@ DEFAULT_STR_TYPES = [
 )
 def test_file_date(type_, method, defaults, expected):
     obj = getattr(type_, method)(defaults)
+    assert isinstance(obj, type_)
+    assert abs(obj.to_value("mjd") - expected) < 1
+
+    # Ensure times are stored in ISOT format
     assert datetime.datetime.fromisoformat(str(obj))
     with pytest.raises(ValueError, match=r"Invalid isoformat string:*"):
         datetime.date.fromisoformat(str(expected)) # try to make datetime object from mjd value
-    assert isinstance(obj, type_)
-    assert abs(obj.to_value("mjd") - expected) < 1
 
 
 @pytest.mark.parametrize("type_, expected", DEFAULT_STR_TYPES)
