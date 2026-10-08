@@ -1,5 +1,6 @@
-import pytest
 import datetime
+
+import pytest
 from astropy.time import Time
 
 from roman_datamodels import _stnode as stnode
@@ -35,7 +36,7 @@ def test_file_date(type_, method, defaults, expected):
     # Ensure times are stored in ISOT format
     assert datetime.datetime.fromisoformat(str(obj))
     with pytest.raises(ValueError, match=r"Invalid isoformat string:*"):
-        datetime.date.fromisoformat(str(expected)) # try to make datetime object from mjd value
+        datetime.date.fromisoformat(str(expected))  # try to make datetime object from mjd value
 
 
 @pytest.mark.parametrize("type_, expected", DEFAULT_STR_TYPES)
