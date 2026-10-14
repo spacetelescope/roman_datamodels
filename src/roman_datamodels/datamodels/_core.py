@@ -520,6 +520,7 @@ class DataModel(abc.ABC):
             if isinstance(val, datetime.datetime):
                 return val.isoformat()
             elif isinstance(val, Time):
+                print(f"\nXXXX CHANGING TIME TYPE IN _CORE XXX")
                 return val.isot
             return val
 
