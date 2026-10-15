@@ -1,3 +1,24 @@
+1.2.0 (2026-10-15)
+==================
+
+New Features
+------------
+
+- Updated the API documentation to be more comprehensive and user-friendly.
+  This
+  includes making sure that all of the public methods have reasonable
+  docstrings,
+  and that the overall structure of the presentation of the API for each
+  module,
+  class, and function is clear and clean. (`#707
+  <https://github.com/spacetelescope/roman_datamodels/issues/707>`_)
+- Add ``TimeDomainSourceCatalogModel`` for PSF and aperture photometry measured
+  at input catalog positions on Level 2 images. (`#714
+  <https://github.com/spacetelescope/roman_datamodels/issues/714>`_)
+- Added a reference model for the new BAM reference file. (`#720
+  <https://github.com/spacetelescope/roman_datamodels/issues/720>`_)
+
+
 1.1.0 (2026-08-13)
 ==================
 
