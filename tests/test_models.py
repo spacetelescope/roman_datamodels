@@ -1,7 +1,7 @@
+import datetime
 import gc
 from contextlib import nullcontext
 from copy import deepcopy
-import datetime
 
 import asdf
 import numpy as np
@@ -986,7 +986,7 @@ def test_time_representation(model):
     # Ensure times are converted to ISOT format in flatten_data()
     """
     mdl = model.create_fake_data()
-    vst_time = Time(58849, format='mjd')
+    vst_time = Time(58849, format="mjd")
     mdl.meta.file_date = vst_time
     mdl_flat = mdl.to_flat_dict()
 
@@ -994,6 +994,4 @@ def test_time_representation(model):
     assert datetime.datetime.fromisoformat(str(mdl_flat["roman.meta.file_date"]))
 
     # Ensure that file_date has the correct value
-    assert np.isclose(vst_time.value,
-                      Time(mdl_flat["roman.meta.file_date"]).mjd,
-                      atol = 10e-03)
+    assert np.isclose(vst_time.value, Time(mdl_flat["roman.meta.file_date"]).mjd, atol=10e-03)
