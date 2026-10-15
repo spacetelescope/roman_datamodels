@@ -2,8 +2,6 @@ from contextlib import nullcontext
 
 import asdf
 import pytest
-from astropy.time import Time
-import datetime
 
 from roman_datamodels import _stnode as stnode
 from roman_datamodels import datamodels
@@ -260,29 +258,3 @@ def test_lnode_unwrapping(value, return_type):
     node[0] = value
     assert type(node[0]) is return_type
     assert node[0] is not value
-
-
-def test_time_representation():
-    """
-    # Ensure times are converted to ISOT format in flatten_data()
-    """
-    print(f"\nXXX 0")
-    mdl = datamodels.ImageModel.create_fake_data()
-    # mdl.meta.visit.start_time = 58849
-    vst_time = Time(58849, format='mjd')
-
-    mdl.meta.visit.start_time = vst_time
-
-    print(f"\nXXX 80")
-
-    mdl_flat = mdl.to_flat_dict()
-
-    # print(f"\nXXX mdl_flat = {mdl_flat}")
-
-    print(f"\nXXX 100")
-    print(f"XXX mdl.meta.visit.start_time = {mdl.meta.visit.start_time}")
-    print(f"XXX mdl_flat[roman.meta.visit.start_time] = {mdl_flat["roman.meta.visit.start_time"]}")
-
-
-    assert datetime.datetime.fromisoformat(str(mdl_flat["roman.meta.visit.start_time"]))
-    assert np.isclose(mdl.meta.visit.start_time, mdl_flat["roman.meta.visit.start_time"])
