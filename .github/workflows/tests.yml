@@ -17,7 +17,7 @@ on:
 
 jobs:
   test:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@22ddf09dfabb443adddfb9f861b7d41a787d6b1a  # v3.0.3
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884  # v3.2.2
     permissions:
       id-token: write
     with:
@@ -35,7 +35,7 @@ jobs:
           coverage: codecov-oidc
 
   test_upstream:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@22ddf09dfabb443adddfb9f861b7d41a787d6b1a  # v3.0.3
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884  # v3.2.2
     with:
       envs: |
         - linux: py314-rad
@@ -53,7 +53,7 @@ jobs:
       observatory: roman
   test_downstream:
     needs: [ environment, latest_crds_contexts ]
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@22ddf09dfabb443adddfb9f861b7d41a787d6b1a  # v3.0.3
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@1285b95e32c783cfa40eb2ffbd6ca4cd023fb884  # v3.2.2
     with:
       setenv: |
         CRDS_PATH: ${{ needs.environment.outputs.data_path }}/crds
