@@ -170,7 +170,7 @@ class DNode(MutableMapping, _NodeMixin):
             if isinstance(val, datetime.datetime):
                 return val.isoformat()
             elif isinstance(val, Time):
-                return str(val)
+                return val.isot
             return val
 
         item_getter = self._recursive_items if recursive else self.items
