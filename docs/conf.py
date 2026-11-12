@@ -358,8 +358,8 @@ html_theme_options = {"collapse_navigation": True}
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = "_static/stsci_logo.png"
-html_logo = "_static/stsci_logo.png"
+html_favicon = "_static/stsci_pri_combo_mark_dark_bkgd.png"
+html_logo = "_static/stsci_pri_combo_mark_dark_bkgd.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -436,7 +436,7 @@ htmlhelp_basename = "roman_datamodelsdoc"
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = "_static/stsci_logo.png"
+latex_logo = "_static/stsci_pri_combo_mark_dark_bkgd.png"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.

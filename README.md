@@ -1,3 +1,10 @@
+<a href="https://stsci.edu">
+  <img src="docs/_static/stsci_pri_combo_mark_horizonal_white_bkgd.png" alt="Space Telescope Science Institute" width="83%" style="margin-left: auto;"/>
+</a>
+<a href="https://science.nasa.gov/mission/roman-space-telescope/">
+  <img src="docs/_static/A_Rst_1020_Logo_Box_Color_Seafoamondarkblue_Logo_Full_Color_RGB_850px@72ppi.png" alt="Roman Telescope Logo" width="15%" style="margin-right: auto;"/>
+</a>
+
 [![Tests](https://github.com/spacetelescope/roman_datamodels/actions/workflows/tests.yml/badge.svg)](https://github.com/spacetelescope/roman_datamodels/actions/workflows/tests.yml)
 [![Extra Tests](https://github.com/spacetelescope/roman_datamodels/actions/workflows/tests_extra.yml/badge.svg)](https://github.com/spacetelescope/roman_datamodels/actions/workflows/tests_extra.yml)
 [![codecov](https://codecov.io/gh/spacetelescope/roman_datamodels/branch/main/graph/badge.svg)](https://codecov.io/gh/spacetelescope/roman_datamodels)
