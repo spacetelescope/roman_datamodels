@@ -92,18 +92,17 @@ def test_node_type_matches_model(model):
 
 @pytest.mark.parametrize("model", datamodels.MODEL_REGISTRY.values())
 def test_model_schemas(model):
-    instance = model.create_fake_data()
     extension_manager = asdf.AsdfFile().extension_manager
     tag_uris = {
         tag.tag_uri
         for extension in extension_manager.extensions
         for tag in extension.tags
-        if asdf.util.uri_match(instance._node_type._pattern, tag.tag_uri)
+        if asdf.util.uri_match(model._node_type._pattern, tag.tag_uri)
     }
 
     assert tag_uris
     for tag_uri in sorted(tag_uris):
-        instance._instance._read_tag = tag_uri
+        instance = model.create_fake_data(tag=tag_uri)
         asdf.schema.load_schema(instance.schema_uri)
 
 

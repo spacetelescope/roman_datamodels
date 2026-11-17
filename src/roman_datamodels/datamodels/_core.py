@@ -25,7 +25,7 @@ from asdf.tags.core.ndarray import NDArrayType
 from asdf.util import NotSet
 from astropy.time import Time
 
-from roman_datamodels._stnode import NODE_EXTENSIONS, DNode, TaggedObjectNode
+from roman_datamodels._stnode import DNode, TaggedObjectNode
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
@@ -247,12 +247,13 @@ class DataModel(abc.ABC):
         return self._node_type._latest_manifest
 
     @property
+    @_set_default_asdf
     def schema_uri(self) -> str:
         """
         The URI of the schema in RAD for this data model
         """
         # Determine the schema corresponding to this model's tag
-        return next(t for t in NODE_EXTENSIONS[self._latest_manifest_uri].tags if t.tag_uri == self._instance._tag).schema_uris[0]  # type: ignore[no-any-return]
+        return self._asdf.extension_manager.get_tag_definition(self._instance.tag).schema_uris[0]  # type: ignore[no-any-return, union-attr]
 
     def close(self) -> None:
         """Close the associated ASDF file"""
