@@ -1,0 +1,2 @@
+Bugfix for model.schema_uri when opening a data model built using an older version
+of that tag.
