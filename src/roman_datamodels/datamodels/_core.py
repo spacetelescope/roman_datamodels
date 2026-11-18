@@ -521,7 +521,7 @@ class DataModel(abc.ABC):
             if isinstance(val, datetime.datetime):
                 return val.isoformat()
             elif isinstance(val, Time):
-                return str(val)
+                return val.isot
             return val
 
         return {

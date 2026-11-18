@@ -1,0 +1,1 @@
+Changed output of astropy.time types from string to time.isot.
